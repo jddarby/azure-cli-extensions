@@ -38,7 +38,7 @@ DEPENDENCIES = [
     'azure-storage-blob>=12.15.0'
 ]
 
-with open('README.rst', 'r', encoding='utf-8') as f:
+with open('README.md', 'r', encoding='utf-8') as f:
     README = f.read()
 with open('HISTORY.rst', 'r', encoding='utf-8') as f:
     HISTORY = f.read()
