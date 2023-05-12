@@ -14,7 +14,6 @@ from knack.log import get_logger
 from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
 from azext_aosm.util.management_clients import ApiClients
 from azure.mgmt.resource.resources.v2021_04_01.models import DeploymentExtended
-from pathlib import Path
 
 from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
 from azext_aosm._configuration import NFConfiguration, VNFConfiguration

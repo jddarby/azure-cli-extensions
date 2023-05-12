@@ -182,7 +182,7 @@ def delete_published_definition(
 
     delly = ResourceDeleter(api_clients, config)
     if definition_type == VNF:
-        delly.delete_vnf(all=clean)
+        delly.delete_vnf(clean=clean)
 
 
 def show_publisher():

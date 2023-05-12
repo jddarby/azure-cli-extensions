@@ -56,19 +56,18 @@ class PreDeployerViaSDK:
         Raises a NotFoundError exception if the resource group does not exist.
         Raises a PermissionsError exception if we don't have permissions to check resource group existence.
         """
-        rg: ResourceGroup
         if not self.api_clients.resource_client.resource_groups.check_existence(
             resource_group_name
         ):
             logger.info(f"RG {resource_group_name} not found. Create it.")
             print(f"Creating resource group {resource_group_name}.")
             rg_params: ResourceGroup = ResourceGroup(location=self.config.location)
-            rg = self.api_clients.resource_client.resource_groups.create_or_update(
+            self.api_clients.resource_client.resource_groups.create_or_update(
                 resource_group_name, rg_params
             )
         else:
             print(f"Resource group {resource_group_name} exists.")
-            rg = self.api_clients.resource_client.resource_groups.get(
+            self.api_clients.resource_client.resource_groups.get(
                 resource_group_name
             )
 

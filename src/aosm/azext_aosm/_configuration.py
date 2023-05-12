@@ -5,8 +5,13 @@ from azure.cli.core.azclierror import ValidationError, InvalidArgumentValueError
 from azext_aosm.util.constants import VNF_DEFINITION_OUTPUT_BICEP_PREFIX, VNF, CNF, NSD
 
 DESCRIPTION_MAP: Dict[str, str] = {
-    "publisher_resource_group_name": "Resource group for the Publisher resource. Will be created if it does not exist.",
-    "publisher_name": "Name of the Publisher resource you want your definition published to. Will be created if it does not exist.",
+    "publisher_resource_group_name": (
+        "Resource group for the Publisher resource. Will be "
+        "created if it does not exist."
+    ),
+    "publisher_name": ("Name of the Publisher resource you want your definition "
+                       "published to. Will be created if it does not exist."
+    ),
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource",
@@ -109,7 +114,8 @@ class VNFConfiguration(NFConfiguration):
             raise ValidationError(
                 "Config validation error. VHD config must have either a local filepath or a blob SAS URL"
             )
-        elif filepath_set:
+        
+        if filepath_set:
             # Explicitly set the blob SAS URL to None to avoid other code having to
             # check if the value is the default description
             self.vhd.blob_sas_url = None

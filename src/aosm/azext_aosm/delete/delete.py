@@ -3,7 +3,6 @@
 # License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------
 """Contains class for deploying generated definitions using the Python SDK."""
-from typing import Any, Dict
 from knack.log import get_logger
 
 from azext_aosm.util.management_clients import ApiClients
@@ -17,7 +16,7 @@ logger = get_logger(__name__)
 class ResourceDeleter:
     def __init__(
         self,
-        ApiClients: ApiClients,
+        api_clients: ApiClients,
         config: NFConfiguration,
     ) -> None:
         """
@@ -29,20 +28,20 @@ class ResourceDeleter:
         :type resource_client: ResourceManagementClient
         """
         logger.debug("Create ARM/Bicep Deployer")
-        self.api_clients = ApiClients
+        self.api_clients = api_clients
         self.config = config
 
-    def delete_vnf(self, all: bool = False):
+    def delete_vnf(self, clean: bool = False):
         """
         Delete the NFDV and manifests.  If they don't exist it still reports them as
         deleted.
 
-        :param all: Delete the NFDG, artifact stores and publisher too.
+        :param clean: Delete the NFDG, artifact stores and publisher too.
                     defaults to False
                     Use with care.
         """
         assert isinstance(self.config, VNFConfiguration)
-        if all:
+        if clean:
             print(
                 f"Are you sure you want to delete all resources associated with NFD {self.config.nf_name} including the artifact stores and publisher {self.config.publisher_name}?"
             )
@@ -69,7 +68,7 @@ class ResourceDeleter:
         self.delete_artifact_manifest("sa")
         self.delete_artifact_manifest("acr")
 
-        if all:
+        if clean:
             logger.info("Delete called for all resources.")
             self.delete_nfdg()
             self.delete_artifact_store("acr")
@@ -150,7 +149,7 @@ class ResourceDeleter:
             poller.result()
             print("Deleted NFD Group")
         except Exception:
-            logger.error(f"Failed to delete NFDG.")
+            logger.error("Failed to delete NFDG.")
             raise
 
     def delete_artifact_store(self, store_type: str) -> None:
@@ -202,5 +201,5 @@ class ResourceDeleter:
             poller.result()
             print("Deleted Publisher")
         except Exception:
-            logger.error(f"Failed to delete publisher")
+            logger.error("Failed to delete publisher")
             raise

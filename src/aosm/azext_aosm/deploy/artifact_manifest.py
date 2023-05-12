@@ -38,7 +38,6 @@ class ArtifactManifestOperator:
         self.config = config
         self.store_name = store_name
         self.artifacts = self._get_artifact_list()
-        self._manifest_credentials = None
 
     @cached_property
     def _manifest_credentials(self) -> Any:
