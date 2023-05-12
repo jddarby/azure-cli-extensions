@@ -13,6 +13,3 @@ NSD = "nsd"
 VNF_DEFINITION_BICEP_SOURCE_TEMPLATE = "vnfdefinition.bicep"
 VNF_MANIFEST_BICEP_SOURCE_TEMPLATE = "vnfartifactmanifests.bicep"
 VNF_DEFINITION_OUTPUT_BICEP_PREFIX = "nfd-bicep-"
-
-# Provisioning States
-PROV_STATE_SUCCEEDED = "Succeeded"

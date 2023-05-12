@@ -5,12 +5,12 @@ from azure.cli.core.azclierror import ValidationError, InvalidArgumentValueError
 from azext_aosm.util.constants import VNF_DEFINITION_OUTPUT_BICEP_PREFIX, VNF, CNF, NSD
 
 DESCRIPTION_MAP: Dict[str, str] = {
-    "publisher_name": "Name of the Publisher resource you want you definition published to",
-    "publisher_resource_group_name": "Resource group the Publisher resource is in or you want it to be in",
+    "publisher_resource_group_name": "Resource group for the Publisher resource. Will be created if it does not exist.",
+    "publisher_name": "Name of the Publisher resource you want your definition published to. Will be created if it does not exist.",
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource",
-    "location": "Azure location of the resources",
+    "location": "Azure location to use when creating resources",
     "blob_artifact_store_name": "Name of the storage account Artifact Store resource",
     "artifact_name": "Name of the artifact",
     "file_path": (
@@ -39,7 +39,7 @@ class ArtifactConfig:
 
 
 @dataclass
-class Configuration:
+class NFConfiguration:
     publisher_name: str = DESCRIPTION_MAP["publisher_name"]
     publisher_resource_group_name: str = DESCRIPTION_MAP[
         "publisher_resource_group_name"
@@ -61,7 +61,7 @@ class Configuration:
 
 
 @dataclass
-class VNFConfiguration(Configuration):
+class VNFConfiguration(NFConfiguration):
     blob_artifact_store_name: str = DESCRIPTION_MAP["blob_artifact_store_name"]
     arm_template: Any = ArtifactConfig()
     vhd: Any = ArtifactConfig()
@@ -77,6 +77,44 @@ class VNFConfiguration(Configuration):
 
         if isinstance(self.vhd, dict):
             self.vhd = ArtifactConfig(**self.vhd)
+            self.validate()
+
+    def validate(self) -> None:
+        """
+        Validate the configuration passed in.
+
+        :raises ValidationError for any invalid config
+        """
+        if self.vhd.version == DESCRIPTION_MAP["version"]:
+            # Config has not been filled in. Don't validate.
+            return
+
+        if "." in self.vhd.version or "-" not in self.vhd.version:
+            raise ValidationError(
+                "Config validation error. VHD artifact version should be in format A-B-C"
+            )
+        if "." not in self.arm_template.version or "-" in self.arm_template.version:
+            raise ValidationError(
+                "Config validation error. ARM template artifact version should be in format A.B.C"
+            )
+        filepath_set = (
+            self.vhd.file_path and self.vhd.file_path != DESCRIPTION_MAP["file_path"]
+        )
+        sas_set = (
+            self.vhd.blob_sas_url
+            and self.vhd.blob_sas_url != DESCRIPTION_MAP["blob_sas_url"]
+        )
+        # If these are the same, either neither is set or both are, both of which are errors
+        if filepath_set == sas_set:
+            raise ValidationError(
+                "Config validation error. VHD config must have either a local filepath or a blob SAS URL"
+            )
+        elif filepath_set:
+            # Explicitly set the blob SAS URL to None to avoid other code having to
+            # check if the value is the default description
+            self.vhd.blob_sas_url = None
+        elif sas_set:
+            self.vhd.file_path = None
 
     @property
     def sa_manifest_name(self) -> str:
@@ -94,52 +132,19 @@ class VNFConfiguration(Configuration):
 
 def get_configuration(
     definition_type: str, config_as_dict: Optional[Dict[Any, Any]] = None
-) -> Configuration:
+) -> NFConfiguration:
     if config_as_dict is None:
         config_as_dict = {}
 
     if definition_type == VNF:
         config = VNFConfiguration(**config_as_dict)
     elif definition_type == CNF:
-        config = Configuration(**config_as_dict)
+        config = NFConfiguration(**config_as_dict)
     elif definition_type == NSD:
-        config = Configuration(**config_as_dict)
+        config = NFConfiguration(**config_as_dict)
     else:
         raise InvalidArgumentValueError(
             "Definition type not recognized, options are: vnf, cnf or nsd"
         )
 
     return config
-
-
-def validate_configuration(config: Configuration) -> None:
-    """
-    Validate the configuration passed in.
-
-    :param config: _description_
-    :type config: Configuration
-    """
-    # Do we want to do this validation here or pass it to the service?? If the service
-    # had good error messages I'd say let the service do the validation. But it would
-    # certainly be quicker to catch here.
-    if isinstance(config, VNFConfiguration):
-        if "." in config.vhd.version or "-" not in config.vhd.version:
-            # Not sure about raising this particular one.
-            raise ValidationError(
-                "Config validation error. VHD artifact version should be in format A-B-C"
-            )
-        if "." not in config.arm_template.version or "-" in config.arm_template.version:
-            raise ValidationError(
-                "Config validation error. ARM template artifact version should be in format A.B.C"
-            )
-
-        if not (
-            (config.vhd.file_path or config.vhd.blob_sas_url)
-            or (
-                config.vhd.file_path == DESCRIPTION_MAP["file_path"]
-                and config.vhd.blob_sas_url == DESCRIPTION_MAP["blob_sas_url"]
-            )
-        ):
-            raise ValidationError(
-                "Config validation error. VHD config must have either a local filepath or a blob SAS URL"
-            )
