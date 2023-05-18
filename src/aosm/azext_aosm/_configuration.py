@@ -2,15 +2,22 @@ from dataclasses import dataclass
 from typing import Dict, Optional, Any
 from pathlib import Path
 from azure.cli.core.azclierror import ValidationError, InvalidArgumentValueError
-from azext_aosm.util.constants import VNF_DEFINITION_OUTPUT_BICEP_PREFIX, VNF, CNF, NSD
+from azext_aosm.util.constants import (
+    VNF_DEFINITION_OUTPUT_BICEP_PREFIX,
+    VNF,
+    CNF,
+    NSD,
+    NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
+)
 
 DESCRIPTION_MAP: Dict[str, str] = {
     "publisher_resource_group_name": (
         "Resource group for the Publisher resource. Will be "
         "created if it does not exist."
     ),
-    "publisher_name": ("Name of the Publisher resource you want your definition "
-                       "published to. Will be created if it does not exist."
+    "publisher_name": (
+        "Name of the Publisher resource you want your definition "
+        "published to. Will be created if it does not exist."
     ),
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
@@ -30,6 +37,18 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Version of the artifact. For VHDs this must be in format A-B-C. "
         "For ARM templates this must be in format A.B.C"
     ),
+    "nfviSiteName": "Name of the NFVI Site",
+    "nfviSiteType": "Type of the NFVI Site",
+    "NfArmTemplateName": "Name of the NF ARM Template",
+    "cgSchemaName": "Name of the CG Schema",
+    "nsdDescription": "Description of the NSD",
+    "folder_path": "folder path",
+    "NfArmTemplateVersion": "",
+    "nsdg_name": "",
+    "nsd_version": "",
+    "resource_element_name": "",
+    "network_function_definition_group_name": "",
+    "network_function_definition_version_name": "",
 }
 
 
@@ -63,6 +82,46 @@ class NFConfiguration:
     def acr_manifest_name(self) -> str:
         """Return the ACR manifest name from the NFD name."""
         return f"{self.nf_name}-acr-manifest-{self.version.replace('.', '-')}"
+
+
+@dataclass
+class NSConfiguration:
+    publisher_name: str = DESCRIPTION_MAP["publisher_name"]
+    publisher_resource_group_name: str = DESCRIPTION_MAP[
+        "publisher_resource_group_name"
+    ]
+    acr_artifact_store_name: str = DESCRIPTION_MAP["acr_artifact_store_name"]
+    nsdg_name: str = DESCRIPTION_MAP["nsdg_name"]
+    nfviSiteName: str = DESCRIPTION_MAP["nfviSiteName"]
+    nfviSiteType: str = DESCRIPTION_MAP["nfviSiteType"]
+    nsd_version: str = DESCRIPTION_MAP["version"]
+    NfArmTemplateName: str = DESCRIPTION_MAP["NfArmTemplateName"]
+    NfArmTemplateVersion: str = DESCRIPTION_MAP["NfArmTemplateVersion"]
+    cgSchemaName: str = DESCRIPTION_MAP["cgSchemaName"]
+    nsdDescription: str = DESCRIPTION_MAP["nsdDescription"]
+    folder_path: str = DESCRIPTION_MAP["folder_path"]
+    arm_template: Any = ArtifactConfig()
+    resource_element_name: str = DESCRIPTION_MAP["resource_element_name"]
+    location: str = DESCRIPTION_MAP["location"]
+    network_function_definition_group_name: str = DESCRIPTION_MAP[
+        "network_function_definition_group_name"
+    ]
+    network_function_definition_version_name: str = DESCRIPTION_MAP[
+        "network_function_definition_version_name"
+    ]
+
+    @property
+    def build_output_folder_name(self) -> str:
+        """Return the local folder for generating the bicep template to."""
+        folder_path = self.folder_path
+        return f"{folder_path}/{NSD_DEFINITION_OUTPUT_BICEP_PREFIX}"
+
+
+@dataclass
+class SchemaConfiguration:
+    type: str
+    properties: object
+    required: list
 
 
 @dataclass
@@ -114,7 +173,7 @@ class VNFConfiguration(NFConfiguration):
             raise ValidationError(
                 "Config validation error. VHD config must have either a local filepath or a blob SAS URL"
             )
-        
+
         if filepath_set:
             # Explicitly set the blob SAS URL to None to avoid other code having to
             # check if the value is the default description
@@ -138,7 +197,7 @@ class VNFConfiguration(NFConfiguration):
 
 def get_configuration(
     definition_type: str, config_as_dict: Optional[Dict[Any, Any]] = None
-) -> NFConfiguration:
+) -> NFConfiguration or NSConfiguration:
     if config_as_dict is None:
         config_as_dict = {}
 
@@ -147,7 +206,9 @@ def get_configuration(
     elif definition_type == CNF:
         config = NFConfiguration(**config_as_dict)
     elif definition_type == NSD:
-        config = NFConfiguration(**config_as_dict)
+        config = NSConfiguration(**config_as_dict)
+    elif definition_type == "SCHEMA":
+        config = SchemaConfiguration(**config_as_dict)
     else:
         raise InvalidArgumentValueError(
             "Definition type not recognized, options are: vnf, cnf or nsd"

@@ -11,15 +11,17 @@ from knack.log import get_logger
 from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.generate_nfd.vnf_bicep_nfd_generator import VnfBicepNfdGenerator
+from azext_aosm.generate_nsd.nsd_generator import BicepNsdGenerator
 from azext_aosm.delete.delete import ResourceDeleter
 from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
-from azext_aosm.util.constants import VNF, CNF  # , NSD
+from azext_aosm.util.constants import VNF, CNF, NSD
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm._client_factory import cf_resources
 from azext_aosm._configuration import (
     get_configuration,
     NFConfiguration,
+    NSConfiguration,
 )
 
 
@@ -49,17 +51,27 @@ def build_definition(
         aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
     )
 
+    # print("Parsed Deploy Params:", parsed_deploy_params)
+    print("-----------------------------------------------------------------")
+
     # Read the config from the given file
     config = _get_config_from_file(config_file, definition_type)
+    # print("Config:", config)
 
     # Generate the NFD/NSD and the artifact manifest.
-    _generate_nfd(definition_type=definition_type, config=config)
+    # This function should not be taking deploy parameters
+    _generate_nsd(
+        config=config,
+        api_clients=api_clients,
+    )
 
+    deployer = DeployerViaArm(api_clients, config=config)
     # Publish the definition if publish is true
     if publish:
         if definition_type == VNF:
-            deployer = DeployerViaArm(api_clients, config=config)
             deployer.deploy_vnfd_from_bicep()
+        elif definition_type == NSD:
+            deployer.deploy_nsd_from_bicep()
         else:
             print("TODO - cannot publish CNF or NSD yet.")
 
@@ -81,7 +93,9 @@ def generate_definition_config(definition_type: str, output_file: str = "input.j
         logger.info(f"Empty definition configuration has been written to {output_file}")
 
 
-def _get_config_from_file(config_file: str, definition_type: str) -> NFConfiguration:
+def _get_config_from_file(
+    config_file: str, definition_type: str
+) -> NFConfiguration or NSConfiguration:
     """
     Read input config file JSON and turn it into a Configuration object.
 
@@ -91,7 +105,7 @@ def _get_config_from_file(config_file: str, definition_type: str) -> NFConfigura
     """
     with open(config_file, "r", encoding="utf-8") as f:
         config_as_dict = json.loads(f.read())
-
+    print("Config as dict:", config_as_dict)
     config = get_configuration(definition_type, config_as_dict)
     return config
 
@@ -111,6 +125,33 @@ def _generate_nfd(definition_type, config):
         )
 
     nfd_generator.generate_nfd()
+
+
+def _generate_nsd(config, api_clients):
+    """Generate a Network Service Design for the given type and config."""
+    if config:
+        nsd_generator = BicepNsdGenerator(config)
+    else:
+        from azure.cli.core.azclierror import CLIInternalError
+
+        raise CLIInternalError(
+            "Generate NFD called for unrecognised definition_type. Only VNF and CNF have been implemented."
+        )
+    deploy_parameters = _get_nfdv_deployment_parameters(config, api_clients)
+
+    nsd_generator.generate_nsd(deploy_parameters)
+
+
+def _get_nfdv_deployment_parameters(config: NSConfiguration, api_clients):
+    """Get the properties of the NFDV."""
+    NFD_object = api_clients.aosm_client.network_function_definition_versions.get(
+        resource_group_name=config.publisher_resource_group_name,
+        publisher_name=config.publisher_name,
+        network_function_definition_group_name=config.network_function_definition_group_name,
+        network_function_definition_version_name=config.network_function_definition_version_name,
+    )
+
+    return NFD_object.deploy_parameters
 
 
 def publish_definition(

@@ -67,9 +67,7 @@ class PreDeployerViaSDK:
             )
         else:
             print(f"Resource group {resource_group_name} exists.")
-            self.api_clients.resource_client.resource_groups.get(
-                resource_group_name
-            )
+            self.api_clients.resource_client.resource_groups.get(resource_group_name)
 
     def ensure_config_resource_group_exists(self) -> None:
         """
@@ -268,6 +266,21 @@ class PreDeployerViaSDK:
             self.config.publisher_resource_group_name,
             self.config.publisher_name,
             self.config.nfdg_name,
+            self.config.location,
+        )
+
+    def ensure_config_nsdg_exists(
+        self,
+    ):
+        """
+        Ensures that the Network Function Definition Group exists.
+
+        Finds the parameters from self.config
+        """
+        self.ensure_nsdg_exists(
+            self.config.publisher_resource_group_name,
+            self.config.publisher_name,
+            self.config.nsdg_name,
             self.config.location,
         )
 
