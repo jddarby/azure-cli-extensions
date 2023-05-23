@@ -69,8 +69,10 @@ class VnfBicepNfdGenerator(NFDGenerator):
         self.create_parameter_files()
         self.copy_bicep()
         print(f"Generated NFD bicep templates created in {self.folder_name}")
-        print("Please review these templates. When you are happy with them run "
-              "`az aosm nfd publish` with the same arguments.")
+        print(
+            "Please review these templates. When you are happy with them run "
+            "`az aosm nfd publish` with the same arguments."
+        )
 
     @property
     def bicep_path(self) -> Optional[str]:

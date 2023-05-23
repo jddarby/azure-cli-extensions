@@ -26,11 +26,7 @@ from azext_aosm._configuration import (
 logger = get_logger(__name__)
 
 
-def build_definition(
-    cmd,
-    definition_type: str,
-    config_file: str
-):
+def build_definition(cmd, definition_type: str, config_file: str):
     """
     Build and optionally publish a definition.
 
@@ -180,7 +176,7 @@ def generate_design_config(output_file: str = "input.json"):
 
 def _generate_config(definition_type: str, output_file: str = "input.json"):
     """
-    Generic generate config function for NFDs and NSDs
+    Generic generate config function for NFDs and NSDs.
 
     :param definition_type: CNF, VNF or NSD
     :param output_file: path to output config file, defaults to "input.json"
@@ -199,11 +195,7 @@ def _generate_config(definition_type: str, output_file: str = "input.json"):
         logger.info(f"Empty {prtName} configuration has been written to {output_file}")
 
 
-def build_design(
-    cmd,
-    client: HybridNetworkManagementClient,
-    config_file: str
-):
+def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     """
     Build and optionally publish a Network Service Design.
 
@@ -213,9 +205,7 @@ def build_design(
     :type client: HybridNetworkManagementClient
     :param config_file: path to the file
     """
-    raise NotImplementedError(
-            "Build design is not yet implented for NSD"
-    )
+    raise NotImplementedError("Build design is not yet implented for NSD")
 
 
 def delete_published_design(
@@ -225,7 +215,7 @@ def delete_published_design(
     clean=False,
 ):
     """
-    Delete a published NSD
+    Delete a published NSD.
 
     :param definition_type: CNF or VNF
     :param config_file: Path to the config file
@@ -233,9 +223,7 @@ def delete_published_design(
                   Defaults to False. Only works if no resources have those as a parent.
                     Use with care.
     """
-    raise NotImplementedError(
-            "Delete published design is not yet implented for NSD"
-    )
+    raise NotImplementedError("Delete published design is not yet implented for NSD")
 
 
 def publish_design(
@@ -252,5 +240,4 @@ def publish_design(
     :param definition_type: VNF or CNF
     :param config_file: Path to the config file for the NFDV
     """
-    raise NotImplementedError(
-            "Publishing design is not yet implemented for NSD")
+    raise NotImplementedError("Publishing design is not yet implemented for NSD")
