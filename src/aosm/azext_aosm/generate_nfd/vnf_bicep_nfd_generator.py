@@ -52,7 +52,8 @@ class VnfBicepNfdGenerator(NFDGenerator):
     def generate_nfd(self) -> None:
         """Generate a VNF NFD which comprises an group, an Artifact Manifest and a NFDV."""
         if self.bicep_path:
-            print(f"Using the existing NFD bicep template {self.bicep_path}.")
+            logger.debug(f"Found existing NFD bicep template {self.bicep_path}")
+            print(f"Found existing NFD bicep template {self.bicep_path}.")
             print(
                 f"To generate a new NFD, delete the folder {os.path.dirname(self.bicep_path)} and re-run this command."
             )
@@ -67,7 +68,9 @@ class VnfBicepNfdGenerator(NFDGenerator):
         self._create_nfd_folder()
         self.create_parameter_files()
         self.copy_bicep()
-        print(f"Generated NFD bicep template created in {self.folder_name}")
+        print(f"Generated NFD bicep templates created in {self.folder_name}")
+        print("Please review these templates. When you are happy with them run "
+              "`az aosm nfd publish` with the same arguments.")
 
     @property
     def bicep_path(self) -> Optional[str]:

@@ -28,40 +28,21 @@ logger = get_logger(__name__)
 
 def build_definition(
     cmd,
-    client: HybridNetworkManagementClient,
     definition_type: str,
-    config_file: str,
-    publish=False,
+    config_file: str
 ):
     """
     Build and optionally publish a definition.
 
     :param cmd:
-    :type cmd: _type_
-    :param client:
-    :type client: HybridNetworkManagementClient
     :param config_file: path to the file
     :param definition_type: VNF or CNF
-    :param publish: _description_, defaults to False
-    :type publish: bool, optional
     """
-    api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
-    )
-
     # Read the config from the given file
     config = _get_config_from_file(config_file, definition_type)
 
-    # Generate the NFD/NSD and the artifact manifest.
+    # Generate the NFD and the artifact manifest.
     _generate_nfd(definition_type=definition_type, config=config)
-
-    # Publish the definition if publish is true
-    if publish:
-        if definition_type == VNF:
-            deployer = DeployerViaArm(api_clients, config=config)
-            deployer.deploy_vnfd_from_bicep()
-        else:
-            print("Publishing CNF NFD is not yet implemented.")
 
 
 def generate_definition_config(definition_type: str, output_file: str = "input.json"):
@@ -150,6 +131,10 @@ def publish_definition(
             manifest_bicep_path=manifest_file,
             manifest_parameters_json_file=manifest_parameters_json_file,
         )
+    else:
+        raise NotImplementedError(
+            "Publishing of CNF definitions is not yet implemented."
+        )
 
 
 def delete_published_definition(
@@ -177,6 +162,10 @@ def delete_published_definition(
     delly = ResourceDeleter(api_clients, config)
     if definition_type == VNF:
         delly.delete_vnf(clean=clean)
+    else:
+        raise NotImplementedError(
+            "Deleting of published CNF definitions is not yet implemented."
+        )
 
 
 def generate_design_config(output_file: str = "input.json"):
@@ -213,8 +202,7 @@ def _generate_config(definition_type: str, output_file: str = "input.json"):
 def build_design(
     cmd,
     client: HybridNetworkManagementClient,
-    config_file: str,
-    publish=False,
+    config_file: str
 ):
     """
     Build and optionally publish a Network Service Design.
@@ -224,11 +212,10 @@ def build_design(
     :param client:
     :type client: HybridNetworkManagementClient
     :param config_file: path to the file
-    :param publish: _description_, defaults to False
-    :type publish: bool, optional
     """
-    print("Build design is not yet implented for NSD")
-    pass
+    raise NotImplementedError(
+            "Build design is not yet implented for NSD"
+    )
 
 
 def delete_published_design(
@@ -246,8 +233,9 @@ def delete_published_design(
                   Defaults to False. Only works if no resources have those as a parent.
                     Use with care.
     """
-    print("Delete published design is not yet implented for NSD")
-    pass
+    raise NotImplementedError(
+            "Delete published design is not yet implented for NSD"
+    )
 
 
 def publish_design(
@@ -264,5 +252,5 @@ def publish_design(
     :param definition_type: VNF or CNF
     :param config_file: Path to the config file for the NFDV
     """
-    print("Publishing design is not yet implemented for NSD")
-    pass
+    raise NotImplementedError(
+            "Publishing design is not yet implemented for NSD")

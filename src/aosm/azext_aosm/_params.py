@@ -33,11 +33,6 @@ def load_arguments(self: AzCommandsLoader, _):
             help="The path to the configuration file.",
         )
         c.argument(
-            "publish",
-            arg_type=get_three_state_flag(),
-            help="Publishes generated AOSM definition.",
-        )
-        c.argument(
             "clean",
             arg_type=get_three_state_flag(),
             help="Also delete artifact stores, NFD Group and Publisher. Use with care.",
