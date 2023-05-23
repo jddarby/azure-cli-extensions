@@ -17,10 +17,10 @@ Eventually the extension will be published through the usual process and it will
 installed as usual, via `az extension add --name aosm`
 
 Until then, the latest development version can be found here:
-https://github.com/jddarby/azure-cli-extensions/releases/download/aosm-extension/aosm-0.1.0-py2.py3-none-any.whl
+https://github.com/jddarby/azure-cli-extensions/releases/download/aosm-extension/aosm-0.2.0-py2.py3-none-any.whl
 
 To install, download this wheel and run:
-`az extension add --source path/to/aosm-0.1.0-py2.py3-none-any.whl`
+`az extension add --source path/to/aosm-0.2.0-py2.py3-none-any.whl`
 
 ## Updating 
 
