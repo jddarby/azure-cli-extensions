@@ -75,19 +75,7 @@ def load_arguments(self: AzCommandsLoader, _):
             help="The path to the configuration file.",
         )
         c.argument(
-            "publish",
-            arg_type=get_three_state_flag(),
-            help="Publishes generated AOSM definition.",
-        )
-        c.argument(
             "clean",
             arg_type=get_three_state_flag(),
             help="Also delete artifact stores, NFD Group and Publisher. Use with care.",
-        )
-        c.argument(
-            "definition_file",
-            options_list=["--definition-file", "-b"],
-            type=file_type,
-            completer=FilesCompleter(allowednames="*.json"),
-            help="Optional path to a bicep file to publish. Use to override publish of the built definition with an alternative file.",
         )
