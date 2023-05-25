@@ -18,6 +18,9 @@ from azext_aosm._configuration import NSConfiguration
 from azext_aosm.util.constants import (
     NSD_DEFINITION_BICEP_SOURCE_TEMPLATE,
     NSD_DEFINITION_BICEP_FILE,
+    NF_TEMPLATE_BICEP_FILE,
+    NF_DEFINITION_BICEP_FILE,
+    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
 )
 
 from jinja2 import Template
@@ -40,6 +43,7 @@ class BicepNsdGenerator:
     def __init__(self, config: NSConfiguration):
         self.config = config
         self.bicep_template_name = NSD_DEFINITION_BICEP_SOURCE_TEMPLATE
+        self.nf_template_name = NF_TEMPLATE_BICEP_FILE
 
         # self.arm_template_path = self.config.arm_template.file_path
         self.folder_name = self.config.build_output_folder_name
@@ -64,7 +68,9 @@ class BicepNsdGenerator:
 
         self._create_nsd_folder()
         self.create_parameter_files()
-        self.generate_bicep()
+        self.write_nsd_manifest()
+        self.write_nf_bicep()
+        self.write_nsd_bicep()
         print(f"Generated NFD bicep template created in {self.folder_name}")
 
     @property
@@ -166,29 +172,62 @@ class BicepNsdGenerator:
 
         logger.debug(f"{template_parameters_path} created")
 
-    def generate_bicep(self) -> None:
-        """Copy the bicep templates into the build output folder."""
+    def write_nf_bicep(self) -> None:
+        bicep_params = ""
+
+        bicep_deploymentValues = ""
+
+        deploy_properties = json.loads(self.deploy_parameters)
+        deploy_properties = deploy_properties["properties"]
+
+        for key, value in deploy_properties.items():
+            bicep_params += f"param {key} {value['type']}\n"
+            bicep_deploymentValues += f"  {key}: {key}\n"
+
+        self.generate_bicep(
+            self.nf_template_name,
+            NF_DEFINITION_BICEP_FILE,
+            {"bicep_params": bicep_params, "deploymentValues": bicep_deploymentValues},
+        )
+
+    def write_nsd_bicep(self) -> None:
+        params = {
+            "nfviSiteName": self.config.nfviSiteName,
+            "NfArmTemplateName": self.config.NfArmTemplateName,
+            "NfArmTemplateVersion": self.config.NfArmTemplateVersion,
+            "cgSchemaName": self.config.cgSchemaName,
+            "nsdDescription": self.config.nsdDescription,
+            "nfviSiteType": self.config.nfviSiteType,
+            "nfviSiteType": self.config.nfviSiteType,
+            "ResourceElementName": self.config.resource_element_name,
+        }
+
+        self.generate_bicep(self.bicep_template_name, NSD_DEFINITION_BICEP_FILE, params)
+
+    def write_nsd_manifest(self) -> None:
+        """Write out the NSD manifest file."""
+        logger.debug("Create NSD manifest")
+
+        self.generate_bicep(
+            "artifact_manifest_template.bicep", NSD_ARTIFACT_MANIFEST_BICEP_FILE, {}
+        )
+
+    def generate_bicep(self, template_name, created_bicep_file_name, params) -> None:
+        """Render the bicep templates with the correct parameters and copy them into the build output folder."""
 
         code_dir = os.path.dirname(__file__)
 
-        bicep_path = os.path.join(code_dir, "templates", self.bicep_template_name)
+        bicep_template_path = os.path.join(code_dir, "templates", template_name)
 
-        with open(bicep_path, "r") as file:
-            bicep_data = file.read()
+        with open(bicep_template_path, "r") as file:
+            bicep_contents = file.read()
 
-        bicep_data = Template(bicep_data)
+        bicep_template = Template(bicep_contents)
 
-        rendered_template = bicep_data.render(
-            nfviSiteName=self.config.nfviSiteName,
-            NfArmTemplateName=self.config.NfArmTemplateName,
-            NfArmTemplateVersion=self.config.NfArmTemplateVersion,
-            cgSchemaName=self.config.cgSchemaName,
-            nsdDescription=self.config.nsdDescription,
-            nfviSiteType=self.config.nfviSiteType,
-            ResourceElementName=self.config.resource_element_name,
-        )
+        # Render all the relevant parameters in the bicep template
+        rendered_template = bicep_template.render(**params)
 
-        new_bicep_path = os.path.join(self.folder_name, NSD_DEFINITION_BICEP_FILE)
+        bicep_file_build_path = os.path.join(self.folder_name, created_bicep_file_name)
 
-        with open(new_bicep_path, "w") as file:
+        with open(bicep_file_build_path, "w") as file:
             file.write(rendered_template)

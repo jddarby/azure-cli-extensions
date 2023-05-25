@@ -21,7 +21,11 @@ from azext_aosm.util.constants import (
     VNF_DEFINITION_BICEP_SOURCE_TEMPLATE,
     VNF_MANIFEST_BICEP_SOURCE_TEMPLATE,
     NSD_DEFINITION_BICEP_FILE,
+    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
+    NF_DEFINITION_BICEP_FILE,
+    NF_DEFINITION_JSON_FILE,
 )
+import time
 
 
 logger = get_logger(__name__)
@@ -188,18 +192,29 @@ class DeployerViaArm:
 
         :param config: The contents of the configuration file.
         """
-        assert isinstance(self.config, VNFConfiguration)
-        return {
-            "publisherName": {"value": self.config.publisher_name},
-            "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-            "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
-            "acrManifestName": {"value": self.config.acr_manifest_name},
-            "saManifestName": {"value": self.config.sa_manifest_name},
-            "vhdName": {"value": self.config.vhd.artifact_name},
-            "vhdVersion": {"value": self.config.vhd.version},
-            "armTemplateName": {"value": self.config.arm_template.artifact_name},
-            "armTemplateVersion": {"value": self.config.arm_template.version},
-        }
+        if isinstance(self.config, VNFConfiguration):
+            return {
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
+                "acrManifestName": {"value": self.config.acr_manifest_name},
+                "saManifestName": {"value": self.config.sa_manifest_name},
+                "vhdName": {"value": self.config.vhd.artifact_name},
+                "vhdVersion": {"value": self.config.vhd.version},
+                "armTemplateName": {"value": self.config.arm_template.artifact_name},
+                "armTemplateVersion": {"value": self.config.arm_template.version},
+            }
+        elif isinstance(self.config, NSConfiguration):
+            return {
+                ## TODO: figure out why does the dot notation not work here and it works for Sunny
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "acrManifestName": {"value": self.config.acr_manifest_name},
+                "armTemplateName": {"value": self.config.arm_template["artifact_name"]},
+                "armTemplateVersion": {"value": self.config.arm_template["version"]},
+            }
+        else:
+            raise ValueError("Unknown configuration type")
 
     def deploy_nsd_from_bicep(
         self,
@@ -241,13 +256,34 @@ class DeployerViaArm:
             # User has not passed in parameters file, so we use the parameters required
             # from config for the default bicep template produced from building the
             # NFDV using this CLI
-            logger.debug("Create parameters for default NFDV template.")
+            logger.debug("Create parameters for default NSDV template.")
             parameters = self.construct_nsd_parameters()
 
         logger.debug(parameters)
 
         # Create or check required resources
-        self.nsd_predeploy()
+        deploy_manifest_template = not self.nsd_predeploy()
+        if deploy_manifest_template:
+            print(f"Deploy bicep template for Artifact manifests")
+            logger.debug("Deploy manifest bicep")
+            if not manifest_bicep_path:
+                manifest_bicep_path = os.path.join(
+                    self.config.build_output_folder_name,
+                    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
+                )
+            if not manifest_parameters_json_file:
+                manifest_params = self.construct_manifest_parameters()
+            else:
+                logger.info("Use provided manifest parameters")
+                with open(manifest_parameters_json_file, "r", encoding="utf-8") as f:
+                    manifest_params = json.loads(f.read())
+            self.deploy_bicep_template(manifest_bicep_path, manifest_params)
+        else:
+            print("TODO")
+            # print(
+            #     f"Artifact manifests exist for NSD {self.config.nf_name} "
+            #     f"version {self.config.version}"
+            # )
 
         message = (
             f"Deploy bicep template for NSD {self.config.NfArmTemplateName} version {self.config.NfArmTemplateVersion} "
@@ -260,28 +296,31 @@ class DeployerViaArm:
         print(
             f"Deployed NSD {self.config.NfArmTemplateName} version {self.config.NfArmTemplateVersion}."
         )
+        acr_manifest = ArtifactManifestOperator(
+            self.config,
+            self.api_clients,
+            self.config.acr_artifact_store_name,
+            self.config.acr_manifest_name,
+        )
 
-        # storage_account_manifest = ArtifactManifestOperator(
-        #     self.config,
-        #     self.api_clients,
-        #     self.config.blob_artifact_store_name,
-        #     self.config.sa_manifest_name,
-        # )
-        # acr_manifest = ArtifactManifestOperator(
-        #     self.config,
-        #     self.api_clients,
-        #     self.config.acr_artifact_store_name,
-        #     self.config.acr_manifest_name,
-        # )
+        arm_template_artifact = acr_manifest.artifacts[0]
 
-        # vhd_artifact = storage_account_manifest.artifacts[0]
-        # arm_template_artifact = acr_manifest.artifacts[0]
+        ## Convert the NF bicep to ARM
+        arm_template_artifact_json = self.convert_bicep_to_arm(
+            os.path.join(self.config.build_output_folder_name, NF_DEFINITION_BICEP_FILE)
+        )
 
-        # print("Uploading VHD artifact")
-        # vhd_artifact.upload(self.config.vhd)
-        # print("Uploading ARM template artifact")
-        # arm_template_artifact.upload(self.config.arm_template)
-        # print("Done")
+        arm_template_artifact_path = os.path.join(
+            self.config.build_output_folder_name, NF_DEFINITION_JSON_FILE
+        )
+
+        with open(arm_template_artifact_path, "w") as file:
+            file.write(json.dumps(arm_template_artifact_json, indent=4))
+
+        self.config.arm_template["file_path"] = arm_template_artifact_path
+        print("Uploading ARM template artifact")
+        arm_template_artifact.upload(self.config.arm_template)
+        print("Done")
 
     def nsd_predeploy(self) -> bool:
         """
@@ -294,7 +333,7 @@ class DeployerViaArm:
         self.pre_deployer.ensure_config_publisher_exists()
         self.pre_deployer.ensure_acr_artifact_store_exists()
         self.pre_deployer.ensure_config_nsdg_exists()
-        return
+        return self.pre_deployer.do_config_artifact_manifests_exist()
 
     def construct_nsd_parameters(self) -> Dict[str, Any]:
         """
@@ -364,7 +403,11 @@ class DeployerViaArm:
         :raise RuntimeError if validation or deploy fails
         :return: Output dictionary from the bicep template.
         """
-        deployment_name = f"nfd_into_{resource_group}"
+        # Get current time from the time module and remove all digits after the decimal point
+        current_time = str(time.time()).split(".")[0]
+
+        ## TODO: CHANGE THIS NAME. This should also have a timestamp, otherwise it will be overwritten by the next deployment
+        deployment_name = f"nfd_into_{resource_group}_{current_time}"
 
         validation = self.api_clients.resource_client.deployments.begin_validate(
             resource_group_name=resource_group,

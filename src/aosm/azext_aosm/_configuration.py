@@ -49,6 +49,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "resource_element_name": "",
     "network_function_definition_group_name": "",
     "network_function_definition_version_name": "",
+    "acr_manifest_name": "",
 }
 
 
@@ -109,6 +110,7 @@ class NSConfiguration:
     network_function_definition_version_name: str = DESCRIPTION_MAP[
         "network_function_definition_version_name"
     ]
+    acr_manifest_name: str = DESCRIPTION_MAP["acr_manifest_name"]
 
     @property
     def build_output_folder_name(self) -> str:

@@ -105,7 +105,6 @@ def _get_config_from_file(
     """
     with open(config_file, "r", encoding="utf-8") as f:
         config_as_dict = json.loads(f.read())
-    print("Config as dict:", config_as_dict)
     config = get_configuration(definition_type, config_as_dict)
     return config
 
