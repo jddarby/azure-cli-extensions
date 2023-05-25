@@ -18,7 +18,7 @@ except ImportError:
 
 # TODO: Confirm this is the right version number you want and it matches your
 # HISTORY.rst entry.
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 # The full list of classifiers is available at
 # https://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -35,7 +35,7 @@ CLASSIFIERS = [
 ]
 
 # TODO: Add any additional SDK dependencies here
-DEPENDENCIES = ["oras~=0.1.17", "azure-storage-blob>=12.15.0"]
+DEPENDENCIES = ["oras~=0.1.17", "azure-storage-blob>=12.15.0", "jinja2>=3.1.2"]
 
 with open("README.md", "r", encoding="utf-8") as f:
     README = f.read()

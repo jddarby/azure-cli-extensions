@@ -4,14 +4,21 @@
 # --------------------------------------------------------------------------------------------
 
 import json
+import os
+import shutil
 from dataclasses import asdict
 from typing import Optional
 from knack.log import get_logger
+from azure.cli.core.azclierror import (
+    CLIInternalError,
+    InvalidArgumentValueError,
+    UnclassifiedUserFault,
+)
 
 from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.generate_nfd.vnf_bicep_nfd_generator import VnfBicepNfdGenerator
 from azext_aosm.generate_nsd.nsd_generator import BicepNsdGenerator
+from azext_aosm.generate_nfd.vnf_nfd_generator import VnfNfdGenerator
 from azext_aosm.delete.delete import ResourceDeleter
 from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
 from azext_aosm.util.constants import VNF, CNF, NSD
@@ -69,6 +76,12 @@ def _get_config_from_file(
     :param definition_type: VNF, CNF or NSD
     :rtype: Configuration
     """
+
+    if not os.path.exists(config_file):
+        raise InvalidArgumentValueError(
+            f"Config file {config_file} not found. Please specify a valid config file path."
+        )
+
     with open(config_file, "r", encoding="utf-8") as f:
         config_as_dict = json.loads(f.read())
     config = get_configuration(definition_type, config_as_dict)
@@ -79,16 +92,21 @@ def _generate_nfd(definition_type, config):
     """Generate a Network Function Definition for the given type and config."""
     nfd_generator: NFDGenerator
     if definition_type == VNF:
-        nfd_generator = VnfBicepNfdGenerator(config)
+        nfd_generator = VnfNfdGenerator(config)
     elif definition_type == CNF:
         nfd_generator = CnfNfdGenerator(config)
     else:
-        from azure.cli.core.azclierror import CLIInternalError
-
         raise CLIInternalError(
             "Generate NFD called for unrecognised definition_type. Only VNF and CNF have been implemented."
         )
+    if nfd_generator.bicep_path:
+        carry_on = input(
+            f"The folder {os.path.dirname(nfd_generator.bicep_path)} already exists - delete it and continue? (y/n)"
+        )
+        if carry_on != "y":
+            raise UnclassifiedUserFault("User aborted! ")
 
+        shutil.rmtree(os.path.dirname(nfd_generator.bicep_path))
     nfd_generator.generate_nfd()
 
 
@@ -105,22 +123,37 @@ def publish_definition(
     """
     Publish a generated definition.
 
+    :param cmd: :param client: :type client: HybridNetworkManagementClient :param
+    definition_type: VNF or CNF :param config_
+    file:
+    Path to the config file for the NFDV    :param definition_file: Optional path to a
+    bicep template to deploy, in case the user                       wants to edit the
+    built NFDV template. If omitted, the default                       built NFDV
+    template will be used.    :param parameters_json_
+    file:
+    Optional path to a parameters file for the bicep file,                      in case
+    the user wants to edit the built NFDV template. If                      omitted,
+    parameters from config will be turned into parameters                      for the
+    bicep file    :param manifest_
+    file:
+    Optional path to an override bicep template to deploy
+    manifests    :param manifest_parameters_json_
+    file:
     :param cmd:
     :param client:
     :type client: HybridNetworkManagementClient
     :param definition_type: VNF or CNF
     :param config_file: Path to the config file for the NFDV
-    :param definition_file: Optional path to a bicep template to deploy, in case the user
-                       wants to edit the built NFDV template. If omitted, the default
-                       built NFDV template will be used.
+    :param definition_file: Optional path to a bicep template to deploy, in case the
+        user        wants to edit the built NFDV template. If omitted, the default
+        built NFDV template will be used.
     :param parameters_json_file: Optional path to a parameters file for the bicep file,
-                      in case the user wants to edit the built NFDV template. If
-                      omitted, parameters from config will be turned into parameters
-                      for the bicep file
+        in case the user wants to edit the built NFDV template. If       omitted,
+        parameters from config will be turned into parameters       for the bicep file
     :param manifest_file: Optional path to an override bicep template to deploy
-                          manifests
+        manifests
     :param manifest_parameters_json_file: Optional path to an override bicep parameters
-                                          file for manifest parameters
+        file for manifest parameters
     """
     print("Publishing definition.")
     api_clients = ApiClients(
@@ -137,7 +170,8 @@ def publish_definition(
         )
     else:
         raise NotImplementedError(
-            "Publishing of CNF definitions is not yet implemented."
+            "Publishing of CNF definitions is not yet implemented. \
+            You should manually deploy your bicep file and upload charts and images to your artifact store. "
         )
 
 
@@ -154,8 +188,8 @@ def delete_published_definition(
     :param definition_type: CNF or VNF
     :param config_file: Path to the config file
     :param clean: if True, will delete the NFDG, artifact stores and publisher too.
-                  Defaults to False. Only works if no resources have those as a parent.
-                    Use with care.
+        Defaults to False. Only works if no resources have those as a parent.     Use
+        with care.
     """
     config = _get_config_from_file(config_file, definition_type)
 

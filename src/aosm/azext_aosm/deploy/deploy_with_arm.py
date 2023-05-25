@@ -13,17 +13,17 @@ import tempfile
 from knack.log import get_logger
 from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
 from azext_aosm.util.management_clients import ApiClients
-from azure.mgmt.resource.resources.v2021_04_01.models import DeploymentExtended
+from azure.mgmt.resource.resources.models import DeploymentExtended
 
 from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
 from azext_aosm._configuration import NFConfiguration, NSConfiguration, VNFConfiguration
 from azext_aosm.util.constants import (
-    VNF_DEFINITION_BICEP_SOURCE_TEMPLATE,
-    VNF_MANIFEST_BICEP_SOURCE_TEMPLATE,
     NSD_DEFINITION_BICEP_FILE,
     NSD_ARTIFACT_MANIFEST_BICEP_FILE,
     NF_DEFINITION_BICEP_FILE,
     NF_DEFINITION_JSON_FILE,
+    VNF_DEFINITION_BICEP_TEMPLATE,
+    VNF_MANIFEST_BICEP_TEMPLATE,
 )
 import time
 
@@ -67,12 +67,19 @@ class DeployerViaArm:
 
         Also ensure that all required predeploy resources are deployed.
 
+        :param bicep_template_path: The path to the bicep template of the nfdv :type
+        bicep_template_path: str :parameters_json_
+        file:
+        path to an override file of set parameters for the nfdv        :param
+        manifest_bicep_path: The path to the bicep template of the manifest
+        :manifest_parameters_json_
+        file:
         :param bicep_template_path: The path to the bicep template of the nfdv
         :type bicep_template_path: str
         :parameters_json_file: path to an override file of set parameters for the nfdv
         :param manifest_bicep_path: The path to the bicep template of the manifest
         :manifest_parameters_json_file: path to an override file of set parameters for
-                                        the manifest
+                the manifest
         """
         assert isinstance(self.config, VNFConfiguration)
 
@@ -81,7 +88,7 @@ class DeployerViaArm:
             # one produced from building the NFDV using this CLI
             bicep_path = os.path.join(
                 self.config.build_output_folder_name,
-                VNF_DEFINITION_BICEP_SOURCE_TEMPLATE,
+                VNF_DEFINITION_BICEP_TEMPLATE,
             )
 
         if parameters_json_file:
@@ -108,7 +115,7 @@ class DeployerViaArm:
             if not manifest_bicep_path:
                 manifest_bicep_path = os.path.join(
                     self.config.build_output_folder_name,
-                    VNF_MANIFEST_BICEP_SOURCE_TEMPLATE,
+                    VNF_MANIFEST_BICEP_TEMPLATE,
                 )
             if not manifest_parameters_json_file:
                 manifest_params = self.construct_manifest_parameters()
@@ -358,8 +365,8 @@ class DeployerViaArm:
         Deploy a bicep template.
 
         :param bicep_template_path: Path to the bicep template
-        :param parameters: Parameters for the bicep template
-        :return Any output that the template produces
+        :param parameters: Parameters for the bicep template         :return Any output
+                that the template produces
         """
         logger.info("Deploy %s", bicep_template_path)
         arm_template_json = self.convert_bicep_to_arm(bicep_template_path)
@@ -399,8 +406,7 @@ class DeployerViaArm:
         :param template: The JSON contents of the template to deploy
         :param parameters: The JSON contents of the parameters file
         :param resource_group: The name of the resource group that has been deployed
-
-        :raise RuntimeError if validation or deploy fails
+                :raise RuntimeError if validation or deploy fails
         :return: Output dictionary from the bicep template.
         """
         # Get current time from the time module and remove all digits after the decimal point
@@ -482,8 +488,7 @@ class DeployerViaArm:
         Convert a bicep template into an ARM template.
 
         :param bicep_template_path: The path to the bicep template to be converted
-
-        :raise RuntimeError if az CLI is not installed.
+                :raise RuntimeError if az CLI is not installed.
         :return: Output dictionary from the bicep template.
         """
         if not shutil.which("az"):

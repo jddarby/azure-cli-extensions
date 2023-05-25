@@ -10,9 +10,6 @@ CNF = "cnf"
 NSD = "nsd"
 
 # Names of files used in the repo
-VNF_DEFINITION_BICEP_SOURCE_TEMPLATE = "vnfdefinition.bicep"
-VNF_MANIFEST_BICEP_SOURCE_TEMPLATE = "vnfartifactmanifests.bicep"
-VNF_DEFINITION_OUTPUT_BICEP_PREFIX = "nfd-bicep-"
 NSD_DEFINITION_BICEP_SOURCE_TEMPLATE = "nsd_template.bicep"
 NSD_DEFINITION_BICEP_FILE = "nsd_definition.bicep"
 NF_TEMPLATE_BICEP_FILE = "nf_template.bicep"
@@ -21,3 +18,31 @@ NF_DEFINITION_JSON_FILE = "nf_defitinion.json"
 NSD_DEFINITION_OUTPUT_BICEP_PREFIX = "nsd-bicep-templates"
 NSD_ARTIFACT_MANIFEST_BICEP_FILE = "artifact_manifest.bicep"
 NSD_ARTIFACT_MANIFEST_JSON_FILE = "artifact_manifest.json"
+DEFINITION_OUTPUT_BICEP_PREFIX = "nfd-bicep-"
+
+VNF_DEFINITION_BICEP_TEMPLATE = "vnfdefinition.bicep"
+VNF_MANIFEST_BICEP_TEMPLATE = "vnfartifactmanifests.bicep"
+
+CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE = "cnfdefinition.bicep.j2"
+CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE = "cnfartifactmanifest.bicep.j2"
+CNF_DEFINITION_BICEP_TEMPLATE = "cnfdefinition.bicep"
+CNF_MANIFEST_BICEP_TEMPLATE = "cnfartifactmanifest.bicep"
+
+DEPLOYMENT_PARAMETERS = "deploymentParameters.json"
+# Names of folder used in the repo
+CONFIG_MAPPINGS = "configMappings"
+SCHEMAS = "schemas"
+
+# Deployment Schema
+
+SCHEMA_PREFIX = {
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "DeployParametersSchema",
+    "type": "object",
+    "properties": {},
+}
+IMAGE_LINE_REGEX = (
+    r"image: \{\{ .Values.(.+?) \}\}/(.+?):(\d+\.\d+\.\d+(-\w+)?(\.\d+)?)"
+)
+IMAGE_PULL_SECRET_LINE_REGEX = r"imagePullSecrets: \[name: \{\{ .Values.(.+?) \}\}\]"
+DEPLOYMENT_PARAMETER_MAPPING_REGEX = r"\{deployParameters.(.+?)\}"

@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from typing import Dict, Optional, Any
+from dataclasses import dataclass, field
+from typing import Dict, Optional, Any, List
 from pathlib import Path
 from azure.cli.core.azclierror import ValidationError, InvalidArgumentValueError
 from azext_aosm.util.constants import (
-    VNF_DEFINITION_OUTPUT_BICEP_PREFIX,
+    DEFINITION_OUTPUT_BICEP_PREFIX,
     VNF,
     CNF,
     NSD,
@@ -50,6 +50,14 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "network_function_definition_group_name": "",
     "network_function_definition_version_name": "",
     "acr_manifest_name": "",
+    "helm_package_name": "Name of the Helm package",
+    "path_to_chart": (
+        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz"
+    ),
+    "helm_depends_on": (
+        "Names of the Helm packages this package depends on. "
+        "Leave as an empty array if no dependencies"
+    ),
 }
 
 
@@ -192,9 +200,36 @@ class VNFConfiguration(NFConfiguration):
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
         arm_template_path = self.arm_template.file_path
-        return (
-            f"{VNF_DEFINITION_OUTPUT_BICEP_PREFIX}{Path(str(arm_template_path)).stem}"
-        )
+        return f"{DEFINITION_OUTPUT_BICEP_PREFIX}{Path(str(arm_template_path)).stem}"
+
+
+@dataclass
+class HelmPackageConfig:
+    name: str = DESCRIPTION_MAP["helm_package_name"]
+    path_to_chart: str = DESCRIPTION_MAP["path_to_chart"]
+    depends_on: List[str] = field(
+        default_factory=lambda: [DESCRIPTION_MAP["helm_depends_on"]]
+    )
+
+
+@dataclass
+class CNFConfiguration(NFConfiguration):
+    helm_packages: List[Any] = field(default_factory=lambda: [HelmPackageConfig()])
+
+    def __post_init__(self):
+        """
+        Cope with deserializing subclasses from dicts to HelmPackageConfig.
+
+        Used when creating CNFConfiguration object from a loaded json config file.
+        """
+        for package in self.helm_packages:
+            if isinstance(package, dict):
+                package = HelmPackageConfig(**dict(package))
+
+    @property
+    def build_output_folder_name(self) -> str:
+        """Return the local folder for generating the bicep template to."""
+        return f"{DEFINITION_OUTPUT_BICEP_PREFIX}{self.nf_name}"
 
 
 def get_configuration(
@@ -206,7 +241,7 @@ def get_configuration(
     if definition_type == VNF:
         config = VNFConfiguration(**config_as_dict)
     elif definition_type == CNF:
-        config = NFConfiguration(**config_as_dict)
+        config = CNFConfiguration(**config_as_dict)
     elif definition_type == NSD:
         config = NSConfiguration(**config_as_dict)
     elif definition_type == "SCHEMA":

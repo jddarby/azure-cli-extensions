@@ -8,7 +8,7 @@ from knack.log import get_logger
 
 from azure.core import exceptions as azure_exceptions
 from azure.cli.core.azclierror import AzCLIError
-from azure.mgmt.resource.resources.v2022_09_01.models import ResourceGroup
+from azure.mgmt.resource.resources.models import ResourceGroup
 
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks.models import (
@@ -51,10 +51,10 @@ class PreDeployerViaSDK:
         Checks whether a particular resource group exists on the subscription.
         Copied from virtutils.
 
-        :param resource_group_name: The name of the resource group
-
-        Raises a NotFoundError exception if the resource group does not exist.
-        Raises a PermissionsError exception if we don't have permissions to check resource group existence.
+        :param resource_group_name: The name of the resource group          Raises a
+                NotFoundError exception if the resource group does not exist. Raises a
+                PermissionsError exception if we don't have permissions to check
+                resource group existence.
         """
         if not self.api_clients.resource_client.resource_groups.check_existence(
             resource_group_name
