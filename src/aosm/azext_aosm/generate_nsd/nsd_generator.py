@@ -71,7 +71,11 @@ class BicepNsdGenerator:
         self.write_nsd_manifest()
         self.write_nf_bicep()
         self.write_nsd_bicep()
-        print(f"Generated NFD bicep template created in {self.folder_name}")
+        print(f"Generated NSD bicep template created in {self.folder_name}")
+        print(
+            "Please review these templates. When you are happy with them run "
+            "`az aosm nsd publish` with the same arguments."
+        )
 
     @property
     def bicep_path(self) -> Optional[str]:
