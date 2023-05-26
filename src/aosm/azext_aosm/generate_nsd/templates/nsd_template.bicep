@@ -5,10 +5,8 @@
 //
 // Requires an existing NFDV from which the values will be populated.
 
-//TODO: change the location
-param location string = 'eastus'
+param location string
 @description('Name of an existing publisher, expected to be in the resource group where you deploy the template')
-// TBC How we support public/proxy publisher
 param publisherName string
 @description('Name of an existing ACR-backed Artifact Store, deployed under the publisher.')
 param acrArtifactStoreName string
@@ -25,7 +23,7 @@ var NfArmTemplateName = '{{NfArmTemplateName}}'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created. 
-resource publisher 'Microsoft.HybridNetwork/publishers@2022-09-01-preview' existing = {
+resource publisher 'Microsoft.HybridNetwork/publishers@2023-04-01-preview' existing = {
   name: publisherName
   scope: resourceGroup()
 }
@@ -33,13 +31,13 @@ resource publisher 'Microsoft.HybridNetwork/publishers@2022-09-01-preview' exist
 // The artifact store is the resource in which all the artifacts required to deploy the NF are stored. 
 // You can either create one especially for SIMPL or share a manifest with other NSDs. In this example
 // the artifact store is expected to be shared and should be created upfront.
-resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2022-09-01-preview' existing = {
+resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-04-01-preview' existing = {
   parent: publisher
   name: acrArtifactStoreName
 }
 
 // Created up-front, the NSD Group is the parent resource under which all NSD versions will be created.
-resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2022-09-01-preview' existing = {
+resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2023-04-01-preview' existing = {
   parent: publisher
   name: nsDesignGroup
 }
@@ -47,10 +45,7 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
 // The configuration group schema defines the configuration required to deploy the NSD. The NSD references this object in the
 // `configurationgroupsSchemaReferences` and references the values in the schema in the `parameterValues`.
 // The operator will create a config group values object that will satisfy this schema.
-// Note that "default" fields in the CGSCschema are only defaults because simpl-nf-template.bicep 
-// sets those defaults, and simpl config mappings are passed as an object rather
-// than individual values, so some items are not mandatory.
-resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2022-09-01-preview' = {
+resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-04-01-preview' = {
   parent: publisher
   name: '{{cgSchemaName}}'
   location: location
@@ -60,7 +55,7 @@ resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@
 }
 
 // The NSD version
-resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups/networkservicedesignversions@2022-09-01-preview' = {
+resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups/networkservicedesignversions@2023-04-01-preview' = {
   parent: nsdGroup
   name: nsDesignVersion
   location: location
@@ -71,10 +66,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     versionState: 'Preview'
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
-    // Note that "default" fields in the CGSCschema are only defaults because simpl-vm-disk-template.bicep and simpl-nf-template.bicep 
-    // sets those defaults, and simpl config mappings are passed as an object rather
-    // than individual values, so some items are not mandatory.
-    configurationgroupsSchemaReferences: {
+    configurationGroupSchemaReferences: {
       {{cgSchemaName}}: {
         id: cgSchema.id
       }
@@ -88,7 +80,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     }
     // This field lists the templates that will be deployed by AOSM and the config mappings
     // to the values in the CG schemas.
-    resourceElementsTemplates: [
+    resourceElementTemplates: [
       {
         name: '{{ResourceElementName}}'
         // The type of resource element can be ArmResourceDefinition, ConfigurationDefinition or NetworkFunctionDefinition.
