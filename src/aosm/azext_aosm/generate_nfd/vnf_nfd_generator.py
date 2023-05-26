@@ -24,7 +24,7 @@ from azext_aosm.util.constants import (
     CONFIG_MAPPINGS,
     SCHEMAS,
     SCHEMA_PREFIX,
-    DEPLOYMENT_PARAMETERS
+    DEPLOYMENT_PARAMETERS,
 )
 
 
@@ -51,7 +51,9 @@ class VnfNfdGenerator(NFDGenerator):
         self.arm_template_path = self.config.arm_template.file_path
         self.output_folder_name = self.config.build_output_folder_name
 
-        self._bicep_path = os.path.join(self.output_folder_name, self.bicep_template_name)
+        self._bicep_path = os.path.join(
+            self.output_folder_name, self.bicep_template_name
+        )
         self._manifest_path = os.path.join(
             self.output_folder_name, self.manifest_template_name
         )
@@ -64,7 +66,6 @@ class VnfNfdGenerator(NFDGenerator):
         Create a bicep template for an NFD from the ARM template for the VNF.
         """
 
-        
         # Create temporary folder.
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.tmp_folder_name = tmpdirname
@@ -123,15 +124,13 @@ class VnfNfdGenerator(NFDGenerator):
         nfd_parameters: Dict[str, Any] = {
             key: {"type": self.vm_parameters[key]["type"]} for key in self.vm_parameters
         }
-    
-        deployment_parameters_path = os.path.join(
-            folder_path, DEPLOYMENT_PARAMETERS
-        )
+
+        deployment_parameters_path = os.path.join(folder_path, DEPLOYMENT_PARAMETERS)
 
         # Heading for the deployParameters schema
         deploy_parameters_full: Dict[str, Any] = SCHEMA_PREFIX
         deploy_parameters_full["properties"].update(nfd_parameters)
-        
+
         with open(deployment_parameters_path, "w") as _file:
             _file.write(json.dumps(deploy_parameters_full, indent=4))
 
@@ -184,26 +183,32 @@ class VnfNfdGenerator(NFDGenerator):
     def copy_to_output_folder(self) -> None:
         """Copy the bicep templates, config mappings and schema into the build output folder."""
         code_dir = os.path.dirname(__file__)
-        
+
         logger.info("Create NFD bicep %s", self.output_folder_name)
-        os.mkdir(self.output_folder_name) 
-             
+        os.mkdir(self.output_folder_name)
+
         bicep_path = os.path.join(code_dir, "templates", self.bicep_template_name)
         shutil.copy(bicep_path, self.output_folder_name)
-        
+
         manifest_path = os.path.join(code_dir, "templates", self.manifest_template_name)
         shutil.copy(manifest_path, self.output_folder_name)
-        
-        os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))  
-        tmp_schema_path = os.path.join(self.tmp_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS)
-        output_schema_path = os.path.join(self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS)
+
+        os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
+        tmp_schema_path = os.path.join(
+            self.tmp_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
+        )
+        output_schema_path = os.path.join(
+            self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
+        )
         shutil.copy(
             tmp_schema_path,
             output_schema_path,
         )
-        
+
         tmp_config_mappings_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS)
-        output_config_mappings_path = os.path.join(self.output_folder_name, CONFIG_MAPPINGS)
+        output_config_mappings_path = os.path.join(
+            self.output_folder_name, CONFIG_MAPPINGS
+        )
         shutil.copytree(
             tmp_config_mappings_path,
             output_config_mappings_path,

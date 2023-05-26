@@ -7,6 +7,7 @@ from azext_aosm.util.constants import (
     VNF,
     CNF,
     NSD,
+    SCHEMA,
     NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
 )
 
@@ -95,6 +96,7 @@ class NFConfiguration:
 
 @dataclass
 class NSConfiguration:
+    ## TODO: clean this up
     publisher_name: str = DESCRIPTION_MAP["publisher_name"]
     publisher_resource_group_name: str = DESCRIPTION_MAP[
         "publisher_resource_group_name"
@@ -233,18 +235,19 @@ class CNFConfiguration(NFConfiguration):
 
 
 def get_configuration(
-    definition_type: str, config_as_dict: Optional[Dict[Any, Any]] = None
+    configuration_type: str, config_as_dict: Optional[Dict[Any, Any]] = None
 ) -> NFConfiguration or NSConfiguration:
     if config_as_dict is None:
         config_as_dict = {}
 
-    if definition_type == VNF:
+    if configuration_type == VNF:
         config = VNFConfiguration(**config_as_dict)
-    elif definition_type == CNF:
+    elif configuration_type == CNF:
         config = CNFConfiguration(**config_as_dict)
-    elif definition_type == NSD:
+    elif configuration_type == NSD:
         config = NSConfiguration(**config_as_dict)
-    elif definition_type == "SCHEMA":
+    ## TODO: do I actually need this SCHEMA config?
+    elif configuration_type == SCHEMA:
         config = SchemaConfiguration(**config_as_dict)
     else:
         raise InvalidArgumentValueError(

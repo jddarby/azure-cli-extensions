@@ -8,6 +8,9 @@
 VNF = "vnf"
 CNF = "cnf"
 NSD = "nsd"
+SCHEMA = "schema"
+
+## TODO: clean up these names
 
 # Names of files used in the repo
 NSD_DEFINITION_BICEP_SOURCE_TEMPLATE = "nsd_template.bicep"
@@ -19,6 +22,8 @@ NSD_DEFINITION_OUTPUT_BICEP_PREFIX = "nsd-bicep-templates"
 NSD_ARTIFACT_MANIFEST_BICEP_FILE = "artifact_manifest.bicep"
 NSD_ARTIFACT_MANIFEST_JSON_FILE = "artifact_manifest.json"
 DEFINITION_OUTPUT_BICEP_PREFIX = "nfd-bicep-"
+NSD_CONFIG_MAPPING_FILE = "configMappings.json"
+NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE = "artifact_manifest_template.bicep"
 
 VNF_DEFINITION_BICEP_TEMPLATE = "vnfdefinition.bicep"
 VNF_MANIFEST_BICEP_TEMPLATE = "vnfartifactmanifests.bicep"
@@ -32,6 +37,7 @@ DEPLOYMENT_PARAMETERS = "deploymentParameters.json"
 # Names of folder used in the repo
 CONFIG_MAPPINGS = "configMappings"
 SCHEMAS = "schemas"
+TEMPLATES = "templates"
 
 # Deployment Schema
 

@@ -24,6 +24,8 @@ from azext_aosm.util.constants import (
     NF_DEFINITION_JSON_FILE,
     VNF_DEFINITION_BICEP_TEMPLATE,
     VNF_MANIFEST_BICEP_TEMPLATE,
+    NSD,
+    VNF,
 )
 import time
 
@@ -110,20 +112,9 @@ class DeployerViaArm:
         # Create or check required resources
         deploy_manifest_template = not self.vnfd_predeploy()
         if deploy_manifest_template:
-            print(f"Deploy bicep template for Artifact manifests")
-            logger.debug("Deploy manifest bicep")
-            if not manifest_bicep_path:
-                manifest_bicep_path = os.path.join(
-                    self.config.build_output_folder_name,
-                    VNF_MANIFEST_BICEP_TEMPLATE,
-                )
-            if not manifest_parameters_json_file:
-                manifest_params = self.construct_manifest_parameters()
-            else:
-                logger.info("Use provided manifest parameters")
-                with open(manifest_parameters_json_file, "r", encoding="utf-8") as f:
-                    manifest_params = json.loads(f.read())
-            self.deploy_bicep_template(manifest_bicep_path, manifest_params)
+            self.deploy_manifest_template(
+                manifest_parameters_json_file, manifest_bicep_path, VNF
+            )
         else:
             print(
                 f"Artifact manifests exist for NFD {self.config.nf_name} "
@@ -195,9 +186,7 @@ class DeployerViaArm:
 
     def construct_manifest_parameters(self) -> Dict[str, Any]:
         """
-        Create the parmeters dictionary for vnfdefinitions.bicep. VNF specific.
-
-        :param config: The contents of the configuration file.
+        Create the parmeters dictionary for VNF or NSD.
         """
         if isinstance(self.config, VNFConfiguration):
             return {
@@ -242,11 +231,12 @@ class DeployerViaArm:
         :manifest_parameters_json_file: path to an override file of set parameters for
                                         the manifest
         """
+        ##TODO: check the above
         assert isinstance(self.config, NSConfiguration)
 
         if not bicep_path:
             # User has not passed in a bicep template, so we are deploying the default
-            # one produced from building the NFDV using this CLI
+            # one produced from building the NSDV using this CLI
             bicep_path = os.path.join(
                 self.config.build_output_folder_name,
                 NSD_DEFINITION_BICEP_FILE,
@@ -262,7 +252,7 @@ class DeployerViaArm:
         else:
             # User has not passed in parameters file, so we use the parameters required
             # from config for the default bicep template produced from building the
-            # NFDV using this CLI
+            # NSDV using this CLI
             logger.debug("Create parameters for default NSDV template.")
             parameters = self.construct_nsd_parameters()
 
@@ -270,30 +260,16 @@ class DeployerViaArm:
 
         # Create or check required resources
         deploy_manifest_template = not self.nsd_predeploy()
+
         if deploy_manifest_template:
-            print(f"Deploy bicep template for Artifact manifests")
-            logger.debug("Deploy manifest bicep")
-            if not manifest_bicep_path:
-                manifest_bicep_path = os.path.join(
-                    self.config.build_output_folder_name,
-                    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-                )
-            if not manifest_parameters_json_file:
-                manifest_params = self.construct_manifest_parameters()
-            else:
-                logger.info("Use provided manifest parameters")
-                with open(manifest_parameters_json_file, "r", encoding="utf-8") as f:
-                    manifest_params = json.loads(f.read())
-            self.deploy_bicep_template(manifest_bicep_path, manifest_params)
+            self.deploy_manifest_template(
+                manifest_parameters_json_file, manifest_bicep_path, NSD
+            )
         else:
-            print("TODO")
-            # print(
-            #     f"Artifact manifests exist for NSD {self.config.nf_name} "
-            #     f"version {self.config.version}"
-            # )
+            print(f"Artifact manifests {self.config.acr_manifest_name} already exists")
 
         message = (
-            f"Deploy bicep template for NSD {self.config.NfArmTemplateName} version {self.config.NfArmTemplateVersion} "
+            f"Deploy bicep template for NSDV {self.config.NfArmTemplateVersion} "
             f"into {self.config.publisher_resource_group_name} under publisher "
             f"{self.config.publisher_name}"
         )
@@ -329,11 +305,44 @@ class DeployerViaArm:
         arm_template_artifact.upload(self.config.arm_template)
         print("Done")
 
+    def deploy_manifest_template(
+        self, manifest_parameters_json_file, manifest_bicep_path, configuration_type
+    ) -> None:
+        """
+        Deploy the bicep template defining the manifest.
+
+        :param manifest_parameters_json_file: path to an override file of set parameters
+                                                for the manifest
+        :param manifest_bicep_path: The path to the bicep template of the manifest
+        :param configuration_type: The type of configuration to deploy
+        """
+        print(f"Deploy bicep template for Artifact manifests")
+        logger.debug("Deploy manifest bicep")
+
+        if not manifest_bicep_path:
+            if configuration_type == NSD:
+                file_name = NSD_ARTIFACT_MANIFEST_BICEP_FILE
+            elif configuration_type == VNF:
+                file_name = VNF_MANIFEST_BICEP_TEMPLATE
+
+            manifest_bicep_path = os.path.join(
+                self.config.build_output_folder_name,
+                file_name,
+            )
+        if not manifest_parameters_json_file:
+            manifest_params = self.construct_manifest_parameters()
+        else:
+            logger.info("Use provided manifest parameters")
+            with open(manifest_parameters_json_file, "r", encoding="utf-8") as f:
+                manifest_params = json.loads(f.read())
+        self.deploy_bicep_template(manifest_bicep_path, manifest_params)
+
     def nsd_predeploy(self) -> bool:
         """
-        All the predeploy steps for a VNF. Create publisher, artifact stores and NFDG.
+        All the predeploy steps for a NSD. Check if the RG, publisher, ACR, NSDG and
+        artifact manifest exist.
 
-        VNF specific return True if artifact manifest already exists, False otherwise
+        Return True if artifact manifest already exists, False otherwise
         """
         logger.debug("Ensure all required resources exist")
         self.pre_deployer.ensure_config_resource_group_exists()
@@ -344,9 +353,7 @@ class DeployerViaArm:
 
     def construct_nsd_parameters(self) -> Dict[str, Any]:
         """
-        Create the parmeters dictionary for vnfdefinitions.bicep. VNF specific.
-
-        :param config: The contents of the configuration file.
+        Create the parmeters dictionary for nsd_definition.bicep.
         """
         assert isinstance(self.config, NSConfiguration)
         return {
