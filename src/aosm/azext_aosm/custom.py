@@ -304,6 +304,7 @@ def publish_design(
     :param client:
     :type client: HybridNetworkManagementClient
     :param config_file: Path to the config file for the NSDV
+    :param design_file: Optional path to an override bicep template to deploy the NSDV.
     :param parameters_json_file: Optional path to a parameters file for the bicep file,
                       in case the user wants to edit the built NSDV template. If
                       omitted, parameters from config will be turned into parameters
@@ -313,8 +314,6 @@ def publish_design(
     :param manifest_parameters_json_file: Optional path to an override bicep parameters
                         file for manifest parameters
     """
-
-    ##TODO: check the above
 
     print("Publishing design.")
     api_clients = ApiClients(
@@ -354,7 +353,5 @@ def _get_nfdv_deployment_parameters(config: NSConfiguration, api_clients):
         network_function_definition_group_name=config.network_function_definition_group_name,
         network_function_definition_version_name=config.network_function_definition_version_name,
     )
-
-    ## TODO: should I have some type checking here to make sure that NFD_object has deploy parameters?
 
     return NFDV_object.deploy_parameters

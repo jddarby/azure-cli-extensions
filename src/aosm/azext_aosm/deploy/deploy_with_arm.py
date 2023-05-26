@@ -202,12 +202,12 @@ class DeployerViaArm:
             }
         elif isinstance(self.config, NSConfiguration):
             return {
-                ## TODO: figure out why does the dot notation not work here and it works for Sunny
+                "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "acrManifestName": {"value": self.config.acr_manifest_name},
-                "armTemplateName": {"value": self.config.arm_template["artifact_name"]},
-                "armTemplateVersion": {"value": self.config.arm_template["version"]},
+                "armTemplateName": {"value": self.config.arm_template.artifact_name},
+                "armTemplateVersion": {"value": self.config.arm_template.version},
             }
         else:
             raise ValueError("Unknown configuration type")
@@ -228,10 +228,9 @@ class DeployerViaArm:
         :type bicep_template_path: str
         :parameters_json_file: path to an override file of set parameters for the nfdv
         :param manifest_bicep_path: The path to the bicep template of the manifest
-        :manifest_parameters_json_file: path to an override file of set parameters for
+        :param manifest_parameters_json_file: path to an override file of set parameters for
                                         the manifest
         """
-        ##TODO: check the above
         assert isinstance(self.config, NSConfiguration)
 
         if not bicep_path:
@@ -300,7 +299,7 @@ class DeployerViaArm:
         with open(arm_template_artifact_path, "w") as file:
             file.write(json.dumps(arm_template_artifact_json, indent=4))
 
-        self.config.arm_template["file_path"] = arm_template_artifact_path
+        self.config.arm_template.file_path = arm_template_artifact_path
         print("Uploading ARM template artifact")
         arm_template_artifact.upload(self.config.arm_template)
         print("Done")
@@ -357,6 +356,7 @@ class DeployerViaArm:
         """
         assert isinstance(self.config, NSConfiguration)
         return {
+            "location": {"value": self.config.location},
             "publisherName": {"value": self.config.publisher_name},
             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
             "nsDesignGroup": {"value": self.config.nsdg_name},
@@ -419,8 +419,8 @@ class DeployerViaArm:
         # Get current time from the time module and remove all digits after the decimal point
         current_time = str(time.time()).split(".")[0]
 
-        ## TODO: CHANGE THIS NAME. This should also have a timestamp, otherwise it will be overwritten by the next deployment
-        deployment_name = f"nfd_into_{resource_group}_{current_time}"
+        # Add a timestamp to the deployment name to ensure it is unique
+        deployment_name = f"AOSM_CLI_deployment_into_{resource_group}_{current_time}"
 
         validation = self.api_clients.resource_client.deployments.begin_validate(
             resource_group_name=resource_group,

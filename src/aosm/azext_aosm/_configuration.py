@@ -59,6 +59,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Names of the Helm packages this package depends on. "
         "Leave as an empty array if no dependencies"
     ),
+    "network_function_name": "Name of the Network Function",
 }
 
 
@@ -96,7 +97,7 @@ class NFConfiguration:
 
 @dataclass
 class NSConfiguration:
-    ## TODO: clean this up
+    ## TODO pk5: clean this up
     publisher_name: str = DESCRIPTION_MAP["publisher_name"]
     publisher_resource_group_name: str = DESCRIPTION_MAP[
         "publisher_resource_group_name"
@@ -121,19 +122,22 @@ class NSConfiguration:
         "network_function_definition_version_name"
     ]
     acr_manifest_name: str = DESCRIPTION_MAP["acr_manifest_name"]
+    network_function_name: str = DESCRIPTION_MAP["nf_name"]
+
+    def __post_init__(self):
+        """
+        Cope with deserializing subclasses from dicts to ArtifactConfig.
+
+        Used when creating VNFConfiguration object from a loaded json config file.
+        """
+        if isinstance(self.arm_template, dict):
+            self.arm_template = ArtifactConfig(**self.arm_template)
 
     @property
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
         folder_path = self.folder_path
         return f"{folder_path}/{NSD_DEFINITION_OUTPUT_BICEP_PREFIX}"
-
-
-@dataclass
-class SchemaConfiguration:
-    type: str
-    properties: object
-    required: list
 
 
 @dataclass
@@ -246,9 +250,6 @@ def get_configuration(
         config = CNFConfiguration(**config_as_dict)
     elif configuration_type == NSD:
         config = NSConfiguration(**config_as_dict)
-    ## TODO: do I actually need this SCHEMA config?
-    elif configuration_type == SCHEMA:
-        config = SchemaConfiguration(**config_as_dict)
     else:
         raise InvalidArgumentValueError(
             "Definition type not recognized, options are: vnf, cnf or nsd"

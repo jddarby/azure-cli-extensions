@@ -1,35 +1,31 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Highly Confidential Material
 //
-// The template that the NSD invokes to create the SIMPL NF from a published NFDV. 
-// Should be built to ARM (json) and uploaded to the artifact store for the NSDV using the 
-// artifact manifest
-@description('Publisher where the SIMPL NFD is published')
+// The template that the NSD invokes to create the Network Function from a published NFDV. 
+
+@description('Publisher where the NFD is published')
 param publisherName string
 
-@description('NFD Group name for the SIMPL NFD')
+@description('NFD Group name for the Network Function')
 param networkFunctionDefinitionGroupName string
 
-@description('NFD version for the SIMPL NFDV')
+@description('NFD version')
 param networkFunctionDefinitionVersion string
 
-@description('Offering location for the SIMPL NF')
+@description('Offering location for the Network Function')
 param networkFunctionDefinitionOfferingLocation string
 
 param resourceGroupId string = resourceGroup().id
-param location string = resourceGroup().location
+param location string
 
 {{bicep_params}}
 
-// Defined in simpl-nfd/configMappings/simplTemplateParameters.json
 var deploymentValues = {
   {{deploymentValues}}
 }
 
-// deploys single resource (NF which is SIMPL)
-resource simpl_nf_resource 'Microsoft.HybridNetwork/networkFunctions@2022-09-01-preview' = {
-  //TODO: this was different
-  name: 'simplVMName-nf'
+resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-preview' = {
+  name: '{{network_function_name}}'
   location: location
   properties: {
     publisherName: publisherName
@@ -38,7 +34,7 @@ resource simpl_nf_resource 'Microsoft.HybridNetwork/networkFunctions@2022-09-01-
     networkFunctionDefinitionVersion: networkFunctionDefinitionVersion
     networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation//
     nfviType: 'AzureCore'
-    nfviId: resourceGroupId//
+    nfviId: resourceGroupId
     allowSoftwareUpdate: true
     deploymentValues: string(deploymentValues)
   }

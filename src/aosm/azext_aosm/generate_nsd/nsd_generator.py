@@ -91,15 +91,6 @@ class NSDGenerator:
         logger.info("Create NFD bicep %s", self.build_folder_name)
         os.mkdir(self.build_folder_name)
 
-    # TODO: check if this is used
-    @cached_property
-    def vm_parameters(self) -> Dict[str, Any]:
-        """The parameters from the VM ARM template."""
-        with open(self.arm_template_path, "r") as _file:
-            parameters: Dict[str, Any] = json.load(_file)["parameters"]
-
-        return parameters
-
     def create_parameter_files(self) -> None:
         """Create the Schema and configMappings json files."""
         schemas_folder_path = os.path.join(self.build_folder_name, SCHEMAS)
@@ -163,7 +154,11 @@ class NSDGenerator:
         self.generate_bicep(
             self.nf_bicep_template_name,
             NF_DEFINITION_BICEP_FILE,
-            {"bicep_params": bicep_params, "deploymentValues": bicep_deploymentValues},
+            {
+                "bicep_params": bicep_params,
+                "deploymentValues": bicep_deploymentValues,
+                "network_function_name": self.config.network_function_name,
+            },
         )
 
     def write_nsd_bicep(self) -> None:

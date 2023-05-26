@@ -112,7 +112,6 @@ class ResourceDeleter:
         self.delete_config_group_schema()
 
         if clean:
-            # TODO: test if this works
             logger.info("Delete called for all resources.")
             self.delete_nsdg()
             self.delete_artifact_store("acr")
@@ -142,7 +141,6 @@ class ResourceDeleter:
         assert isinstance(self.config, NSConfiguration)
         message = f"Delete NDV {self.config.nsd_version} from group {self.config.nsdg_name} and publisher {self.config.publisher_name}"
         logger.debug(message)
-        # TODO: shouldn't we have some default logging level that displays to the console?
         print(message)
         try:
             poller = self.api_clients.aosm_client.network_service_design_versions.begin_delete(
