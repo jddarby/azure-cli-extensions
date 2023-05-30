@@ -100,7 +100,7 @@ class ResourceDeleter:
                 return
         else:
             print(
-                f"Are you sure you want to delete the NSD Version {self.config.nsd_version}, the associated manifest {self.config.acr_manifest_name} and configuration group schema {self.config.cgSchemaName}?"
+                f"Are you sure you want to delete the NSD Version {self.config.nsd_version}, the associated manifest {self.config.acr_manifest_name} and configuration group schema {self.config.cg_schema_name}?"
             )
             print("There is no undo. Type 'delete' to confirm")
             if not input_ack("delete", "Confirm delete:"):
@@ -139,7 +139,7 @@ class ResourceDeleter:
 
     def delete_nsdv(self):
         assert isinstance(self.config, NSConfiguration)
-        message = f"Delete NDV {self.config.nsd_version} from group {self.config.nsdg_name} and publisher {self.config.publisher_name}"
+        message = f"Delete NSDV {self.config.nsd_version} from group {self.config.nsdg_name} and publisher {self.config.publisher_name}"
         logger.debug(message)
         print(message)
         try:
@@ -150,7 +150,7 @@ class ResourceDeleter:
                 network_service_design_version_name=self.config.nsd_version,
             )
             poller.result()
-            print("Deleted NFDV.")
+            print("Deleted NSDV.")
         except Exception:
             logger.error(
                 f"Failed to delete NSDV {self.config.nsd_version} from group {self.config.nsdg_name}"
@@ -289,7 +289,7 @@ class ResourceDeleter:
         """
         Delete the Configuration Group Schema.
         """
-        message = f"Delete Configuration Group Schema {self.config.cgSchemaName}"
+        message = f"Delete Configuration Group Schema {self.config.cg_schema_name}"
         logger.debug(message)
         print(message)
         try:
@@ -297,7 +297,7 @@ class ResourceDeleter:
                 self.api_clients.aosm_client.configuration_group_schemas.begin_delete(
                     resource_group_name=self.config.publisher_resource_group_name,
                     publisher_name=self.config.publisher_name,
-                    configuration_group_schema_name=self.config.cgSchemaName,
+                    configuration_group_schema_name=self.config.cg_schema_name,
                 )
             )
             poller.result()

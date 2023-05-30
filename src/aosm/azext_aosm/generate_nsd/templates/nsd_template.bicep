@@ -15,11 +15,11 @@ param nsDesignGroup string
 @description('The version of the NSDV you want to create, in format A-B-C')
 param nsDesignVersion string
 @description('Name of the nfvi site')
-param nfviSiteName string = '{{nfviSiteName}}'
+param nfviSiteName string = '{{nfvi_site_name}}'
 @description('The version that you want to name the NF template artifact, in format A-B-C. e.g. 6-13-0. Suggestion that this matches as best possible the SIMPL released version. If testing for development, you can use any numbers you like.')
-param NfArmTemplateVersion string = '{{NfArmTemplateVersion}}'
+param armTemplateVersion string = '{{armTemplateVersion}}'
 @description('Name of the NF template artifact')
-var NfArmTemplateName = '{{NfArmTemplateName}}'
+var acrManifestName = '{{acr_manifest_name}}'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created. 
@@ -47,10 +47,10 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
 // The operator will create a config group values object that will satisfy this schema.
 resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-04-01-preview' = {
   parent: publisher
-  name: '{{cgSchemaName}}'
+  name: '{{cg_schema_name}}'
   location: location
   properties: {
-    schemaDefinition: string(loadJsonContent('schemas/{{cgSchemaName}}.json'))
+    schemaDefinition: string(loadJsonContent('schemas/{{cg_schema_name}}.json'))
   }
 }
 
@@ -60,14 +60,14 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
   name: nsDesignVersion
   location: location
   properties: {
-    description: '{{nsdDescription}}'
+    description: '{{nsdv_description}}'
     // The version state can be Preview, Active or Deprecated.
     // Once in an Active state, the NSDV becomes immutable.
     versionState: 'Preview'
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
-      {{cgSchemaName}}: {
+      {{cg_schema_name}}: {
         id: cgSchema.id
       }
     }
@@ -92,8 +92,8 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             artifactStoreReference: {
               id: acrArtifactStore.id
             }
-            artifactName:  NfArmTemplateName
-            artifactVersion: NfArmTemplateVersion
+            artifactName:  acrManifestName
+            artifactVersion: armTemplateVersion
           }
           templateType: 'ArmTemplate'
           // The parameter values map values from the CG schema, to values required by the template

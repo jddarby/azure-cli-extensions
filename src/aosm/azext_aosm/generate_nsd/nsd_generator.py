@@ -107,9 +107,9 @@ class NSDGenerator:
 
         :param folder_path: The folder to put this file in.
         """
-        logger.debug(f"Create {self.config.cgSchemaName}.json")
+        logger.debug(f"Create {self.config.cg_schema_name}.json")
 
-        schema_path = os.path.join(folder_path, f"{self.config.cgSchemaName}.json")
+        schema_path = os.path.join(folder_path, f"{self.config.cg_schema_name}.json")
 
         with open(schema_path, "w") as _file:
             _file.write(self.deploy_parameters)
@@ -128,7 +128,7 @@ class NSDGenerator:
 
         logger.debug("Create configMappings.json")
         config_mappings = {
-            key: f"{{{self.config.cgSchemaName}.{key}}}" for key in deploy_properties
+            key: f"{{{self.config.cg_schema_name}.{key}}}" for key in deploy_properties
         }
 
         config_mappings_path = os.path.join(folder_path, NSD_CONFIG_MAPPING_FILE)
@@ -164,13 +164,12 @@ class NSDGenerator:
     def write_nsd_bicep(self) -> None:
         """Write out the NSD bicep file."""
         params = {
-            "nfviSiteName": self.config.nfviSiteName,
-            "NfArmTemplateName": self.config.NfArmTemplateName,
-            "NfArmTemplateVersion": self.config.NfArmTemplateVersion,
-            "cgSchemaName": self.config.cgSchemaName,
-            "nsdDescription": self.config.nsdDescription,
-            "nfviSiteType": self.config.nfviSiteType,
-            "nfviSiteType": self.config.nfviSiteType,
+            "nfvi_site_name": self.config.nfvi_site_name,
+            "acr_manifest_name": self.config.acr_manifest_name,
+            "armTemplateVersion": self.config.arm_template.version,
+            "cg_schema_name": self.config.cg_schema_name,
+            "nsdv_description": self.config.nsdv_description,
+            "nfviSiteType": self.config.nfvi_site_type,
             "ResourceElementName": self.config.resource_element_name,
         }
 

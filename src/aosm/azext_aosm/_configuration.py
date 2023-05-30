@@ -20,10 +20,14 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Name of the Publisher resource you want your definition "
         "published to. Will be created if it does not exist."
     ),
+    "publisher_name_nsd": (
+        "Name of the Publisher resource you want your definition published to."
+    ),
+    "publisher_resource_group_name_nsd": ("Resource group for the Publisher resource."),
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource. Will be created if it does not exist.",
-    "location": "Azure location to use when creating resources",
+    "location": "Azure location to use when creating resources.",
     "blob_artifact_store_name": "Name of the storage account Artifact Store resource. Will be created if it does not exist.",
     "artifact_name": "Name of the artifact",
     "file_path": (
@@ -38,19 +42,16 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Version of the artifact. For VHDs this must be in format A-B-C. "
         "For ARM templates this must be in format A.B.C"
     ),
-    "nfviSiteName": "Name of the NFVI Site",
-    "nfviSiteType": "Type of the NFVI Site",
-    "NfArmTemplateName": "Name of the NF ARM Template",
-    "cgSchemaName": "Name of the CG Schema",
-    "nsdDescription": "Description of the NSD",
-    "folder_path": "folder path",
-    "NfArmTemplateVersion": "",
-    "nsdg_name": "",
-    "nsd_version": "",
-    "resource_element_name": "",
-    "network_function_definition_group_name": "",
-    "network_function_definition_version_name": "",
-    "acr_manifest_name": "",
+    "nfvi_site_name": "Name of the NFVI Site",
+    "nfvi_site_type": "Type of the NFVI Site",
+    "cg_schema_name": "Name of the CG Schema to be deployed. This defined the configuration required to deploy the NSD",
+    "nsdv_description": "Description of the NSDV",
+    "bicep_output_folder_path": "Path to the folder where you would like to create the bicep templates folder.",
+    "nsdg_name": "Network Service Design Group Name. This is the collection of Network Service Design Versions. Will be "
+    "created if it does not exist.",
+    "nsd_version": "Version of the NSD to be created. This should be in the format A.B.C",
+    "network_function_definition_group_name": "Exising Network Function Definition Group Name. This can be created using the 'az aosm nfd' commands.",
+    "network_function_definition_version_name": "Exising Network Function Definition Version Name. This can be created using the 'az aosm nfd' commands.",
     "helm_package_name": "Name of the Helm package",
     "path_to_chart": (
         "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz"
@@ -70,6 +71,14 @@ class ArtifactConfig:
     # you change the descriptions.
     file_path: Optional[str] = DESCRIPTION_MAP["file_path"]
     blob_sas_url: Optional[str] = DESCRIPTION_MAP["blob_sas_url"]
+    version: str = DESCRIPTION_MAP["artifact_version"]
+
+
+@dataclass
+class ArtifactConfigNsd:
+    artifact_name: str = DESCRIPTION_MAP["artifact_name"]
+    # artifact.py checks for the presence of the default descriptions, change there if
+    # you change the descriptions.
     version: str = DESCRIPTION_MAP["artifact_version"]
 
 
@@ -97,32 +106,27 @@ class NFConfiguration:
 
 @dataclass
 class NSConfiguration:
-    ## TODO pk5: clean this up
-    publisher_name: str = DESCRIPTION_MAP["publisher_name"]
+    location: str = DESCRIPTION_MAP["location"]
+    publisher_name: str = DESCRIPTION_MAP["publisher_name_nsd"]
     publisher_resource_group_name: str = DESCRIPTION_MAP[
-        "publisher_resource_group_name"
+        "publisher_resource_group_name_nsd"
     ]
     acr_artifact_store_name: str = DESCRIPTION_MAP["acr_artifact_store_name"]
-    nsdg_name: str = DESCRIPTION_MAP["nsdg_name"]
-    nfviSiteName: str = DESCRIPTION_MAP["nfviSiteName"]
-    nfviSiteType: str = DESCRIPTION_MAP["nfviSiteType"]
-    nsd_version: str = DESCRIPTION_MAP["version"]
-    NfArmTemplateName: str = DESCRIPTION_MAP["NfArmTemplateName"]
-    NfArmTemplateVersion: str = DESCRIPTION_MAP["NfArmTemplateVersion"]
-    cgSchemaName: str = DESCRIPTION_MAP["cgSchemaName"]
-    nsdDescription: str = DESCRIPTION_MAP["nsdDescription"]
-    folder_path: str = DESCRIPTION_MAP["folder_path"]
-    arm_template: Any = ArtifactConfig()
-    resource_element_name: str = DESCRIPTION_MAP["resource_element_name"]
-    location: str = DESCRIPTION_MAP["location"]
     network_function_definition_group_name: str = DESCRIPTION_MAP[
         "network_function_definition_group_name"
     ]
     network_function_definition_version_name: str = DESCRIPTION_MAP[
         "network_function_definition_version_name"
     ]
-    acr_manifest_name: str = DESCRIPTION_MAP["acr_manifest_name"]
+    nsdg_name: str = DESCRIPTION_MAP["nsdg_name"]
+    nfvi_site_name: str = DESCRIPTION_MAP["nfvi_site_name"]
+    nfvi_site_type: str = DESCRIPTION_MAP["nfvi_site_type"]
+    nsd_version: str = DESCRIPTION_MAP["nsd_version"]
+    cg_schema_name: str = DESCRIPTION_MAP["cg_schema_name"]
+    nsdv_description: str = DESCRIPTION_MAP["nsdv_description"]
     network_function_name: str = DESCRIPTION_MAP["nf_name"]
+    bicep_output_folder_path: str = DESCRIPTION_MAP["bicep_output_folder_path"]
+    arm_template: Any = ArtifactConfigNsd()
 
     def __post_init__(self):
         """
@@ -136,8 +140,19 @@ class NSConfiguration:
     @property
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
-        folder_path = self.folder_path
+        folder_path = self.bicep_output_folder_path
         return f"{folder_path}/{NSD_DEFINITION_OUTPUT_BICEP_PREFIX}"
+
+    @property
+    def resource_element_name(self) -> str:
+        """Return the name of the resource element."""
+        artifact_name = self.arm_template.artifact_name
+        return f"{artifact_name}-resource-element"
+
+    @property
+    def acr_manifest_name(self) -> str:
+        """Return the ACR manifest name from the NFD name."""
+        return f"{self.network_function_name.replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
 
 
 @dataclass

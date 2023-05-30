@@ -270,7 +270,7 @@ class DeployerViaArm:
             print(f"Artifact manifests {self.config.acr_manifest_name} already exists")
 
         message = (
-            f"Deploy bicep template for NSDV {self.config.NfArmTemplateVersion} "
+            f"Deploy bicep template for NSDV {self.config.nsd_version} "
             f"into {self.config.publisher_resource_group_name} under publisher "
             f"{self.config.publisher_name}"
         )
@@ -278,7 +278,7 @@ class DeployerViaArm:
         logger.info(message)
         self.deploy_bicep_template(bicep_path, parameters)
         print(
-            f"Deployed NSD {self.config.NfArmTemplateName} version {self.config.NfArmTemplateVersion}."
+            f"Deployed NSD {self.config.acr_manifest_name} version {self.config.nsd_version}."
         )
         acr_manifest = ArtifactManifestOperator(
             self.config,
@@ -363,8 +363,8 @@ class DeployerViaArm:
             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
             "nsDesignGroup": {"value": self.config.nsdg_name},
             "nsDesignVersion": {"value": self.config.nsd_version},
-            "nfviSiteName": {"value": self.config.nfviSiteName},
-            "NfArmTemplateVersion": {"value": self.config.NfArmTemplateVersion},
+            "nfviSiteName": {"value": self.config.nfvi_site_name},
+            "armTemplateVersion": {"value": self.config.arm_template.version},
         }
 
     def deploy_bicep_template(
