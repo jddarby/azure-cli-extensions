@@ -22,7 +22,6 @@ def load_arguments(self: AzCommandsLoader, _):
     # Set the argument context so these options are only available when this specific command
     # is called.
 
-    ## TODO pk5: Add some of these things to the README
     with self.argument_context("aosm nfd") as c:
         c.argument(
             "definition_type", arg_type=definition_type, help="Type of AOSM definition."
