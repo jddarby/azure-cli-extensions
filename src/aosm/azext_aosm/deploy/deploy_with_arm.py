@@ -174,6 +174,7 @@ class DeployerViaArm:
         """
         assert isinstance(self.config, VNFConfiguration)
         return {
+            "location": {"value": self.config.location},
             "publisherName": {"value": self.config.publisher_name},
             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
             "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
@@ -190,6 +191,7 @@ class DeployerViaArm:
         """
         if isinstance(self.config, VNFConfiguration):
             return {
+                "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
