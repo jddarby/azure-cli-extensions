@@ -128,7 +128,8 @@ class NSDGenerator:
 
         logger.debug("Create configMappings.json")
         config_mappings = {
-            key: f"{{{self.config.cg_schema_name}.{key}}}" for key in deploy_properties
+            key: f"{{configurationparameters('{self.config.cg_schema_name}').{key}}}"
+            for key in deploy_properties
         }
 
         config_mappings_path = os.path.join(folder_path, NSD_CONFIG_MAPPING_FILE)

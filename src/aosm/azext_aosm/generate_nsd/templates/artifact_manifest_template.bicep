@@ -31,7 +31,7 @@ resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/
     artifacts: [
       {
         artifactName: armTemplateName
-        artifactType: 'ArmTemplate'
+        artifactType: 'OCIArtifact'
         artifactVersion: armTemplateVersion
       }
     ]
