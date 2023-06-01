@@ -21,7 +21,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "published to. Will be created if it does not exist."
     ),
     "publisher_name_nsd": (
-        "Name of the Publisher resource you want your definition published to."
+        "Name of the Publisher resource you want your design published to."
     ),
     "publisher_resource_group_name_nsd": ("Resource group for the Publisher resource."),
     "nf_name": "Name of NF definition",

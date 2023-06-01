@@ -32,7 +32,7 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-previe
     publisherScope: 'Private'
     networkFunctionDefinitionGroupName: networkFunctionDefinitionGroupName
     networkFunctionDefinitionVersion: networkFunctionDefinitionVersion
-    networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation//
+    networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation
     nfviType: 'AzureCore'
     nfviId: resourceGroupId
     allowSoftwareUpdate: true

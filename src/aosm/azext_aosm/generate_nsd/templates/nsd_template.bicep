@@ -19,7 +19,7 @@ param nfviSiteName string = '{{nfvi_site_name}}'
 @description('The version that you want to name the NF template artifact, in format A-B-C. e.g. 6-13-0. Suggestion that this matches as best possible the SIMPL released version. If testing for development, you can use any numbers you like.')
 param armTemplateVersion string = '{{armTemplateVersion}}'
 @description('Name of the NF template artifact')
-var acrManifestName = '{{acr_manifest_name}}'
+var armTemplateName = '{{armTemplateName}}'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created. 
@@ -92,7 +92,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             artifactStoreReference: {
               id: acrArtifactStore.id
             }
-            artifactName:  acrManifestName
+            artifactName:  armTemplateName
             artifactVersion: armTemplateVersion
           }
           templateType: 'ArmTemplate'

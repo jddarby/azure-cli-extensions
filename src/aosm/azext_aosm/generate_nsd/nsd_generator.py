@@ -166,7 +166,7 @@ class NSDGenerator:
         """Write out the NSD bicep file."""
         params = {
             "nfvi_site_name": self.config.nfvi_site_name,
-            "acr_manifest_name": self.config.acr_manifest_name,
+            "armTemplateName": self.config.arm_template.artifact_name,
             "armTemplateVersion": self.config.arm_template.version,
             "cg_schema_name": self.config.cg_schema_name,
             "nsdv_description": self.config.nsdv_description,
