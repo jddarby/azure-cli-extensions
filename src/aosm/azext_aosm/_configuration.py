@@ -124,8 +124,6 @@ class NSConfiguration:
         if isinstance(self.arm_template, dict):
             self.arm_template = ArtifactConfig(**self.arm_template)
 
-        self.validate()
-
     def validate(self):
         ## validate that all of the configuration parameters are set
 
@@ -199,7 +197,7 @@ class NSConfiguration:
     @property
     def cg_schema_name(self) -> str:
         """Return the name of the Configuration Schema used for the NSDV."""
-        return f"{self.nsdg_name}_ConfigGroupSchema"
+        return f"{self.nsdg_name.replace('-', '_')}_ConfigGroupSchema"
 
     @property
     def arm_template(self) -> ArtifactConfig:

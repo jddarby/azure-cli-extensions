@@ -265,6 +265,8 @@ def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     # Read the config from the given file
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
 
+    config.validate()
+
     # Generate the NSD and the artifact manifest.
     # This function should not be taking deploy parameters
     _generate_nsd(
@@ -327,6 +329,8 @@ def publish_design(
     )
 
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
+
+    config.validate()
 
     deployer = DeployerViaArm(api_clients, config=config)
 
