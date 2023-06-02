@@ -294,14 +294,9 @@ class DeployerViaArm:
             os.path.join(self.config.build_output_folder_name, NF_DEFINITION_BICEP_FILE)
         )
 
-        arm_template_artifact_path = os.path.join(
-            self.config.build_output_folder_name, NF_DEFINITION_JSON_FILE
-        )
-
-        with open(arm_template_artifact_path, "w") as file:
+        with open(self.config.arm_template.file_path, "w") as file:
             file.write(json.dumps(arm_template_artifact_json, indent=4))
 
-        self.config.arm_template.file_path = arm_template_artifact_path
         print("Uploading ARM template artifact")
         arm_template_artifact.upload(self.config.arm_template)
         print("Done")

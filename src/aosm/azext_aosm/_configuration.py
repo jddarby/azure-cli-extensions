@@ -9,6 +9,7 @@ from azext_aosm.util.constants import (
     NSD,
     SCHEMA,
     NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
+    NF_DEFINITION_JSON_FILE,
 )
 import os
 
@@ -123,6 +124,51 @@ class NSConfiguration:
         if isinstance(self.arm_template, dict):
             self.arm_template = ArtifactConfig(**self.arm_template)
 
+        self.validate()
+
+    def validate(self):
+        ## validate that all of the configuration parameters are set
+
+        if self.location == DESCRIPTION_MAP["location"] or "":
+            raise ValueError("Location must be set")
+        if self.publisher_name == DESCRIPTION_MAP["publisher_name_nsd"] or "":
+            raise ValueError("Publisher name must be set")
+        if (
+            self.publisher_resource_group_name
+            == DESCRIPTION_MAP["publisher_resource_group_name_nsd"]
+            or ""
+        ):
+            raise ValueError("Publisher resource group name must be set")
+        if (
+            self.acr_artifact_store_name == DESCRIPTION_MAP["acr_artifact_store_name"]
+            or ""
+        ):
+            raise ValueError("ACR Artifact Store name must be set")
+        if (
+            self.network_function_definition_group_name
+            == DESCRIPTION_MAP["network_function_definition_group_name"]
+            or ""
+        ):
+            raise ValueError("Network Function Definition Group name must be set")
+        if (
+            self.network_function_definition_version_name
+            == DESCRIPTION_MAP["network_function_definition_version_name"]
+            or ""
+        ):
+            raise ValueError("Network Function Definition Version name must be set")
+        if (
+            self.network_function_definition_offering_location
+            == DESCRIPTION_MAP["network_function_definition_offering_location"]
+            or ""
+        ):
+            raise ValueError(
+                "Network Function Definition Offering Location must be set"
+            )
+        if self.nsdg_name == DESCRIPTION_MAP["nsdg_name"] or "":
+            raise ValueError("NSDG name must be set")
+        if self.nsd_version == DESCRIPTION_MAP["nsd_version"] or "":
+            raise ValueError("NSD Version must be set")
+
     @property
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
@@ -143,7 +189,7 @@ class NSConfiguration:
     @property
     def acr_manifest_name(self) -> str:
         """Return the ACR manifest name from the NFD name."""
-        return f"{self.network_function_name.replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
+        return f"{self.network_function_name.lower().replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
 
     @property
     def nfvi_site_name(self) -> str:
@@ -159,8 +205,11 @@ class NSConfiguration:
     def arm_template(self) -> ArtifactConfig:
         """Return the parameters of the ARM template to be uploaded as part of the NSDV."""
         artifact = ArtifactConfig()
-        artifact.artifact_name = f"{self.nsdg_name}_NF_artifact"
+        artifact.artifact_name = f"{self.nsdg_name.lower()}_nf_artifact"
         artifact.version = self.nsd_version
+        artifact.file_path = os.path.join(
+            self.build_output_folder_name, NF_DEFINITION_JSON_FILE
+        )
         return artifact
 
 
