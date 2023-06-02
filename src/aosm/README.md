@@ -86,8 +86,8 @@ For CNFs, you must provide helm packages with an associated schema. When filling
         },
 
 #### NSDs
+For NSDs, you will need to have a Resource Group with a deployed Publisher, Artifact Store, Network Function Definition and Network Function Definition Version. You can use the `az aosm nfd` commands to create all of these resources.
 
-For NSDs, you will need to have a Resource Group with a deployed Publisher, Artifact Store, Network Function Definition and Network Function Definition Version. You can use the `az aosm nfd` commands to create the Network Function Definition Version resource.
 
 ### Command examples
 

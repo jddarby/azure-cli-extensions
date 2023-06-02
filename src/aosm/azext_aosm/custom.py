@@ -230,14 +230,14 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
     """
     config = get_configuration(configuration_type)
     config_as_dict = json.dumps(asdict(config), indent=4)
-    
+
     if os.path.exists(output_file):
         carry_on = input(
             f"The file {output_file} already exists - do you want to overwrite it? (y/n)"
         )
         if carry_on != "y":
             raise UnclassifiedUserFault("User aborted!")
-        
+
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(config_as_dict)
         if configuration_type == CNF or configuration_type == VNF:
@@ -339,7 +339,7 @@ def publish_design(
     )
 
 
-def _generate_nsd(config, api_clients):
+def _generate_nsd(config: NSDGenerator, api_clients):
     """Generate a Network Service Design for the given type and config."""
     if config:
         nsd_generator = NSDGenerator(config)
@@ -348,6 +348,15 @@ def _generate_nsd(config, api_clients):
 
         raise CLIInternalError("Generate NSD called without a config file")
     deploy_parameters = _get_nfdv_deployment_parameters(config, api_clients)
+
+    if os.path.exists(config.build_output_folder_name):
+        carry_on = input(
+            f"The folder {config.build_output_folder_name} already exists - delete it and continue? (y/n)"
+        )
+        if carry_on != "y":
+            raise UnclassifiedUserFault("User aborted! ")
+
+        shutil.rmtree(config.build_output_folder_name)
 
     nsd_generator.generate_nsd(deploy_parameters)
 

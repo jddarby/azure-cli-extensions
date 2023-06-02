@@ -11,6 +11,7 @@ import shutil
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Dict, Optional
+import tempfile
 
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 
@@ -57,49 +58,35 @@ class NSDGenerator:
 
     def generate_nsd(self, deploy_parameters) -> None:
         """Generate a NSD templates which includes an Artifact Manifest, NFDV and NF templates."""
-        logger.info(f"Generate NSD bicep template")
+        logger.info(f"Generate NSD bicep templates")
 
         self.deploy_parameters = deploy_parameters
 
-        self._create_nsd_folder()
-        self.create_parameter_files()
-        self.write_nsd_manifest()
-        self.write_nf_bicep()
-        self.write_nsd_bicep()
+        # Create temporary folder.
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            self.tmp_folder_name = tmpdirname
 
-        print(f"Generated NSD bicep templates created in {self.build_folder_name}")
-        print(
-            "Please review these templates. When you are happy with them run "
-            "`az aosm nsd publish` with the same arguments."
-        )
+            self.create_parameter_files()
+            self.write_nsd_manifest()
+            self.write_nf_bicep()
+            self.write_nsd_bicep()
 
-    def _create_nsd_folder(self) -> None:
-        """
-        Create the folder for the NSD bicep files.
-
-        :raises RuntimeError: If the user aborts.
-        """
-        if os.path.exists(self.build_folder_name):
-            carry_on = input(
-                f"The folder {self.build_folder_name} already exists - delete it and continue? (y/n)"
+            self.copy_to_output_folder()
+            print(f"Generated NSD bicep templates created in {self.build_folder_name}")
+            print(
+                "Please review these templates. When you are happy with them run "
+                "`az aosm nsd publish` with the same arguments."
             )
-            if carry_on != "y":
-                raise RuntimeError("User aborted!")
-
-            shutil.rmtree(self.build_folder_name)
-
-        logger.info("Create NFD bicep %s", self.build_folder_name)
-        os.mkdir(self.build_folder_name)
 
     def create_parameter_files(self) -> None:
         """Create the Schema and configMappings json files."""
-        schemas_folder_path = os.path.join(self.build_folder_name, SCHEMAS)
-        os.mkdir(schemas_folder_path)
-        self.write_schema(schemas_folder_path)
+        temp_schemas_folder_path = os.path.join(self.tmp_folder_name, SCHEMAS)
+        os.mkdir(temp_schemas_folder_path)
+        self.write_schema(temp_schemas_folder_path)
 
-        mappings_folder_path = os.path.join(self.build_folder_name, CONFIG_MAPPINGS)
-        os.mkdir(mappings_folder_path)
-        self.write_config_mappings(mappings_folder_path)
+        temp_mappings_folder_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS)
+        os.mkdir(temp_mappings_folder_path)
+        self.write_config_mappings(temp_mappings_folder_path)
 
     def write_schema(self, folder_path: str) -> None:
         """
@@ -112,7 +99,7 @@ class NSDGenerator:
         schema_path = os.path.join(folder_path, f"{self.config.cg_schema_name}.json")
 
         with open(schema_path, "w") as _file:
-            _file.write(self.deploy_parameters)
+            _file.write(json.dumps(json.loads(self.deploy_parameters), indent=4))
 
         logger.debug(f"{schema_path} created")
 
@@ -207,7 +194,22 @@ class NSDGenerator:
         # Render all the relevant parameters in the bicep template
         rendered_template = bicep_template.render(**params)
 
-        bicep_file_build_path = os.path.join(self.build_folder_name, output_file_name)
+        bicep_file_build_path = os.path.join(self.tmp_folder_name, output_file_name)
 
         with open(bicep_file_build_path, "w") as file:
             file.write(rendered_template)
+
+    def copy_to_output_folder(self) -> None:
+        """Copy the bicep templates, config mappings and schema into the build output folder."""
+        code_dir = os.path.dirname(__file__)
+
+        logger.info("Create NSD bicep %s", self.build_folder_name)
+        os.mkdir(self.build_folder_name)
+
+        shutil.copytree(
+            self.tmp_folder_name,
+            self.build_folder_name,
+            dirs_exist_ok=True,
+        )
+
+        logger.info("Copied files to %s", self.build_folder_name)

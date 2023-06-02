@@ -44,7 +44,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
     ),
     "nfvi_site_name": "Name of the NFVI Site",
     "nfvi_site_type": "Type of the NFVI Site",
-    "cg_schema_name": "Name of the CG Schema to be deployed. This defined the configuration required to deploy the NSD",
+    "cg_schema_name": "Name of the CG Schema to be deployed. This defines the configuration required to deploy the NSD. Only one CG Schema will be deployed automatically but additional schemas can be added manually.",
     "nsdv_description": "Description of the NSDV",
     "bicep_output_folder_path": "Path to the folder where you would like to create the bicep templates folder.",
     "nsdg_name": "Network Service Design Group Name. This is the collection of Network Service Design Versions. Will be "
