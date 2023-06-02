@@ -149,6 +149,11 @@ class NSDGenerator:
                 "bicep_params": bicep_params,
                 "deploymentValues": bicep_deploymentValues,
                 "network_function_name": self.config.network_function_name,
+                "publisher_name": self.config.publisher_name,
+                "network_function_definition_group_name": self.config.network_function_definition_group_name,
+                "network_function_definition_version_name": self.config.network_function_definition_version_name,
+                "network_function_definition_offering_location": self.config.network_function_definition_offering_location,
+                "location": self.config.location,
             },
         )
 

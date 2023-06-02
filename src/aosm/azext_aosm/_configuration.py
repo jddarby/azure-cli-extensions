@@ -49,6 +49,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "nsd_version": "Version of the NSD to be created. This should be in the format A.B.C",
     "network_function_definition_group_name": "Exising Network Function Definition Group Name. This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_version_name": "Exising Network Function Definition Version Name. This can be created using the 'az aosm nfd' commands.",
+    "network_function_definition_offering_location": "Offering location of the Network Function Definition",
     "helm_package_name": "Name of the Helm package",
     "path_to_chart": (
         "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz"
@@ -105,6 +106,9 @@ class NSConfiguration:
     ]
     network_function_definition_version_name: str = DESCRIPTION_MAP[
         "network_function_definition_version_name"
+    ]
+    network_function_definition_offering_location: str = DESCRIPTION_MAP[
+        "network_function_definition_offering_location"
     ]
     nsdg_name: str = DESCRIPTION_MAP["nsdg_name"]
     nsd_version: str = DESCRIPTION_MAP["nsd_version"]

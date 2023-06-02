@@ -4,19 +4,20 @@
 // The template that the NSD invokes to create the Network Function from a published NFDV. 
 
 @description('Publisher where the NFD is published')
-param publisherName string
+param publisherName string = '{{publisher_name}}'
 
 @description('NFD Group name for the Network Function')
-param networkFunctionDefinitionGroupName string
+param networkFunctionDefinitionGroupName string = '{{network_function_definition_group_name}}'
 
 @description('NFD version')
-param networkFunctionDefinitionVersion string
+param networkFunctionDefinitionVersion string = '{{network_function_definition_version_name}}'
 
 @description('Offering location for the Network Function')
-param networkFunctionDefinitionOfferingLocation string
+param networkFunctionDefinitionOfferingLocation string = '{{network_function_definition_offering_location}}'
+
+param location string = '{{location}}'
 
 param resourceGroupId string = resourceGroup().id
-param location string
 
 {{bicep_params}}
 
