@@ -50,7 +50,7 @@ def load_arguments(self: AzCommandsLoader, _):
             options_list=["--design-file", "-b"],
             type=file_type,
             completer=FilesCompleter(allowednames="*.bicep"),
-            help="Optional path to a bicep file to publish. Use to override publish of the built definition with an alternative file.",
+            help="Optional path to a bicep file to publish. Use to override publish of the built design with an alternative file.",
         )
         c.argument(
             "parameters_json_file",
@@ -81,9 +81,4 @@ def load_arguments(self: AzCommandsLoader, _):
             type=file_type,
             completer=FilesCompleter(allowednames="*.json"),
             help="The path to the configuration file.",
-        )
-        c.argument(
-            "clean",
-            arg_type=get_three_state_flag(),
-            help="Also delete artifact stores, NFD Group and Publisher. Use with care.",
         )

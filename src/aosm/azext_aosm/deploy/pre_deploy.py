@@ -331,7 +331,7 @@ class PreDeployerViaSDK:
                 return True
             elif acr_manny_exists or sa_manny_exists:
                 raise AzCLIError(
-                    "Only one artifact manifest exists. Cannot proceed. Please delete the NFDV using `az aosm definition delete` and start the publish again from scratch."
+                    "Only one artifact manifest exists. Cannot proceed. Please delete the NFDV using `az aosm nfd delete` and start the publish again from scratch."
                 )
             else:
                 return False

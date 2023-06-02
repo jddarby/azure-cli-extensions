@@ -40,7 +40,7 @@ def build_definition(
     config_file: str,
 ):
     """
-    Build and optionally publish a definition.
+    Build a definition.
 
     :param cmd:
     :type cmd: _type_
@@ -250,7 +250,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     """
-    Build and optionally publish a Network Service Design.
+    Build a Network Service Design.
     :param cmd:
     :type cmd: _type_
     :param client:
@@ -277,7 +277,6 @@ def delete_published_design(
     cmd,
     client: HybridNetworkManagementClient,
     config_file,
-    clean=False,
 ):
     """
     Delete a published NSD.
@@ -293,7 +292,7 @@ def delete_published_design(
     )
 
     destroyer = ResourceDeleter(api_clients, config)
-    destroyer.delete_nsd(clean=clean)
+    destroyer.delete_nsd()
 
 
 def publish_design(

@@ -75,7 +75,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     nfvisFromSite: {
       nfvi1: {
         name: nfviSiteName
-        type: '{{nfviSiteType}}'
+        type: 'AzureCore'
       }
     }
     // This field lists the templates that will be deployed by AOSM and the config mappings

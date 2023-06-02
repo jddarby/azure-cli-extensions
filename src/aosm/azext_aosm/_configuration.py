@@ -10,6 +10,7 @@ from azext_aosm.util.constants import (
     SCHEMA,
     NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
 )
+import os
 
 DESCRIPTION_MAP: Dict[str, str] = {
     "publisher_resource_group_name": (
@@ -21,7 +22,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "published to. Will be created if it does not exist."
     ),
     "publisher_name_nsd": (
-        "Name of the Publisher resource you want your design published to."
+        "Name of the Publisher resource you want your design published to. This published should be the same as the publisher used for your NFDVs"
     ),
     "publisher_resource_group_name_nsd": ("Resource group for the Publisher resource."),
     "nf_name": "Name of NF definition",
@@ -42,11 +43,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Version of the artifact. For VHDs this must be in format A-B-C. "
         "For ARM templates this must be in format A.B.C"
     ),
-    "nfvi_site_name": "Name of the NFVI Site",
-    "nfvi_site_type": "Type of the NFVI Site",
-    "cg_schema_name": "Name of the CG Schema to be deployed. This defines the configuration required to deploy the NSD. Only one CG Schema will be deployed automatically but additional schemas can be added manually.",
     "nsdv_description": "Description of the NSDV",
-    "bicep_output_folder_path": "Path to the folder where you would like to create the bicep templates folder.",
     "nsdg_name": "Network Service Design Group Name. This is the collection of Network Service Design Versions. Will be "
     "created if it does not exist.",
     "nsd_version": "Version of the NSD to be created. This should be in the format A.B.C",
@@ -60,7 +57,6 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Names of the Helm packages this package depends on. "
         "Leave as an empty array if no dependencies"
     ),
-    "network_function_name": "Name of the Network Function",
 }
 
 
@@ -71,14 +67,6 @@ class ArtifactConfig:
     # you change the descriptions.
     file_path: Optional[str] = DESCRIPTION_MAP["file_path"]
     blob_sas_url: Optional[str] = DESCRIPTION_MAP["blob_sas_url"]
-    version: str = DESCRIPTION_MAP["artifact_version"]
-
-
-@dataclass
-class ArtifactConfigNsd:
-    artifact_name: str = DESCRIPTION_MAP["artifact_name"]
-    # artifact.py checks for the presence of the default descriptions, change there if
-    # you change the descriptions.
     version: str = DESCRIPTION_MAP["artifact_version"]
 
 
@@ -119,14 +107,8 @@ class NSConfiguration:
         "network_function_definition_version_name"
     ]
     nsdg_name: str = DESCRIPTION_MAP["nsdg_name"]
-    nfvi_site_name: str = DESCRIPTION_MAP["nfvi_site_name"]
-    nfvi_site_type: str = DESCRIPTION_MAP["nfvi_site_type"]
     nsd_version: str = DESCRIPTION_MAP["nsd_version"]
-    cg_schema_name: str = DESCRIPTION_MAP["cg_schema_name"]
     nsdv_description: str = DESCRIPTION_MAP["nsdv_description"]
-    network_function_name: str = DESCRIPTION_MAP["nf_name"]
-    bicep_output_folder_path: str = DESCRIPTION_MAP["bicep_output_folder_path"]
-    arm_template: Any = ArtifactConfigNsd()
 
     def __post_init__(self):
         """
@@ -140,8 +122,8 @@ class NSConfiguration:
     @property
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
-        folder_path = self.bicep_output_folder_path
-        return f"{folder_path}/{NSD_DEFINITION_OUTPUT_BICEP_PREFIX}"
+        current_working_directory = os.getcwd()
+        return f"{current_working_directory}/{NSD_DEFINITION_OUTPUT_BICEP_PREFIX}"
 
     @property
     def resource_element_name(self) -> str:
@@ -150,9 +132,32 @@ class NSConfiguration:
         return f"{artifact_name}-resource-element"
 
     @property
+    def network_function_name(self) -> str:
+        """Return the name of the NFVI used for the NSDV."""
+        return f"{self.nsdg_name}_NF"
+
+    @property
     def acr_manifest_name(self) -> str:
         """Return the ACR manifest name from the NFD name."""
         return f"{self.network_function_name.replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
+
+    @property
+    def nfvi_site_name(self) -> str:
+        """Return the name of the NFVI used for the NSDV."""
+        return f"{self.nsdg_name}_NFVI"
+
+    @property
+    def cg_schema_name(self) -> str:
+        """Return the name of the Configuration Schema used for the NSDV."""
+        return f"{self.nsdg_name}_ConfigGroupSchema"
+
+    @property
+    def arm_template(self) -> ArtifactConfig:
+        """Return the parameters of the ARM template to be uploaded as part of the NSDV."""
+        artifact = ArtifactConfig()
+        artifact.artifact_name = f"{self.nsdg_name}_NF_artifact"
+        artifact.version = self.nsd_version
+        return artifact
 
 
 @dataclass

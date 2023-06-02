@@ -74,49 +74,24 @@ class ResourceDeleter:
             self.delete_artifact_store("sa")
             self.delete_publisher()
 
-    def delete_nsd(self, clean: bool = False):
+    def delete_nsd(self):
         """
         Delete the NSDV and manifests. If they don't exist it still reports them as
         deleted.
-
-        :param clean: Delete the NSDG, artifact stores and publisher too.
-            defaults to False
-            Use with care.
         """
         assert isinstance(self.config, NSConfiguration)
-        if clean:
-            print(
-                f"Are you sure you want to delete all resources associated with NSD group {self.config.nsdg_name} including the artifact store {self.config.acr_artifact_store_name} and publisher {self.config.publisher_name}?"
-            )
-            logger.warning(
-                "This command will fail if other NSD versions exist in the NFD group."
-            )
-            logger.warning(
-                "Only do this if you are SURE you are not sharing the publisher and artifact stores with other resources"
-            )
-            print("There is no undo.  Type the publisher name to confirm.")
-            if not input_ack(self.config.publisher_name.lower(), "Confirm delete:"):
-                print("Not proceeding with delete")
-                return
-        else:
-            print(
-                f"Are you sure you want to delete the NSD Version {self.config.nsd_version}, the associated manifest {self.config.acr_manifest_name} and configuration group schema {self.config.cg_schema_name}?"
-            )
-            print("There is no undo. Type 'delete' to confirm")
-            if not input_ack("delete", "Confirm delete:"):
-                print("Not proceeding with delete")
-                return
+
+        print(
+            f"Are you sure you want to delete the NSD Version {self.config.nsd_version}, the associated manifest {self.config.acr_manifest_name} and configuration group schema {self.config.cg_schema_name}?"
+        )
+        print("There is no undo. Type 'delete' to confirm")
+        if not input_ack("delete", "Confirm delete:"):
+            print("Not proceeding with delete")
+            return
 
         self.delete_nsdv()
         self.delete_artifact_manifest("acr")
         self.delete_config_group_schema()
-
-        if clean:
-            logger.info("Delete called for all resources.")
-            self.delete_nsdg()
-            self.delete_artifact_store("acr")
-            self.delete_config_group_schema()
-            self.delete_publisher()
 
     def delete_nfdv(self):
         message = f"Delete NFDV {self.config.version} from group {self.config.nfdg_name} and publisher {self.config.publisher_name}"

@@ -136,8 +136,11 @@ class NSDGenerator:
         deploy_properties = deploy_parameters_dict["properties"]
 
         for key, value in deploy_properties.items():
-            bicep_params += f"param {key} {value['type']}\n"
-            bicep_deploymentValues += f"  {key}: {key}\n"
+            # location is sometimes part of deploy_properties.
+            # We want to avoid having duplicate params in the bicep template
+            if key != "location":
+                bicep_params += f"param {key} {value['type']}\n"
+            bicep_deploymentValues += f"{key}: {key}\n  "
 
         self.generate_bicep(
             self.nf_bicep_template_name,
@@ -157,7 +160,6 @@ class NSDGenerator:
             "armTemplateVersion": self.config.arm_template.version,
             "cg_schema_name": self.config.cg_schema_name,
             "nsdv_description": self.config.nsdv_description,
-            "nfviSiteType": self.config.nfvi_site_type,
             "ResourceElementName": self.config.resource_element_name,
         }
 
