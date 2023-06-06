@@ -29,6 +29,8 @@ from azext_aosm._configuration import (
     get_configuration,
     NFConfiguration,
     NSConfiguration,
+    VNFConfiguration,
+    CNFConfiguration
 )
 
 
@@ -38,6 +40,8 @@ logger = get_logger(__name__)
 def build_definition(
     definition_type: str,
     config_file: str,
+    order_params: bool = False,
+    interactive: bool = False,
 ):
     """
     Build a definition.
@@ -54,7 +58,7 @@ def build_definition(
     )
 
     # Generate the NFD and the artifact manifest.
-    _generate_nfd(definition_type=definition_type, config=config)
+    _generate_nfd(definition_type=definition_type, config=config, order_params=order_params, interactive=interactive)
 
 
 def generate_definition_config(definition_type: str, output_file: str = "input.json"):
@@ -90,12 +94,14 @@ def _get_config_from_file(
     return config
 
 
-def _generate_nfd(definition_type, config):
+def _generate_nfd(definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool):
     """Generate a Network Function Definition for the given type and config."""
     nfd_generator: NFDGenerator
     if definition_type == VNF:
-        nfd_generator = VnfNfdGenerator(config)
+        assert isinstance(config, VNFConfiguration)
+        nfd_generator = VnfNfdGenerator(config, order_params, interactive)
     elif definition_type == CNF:
+        assert isinstance(config, CNFConfiguration)
         nfd_generator = CnfNfdGenerator(config)
     else:
         raise CLIInternalError(

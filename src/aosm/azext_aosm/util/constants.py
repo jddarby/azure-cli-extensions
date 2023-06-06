@@ -33,11 +33,25 @@ CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE = "cnfartifactmanifest.bicep.j2"
 CNF_DEFINITION_BICEP_TEMPLATE = "cnfdefinition.bicep"
 CNF_MANIFEST_BICEP_TEMPLATE = "cnfartifactmanifest.bicep"
 
-DEPLOYMENT_PARAMETERS = "deploymentParameters.json"
+
 # Names of folder used in the repo
 CONFIG_MAPPINGS = "configMappings"
 SCHEMAS = "schemas"
 TEMPLATES = "templates"
+
+# Names of files when building NFDs/NSDs
+DEPLOYMENT_PARAMETERS = "deploymentParameters.json"
+OPTIONAL_DEPLOYMENT_PARAMETERS_FILE = "optionalDeploymentParameters.txt"
+TEMPLATE_PARAMETERS = "templateParameters.json"
+VHD_PARAMETERS = "vhdParameters.json"
+OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING = (
+    "# The following parameters are optional as they have default values.\n"
+    "# If you do not wish to expose them in the NFD, find and remove them from both\n"
+    f"# {DEPLOYMENT_PARAMETERS} and {TEMPLATE_PARAMETERS} (and {VHD_PARAMETERS} if\n"
+    "they are there)\n"
+    "# You can re-run the build command with the --order-params flag to order those\n"
+    "# files with the optional parameters at the end of the file.\n\n"
+)
 
 # Deployment Schema
 

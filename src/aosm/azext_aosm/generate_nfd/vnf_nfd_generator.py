@@ -16,20 +16,33 @@ from typing import Any, Dict, Optional
 from knack.log import get_logger
 
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
+from azext_aosm.util.utils import input_ack
 
 from azext_aosm._configuration import VNFConfiguration
 from azext_aosm.util.constants import (
+    OPTIONAL_DEPLOYMENT_PARAMETERS_FILE,
+    OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING,
     VNF_DEFINITION_BICEP_TEMPLATE,
     VNF_MANIFEST_BICEP_TEMPLATE,
     CONFIG_MAPPINGS,
     SCHEMAS,
     SCHEMA_PREFIX,
     DEPLOYMENT_PARAMETERS,
+    TEMPLATE_PARAMETERS,
+    VHD_PARAMETERS
 )
 
 
 logger = get_logger(__name__)
 
+# Different types are used in ARM templates and NFDs. The list accepted by NFDs is 
+# documented in the AOSM meta-schema. This will be published in the future but for now
+# can be found in 
+# https://microsoft.sharepoint.com/:w:/t/NSODevTeam/Ec7ovdKroSRIv5tumQnWIE0BE-B2LykRcll2Qb9JwfVFMQ
+ARM_TO_JSON_PARAM_TYPES: Dict[str, str] = {
+    "int": "integer",
+    "secureString": "string",
+}
 
 class VnfNfdGenerator(NFDGenerator):
     """
@@ -42,7 +55,7 @@ class VnfNfdGenerator(NFDGenerator):
     - A bicep file for the Artifact manifests
     """
 
-    def __init__(self, config: VNFConfiguration):
+    def __init__(self, config: VNFConfiguration, order_params: bool, interactive: bool):
         super(NFDGenerator, self).__init__()
         self.config = config
         self.bicep_template_name = VNF_DEFINITION_BICEP_TEMPLATE
@@ -57,6 +70,8 @@ class VnfNfdGenerator(NFDGenerator):
         self._manifest_path = os.path.join(
             self.output_folder_name, self.manifest_template_name
         )
+        self.order_params = order_params
+        self.interactive = interactive
 
     def generate_nfd(self) -> None:
         """Create a bicep template for an NFD from the ARM template for the VNF."""
@@ -103,11 +118,32 @@ class VnfNfdGenerator(NFDGenerator):
                 parameters: Dict[str, Any] = data["parameters"]
             else:
                 print(
-                    "No parameters found in the template provided. Your schema will have no properties"
+                    "No parameters found in the template provided. "
+                    "Your NFD will have no deployParameters"
                 )
                 parameters = {}
 
         return parameters
+    
+    @cached_property
+    def vm_parameters_ordered(self) -> Dict[str, Any]:
+        """The parameters from the VM ARM template, ordered as those without defaults then those with."""
+        vm_parameters_no_default:Dict[str, Any] = {}
+        vm_parameters_with_default:Dict[str, Any] = {}
+        has_default_field: bool = False
+        has_default: bool = False
+
+        for key in self.vm_parameters:
+            # Order parameters into those with and without defaults
+            has_default_field = "defaultValue" in self.vm_parameters[key]
+            has_default = has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
+            
+            if has_default:
+                vm_parameters_with_default[key] = self.vm_parameters[key]
+            else:
+                vm_parameters_no_default[key] = self.vm_parameters[key]
+                
+        return {**vm_parameters_no_default, **vm_parameters_with_default}
 
     def create_parameter_files(self) -> None:
         """Create the Deployment and Template json parameter files."""
@@ -129,16 +165,42 @@ class VnfNfdGenerator(NFDGenerator):
         logger.debug("Create deploymentParameters.json")
 
         nfd_parameters = {}
+        nfd_parameters_no_default = {}
+        nfd_parameters_with_default = {}
+        vm_parameters_to_exclude = []
+        
+        vm_parameters = self.vm_parameters_ordered if self.order_params else self.vm_parameters
 
-        for key in self.vm_parameters:
-            # ARM templates allow int and secureString but we do not currently accept them in AOSM
-            # This may change, but for now we should change them to accepted types integer and string
-            if self.vm_parameters[key]["type"] == "int":
-                nfd_parameters[key] = {"type": "integer"}
-            elif self.vm_parameters[key]["type"] == "secureString":
-                nfd_parameters[key] = {"type": "string"}
-            else:
-                nfd_parameters[key] = {"type": self.vm_parameters[key]["type"]}
+        for key in vm_parameters:
+            # Order parameters into those with and without defaults
+            has_default_field = "defaultValue" in self.vm_parameters[key]
+            has_default = has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
+            
+            if self.interactive and has_default:
+                # Interactive mode. Prompt user to include or exclude parameters
+                # This requires the enter key after the y/n input which isn't ideal
+                if not input_ack("y",f"Expose parameter {key}? y/n "):
+                    logger.debug("Excluding parameter %s", key)
+                    vm_parameters_to_exclude.append(key)
+                    continue
+            
+            # Map ARM parameter types to JSON parameter types accepted by AOSM
+            arm_type = self.vm_parameters[key]["type"]
+            json_type = arm_type
+            if arm_type in ARM_TO_JSON_PARAM_TYPES.keys():
+                json_type = ARM_TO_JSON_PARAM_TYPES[arm_type]
+
+            if has_default:
+                nfd_parameters_with_default[key] = {"type": json_type}
+
+            nfd_parameters[key] = {"type": json_type}
+                
+        # Now we are out of the vm_parameters loop, we can remove the excluded
+        # parameters so they don't get included in templateParameters.json
+        # Remove from both ordered and unordered dicts
+        for key in vm_parameters_to_exclude:
+                self.vm_parameters.pop(key)
+                self.vm_parameters_ordered.pop(key)
 
         deployment_parameters_path = os.path.join(folder_path, DEPLOYMENT_PARAMETERS)
 
@@ -150,6 +212,14 @@ class VnfNfdGenerator(NFDGenerator):
             _file.write(json.dumps(deploy_parameters_full, indent=4))
 
         logger.debug(f"{deployment_parameters_path} created")
+        
+        # Extra output file to help the user know which parameters are optional
+        if not self.interactive:
+            if nfd_parameters_with_default:
+                optional_deployment_parameters_path = os.path.join(folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE)
+                with open(optional_deployment_parameters_path, "w") as _file:
+                    _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)
+                    _file.write(json.dumps(nfd_parameters_with_default, indent=4))
 
     def write_template_parameters(self, folder_path: str) -> None:
         """
@@ -157,12 +227,13 @@ class VnfNfdGenerator(NFDGenerator):
 
         :param folder_path: The folder to put this file in.
         """
-        logger.debug("Create templateParameters.json")
+        logger.debug(f"Create {TEMPLATE_PARAMETERS}")
+        vm_parameters = self.vm_parameters_ordered if self.order_params else self.vm_parameters
         template_parameters = {
-            key: f"{{deployParameters.{key}}}" for key in self.vm_parameters
+            key: f"{{deployParameters.{key}}}" for key in vm_parameters
         }
 
-        template_parameters_path = os.path.join(folder_path, "templateParameters.json")
+        template_parameters_path = os.path.join(folder_path, TEMPLATE_PARAMETERS)
 
         with open(template_parameters_path, "w") as _file:
             _file.write(json.dumps(template_parameters, indent=4))
@@ -189,7 +260,7 @@ class VnfNfdGenerator(NFDGenerator):
             "azureDeployLocation": azureDeployLocation,
         }
 
-        vhd_parameters_path = os.path.join(folder_path, "vhdParameters.json")
+        vhd_parameters_path = os.path.join(folder_path, VHD_PARAMETERS)
         with open(vhd_parameters_path, "w", encoding="utf-8") as _file:
             _file.write(json.dumps(vhd_parameters, indent=4))
 
@@ -208,25 +279,25 @@ class VnfNfdGenerator(NFDGenerator):
         manifest_path = os.path.join(code_dir, "templates", self.manifest_template_name)
         shutil.copy(manifest_path, self.output_folder_name)
 
-        os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
-        tmp_schema_path = os.path.join(
-            self.tmp_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
-        )
-        output_schema_path = os.path.join(
-            self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
-        )
-        shutil.copy(
-            tmp_schema_path,
-            output_schema_path,
-        )
+        # os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
+        # tmp_schema_path = os.path.join(
+        #     self.tmp_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
+        # )
+        # output_schema_path = os.path.join(
+        #     self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
+        # )
+        # shutil.copy(
+        #     tmp_schema_path,
+        #     output_schema_path,
+        # )
 
-        tmp_config_mappings_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS)
-        output_config_mappings_path = os.path.join(
-            self.output_folder_name, CONFIG_MAPPINGS
-        )
+        # tmp_config_mappings_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS)
+        # output_config_mappings_path = os.path.join(
+        #     self.output_folder_name, CONFIG_MAPPINGS
+        # )
         shutil.copytree(
-            tmp_config_mappings_path,
-            output_config_mappings_path,
+            self.tmp_folder_name,
+            self.output_folder_name,
             dirs_exist_ok=True,
         )
 

@@ -87,6 +87,10 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
                     self._extract_chart(helm_package.path_to_chart)
 
                     # TODO: Validate charts
+                    
+                    # Create a chart mapping schema if none has been passed in.
+                    if not helm_package.path_to_mappings or helm_package.path_to_mappings == "":
+                        self._create_chart_mapping_schema(helm_package)
 
                     # Get schema for each chart
                     # (extract mappings and take the schema bits we need from values.schema.json)
@@ -167,7 +171,44 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
                 f"ERROR: The helm package '{path}' is not a .tgz, .tar or .tar.gz file.\
                 Please fix this and run the command again."
             )
+            
+    def _create_chart_mapping_schema(self, helm_package: HelmPackageConfig) -> None:
+        """
+        Optional function to create a chart mapping schema with every value being a deployParameter.
+        
+        Expected use when a helm chart is very simple and user wants every value to be
+        a deployment parameter.
+        
+        """
+        logger.debug("Creating chart mapping schema for %s", helm_package.path_to_chart)
+        
+        # Get all the values files in the chart
+        top_level_values_yaml = self._read_top_level_values_yaml(
+            helm_package
+        )
+        
+        mapping_to_write = self._replace_values_with_deploy_params(top_level_values_yaml, {})
+        
+        # Write the mapping to a file
+        mapping_file = os.path.join(self._tmp_folder_name, "mapping.yaml")
+        with open(mapping_file, "w", encoding="UTF-8") as mapping_file:
+            yaml.dump(mapping_to_write, mapping_file)
+            
+        # Update the config that points to the mapping file
+        self.config.helm_packages[self.config.helm_packages.index(helm_package)].path_to_mappings = mapping_file
+            
 
+            
+    def _read_top_level_values_yaml(self, helm_package: HelmPackageConfig) -> Dict[str, Any]:
+
+        for file in os.listdir(os.path.join(self._tmp_folder_name, helm_package.name)):
+            if file == "values.yaml" or file == "values.yml":
+                with open(os.path.join(self._tmp_folder_name, helm_package.name, file), "r", encoding="UTF-8") as values_file:        
+                    values_yaml = yaml.safe_load(values_file)
+                return values_yaml
+            
+        raise FileOperationError("Cannot find top level values.yaml/.yml file in Helm package.")
+            
     def write_manifest_bicep_file(self) -> None:
         """Write the bicep file for the Artifact Manifest."""
         with open(self.manifest_jinja2_template_path, "r", encoding="UTF-8") as f:
@@ -373,6 +414,36 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
 
         logger.debug("Generated chart mapping schema for %s", helm_package.name)
         return final_schema
+    
+    def _replace_values_with_deploy_params(
+        self, values_yaml_dict, final_values_mapping_dict
+    ) -> Dict[Any, Any]:
+        """
+        Given the yaml dictionary read from values.yaml, replace all the values with {deploymentParameter.keyname}.
+        
+        Thus creating a values mapping file if the user has not provided one in config.
+        """
+        for k, v in values_yaml_dict.items():
+            # if value is a string and contains deployParameters.
+            if isinstance(v, str) or isinstance(v, int) or isinstance(v, bool):
+                # only add the parameter name (e.g. from {deployParameter.zone} only param = zone)
+                replacement_value = f"{{deploymentParameter.{k}}}"
+
+                # add the schema for k (from the big schema) to the (smaller) schema
+                final_values_mapping_dict.update(
+                    {k: replacement_value}
+                )
+            elif isinstance(v, dict):
+                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(v, {})
+            elif isinstance(v, list):
+                final_values_mapping_dict[k] = []
+                for item in v:
+                    if isinstance(item, dict):
+                        final_values_mapping_dict[k].append(self._replace_values_with_deploy_params(item, {}))
+                    else:
+                        final_values_mapping_dict[k].append(item)
+                        
+        return final_values_mapping_dict
 
     def find_deploy_params(
         self, nested_dict, schema_nested_dict, final_schema
