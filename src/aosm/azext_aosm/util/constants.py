@@ -38,6 +38,7 @@ CNF_MANIFEST_BICEP_TEMPLATE = "cnfartifactmanifest.bicep"
 CONFIG_MAPPINGS = "configMappings"
 SCHEMAS = "schemas"
 TEMPLATES = "templates"
+GENERATED_VALUES_MAPPINGS = "generatedValuesMappings"
 
 # Names of files when building NFDs/NSDs
 DEPLOYMENT_PARAMETERS = "deploymentParameters.json"

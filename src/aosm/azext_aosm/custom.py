@@ -102,7 +102,7 @@ def _generate_nfd(definition_type: str, config: NFConfiguration, order_params: b
         nfd_generator = VnfNfdGenerator(config, order_params, interactive)
     elif definition_type == CNF:
         assert isinstance(config, CNFConfiguration)
-        nfd_generator = CnfNfdGenerator(config)
+        nfd_generator = CnfNfdGenerator(config, interactive)
     else:
         raise CLIInternalError(
             "Generate NFD called for unrecognised definition_type. Only VNF and CNF have been implemented."

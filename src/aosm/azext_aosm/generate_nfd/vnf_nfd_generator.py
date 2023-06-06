@@ -199,8 +199,8 @@ class VnfNfdGenerator(NFDGenerator):
         # parameters so they don't get included in templateParameters.json
         # Remove from both ordered and unordered dicts
         for key in vm_parameters_to_exclude:
-                self.vm_parameters.pop(key)
-                self.vm_parameters_ordered.pop(key)
+                self.vm_parameters.pop(key, None)
+                self.vm_parameters_ordered.pop(key, None)
 
         deployment_parameters_path = os.path.join(folder_path, DEPLOYMENT_PARAMETERS)
 
@@ -216,6 +216,7 @@ class VnfNfdGenerator(NFDGenerator):
         # Extra output file to help the user know which parameters are optional
         if not self.interactive:
             if nfd_parameters_with_default:
+                print(F"Optional parameters detected. Creating {OPTIONAL_DEPLOYMENT_PARAMETERS_FILE} to help you choose which to expose.")
                 optional_deployment_parameters_path = os.path.join(folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE)
                 with open(optional_deployment_parameters_path, "w") as _file:
                     _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)

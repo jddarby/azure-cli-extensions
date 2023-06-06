@@ -29,8 +29,10 @@ from azext_aosm.util.constants import (
     CONFIG_MAPPINGS,
     SCHEMAS,
     SCHEMA_PREFIX,
-    DEPLOYMENT_PARAMETERS
+    DEPLOYMENT_PARAMETERS,
+    GENERATED_VALUES_MAPPINGS
 )
+from azext_aosm.util.utils import input_ack
 
 
 logger = get_logger(__name__)
@@ -45,9 +47,12 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
     - Parameters files that are used by the NFDV bicep file, these are the
       deployParameters and the mapping profiles of those deploy parameters
     - A bicep file for the Artifact manifests
+    
+    Interactive parameter is only used if the user wants to generate the values mapping
+    file from the values.yaml in the helm package.
     """
 
-    def __init__(self, config: CNFConfiguration):
+    def __init__(self, config: CNFConfiguration, interactive: bool = False):
         """Create a new CNF NFD Generator."""
         super(NFDGenerator, self).__init__()
         self.config = config
@@ -70,6 +75,7 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
         self._bicep_path = os.path.join(
             self.output_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
         )
+        self.interactive = interactive
 
     def generate_nfd(self) -> None:
         """Generate a CNF NFD which comprises a group, an Artifact Manifest and an NFDV."""
@@ -90,7 +96,7 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
                     
                     # Create a chart mapping schema if none has been passed in.
                     if not helm_package.path_to_mappings or helm_package.path_to_mappings == "":
-                        self._create_chart_mapping_schema(helm_package)
+                        self._generate_chart_value_mappings(helm_package)
 
                     # Get schema for each chart
                     # (extract mappings and take the schema bits we need from values.schema.json)
@@ -172,15 +178,16 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
                 Please fix this and run the command again."
             )
             
-    def _create_chart_mapping_schema(self, helm_package: HelmPackageConfig) -> None:
+    def _generate_chart_value_mappings(self, helm_package: HelmPackageConfig) -> None:
         """
-        Optional function to create a chart mapping schema with every value being a deployParameter.
+        Optional function to create a chart value mappings file with every value being a deployParameter.
         
         Expected use when a helm chart is very simple and user wants every value to be
         a deployment parameter.
         
         """
-        logger.debug("Creating chart mapping schema for %s", helm_package.path_to_chart)
+        logger.debug("Creating chart value mappings file for %s", helm_package.path_to_chart)
+        print("Creating chart value mappings file for %s", helm_package.path_to_chart)
         
         # Get all the values files in the chart
         top_level_values_yaml = self._read_top_level_values_yaml(
@@ -190,12 +197,14 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
         mapping_to_write = self._replace_values_with_deploy_params(top_level_values_yaml, {})
         
         # Write the mapping to a file
-        mapping_file = os.path.join(self._tmp_folder_name, "mapping.yaml")
-        with open(mapping_file, "w", encoding="UTF-8") as mapping_file:
+        folder_name = os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)
+        os.makedirs(folder_name, exist_ok=True)
+        mapping_filepath = os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS, f"{helm_package.name}_generated-mapping.yaml")
+        with open(mapping_filepath, "w", encoding="UTF-8") as mapping_file:
             yaml.dump(mapping_to_write, mapping_file)
             
         # Update the config that points to the mapping file
-        self.config.helm_packages[self.config.helm_packages.index(helm_package)].path_to_mappings = mapping_file
+        helm_package.path_to_mappings = mapping_filepath
             
 
             
@@ -274,6 +283,10 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
             self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE
         )
         shutil.copy(tmp_manifest_bicep_path, self.output_folder_name)
+        if os.path.exists(os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)):
+            generated_mappings_path = os.path.join(self.output_folder_name, GENERATED_VALUES_MAPPINGS)
+            shutil.copytree(os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS),
+                        generated_mappings_path)
 
         tmp_config_mappings_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS)
         output_config_mappings_path = os.path.join(self.output_folder_name, CONFIG_MAPPINGS)
@@ -416,7 +429,7 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
         return final_schema
     
     def _replace_values_with_deploy_params(
-        self, values_yaml_dict, final_values_mapping_dict
+        self, values_yaml_dict, final_values_mapping_dict, key_prefix: Optional[str] = None
     ) -> Dict[Any, Any]:
         """
         Given the yaml dictionary read from values.yaml, replace all the values with {deploymentParameter.keyname}.
@@ -426,22 +439,40 @@ class CnfNfdGenerator(NFDGenerator): # pylint: disable=too-many-instance-attribu
         for k, v in values_yaml_dict.items():
             # if value is a string and contains deployParameters.
             if isinstance(v, str) or isinstance(v, int) or isinstance(v, bool):
-                # only add the parameter name (e.g. from {deployParameter.zone} only param = zone)
-                replacement_value = f"{{deploymentParameter.{k}}}"
+                # Replace the parameter with {deploymentParameter.keyname}
+                if key_prefix:
+                    param_name = f"{key_prefix}_{k}"
+                else:
+                    param_name = k
+                if self.interactive:
+                    # Interactive mode. Prompt user to include or exclude parameters
+                    # This requires the enter key after the y/n input which isn't ideal
+                    if not input_ack("y",f"Expose parameter {param_name}? y/n "):
+                        logger.debug("Excluding parameter %s", param_name)
+                        final_values_mapping_dict.update({k:v})
+                        continue
+                replacement_value = f"{{deploymentParameter.{param_name}}}"
 
                 # add the schema for k (from the big schema) to the (smaller) schema
                 final_values_mapping_dict.update(
                     {k: replacement_value}
                 )
             elif isinstance(v, dict):
-                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(v, {})
+                new_key_prefix = k if key_prefix is None else f"{key_prefix}_{k}"
+                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(v, {}, new_key_prefix)
             elif isinstance(v, list):
                 final_values_mapping_dict[k] = []
-                for item in v:
+                for index, item in enumerate(v):
                     if isinstance(item, dict):
-                        final_values_mapping_dict[k].append(self._replace_values_with_deploy_params(item, {}))
+                        new_key_prefix = k if key_prefix is None else f"{key_prefix}_{k}"
+                        final_values_mapping_dict[k].append(self._replace_values_with_deploy_params(item, {}, new_key_prefix))
                     else:
-                        final_values_mapping_dict[k].append(item)
+                        if key_prefix:
+                            param_name = f"{key_prefix}_{k}_{index}"
+                        else:
+                            param_name = f"{k})_{index}"
+                        replacement_value = f"{{deploymentParameter.{param_name}}}"
+                        final_values_mapping_dict[k].append(replacement_value)
                         
         return final_values_mapping_dict
 

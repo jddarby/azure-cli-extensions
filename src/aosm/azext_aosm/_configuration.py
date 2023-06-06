@@ -56,7 +56,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz"
     ),
     "path_to_mappings": (
-        "File path of value mappings on local disk. Accepts .yaml or .yml"
+        "File path of value mappings on local disk where chosen values are replaced with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a blank string, a value mappings file will be generated with every value mapped to a deployment parameter. Use --interactive on the build command to interactively choose which values to map."
     ),
     "helm_depends_on": (
         "Names of the Helm packages this package depends on. "

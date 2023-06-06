@@ -55,7 +55,8 @@ def load_arguments(self: AzCommandsLoader, _):
         c.argument(
             "order_params",
             arg_type=get_three_state_flag(),
-            help="Order deploymentParameters schema and configMappings to have the "
+            help="VNF definition_type only - ignored for CNF."
+            " Order deploymentParameters schema and configMappings to have the "
             "parameters without default values at the top and those with default "
             "values at the bottom. Can make it easier to remove those with defaults "
             "which you do not want to expose as NFD parameters.",
