@@ -30,7 +30,7 @@ from azext_aosm._configuration import (
     NFConfiguration,
     NSConfiguration,
     VNFConfiguration,
-    CNFConfiguration
+    CNFConfiguration,
 )
 
 
@@ -58,7 +58,12 @@ def build_definition(
     )
 
     # Generate the NFD and the artifact manifest.
-    _generate_nfd(definition_type=definition_type, config=config, order_params=order_params, interactive=interactive)
+    _generate_nfd(
+        definition_type=definition_type,
+        config=config,
+        order_params=order_params,
+        interactive=interactive,
+    )
 
 
 def generate_definition_config(definition_type: str, output_file: str = "input.json"):
@@ -94,7 +99,9 @@ def _get_config_from_file(
     return config
 
 
-def _generate_nfd(definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool):
+def _generate_nfd(
+    definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool
+):
     """Generate a Network Function Definition for the given type and config."""
     nfd_generator: NFDGenerator
     if definition_type == VNF:
@@ -221,6 +228,7 @@ def delete_published_definition(
 def generate_design_config(output_file: str = "input.json"):
     """
     Generate an example config file for building a NSD.
+
     :param output_file: path to output config file, defaults to "input.json"
     :type output_file: str, optional
     """
@@ -230,6 +238,7 @@ def generate_design_config(output_file: str = "input.json"):
 def _generate_config(configuration_type: str, output_file: str = "input.json"):
     """
     Generic generate config function for NFDs and NSDs.
+
     :param configuration_type: CNF, VNF or NSD
     :param output_file: path to output config file, defaults to "input.json"
     :type output_file: str, optional
@@ -257,6 +266,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     """
     Build a Network Service Design.
+
     :param cmd:
     :type cmd: _type_
     :param client:
@@ -288,6 +298,7 @@ def delete_published_design(
 ):
     """
     Delete a published NSD.
+
     :param config_file: Path to the config file
     :param clean: if True, will delete the NSDG, artifact stores and publisher too.
                   Defaults to False. Only works if no resources have those as a parent.
@@ -314,6 +325,7 @@ def publish_design(
 ):
     """
     Publish a generated design.
+
     :param cmd:
     :param client:
     :type client: HybridNetworkManagementClient

@@ -186,9 +186,7 @@ class DeployerViaArm:
         }
 
     def construct_manifest_parameters(self) -> Dict[str, Any]:
-        """
-        Create the parmeters dictionary for VNF or NSD.
-        """
+        """Create the parmeters dictionary for VNF or NSD."""
         if isinstance(self.config, VNFConfiguration):
             return {
                 "location": {"value": self.config.location},
@@ -348,9 +346,7 @@ class DeployerViaArm:
         return self.pre_deployer.do_config_artifact_manifests_exist()
 
     def construct_nsd_parameters(self) -> Dict[str, Any]:
-        """
-        Create the parmeters dictionary for nsd_definition.bicep.
-        """
+        """Create the parmeters dictionary for nsd_definition.bicep."""
         assert isinstance(self.config, NSConfiguration)
         return {
             "location": {"value": self.config.location},

@@ -29,20 +29,21 @@ from azext_aosm.util.constants import (
     SCHEMA_PREFIX,
     DEPLOYMENT_PARAMETERS,
     TEMPLATE_PARAMETERS,
-    VHD_PARAMETERS
+    VHD_PARAMETERS,
 )
 
 
 logger = get_logger(__name__)
 
-# Different types are used in ARM templates and NFDs. The list accepted by NFDs is 
+# Different types are used in ARM templates and NFDs. The list accepted by NFDs is
 # documented in the AOSM meta-schema. This will be published in the future but for now
-# can be found in 
+# can be found in
 # https://microsoft.sharepoint.com/:w:/t/NSODevTeam/Ec7ovdKroSRIv5tumQnWIE0BE-B2LykRcll2Qb9JwfVFMQ
 ARM_TO_JSON_PARAM_TYPES: Dict[str, str] = {
     "int": "integer",
     "secureString": "string",
 }
+
 
 class VnfNfdGenerator(NFDGenerator):
     """
@@ -124,25 +125,27 @@ class VnfNfdGenerator(NFDGenerator):
                 parameters = {}
 
         return parameters
-    
+
     @cached_property
     def vm_parameters_ordered(self) -> Dict[str, Any]:
         """The parameters from the VM ARM template, ordered as those without defaults then those with."""
-        vm_parameters_no_default:Dict[str, Any] = {}
-        vm_parameters_with_default:Dict[str, Any] = {}
+        vm_parameters_no_default: Dict[str, Any] = {}
+        vm_parameters_with_default: Dict[str, Any] = {}
         has_default_field: bool = False
         has_default: bool = False
 
         for key in self.vm_parameters:
             # Order parameters into those with and without defaults
             has_default_field = "defaultValue" in self.vm_parameters[key]
-            has_default = has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
-            
+            has_default = (
+                has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
+            )
+
             if has_default:
                 vm_parameters_with_default[key] = self.vm_parameters[key]
             else:
                 vm_parameters_no_default[key] = self.vm_parameters[key]
-                
+
         return {**vm_parameters_no_default, **vm_parameters_with_default}
 
     def create_parameter_files(self) -> None:
@@ -168,22 +171,26 @@ class VnfNfdGenerator(NFDGenerator):
         nfd_parameters_no_default = {}
         nfd_parameters_with_default = {}
         vm_parameters_to_exclude = []
-        
-        vm_parameters = self.vm_parameters_ordered if self.order_params else self.vm_parameters
+
+        vm_parameters = (
+            self.vm_parameters_ordered if self.order_params else self.vm_parameters
+        )
 
         for key in vm_parameters:
             # Order parameters into those with and without defaults
             has_default_field = "defaultValue" in self.vm_parameters[key]
-            has_default = has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
-            
+            has_default = (
+                has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
+            )
+
             if self.interactive and has_default:
                 # Interactive mode. Prompt user to include or exclude parameters
                 # This requires the enter key after the y/n input which isn't ideal
-                if not input_ack("y",f"Expose parameter {key}? y/n "):
+                if not input_ack("y", f"Expose parameter {key}? y/n "):
                     logger.debug("Excluding parameter %s", key)
                     vm_parameters_to_exclude.append(key)
                     continue
-            
+
             # Map ARM parameter types to JSON parameter types accepted by AOSM
             arm_type = self.vm_parameters[key]["type"]
             json_type = arm_type
@@ -194,13 +201,13 @@ class VnfNfdGenerator(NFDGenerator):
                 nfd_parameters_with_default[key] = {"type": json_type}
 
             nfd_parameters[key] = {"type": json_type}
-                
+
         # Now we are out of the vm_parameters loop, we can remove the excluded
         # parameters so they don't get included in templateParameters.json
         # Remove from both ordered and unordered dicts
         for key in vm_parameters_to_exclude:
-                self.vm_parameters.pop(key, None)
-                self.vm_parameters_ordered.pop(key, None)
+            self.vm_parameters.pop(key, None)
+            self.vm_parameters_ordered.pop(key, None)
 
         deployment_parameters_path = os.path.join(folder_path, DEPLOYMENT_PARAMETERS)
 
@@ -212,12 +219,16 @@ class VnfNfdGenerator(NFDGenerator):
             _file.write(json.dumps(deploy_parameters_full, indent=4))
 
         logger.debug(f"{deployment_parameters_path} created")
-        
+
         # Extra output file to help the user know which parameters are optional
         if not self.interactive:
             if nfd_parameters_with_default:
-                print(F"Optional parameters detected. Creating {OPTIONAL_DEPLOYMENT_PARAMETERS_FILE} to help you choose which to expose.")
-                optional_deployment_parameters_path = os.path.join(folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE)
+                print(
+                    f"Optional parameters detected. Creating {OPTIONAL_DEPLOYMENT_PARAMETERS_FILE} to help you choose which to expose."
+                )
+                optional_deployment_parameters_path = os.path.join(
+                    folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE
+                )
                 with open(optional_deployment_parameters_path, "w") as _file:
                     _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)
                     _file.write(json.dumps(nfd_parameters_with_default, indent=4))
@@ -229,7 +240,9 @@ class VnfNfdGenerator(NFDGenerator):
         :param folder_path: The folder to put this file in.
         """
         logger.debug(f"Create {TEMPLATE_PARAMETERS}")
-        vm_parameters = self.vm_parameters_ordered if self.order_params else self.vm_parameters
+        vm_parameters = (
+            self.vm_parameters_ordered if self.order_params else self.vm_parameters
+        )
         template_parameters = {
             key: f"{{deployParameters.{key}}}" for key in vm_parameters
         }
