@@ -54,6 +54,13 @@ class VnfNfdGenerator(NFDGenerator):
     - Parameters files that are used by the NFDV bicep file, these are the
       deployParameters and the mapping profiles of those deploy parameters
     - A bicep file for the Artifact manifests
+    
+    @param order_params: whether to order the deployment and template output parameters
+                         with those without a default first, then those with a default.
+                         Those without a default will definitely be required to be 
+                         exposed, those with a default may not be.
+    @param interactive:  whether to prompt the user to confirm the parameters to be
+                         exposed.
     """
 
     def __init__(self, config: VNFConfiguration, order_params: bool, interactive: bool):
@@ -168,7 +175,6 @@ class VnfNfdGenerator(NFDGenerator):
         logger.debug("Create deploymentParameters.json")
 
         nfd_parameters = {}
-        nfd_parameters_no_default = {}
         nfd_parameters_with_default = {}
         vm_parameters_to_exclude = []
 
@@ -219,19 +225,25 @@ class VnfNfdGenerator(NFDGenerator):
             _file.write(json.dumps(deploy_parameters_full, indent=4))
 
         logger.debug(f"{deployment_parameters_path} created")
+        if self.order_params:
+            print("Deployment parameters for the generated NFDV are ordered by those "
+                  "without defaults first to make it easier to choose which to expose.")
 
         # Extra output file to help the user know which parameters are optional
         if not self.interactive:
             if nfd_parameters_with_default:
-                print(
-                    f"Optional parameters detected. Creating {OPTIONAL_DEPLOYMENT_PARAMETERS_FILE} to help you choose which to expose."
-                )
+
                 optional_deployment_parameters_path = os.path.join(
                     folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE
                 )
                 with open(optional_deployment_parameters_path, "w") as _file:
                     _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)
                     _file.write(json.dumps(nfd_parameters_with_default, indent=4))
+                print(
+                    "Optional ARM parameters detected. Created "
+                    f"{OPTIONAL_DEPLOYMENT_PARAMETERS_FILE} to help you choose which "
+                    "to expose."
+                )                    
 
     def write_template_parameters(self, folder_path: str) -> None:
         """
@@ -292,23 +304,7 @@ class VnfNfdGenerator(NFDGenerator):
 
         manifest_path = os.path.join(code_dir, "templates", self.manifest_template_name)
         shutil.copy(manifest_path, self.output_folder_name)
-
-        # os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
-        # tmp_schema_path = os.path.join(
-        #     self.tmp_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
-        # )
-        # output_schema_path = os.path.join(
-        #     self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
-        # )
-        # shutil.copy(
-        #     tmp_schema_path,
-        #     output_schema_path,
-        # )
-
-        # tmp_config_mappings_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS)
-        # output_config_mappings_path = os.path.join(
-        #     self.output_folder_name, CONFIG_MAPPINGS
-        # )
+        # Copy everything in the temp folder to the output folder
         shutil.copytree(
             self.tmp_folder_name,
             self.output_folder_name,

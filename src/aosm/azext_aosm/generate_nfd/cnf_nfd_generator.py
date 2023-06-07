@@ -47,13 +47,16 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     - Parameters files that are used by the NFDV bicep file, these are the
       deployParameters and the mapping profiles of those deploy parameters
     - A bicep file for the Artifact manifests
-
-    Interactive parameter is only used if the user wants to generate the values mapping
-    file from the values.yaml in the helm package.
     """
 
     def __init__(self, config: CNFConfiguration, interactive: bool = False):
-        """Create a new CNF NFD Generator."""
+        """
+        Create a new CNF NFD Generator.
+        
+        Interactive parameter is only used if the user wants to generate the values
+        mapping file from the values.yaml in the helm package, and also requires
+        the mapping file in config to be blank.
+        """
         super(NFDGenerator, self).__init__()
         self.config = config
         self.nfd_jinja2_template_path = os.path.join(
