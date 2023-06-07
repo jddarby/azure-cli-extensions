@@ -4,14 +4,12 @@
 # --------------------------------------------------------------------------------------
 """Contains a class for generating VNF NFDs and associated resources."""
 
-import logging
 import json
 import os
 import shutil
 import tempfile
 
 from functools import cached_property
-from pathlib import Path
 from typing import Any, Dict, Optional
 from knack.log import get_logger
 
@@ -46,6 +44,7 @@ ARM_TO_JSON_PARAM_TYPES: Dict[str, str] = {
 
 
 class VnfNfdGenerator(NFDGenerator):
+    # pylint: disable=too-many-instance-attributes
     """
     VNF NFD Generator.
 
@@ -80,15 +79,13 @@ class VnfNfdGenerator(NFDGenerator):
         )
         self.order_params = order_params
         self.interactive = interactive
+        self.tmp_folder_name = ''
 
     def generate_nfd(self) -> None:
-        """Create a bicep template for an NFD from the ARM template for the VNF."""
         """
         Generate a VNF NFD which comprises an group, an Artifact Manifest and a NFDV.
-
         Create a bicep template for an NFD from the ARM template for the VNF.
         """
-
         # Create temporary folder.
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.tmp_folder_name = tmpdirname
@@ -120,7 +117,7 @@ class VnfNfdGenerator(NFDGenerator):
     @cached_property
     def vm_parameters(self) -> Dict[str, Any]:
         """The parameters from the VM ARM template."""
-        with open(self.arm_template_path, "r") as _file:
+        with open(self.arm_template_path, "r", encoding="utf-8") as _file:
             data = json.load(_file)
             if "parameters" in data:
                 parameters: Dict[str, Any] = data["parameters"]
@@ -221,10 +218,10 @@ class VnfNfdGenerator(NFDGenerator):
         deploy_parameters_full: Dict[str, Any] = SCHEMA_PREFIX
         deploy_parameters_full["properties"].update(nfd_parameters)
 
-        with open(deployment_parameters_path, "w") as _file:
+        with open(deployment_parameters_path, "w", encoding="utf-8") as _file:
             _file.write(json.dumps(deploy_parameters_full, indent=4))
 
-        logger.debug(f"{deployment_parameters_path} created")
+        logger.debug("%s created", deployment_parameters_path)
         if self.order_params:
             print("Deployment parameters for the generated NFDV are ordered by those "
                   "without defaults first to make it easier to choose which to expose.")
@@ -243,7 +240,7 @@ class VnfNfdGenerator(NFDGenerator):
                     "Optional ARM parameters detected. Created "
                     f"{OPTIONAL_DEPLOYMENT_PARAMETERS_FILE} to help you choose which "
                     "to expose."
-                )                    
+                )
 
     def write_template_parameters(self, folder_path: str) -> None:
         """
@@ -251,7 +248,7 @@ class VnfNfdGenerator(NFDGenerator):
 
         :param folder_path: The folder to put this file in.
         """
-        logger.debug(f"Create {TEMPLATE_PARAMETERS}")
+        logger.debug("Create %s", TEMPLATE_PARAMETERS)
         vm_parameters = (
             self.vm_parameters_ordered if self.order_params else self.vm_parameters
         )
@@ -261,10 +258,10 @@ class VnfNfdGenerator(NFDGenerator):
 
         template_parameters_path = os.path.join(folder_path, TEMPLATE_PARAMETERS)
 
-        with open(template_parameters_path, "w") as _file:
+        with open(template_parameters_path, "w", encoding="utf-8") as _file:
             _file.write(json.dumps(template_parameters, indent=4))
 
-        logger.debug(f"{template_parameters_path} created")
+        logger.debug("%s created", template_parameters_path)
 
     def write_vhd_parameters(self, folder_path: str) -> None:
         """
@@ -290,7 +287,7 @@ class VnfNfdGenerator(NFDGenerator):
         with open(vhd_parameters_path, "w", encoding="utf-8") as _file:
             _file.write(json.dumps(vhd_parameters, indent=4))
 
-        logger.debug(f"{vhd_parameters_path} created")
+        logger.debug("%s created", vhd_parameters_path)
 
     def copy_to_output_folder(self) -> None:
         """Copy the bicep templates, config mappings and schema into the build output folder."""
