@@ -8,31 +8,31 @@ import os
 import shutil
 from dataclasses import asdict
 from typing import Optional
-from knack.log import get_logger
+
 from azure.cli.core.azclierror import (
     CLIInternalError,
     InvalidArgumentValueError,
     UnclassifiedUserFault,
 )
+from knack.log import get_logger
 
-from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
-from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
-from azext_aosm.generate_nfd.vnf_nfd_generator import VnfNfdGenerator
-from azext_aosm.delete.delete import ResourceDeleter
-from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
-from azext_aosm.util.constants import VNF, CNF, NSD
-from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm._client_factory import cf_resources
 from azext_aosm._configuration import (
-    get_configuration,
+    CNFConfiguration,
     NFConfiguration,
     NSConfiguration,
     VNFConfiguration,
-    CNFConfiguration,
+    get_configuration,
 )
-
+from azext_aosm.delete.delete import ResourceDeleter
+from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
+from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
+from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
+from azext_aosm.generate_nfd.vnf_nfd_generator import VnfNfdGenerator
+from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
+from azext_aosm.util.constants import CNF, NSD, VNF
+from azext_aosm.util.management_clients import ApiClients
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
 logger = get_logger(__name__)
 
@@ -255,7 +255,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(config_as_dict)
-        if configuration_type == CNF or configuration_type == VNF:
+        if configuration_type in (CNF,VNF):
             prtName = "definition"
         else:
             prtName = "design"
@@ -365,8 +365,6 @@ def _generate_nsd(config: NSDGenerator, api_clients):
     if config:
         nsd_generator = NSDGenerator(config)
     else:
-        from azure.cli.core.azclierror import CLIInternalError
-
         raise CLIInternalError("Generate NSD called without a config file")
     deploy_parameters = _get_nfdv_deployment_parameters(config, api_clients)
 

@@ -8,28 +8,26 @@ import json
 import os
 import shutil
 import tempfile
-
 from functools import cached_property
 from typing import Any, Dict, Optional
+
 from knack.log import get_logger
 
-from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.util.utils import input_ack
-
 from azext_aosm._configuration import VNFConfiguration
+from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
+    CONFIG_MAPPINGS,
+    DEPLOYMENT_PARAMETERS,
     OPTIONAL_DEPLOYMENT_PARAMETERS_FILE,
     OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING,
-    VNF_DEFINITION_BICEP_TEMPLATE,
-    VNF_MANIFEST_BICEP_TEMPLATE,
-    CONFIG_MAPPINGS,
-    SCHEMAS,
     SCHEMA_PREFIX,
-    DEPLOYMENT_PARAMETERS,
+    SCHEMAS,
     TEMPLATE_PARAMETERS,
     VHD_PARAMETERS,
+    VNF_DEFINITION_BICEP_TEMPLATE,
+    VNF_MANIFEST_BICEP_TEMPLATE,
 )
-
+from azext_aosm.util.utils import input_ack
 
 logger = get_logger(__name__)
 
@@ -53,10 +51,10 @@ class VnfNfdGenerator(NFDGenerator):
     - Parameters files that are used by the NFDV bicep file, these are the
       deployParameters and the mapping profiles of those deploy parameters
     - A bicep file for the Artifact manifests
-    
+
     @param order_params: whether to order the deployment and template output parameters
                          with those without a default first, then those with a default.
-                         Those without a default will definitely be required to be 
+                         Those without a default will definitely be required to be
                          exposed, those with a default may not be.
     @param interactive:  whether to prompt the user to confirm the parameters to be
                          exposed.
@@ -79,11 +77,12 @@ class VnfNfdGenerator(NFDGenerator):
         )
         self.order_params = order_params
         self.interactive = interactive
-        self.tmp_folder_name = ''
+        self.tmp_folder_name = ""
 
     def generate_nfd(self) -> None:
         """
         Generate a VNF NFD which comprises an group, an Artifact Manifest and a NFDV.
+
         Create a bicep template for an NFD from the ARM template for the VNF.
         """
         # Create temporary folder.
@@ -223,17 +222,20 @@ class VnfNfdGenerator(NFDGenerator):
 
         logger.debug("%s created", deployment_parameters_path)
         if self.order_params:
-            print("Deployment parameters for the generated NFDV are ordered by those "
-                  "without defaults first to make it easier to choose which to expose.")
+            print(
+                "Deployment parameters for the generated NFDV are ordered by those "
+                "without defaults first to make it easier to choose which to expose."
+            )
 
         # Extra output file to help the user know which parameters are optional
         if not self.interactive:
             if nfd_parameters_with_default:
-
                 optional_deployment_parameters_path = os.path.join(
                     folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE
                 )
-                with open(optional_deployment_parameters_path, "w", encoding="utf-8") as _file:
+                with open(
+                    optional_deployment_parameters_path, "w", encoding="utf-8"
+                ) as _file:
                     _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)
                     _file.write(json.dumps(nfd_parameters_with_default, indent=4))
                 print(

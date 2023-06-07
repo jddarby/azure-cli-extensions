@@ -8,32 +8,31 @@ import os
 import re
 import shutil
 import tarfile
-from typing import Dict, List, Any, Tuple, Optional, Iterator
-
 import tempfile
+from typing import Any, Dict, Iterator, List, Optional, Tuple
+
 import yaml
-from jinja2 import Template, StrictUndefined
-from azure.cli.core.azclierror import InvalidTemplateError, FileOperationError
+from azure.cli.core.azclierror import FileOperationError, InvalidTemplateError
+from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
-from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm._configuration import CNFConfiguration, HelmPackageConfig
+from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
     CNF_DEFINITION_BICEP_TEMPLATE,
     CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
     CNF_MANIFEST_BICEP_TEMPLATE,
     CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
-    DEPLOYMENT_PARAMETER_MAPPING_REGEX,
-    IMAGE_LINE_REGEX,
-    IMAGE_PULL_SECRET_LINE_REGEX,
     CONFIG_MAPPINGS,
-    SCHEMAS,
-    SCHEMA_PREFIX,
+    DEPLOYMENT_PARAMETER_MAPPING_REGEX,
     DEPLOYMENT_PARAMETERS,
     GENERATED_VALUES_MAPPINGS,
+    IMAGE_LINE_REGEX,
+    IMAGE_PULL_SECRET_LINE_REGEX,
+    SCHEMA_PREFIX,
+    SCHEMAS,
 )
 from azext_aosm.util.utils import input_ack
-
 
 logger = get_logger(__name__)
 
@@ -52,10 +51,10 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     def __init__(self, config: CNFConfiguration, interactive: bool = False):
         """
         Create a new CNF NFD Generator.
-        
+
         Interactive parameter is only used if the user wants to generate the values
-        mapping file from the values.yaml in the helm package, and also requires
-        the mapping file in config to be blank.
+        mapping file from the values.yaml in the helm package, and also requires the
+        mapping file in config to be blank.
         """
         super(NFDGenerator, self).__init__()
         self.config = config
@@ -79,7 +78,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             self.output_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
         )
         self.interactive = interactive
-        self._tmp_folder_name = ''
+        self._tmp_folder_name = ""
 
     def generate_nfd(self) -> None:
         """Generate a CNF NFD which comprises a group, an Artifact Manifest and an NFDV."""
@@ -170,7 +169,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         logger.debug("Extracting helm package %s", path)
 
         (_, ext) = os.path.splitext(path)
-        if ext in ('.gz', '.tgz'):
+        if ext in (".gz", ".tgz"):
             with tarfile.open(path, "r:gz") as tar:
                 tar.extractall(path=self._tmp_folder_name)
 

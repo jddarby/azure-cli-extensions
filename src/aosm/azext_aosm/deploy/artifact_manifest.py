@@ -4,27 +4,28 @@
 
 from functools import cached_property, lru_cache
 from typing import Any, List, Union
-from knack.log import get_logger
-from oras.client import OrasClient
 
 from azure.cli.core.azclierror import AzCLIError
 from azure.storage.blob import BlobClient
+from knack.log import get_logger
+from oras.client import OrasClient
 
-from azext_aosm.deploy.artifact import Artifact
 from azext_aosm._configuration import NFConfiguration, NSConfiguration
+from azext_aosm.deploy.artifact import Artifact
+from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks.models import (
     ArtifactManifest,
-    ManifestArtifactFormat,
-    CredentialType,
     ArtifactType,
+    CredentialType,
+    ManifestArtifactFormat,
 )
-from azext_aosm.util.management_clients import ApiClients
 
 logger = get_logger(__name__)
 
 
 class ArtifactManifestOperator:
     """ArtifactManifest class."""
+
     # pylint: disable=too-few-public-methods
     def __init__(
         self,
@@ -123,7 +124,8 @@ class ArtifactManifestOperator:
             # Check we have the required artifact types for this credential. Indicates
             # a coding error if we hit this but worth checking.
             if not (
-                artifact.artifact_type in (ArtifactType.IMAGE_FILE, ArtifactType.VHD_IMAGE_FILE)
+                artifact.artifact_type
+                in (ArtifactType.IMAGE_FILE, ArtifactType.VHD_IMAGE_FILE)
             ):
                 raise AzCLIError(
                     f"Cannot upload artifact {artifact.artifact_name}."

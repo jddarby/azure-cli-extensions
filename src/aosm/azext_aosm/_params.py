@@ -7,7 +7,7 @@
 from argcomplete.completers import FilesCompleter
 from azure.cli.core import AzCommandsLoader
 
-from .util.constants import VNF, CNF, NSD
+from .util.constants import CNF, VNF
 
 
 def load_arguments(self: AzCommandsLoader, _):
