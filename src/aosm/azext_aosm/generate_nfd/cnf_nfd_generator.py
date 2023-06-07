@@ -221,7 +221,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         self, helm_package: HelmPackageConfig
     ) -> Dict[str, Any]:
         for file in os.listdir(os.path.join(self._tmp_folder_name, helm_package.name)):
-            if file == "values.yaml" or file == "values.yml":
+            if file in ("values.yaml", "values.yml"):
                 with open(
                     os.path.join(self._tmp_folder_name, helm_package.name, file),
                     "r",
@@ -471,7 +471,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         for k, v in values_yaml_dict.items():
             # if value is a string and contains deployParameters.
-            if isinstance(v, str) or isinstance(v, int) or isinstance(v, bool):
+            if isinstance(v, (str, int, bool)):
                 # Replace the parameter with {deploymentParameter.keyname}
                 if key_prefix:
                     param_name = f"{key_prefix}_{k}"

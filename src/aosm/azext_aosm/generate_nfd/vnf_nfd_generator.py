@@ -197,7 +197,7 @@ class VnfNfdGenerator(NFDGenerator):
             # Map ARM parameter types to JSON parameter types accepted by AOSM
             arm_type = self.vm_parameters[key]["type"]
             json_type = arm_type
-            if arm_type in ARM_TO_JSON_PARAM_TYPES.keys():
+            if arm_type in ARM_TO_JSON_PARAM_TYPES.keys(): # pylint: disable=consider-iterating-dictionary
                 json_type = ARM_TO_JSON_PARAM_TYPES[arm_type]
 
             if has_default:
@@ -233,7 +233,7 @@ class VnfNfdGenerator(NFDGenerator):
                 optional_deployment_parameters_path = os.path.join(
                     folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE
                 )
-                with open(optional_deployment_parameters_path, "w") as _file:
+                with open(optional_deployment_parameters_path, "w", encoding="utf-8") as _file:
                     _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)
                     _file.write(json.dumps(nfd_parameters_with_default, indent=4))
                 print(

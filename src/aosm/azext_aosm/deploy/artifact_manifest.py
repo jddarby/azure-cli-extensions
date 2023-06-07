@@ -142,7 +142,7 @@ class ArtifactManifestOperator:
                 blob_name = container_name
 
             logger.debug("container name: %s, blob name: %s", container_name, blob_name)
-            
+
             blob_url = self._get_blob_url(container_name, blob_name)
             return BlobClient.from_blob_url(blob_url)
         return self._oras_client(self._manifest_credentials["acr_server_url"])
@@ -159,9 +159,8 @@ class ArtifactManifestOperator:
                 sas_uri = str(container_credential["container_sas_uri"])
                 sas_uri_prefix = sas_uri.split("?")[0]  # pylint: disable=use-maxsplit-arg
                 sas_uri_token = sas_uri.split("?")[1]
-                
+
                 blob_url = f"{sas_uri_prefix}/{blob_name}?{sas_uri_token}"
-                
                 logger.debug("Blob URL: %s", blob_url)
 
                 return blob_url

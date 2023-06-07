@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from knack.log import get_logger
 
 from azure.storage.blob import BlobClient, BlobType
-from azext_aosm._configuration import ArtifactConfig
 from oras.client import OrasClient
 from azext_aosm._configuration import ArtifactConfig
 
