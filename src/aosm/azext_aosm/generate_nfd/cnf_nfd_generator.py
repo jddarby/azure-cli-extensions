@@ -468,6 +468,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         Thus creating a values mapping file if the user has not provided one in config.
         """
+        logger.debug("Replacing values with deploy parameters")
         for k, v in values_yaml_dict.items():
             # if value is a string and contains deployParameters.
             logger.debug("Processing key %s", k)
@@ -523,17 +524,25 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         for k, v in nested_dict.items():
             # if value is a string and contains deployParameters.
             if isinstance(v, str) and re.search(DEPLOYMENT_PARAMETER_MAPPING_REGEX, v):
+                logger.debug(
+                    "Found string deploy parameter for key %s, value %s. Find schema type", k, v
+                    )
                 # only add the parameter name (e.g. from {deployParameter.zone} only param = zone)
                 param = v.split(".", 1)[1]
                 param = param.split("}", 1)[0]
 
                 # add the schema for k (from the big schema) to the (smaller) schema
-                final_schema.update(
-                    {param: {"type": schema_nested_dict["properties"][k]["type"]}}
-                )
-
+                if "properties" in schema_nested_dict.keys():
+                    final_schema.update(
+                        {param: {"type": schema_nested_dict["properties"][k]["type"]}}
+                    )
+                else:
+                    final_schema.update(
+                        {param: {"type": schema_nested_dict[k]["type"]}}
+                    )
             # else if value is a (non-empty) dictionary (i.e another layer of nesting)
             elif hasattr(v, "items") and v.items():
+                logger.debug("Found dict value for key %s. Find schema type", k)
                 # handling schema having properties which doesn't map directly to the values file nesting
                 if "properties" in schema_nested_dict.keys():
                     schema_nested_dict = schema_nested_dict["properties"][k]
