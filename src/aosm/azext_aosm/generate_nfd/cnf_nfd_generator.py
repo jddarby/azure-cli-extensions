@@ -525,8 +525,10 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             # if value is a string and contains deployParameters.
             if isinstance(v, str) and re.search(DEPLOYMENT_PARAMETER_MAPPING_REGEX, v):
                 logger.debug(
-                    "Found string deploy parameter for key %s, value %s. Find schema type", k, v
-                    )
+                    "Found string deploy parameter for key %s, value %s. Find schema type",
+                    k,
+                    v,
+                )
                 # only add the parameter name (e.g. from {deployParameter.zone} only param = zone)
                 param = v.split(".", 1)[1]
                 param = param.split("}", 1)[0]
