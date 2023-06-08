@@ -470,6 +470,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         for k, v in values_yaml_dict.items():
             # if value is a string and contains deployParameters.
+            logger.debug("Processing key %s", k)
             if isinstance(v, (str, int, bool)):
                 # Replace the parameter with {deploymentParameter.keyname}
                 if key_prefix:
