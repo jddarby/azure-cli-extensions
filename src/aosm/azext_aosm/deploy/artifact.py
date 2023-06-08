@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Union
 
 from azure.storage.blob import BlobClient
-from azext_aosm._configuration import ArtifactConfig
+from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig
 from oras.client import OrasClient
 
 logger = get_logger(__name__)
@@ -22,20 +22,26 @@ class Artifact:
     artifact_version: str
     artifact_client: Union[BlobClient, OrasClient]
 
-    def upload(self, artifact_config: ArtifactConfig) -> None:
+    def upload(self, artifact_config: ArtifactConfig or HelmPackageConfig) -> None:
         """
         Upload aritfact.
 
         :param artifact_config: configuration for the artifact being uploaded
         """
         if type(self.artifact_client) == OrasClient:
-            self._upload_to_acr(artifact_config)
+            print(f"type of config is {type(artifact_config)}")
+            self._upload_helm_to_acr(artifact_config)
+
+            # if type(artifact_config) == HelmPackageConfig:
+            #     self._upload_helm_to_acr(artifact_config)
+            # elif type(artifact_config) == ArtifactConfig:
+            #     self._upload_arm_to_acr(artifact_config)
         else:
             self._upload_to_storage_account(artifact_config)
 
-    def _upload_to_acr(self, artifact_config: ArtifactConfig) -> None:
+    def _upload_arm_to_acr(self, artifact_config: ArtifactConfig) -> None:
         """
-        Upload artifact to ACR.
+        Upload ARM artifact to ACR.
 
         :param artifact_config: configuration for the artifact being uploaded
         """
@@ -56,6 +62,34 @@ class Artifact:
                 "Copying artifacts is not implemented for ACR artifacts stores."
             )
 
+    def _upload_helm_to_acr(self, artifact_config: HelmPackageConfig) -> None:
+        """
+        Upload artifact to ACR.
+
+        :param artifact_config: configuration for the artifact being uploaded
+        """
+        assert type(self.artifact_client) == OrasClient
+
+        # If not included in config, the file path value will be the description of
+        # the field.
+
+        if artifact_config["path_to_chart"]:
+            target = f"{self.artifact_client.remote.hostname.replace('https://', '')}/{self.artifact_name}:{self.artifact_version}"
+            logger.debug(f"Uploading {artifact_config['path_to_chart']} to {target}")
+            print((f"Uploading {artifact_config['path_to_chart']} to {target}"))
+            result = self.artifact_client.push(
+                files=[artifact_config["path_to_chart"]],
+                target=target,
+            )
+            print(result)
+
+            output = self.artifact_client.pull(target=target)
+            print(output)
+        else:
+            raise NotImplementedError(
+                "Copying artifacts is not implemented for ACR artifacts stores."
+            )
+
     def _upload_to_storage_account(self, artifact_config: ArtifactConfig) -> None:
         """
         Upload artifact to storage account.
@@ -63,6 +97,7 @@ class Artifact:
         :param artifact_config: configuration for the artifact being uploaded
         """
         assert type(self.artifact_client) == BlobClient
+        assert type(artifact_config) == ArtifactConfig
 
         # If the file path is given, upload the artifact, else, copy it from an existing blob.
         if artifact_config.file_path:
