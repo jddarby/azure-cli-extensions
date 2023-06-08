@@ -208,7 +208,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         mapping_filepath = os.path.join(
             self._tmp_folder_name,
             GENERATED_VALUES_MAPPINGS,
-            f"{helm_package.name}_generated-mapping.yaml",
+            f"{helm_package.name}-generated-mapping.yaml",
         )
         with open(mapping_filepath, "w", encoding="UTF-8") as mapping_file:
             yaml.dump(mapping_to_write, mapping_file)
@@ -348,7 +348,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             "dependsOnProfile": helm_package.depends_on,
             "registryValuesPaths": list(registryValuesPaths),
             "imagePullSecretsValuesPaths": list(imagePullSecretsValuesPaths),
-            "valueMappingsPath": self.generate_parameter_mappings(helm_package),
+            "valueMappingsPath": self.jsonify_value_mappings(helm_package),
         }
 
     def _find_yaml_files(self, directory) -> Iterator[str]:
@@ -483,7 +483,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                         logger.debug("Excluding parameter %s", param_name)
                         final_values_mapping_dict.update({k: v})
                         continue
-                replacement_value = f"{{deploymentParameter.{param_name}}}"
+                replacement_value = f"{{deployParameters.{param_name}}}"
 
                 # add the schema for k (from the big schema) to the (smaller) schema
                 final_values_mapping_dict.update({k: replacement_value})
@@ -509,7 +509,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             param_name = f"{key_prefix}_{k}_{index}"
                         else:
                             param_name = f"{k})_{index}"
-                        replacement_value = f"{{deploymentParameter.{param_name}}}"
+                        replacement_value = f"{{deployParameters.{param_name}}}"
                         final_values_mapping_dict[k].append(replacement_value)
 
         return final_values_mapping_dict
@@ -570,11 +570,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         return (chart_name, chart_version)
 
-    def generate_parameter_mappings(self, helm_package: HelmPackageConfig) -> str:
-        """Generate parameter mappings for the given helm package."""
-        values = os.path.join(
-            self._tmp_folder_name, helm_package.name, "values.mappings.yaml"
-        )
+    def jsonify_value_mappings(self, helm_package: HelmPackageConfig) -> str:
+        """Yaml->JSON values mapping file, then return path to it."""
+        mappings_yaml = helm_package.path_to_mappings
 
         mappings_folder_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS)
         mappings_filename = f"{helm_package.name}-mappings.json"
@@ -584,7 +582,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         mapping_file_path = os.path.join(mappings_folder_path, mappings_filename)
 
-        with open(values, "r", encoding="utf-8") as f:
+        with open(mappings_yaml, "r", encoding="utf-8") as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
 
         with open(mapping_file_path, "w", encoding="utf-8") as file:
