@@ -30,17 +30,6 @@ from azext_aosm._configuration import (
     NFConfiguration,
     NSConfiguration,
 )
-from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
-from azext_aosm.ManifestCredential import ManifestCredential
-
-# # Create a ContainerRegistryClient that will authenticate through Active Directory
-# from azure.containerregistry import ContainerRegistryClient
-# from azure.identity import DefaultAzureCredential
-
-# endpoint = "https://mycontainerregistry.azurecr.io"
-# audience = "https://management.azure.com"
-# client = ContainerRegistryClient(endpoint, DefaultAzureCredential(), audience=audience)
-
 
 logger = get_logger(__name__)
 
@@ -176,6 +165,10 @@ def publish_definition(
         config_file=config_file, configuration_type=definition_type
     )
 
+    for package in config.helm_packages:
+        print(f"Type of package: {type(package)}")
+
+    return
     if definition_type == VNF:
         deployer = DeployerViaArm(api_clients, config=config)
         deployer.deploy_vnfd_from_bicep(
