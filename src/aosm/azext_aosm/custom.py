@@ -165,10 +165,6 @@ def publish_definition(
         config_file=config_file, configuration_type=definition_type
     )
 
-    for package in config.helm_packages:
-        print(f"Type of package: {type(package)}")
-
-    return
     if definition_type == VNF:
         deployer = DeployerViaArm(api_clients, config=config)
         deployer.deploy_vnfd_from_bicep(

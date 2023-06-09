@@ -287,9 +287,10 @@ class CNFConfiguration(NFConfiguration):
 
         Used when creating CNFConfiguration object from a loaded json config file.
         """
-        for package in self.helm_packages:
+        for package_index in range(len(self.helm_packages)):
+            package = self.helm_packages[package_index]
             if isinstance(package, dict):
-                package = HelmPackageConfig(**dict(package))
+                self.helm_packages[package_index] = HelmPackageConfig(**dict(package))
 
     @property
     def build_output_folder_name(self) -> str:

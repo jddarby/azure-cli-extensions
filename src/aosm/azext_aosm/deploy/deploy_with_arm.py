@@ -348,11 +348,11 @@ class DeployerViaArm:
             artifact_dictionary[artifact.artifact_name] = artifact
 
         for package_number in range(len(self.config.helm_packages)):
-            helm_package_name = self.config.helm_packages[package_number]["name"]
+            helm_package_name = self.config.helm_packages[package_number].name
 
             if helm_package_name not in artifact_dictionary.keys():
                 print(
-                    f"Artifact {self.config.helm_packages[package_number]['name']} not found in the artifact manifest"
+                    f"Artifact {helm_package_name} not found in the artifact manifest"
                 )
                 continue
 
