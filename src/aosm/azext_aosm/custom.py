@@ -24,12 +24,22 @@ from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
 from azext_aosm.util.constants import VNF, CNF, NSD
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm._client_factory import cf_resources
+from azext_aosm._client_factory import cf_resources, cf_acr_registries
 from azext_aosm._configuration import (
     get_configuration,
     NFConfiguration,
     NSConfiguration,
 )
+from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
+from azext_aosm.ManifestCredential import ManifestCredential
+
+# # Create a ContainerRegistryClient that will authenticate through Active Directory
+# from azure.containerregistry import ContainerRegistryClient
+# from azure.identity import DefaultAzureCredential
+
+# endpoint = "https://mycontainerregistry.azurecr.io"
+# audience = "https://management.azure.com"
+# client = ContainerRegistryClient(endpoint, DefaultAzureCredential(), audience=audience)
 
 
 logger = get_logger(__name__)
@@ -161,6 +171,7 @@ def publish_definition(
     api_clients = ApiClients(
         aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
     )
+
     config = _get_config_from_file(
         config_file=config_file, configuration_type=definition_type
     )
@@ -174,18 +185,21 @@ def publish_definition(
             manifest_parameters_json_file=manifest_parameters_json_file,
         )
     elif definition_type == CNF:
+        ## TODO: pk5 Can make this part of the API clients
+        management_client = cf_acr_registries(cmd.cli_ctx)
+
         deployer = DeployerViaArm(api_clients, config=config)
         deployer.deploy_cnfd_from_bicep(
+            cli_ctx=cmd.cli_ctx,
+            management_client=management_client,
             bicep_path=definition_file,
             parameters_json_file=parameters_json_file,
             manifest_bicep_path=manifest_file,
             manifest_parameters_json_file=manifest_parameters_json_file,
         )
     else:
-        print("Definition type is:", definition_type)
-        raise NotImplementedError(
-            "Publishing of CNF definitions is not yet implemented. \
-            You should manually deploy your bicep file and upload charts and images to your artifact store. "
+        raise ValueError(
+            f"Definition type must be either 'vnf' or 'cnf'. Definition type {definition_type} is not recognised."
         )
 
 

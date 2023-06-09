@@ -31,8 +31,9 @@ class Artifact:
         :param artifact_config: configuration for the artifact being uploaded
         """
         if type(self.artifact_client) == OrasClient:
-            print(f"type of config is {type(artifact_config)}")
             self._upload_helm_to_acr(artifact_config)
+
+            ## TODO: pk5 fix this
 
             # if type(artifact_config) == HelmPackageConfig:
             #     self._upload_helm_to_acr(artifact_config)
@@ -79,15 +80,11 @@ class Artifact:
         if artifact_config["path_to_chart"]:
             target = f"{self.artifact_client.remote.hostname.replace('https://', '')}/{self.artifact_name}:{self.artifact_version}"
             logger.debug(f"Uploading {artifact_config['path_to_chart']} to {target}")
-            print((f"Uploading {artifact_config['path_to_chart']} to {target}"))
-            result = self.artifact_client.push(
+            self.artifact_client.push(
                 files=[artifact_config["path_to_chart"]],
                 target=target,
             )
-            print(result)
 
-            output = self.artifact_client.pull(target=target)
-            print(output)
         else:
             raise NotImplementedError(
                 "Copying artifacts is not implemented for ACR artifacts stores."
@@ -131,3 +128,45 @@ class Artifact:
                 raise RuntimeError(
                     f"{source_blob.blob_name} does not exist in {source_blob.account_name}."
                 )
+
+    def copy_image(
+        self,
+        cli_ctx,
+        management_client,
+        source_registry_id,
+        source_image,
+        target_registry_resource_group_name,
+        target_registry_name,
+        mode="NoForce",
+    ):
+        from azure.mgmt.containerregistry.models import (
+            ImportImageParameters,
+            ImportSource,
+        )
+
+        from azure.cli.core.commands import LongRunningOperation
+
+        ## TODO: pk5 Check if the registry exists
+
+        ## TODO: pk5 figure out the tags
+
+        ## TODO: pk5 figure out what happens if the artifact is not in the registry
+
+        target_tags = [source_image]
+
+        source = ImportSource(resource_id=source_registry_id, source_image=source_image)
+
+        import_parameters = ImportImageParameters(
+            source=source,
+            target_tags=target_tags,
+            untagged_target_repositories=[],
+            mode=mode,
+        )
+
+        result_poller = management_client.begin_import_image(
+            resource_group_name=target_registry_resource_group_name,
+            registry_name=target_registry_name,
+            parameters=import_parameters,
+        )
+
+        return LongRunningOperation(cli_ctx, "Importing image...")(result_poller)

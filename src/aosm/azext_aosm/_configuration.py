@@ -48,7 +48,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "path_to_mappings": "File path of value mappings on local disk. Accepts .yaml or .yml",
     "helm_depends_on": "Names of the Helm packages this package depends on. "
     "Leave as an empty array if no dependencies",
-    "source_registry_name": "Name of the source acr registry from which to pull the image",
+    "source_registry_id": "Name of the source acr registry from which to pull the image",
 }
 
 
@@ -277,10 +277,10 @@ class HelmPackageConfig:
 
 @dataclass
 class CNFConfiguration(NFConfiguration):
-    source_registry_name: str = DESCRIPTION_MAP["source_registry_name"]
+    source_registry_id: str = DESCRIPTION_MAP["source_registry_id"]
     helm_packages: List[Any] = field(default_factory=lambda: [HelmPackageConfig()])
 
-    ## TODO: source_registry_name
+    ## TODO: pk5 source_registry_id
     def __post_init__(self):
         """
         Cope with deserializing subclasses from dicts to HelmPackageConfig.

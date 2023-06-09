@@ -13,6 +13,7 @@ import time
 
 from knack.log import get_logger
 from azure.mgmt.resource.resources.models import DeploymentExtended
+from azure.mgmt.containerregistry import ContainerRegistryManagementClient
 
 from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
 from azext_aosm.util.management_clients import ApiClients
@@ -178,7 +179,7 @@ class DeployerViaArm:
 
         VNF specific return True if artifact manifest already exists, False otherwise
         """
-        ## TODO: this can be done in the same function as the VNF predeploy because only one step is different
+        ## TODO: pk5 this can be done in the same function as the VNF predeploy because only one step is different
         logger.debug("Ensure all required resources exist")
         self.pre_deployer.ensure_config_resource_group_exists()
         self.pre_deployer.ensure_config_publisher_exists()
@@ -254,6 +255,8 @@ class DeployerViaArm:
 
     def deploy_cnfd_from_bicep(
         self,
+        cli_ctx,
+        management_client: ContainerRegistryManagementClient,
         bicep_path: Optional[str] = None,
         parameters_json_file: Optional[str] = None,
         manifest_bicep_path: Optional[str] = None,
@@ -264,6 +267,8 @@ class DeployerViaArm:
 
         Also ensure that all required predeploy resources are deployed.
 
+        :param cli_ctx: The CLI context
+        :param management_client: The container registry management client
         :param bicep_path: The path to the bicep template of the nfdv
         :type bicep_path: str
         :param parameters_json_file: path to an override file of set parameters for the nfdv        :param
@@ -320,37 +325,57 @@ class DeployerViaArm:
         self.deploy_bicep_template(bicep_path, parameters)
         print(f"Deployed NFD {self.config.nf_name} version {self.config.version}.")
 
+        acr_properties = self.api_clients.aosm_client.artifact_stores.get(
+            resource_group_name=self.config.publisher_resource_group_name,
+            publisher_name=self.config.publisher_name,
+            artifact_store_name=self.config.acr_artifact_store_name,
+        )
+        target_registry_name = acr_properties.storage_resource_id.split("/")[-1]
+        target_registry_resource_group_name = acr_properties.storage_resource_id.split(
+            "/"
+        )[-5]
+
         acr_manifest = ArtifactManifestOperator(
             self.config,
             self.api_clients,
             self.config.acr_artifact_store_name,
             self.config.acr_manifest_name,
         )
-        print(f"ARTIFACTS: {acr_manifest.artifacts}")
 
-        artifact_dict = {}
+        artifact_dictionary = {}
 
         for artifact in acr_manifest.artifacts:
-            artifact_dict[artifact.artifact_name] = artifact
+            artifact_dictionary[artifact.artifact_name] = artifact
 
         for package_number in range(len(self.config.helm_packages)):
             helm_package_name = self.config.helm_packages[package_number]["name"]
 
-            if helm_package_name not in artifact_dict.keys():
+            if helm_package_name not in artifact_dictionary.keys():
                 print(
                     f"Artifact {self.config.helm_packages[package_number]['name']} not found in the artifact manifest"
                 )
                 continue
 
-            manifest_artifact = artifact_dict[helm_package_name]
+            manifest_artifact = artifact_dictionary[helm_package_name]
 
             print(f"Uploading Helm package: {helm_package_name}")
 
-            print(
-                f"Uploading Helm package: {self.config.helm_packages[package_number]}"
+            manifest_artifact.upload(self.config.helm_packages[package_number])
+
+            artifact_dictionary.pop(helm_package_name)
+
+        # All the remaining artifacts are not in the helm_packages list. We assume that they are images that need to be copied from another ACR.
+        for artifact in artifact_dictionary.values():
+            print(f"Copying artifact: {artifact.artifact_name}")
+            artifact.copy_image(
+                cli_ctx=cli_ctx,
+                management_client=management_client,
+                source_registry_id=self.config.source_registry_id,
+                source_image=f"{artifact.artifact_name}:{artifact.artifact_version}",
+                target_registry_resource_group_name=target_registry_resource_group_name,
+                target_registry_name=target_registry_name,
             )
 
-            manifest_artifact.upload(self.config.helm_packages[package_number])
         print("Done")
 
     def deploy_nsd_from_bicep(
