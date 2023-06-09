@@ -328,18 +328,29 @@ class DeployerViaArm:
         )
         print(f"ARTIFACTS: {acr_manifest.artifacts}")
 
-        for package_number in range(len(self.config.helm_packages)):
-            helm_chart_artifact = acr_manifest.artifacts[package_number]
+        artifact_dict = {}
 
-            print(
-                f"Uploading Helm package: {self.config.helm_packages[package_number]['name']}"
-            )
+        for artifact in acr_manifest.artifacts:
+            artifact_dict[artifact.artifact_name] = artifact
+
+        for package_number in range(len(self.config.helm_packages)):
+            helm_package_name = self.config.helm_packages[package_number]["name"]
+
+            if helm_package_name not in artifact_dict.keys():
+                print(
+                    f"Artifact {self.config.helm_packages[package_number]['name']} not found in the artifact manifest"
+                )
+                continue
+
+            manifest_artifact = artifact_dict[helm_package_name]
+
+            print(f"Uploading Helm package: {helm_package_name}")
 
             print(
                 f"Uploading Helm package: {self.config.helm_packages[package_number]}"
             )
 
-            helm_chart_artifact.upload(self.config.helm_packages[package_number])
+            manifest_artifact.upload(self.config.helm_packages[package_number])
         print("Done")
 
     def deploy_nsd_from_bicep(
