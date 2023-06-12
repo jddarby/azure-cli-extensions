@@ -88,10 +88,6 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             self._tmp_folder_name = tmpdirname
             try:
                 for helm_package in self.config.helm_packages:
-                    # Turn Any type into HelmPackageConfig, to access properties on the object
-                    # @TODO - commented this out because it was throwing an exception
-                    #helm_package = HelmPackageConfig(**helm_package)
-
                     # Unpack the chart into the tmp folder
                     self._extract_chart(helm_package.path_to_chart)
 
@@ -305,7 +301,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE
         )
         shutil.copy(tmp_manifest_bicep_path, self.output_folder_name)
-        
+
         # Copy any generated values mappings YAML files to the corresponding folder in
         # the output directory so that the user can edit them and re-run the build if
         # required
@@ -475,10 +471,10 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     ) -> Dict[Any, Any]:
         """
         Create a schema of types of only those values in the values.mappings.yaml file which have a deployParameters mapping.
-        
-        Finds the relevant part of the full schema of the values file and finds the 
+
+        Finds the relevant part of the full schema of the values file and finds the
         type of the parameter name, then adds that to the final schema, with no nesting.
-        
+
         Returns a schema of form:
         {
             "$schema": "https://json-schema.org/draft-07/schema#",
@@ -491,12 +487,12 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 "<parameter2>": {
                     "type": "<type>"
                 },
-        
-        nested_dict: the dictionary of the values mappings yaml which contains 
+
+        nested_dict: the dictionary of the values mappings yaml which contains
                      deployParameters mapping placeholders
-        schema_nested_dict: the properties section of the full schema (or sub-object in 
+        schema_nested_dict: the properties section of the full schema (or sub-object in
                             schema)
-        final_schema: Blank dictionary if this is the top level starting point, 
+        final_schema: Blank dictionary if this is the top level starting point,
                       otherwise the final_schema as far as we have got.
         """
         original_schema_nested_dict = schema_nested_dict
@@ -573,19 +569,20 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 # add the schema for k (from the big schema) to the (smaller) schema
                 final_values_mapping_dict.update({k: replacement_value})
             elif isinstance(v, dict):
-                
                 final_values_mapping_dict[k] = self._replace_values_with_deploy_params(
                     v, param_name
                 )
             elif isinstance(v, list):
                 final_values_mapping_dict[k] = []
                 for index, item in enumerate(v):
-                    param_name = f"{param_prefix}_{k}_{index}" if param_prefix else f"{k})_{index}"        
+                    param_name = (
+                        f"{param_prefix}_{k}_{index}"
+                        if param_prefix
+                        else f"{k})_{index}"
+                    )
                     if isinstance(item, dict):
                         final_values_mapping_dict[k].append(
-                            self._replace_values_with_deploy_params(
-                                item, param_name
-                            )
+                            self._replace_values_with_deploy_params(item, param_name)
                         )
                     elif isinstance(v, (str, int, bool)):
                         replacement_value = f"{{deployParameters.{param_name}}}"
@@ -593,11 +590,13 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     else:
                         raise ValueError(
                             f"Found an unexpected type {type(v)} of key {k} in "
-                            "values.yaml, cannot generate values mapping file.")                        
+                            "values.yaml, cannot generate values mapping file."
+                        )
             else:
                 raise ValueError(
                     f"Found an unexpected type {type(v)} of key {k} in values.yaml, "
-                    "cannot generate values mapping file.")
+                    "cannot generate values mapping file."
+                )
 
         return final_values_mapping_dict
 

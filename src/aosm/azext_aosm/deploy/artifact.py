@@ -10,6 +10,12 @@ from oras.client import OrasClient
 
 from azure.storage.blob import BlobClient, BlobType
 from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig
+from azure.mgmt.containerregistry.models import (
+    ImportImageParameters,
+    ImportSource,
+)
+
+from azure.cli.core.commands import LongRunningOperation
 
 logger = get_logger(__name__)
 
@@ -129,26 +135,13 @@ class Artifact:
     def copy_image(
         self,
         cli_ctx,
-        management_client,
+        container_registry_client,
         source_registry_id,
         source_image,
         target_registry_resource_group_name,
         target_registry_name,
         mode="NoForce",
     ):
-        from azure.mgmt.containerregistry.models import (
-            ImportImageParameters,
-            ImportSource,
-        )
-
-        from azure.cli.core.commands import LongRunningOperation
-
-        ## TODO: pk5 Check if the registry exists
-
-        ## TODO: pk5 figure out the tags
-
-        ## TODO: pk5 figure out what happens if the artifact is not in the registry
-
         target_tags = [source_image]
 
         source = ImportSource(resource_id=source_registry_id, source_image=source_image)
@@ -159,11 +152,22 @@ class Artifact:
             untagged_target_repositories=[],
             mode=mode,
         )
+        try:
+            result_poller = container_registry_client.begin_import_image(
+                resource_group_name=target_registry_resource_group_name,
+                registry_name=target_registry_name,
+                parameters=import_parameters,
+            )
 
-        result_poller = management_client.begin_import_image(
-            resource_group_name=target_registry_resource_group_name,
-            registry_name=target_registry_name,
-            parameters=import_parameters,
-        )
+            LongRunningOperation(cli_ctx, "Importing image...")(result_poller)
 
-        return LongRunningOperation(cli_ctx, "Importing image...")(result_poller)
+            logger.info(
+                "Successfully imported %s to %s", source_image, target_registry_name
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to import %s to %s. Check if this image exists in the source registry",
+                source_image,
+                target_registry_name,
+            )
+            logger.debug(e)

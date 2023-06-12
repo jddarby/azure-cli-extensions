@@ -172,7 +172,9 @@ def publish_definition(
     """
     print("Publishing definition.")
     api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
+        aosm_client=client,
+        resource_client=cf_resources(cmd.cli_ctx),
+        container_registry_client=cf_acr_registries(cmd.cli_ctx),
     )
 
     config = _get_config_from_file(
@@ -188,13 +190,9 @@ def publish_definition(
             manifest_parameters_json_file=manifest_parameters_json_file,
         )
     elif definition_type == CNF:
-        ## TODO: pk5 Can make this part of the API clients
-        management_client = cf_acr_registries(cmd.cli_ctx)
-
         deployer = DeployerViaArm(api_clients, config=config)
         deployer.deploy_cnfd_from_bicep(
             cli_ctx=cmd.cli_ctx,
-            management_client=management_client,
             bicep_path=definition_file,
             parameters_json_file=parameters_json_file,
             manifest_bicep_path=manifest_file,
@@ -267,7 +265,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(config_as_dict)
-        if configuration_type in (CNF,VNF):
+        if configuration_type in (CNF, VNF):
             prtName = "definition"
         else:
             prtName = "design"

@@ -297,7 +297,6 @@ class CNFConfiguration(NFConfiguration):
     source_registry_id: str = DESCRIPTION_MAP["source_registry_id"]
     helm_packages: List[Any] = field(default_factory=lambda: [HelmPackageConfig()])
 
-    ## TODO: pk5 source_registry_id
     def __post_init__(self):
         """
         Cope with deserializing subclasses from dicts to HelmPackageConfig.

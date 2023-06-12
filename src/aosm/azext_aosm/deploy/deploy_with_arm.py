@@ -12,11 +12,12 @@ import time
 from typing import Any, Dict, Optional
 
 from azure.mgmt.resource.resources.models import DeploymentExtended
-from azure.mgmt.containerregistry import ContainerRegistryManagementClient
 from knack.log import get_logger
 
 from azext_aosm._configuration import NFConfiguration, NSConfiguration, VNFConfiguration
 from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
+from azext_aosm.deploy.artifact import Artifact
+from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
 from azext_aosm._configuration import (
     NFConfiguration,
@@ -118,7 +119,7 @@ class DeployerViaArm:
         logger.debug(parameters)
 
         # Create or check required resources
-        deploy_manifest_template = not self.vnfd_predeploy()
+        deploy_manifest_template = not self.nfd_predeploy(definition_type=VNF)
         if deploy_manifest_template:
             self.deploy_manifest_template(
                 manifest_parameters_json_file, manifest_bicep_path, VNF
@@ -160,31 +161,22 @@ class DeployerViaArm:
         arm_template_artifact.upload(self.config.arm_template)
         print("Done")
 
-    def vnfd_predeploy(self) -> bool:
+    def nfd_predeploy(self, definition_type) -> bool:
         """
-        All the predeploy steps for a VNF. Create publisher, artifact stores and NFDG.
+        All the predeploy steps for a NFD. Create publisher, artifact stores and NFDG.
 
-        VNF specific return True if artifact manifest already exists, False otherwise
+        Return True if artifact manifest already exists, False otherwise
         """
+
         logger.debug("Ensure all required resources exist")
         self.pre_deployer.ensure_config_resource_group_exists()
         self.pre_deployer.ensure_config_publisher_exists()
         self.pre_deployer.ensure_acr_artifact_store_exists()
-        self.pre_deployer.ensure_sa_artifact_store_exists()
-        self.pre_deployer.ensure_config_nfdg_exists()
-        return self.pre_deployer.do_config_artifact_manifests_exist()
+        if definition_type == VNF:
+            self.pre_deployer.ensure_sa_artifact_store_exists()
+        if definition_type == CNF:
+            self.pre_deployer.ensure_config_source_registry_exists()
 
-    def cnfd_predeploy(self) -> bool:
-        """
-        All the predeploy steps for a CNF. Create publisher, artifact stores and NFDG.
-
-        VNF specific return True if artifact manifest already exists, False otherwise
-        """
-        ## TODO: pk5 this can be done in the same function as the VNF predeploy because only one step is different
-        logger.debug("Ensure all required resources exist")
-        self.pre_deployer.ensure_config_resource_group_exists()
-        self.pre_deployer.ensure_config_publisher_exists()
-        self.pre_deployer.ensure_acr_artifact_store_exists()
         self.pre_deployer.ensure_config_nfdg_exists()
         return self.pre_deployer.do_config_artifact_manifests_exist()
 
@@ -257,7 +249,6 @@ class DeployerViaArm:
     def deploy_cnfd_from_bicep(
         self,
         cli_ctx,
-        management_client: ContainerRegistryManagementClient,
         bicep_path: Optional[str] = None,
         parameters_json_file: Optional[str] = None,
         manifest_bicep_path: Optional[str] = None,
@@ -306,7 +297,7 @@ class DeployerViaArm:
         )
 
         # Create or check required resources
-        deploy_manifest_template = not self.cnfd_predeploy()
+        deploy_manifest_template = not self.nfd_predeploy(definition_type=CNF)
         if deploy_manifest_template:
             self.deploy_manifest_template(
                 manifest_parameters_json_file, manifest_bicep_path, CNF
@@ -363,14 +354,18 @@ class DeployerViaArm:
 
             manifest_artifact.upload(self.config.helm_packages[package_number])
 
+            print(f"Finished uploading Helm package: {helm_package_name}")
+
             artifact_dictionary.pop(helm_package_name)
 
         # All the remaining artifacts are not in the helm_packages list. We assume that they are images that need to be copied from another ACR.
         for artifact in artifact_dictionary.values():
+            assert isinstance(artifact, Artifact)
+
             print(f"Copying artifact: {artifact.artifact_name}")
             artifact.copy_image(
                 cli_ctx=cli_ctx,
-                management_client=management_client,
+                container_registry_client=self.api_clients.container_registry_client,
                 source_registry_id=self.config.source_registry_id,
                 source_image=f"{artifact.artifact_name}:{artifact.artifact_version}",
                 target_registry_resource_group_name=target_registry_resource_group_name,
