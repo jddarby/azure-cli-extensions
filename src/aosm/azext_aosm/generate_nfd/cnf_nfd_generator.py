@@ -89,7 +89,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             try:
                 for helm_package in self.config.helm_packages:
                     # Turn Any type into HelmPackageConfig, to access properties on the object
-                    helm_package = HelmPackageConfig(**helm_package)
+                    # @TODO - commented this out because it was throwing an exception
+                    #helm_package = HelmPackageConfig(**helm_package)
 
                     # Unpack the chart into the tmp folder
                     self._extract_chart(helm_package.path_to_chart)
