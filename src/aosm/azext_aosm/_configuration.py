@@ -1,32 +1,41 @@
 ## Disabling as every if statement in validate in NSConfig class has this condition
 # pylint: disable=simplifiable-condition
 
-from dataclasses import dataclass, field
-from typing import Dict, Optional, Any, List
-from pathlib import Path
 import os
-from azure.cli.core.azclierror import ValidationError, InvalidArgumentValueError
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from azure.cli.core.azclierror import InvalidArgumentValueError, ValidationError
+
 from azext_aosm.util.constants import (
-    DEFINITION_OUTPUT_BICEP_PREFIX,
-    VNF,
     CNF,
+    DEFINITION_OUTPUT_BICEP_PREFIX,
+    NF_DEFINITION_JSON_FILE,
     NSD,
     NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
-    NF_DEFINITION_JSON_FILE,
+    VNF,
 )
 
-
 DESCRIPTION_MAP: Dict[str, str] = {
-    "publisher_resource_group_name": "Resource group for the Publisher resource. Will be created if it does not exist.",
-    "publisher_name": "Name of the Publisher resource you want your definition published to. Will be created if it does not exist.",
-    "publisher_name_nsd": "Name of the Publisher resource you want your design published to. "
-    "This should be the same as the publisher used for your NFDVs",
+    "publisher_resource_group_name":
+        "Resource group for the Publisher resource. "
+        "Will be created if it does not exist.",
+    "publisher_name":
+        "Name of the Publisher resource you want your definition published to. "
+        "Will be created if it does not exist.",
+    "publisher_name_nsd":
+        "Name of the Publisher resource you want your design published to. "
+        "This should be the same as the publisher used for your NFDVs"
+    ,
     "publisher_resource_group_name_nsd": "Resource group for the Publisher resource.",
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource. Will be created if it does not exist.",
     "location": "Azure location to use when creating resources.",
-    "blob_artifact_store_name": "Name of the storage account Artifact Store resource. Will be created if it does not exist.",
+    "blob_artifact_store_name":
+        "Name of the storage account Artifact Store resource. Will be created if it "
+        "does not exist.",
     "artifact_name": "Name of the artifact",
     "file_path": "Optional. File path of the artifact you wish to upload from your local disk. "
     "Delete if not required.",
@@ -44,10 +53,18 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_offering_location": "Offering location of the Network Function Definition",
     "helm_package_name": "Name of the Helm package",
-    "path_to_chart": "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
-    "path_to_mappings": "File path of value mappings on local disk. Accepts .yaml or .yml",
-    "helm_depends_on": "Names of the Helm packages this package depends on. "
-    "Leave as an empty array if no dependencies",
+    "path_to_chart":
+        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
+    "path_to_mappings":
+        "File path of value mappings on local disk where chosen values are replaced "
+        "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
+        "blank string, a value mappings file will be generated with every value "
+        "mapped to a deployment parameter. Use a blank string and --interactive on "
+        "the build command to interactively choose which values to map."
+    ,
+    "helm_depends_on":
+        "Names of the Helm packages this package depends on. "
+        "Leave as an empty array if no dependencies",
     "source_registry_id": "Name of the source acr registry from which to pull the image",
 }
 
@@ -106,7 +123,7 @@ class NSConfiguration:
     nsdv_description: str = DESCRIPTION_MAP["nsdv_description"]
 
     def validate(self):
-        """Validate that all of the configuration parameters are set"""
+        """Validate that all of the configuration parameters are set."""
 
         if self.location == DESCRIPTION_MAP["location"] or "":
             raise ValueError("Location must be set")
@@ -191,7 +208,7 @@ class NSConfiguration:
 
     @property
     def arm_template_artifact_name(self) -> str:
-        """Return the artifact name for the ARM template"""
+        """Return the artifact name for the ARM template."""
         return f"{self.network_function_definition_group_name}_nfd_artifact"
 
 

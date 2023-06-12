@@ -3,14 +3,13 @@
 
 # pylint: disable=unidiomatic-typecheck
 """A module to handle interacting with artifacts."""
-from typing import Union
 from dataclasses import dataclass
+from typing import Union
 from knack.log import get_logger
+from oras.client import OrasClient
 
 from azure.storage.blob import BlobClient, BlobType
 from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig
-from oras.client import OrasClient
-
 
 logger = get_logger(__name__)
 
