@@ -107,7 +107,8 @@ class DeployerViaArm:
             logger.info(message)
             print(message)
             with open(parameters_json_file, "r", encoding="utf-8") as f:
-                parameters = json.loads(f.read())
+                parameters_json = json.loads(f.read())
+                parameters = parameters_json["parameters"]
 
         else:
             # User has not passed in parameters file, so we use the parameters required
@@ -283,7 +284,8 @@ class DeployerViaArm:
             logger.info(message)
             print(message)
             with open(parameters_json_file, "r", encoding="utf-8") as f:
-                parameters = json.loads(f.read())
+                parameters_json = json.loads(f.read())
+                parameters = parameters_json["parameters"]
 
         else:
             # User has not passed in parameters file, so we use the parameters required
@@ -407,7 +409,8 @@ class DeployerViaArm:
             logger.info(message)
             print(message)
             with open(parameters_json_file, "r", encoding="utf-8") as f:
-                parameters = json.loads(f.read())
+                parameters_json = json.loads(f.read())
+                parameters = parameters_json["parameters"]
 
         else:
             # User has not passed in parameters file, so we use the parameters required
@@ -490,7 +493,8 @@ class DeployerViaArm:
         else:
             logger.info("Use provided manifest parameters")
             with open(manifest_parameters_json_file, "r", encoding="utf-8") as f:
-                manifest_params = json.loads(f.read())
+                manifest_json = json.loads(f.read())
+                manifest_params = manifest_json["parameters"]
         self.deploy_bicep_template(manifest_bicep_path, manifest_params)
 
     def nsd_predeploy(self) -> bool:
