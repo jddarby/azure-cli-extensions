@@ -38,7 +38,7 @@ class ResourceDeleter:
         :param clean: Delete the NFDG, artifact stores and publisher too.     defaults
                 to False     Use with care.
         """
-        assert isinstance(self.config, VNFConfiguration)
+
         if clean:
             print(
                 f"Are you sure you want to delete all resources associated with NFD {self.config.nf_name} including the artifact stores and publisher {self.config.publisher_name}?"
@@ -63,14 +63,17 @@ class ResourceDeleter:
                 return
 
         self.delete_nfdv()
-        self.delete_artifact_manifest("sa")
+
+        if type(self.config) == VNFConfiguration:
+            self.delete_artifact_manifest("sa")
         self.delete_artifact_manifest("acr")
 
         if clean:
             logger.info("Delete called for all resources.")
             self.delete_nfdg()
             self.delete_artifact_store("acr")
-            self.delete_artifact_store("sa")
+            if type(self.config) == VNFConfiguration:
+                self.delete_artifact_store("sa")
             self.delete_publisher()
 
     def delete_nsd(self):

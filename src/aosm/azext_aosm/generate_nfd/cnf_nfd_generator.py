@@ -88,19 +88,13 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             self._tmp_folder_name = tmpdirname
             try:
                 for helm_package in self.config.helm_packages:
-                    # Turn Any type into HelmPackageConfig, to access properties on the object
-                    helm_package = HelmPackageConfig(**helm_package)
-
                     # Unpack the chart into the tmp folder
                     self._extract_chart(helm_package.path_to_chart)
 
                     # TODO: Validate charts
 
                     # Create a chart mapping schema if none has been passed in.
-                    if (
-                        not helm_package.path_to_mappings
-                        or helm_package.path_to_mappings == ""
-                    ):
+                    if not helm_package.path_to_mappings:
                         self._generate_chart_value_mappings(helm_package)
 
                     # Get schema for each chart
@@ -219,6 +213,14 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     def _read_top_level_values_yaml(
         self, helm_package: HelmPackageConfig
     ) -> Dict[str, Any]:
+        """Return a dictionary of the values.yaml|yml read from the root of the helm package.
+
+        :param helm_package: The helm package to look in
+        :type helm_package: HelmPackageConfig
+        :raises FileOperationError: if no values.yaml|yml found
+        :return: A dictionary of the yaml read from the file
+        :rtype: Dict[str, Any]
+        """
         for file in os.listdir(os.path.join(self._tmp_folder_name, helm_package.name)):
             if file in ("values.yaml", "values.yml"):
                 with open(
@@ -289,6 +291,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         os.mkdir(self.output_folder_name)
         os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
 
+        # Copy the nfd and the manifest bicep files to the output folder
         tmp_nfd_bicep_path = os.path.join(
             self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
         )
@@ -309,6 +312,22 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 generated_mappings_path,
             )
 
+        # Copy any generated values mappings YAML files to the corresponding folder in
+        # the output directory so that the user can edit them and re-run the build if
+        # required
+        if os.path.exists(
+            os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)
+        ):
+            generated_mappings_path = os.path.join(
+                self.output_folder_name, GENERATED_VALUES_MAPPINGS
+            )
+            shutil.copytree(
+                os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS),
+                generated_mappings_path,
+            )
+
+        # Copy the JSON config mappings and deploymentParameters schema that are used
+        # for the NFD to the output folder
         tmp_config_mappings_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS)
         output_config_mappings_path = os.path.join(
             self.output_folder_name, CONFIG_MAPPINGS
@@ -519,7 +538,32 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     def find_deploy_params(
         self, nested_dict, schema_nested_dict, final_schema
     ) -> Dict[Any, Any]:
-        """Find the deploy parameters in the values.mappings.yaml file and add them to the schema."""
+        """
+        Create a schema of types of only those values in the values.mappings.yaml file which have a deployParameters mapping.
+
+        Finds the relevant part of the full schema of the values file and finds the
+        type of the parameter name, then adds that to the final schema, with no nesting.
+
+        Returns a schema of form:
+        {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "title": "DeployParametersSchema",
+            "type": "object",
+            "properties": {
+                "<parameter1>": {
+                    "type": "<type>"
+                },
+                "<parameter2>": {
+                    "type": "<type>"
+                },
+
+        nested_dict: the dictionary of the values mappings yaml which contains
+                     deployParameters mapping placeholders
+        schema_nested_dict: the properties section of the full schema (or sub-object in
+                            schema)
+        final_schema: Blank dictionary if this is the top level starting point,
+                      otherwise the final_schema as far as we have got.
+        """
         original_schema_nested_dict = schema_nested_dict
         for k, v in nested_dict.items():
             # if value is a string and contains deployParameters.
@@ -529,33 +573,101 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     k,
                     v,
                 )
-                # only add the parameter name (e.g. from {deployParameter.zone} only param = zone)
+                # only add the parameter name (e.g. from {deployParameter.zone} only
+                # param = zone)
                 param = v.split(".", 1)[1]
                 param = param.split("}", 1)[0]
 
-                # add the schema for k (from the big schema) to the (smaller) schema
+                # add the schema for k (from the full schema) to the (new) schema
                 if "properties" in schema_nested_dict.keys():
+                    # Occurs if top level item in schema properties is an object with
+                    # properties itself
                     final_schema.update(
                         {param: {"type": schema_nested_dict["properties"][k]["type"]}}
                     )
                 else:
+                    # Occurs if top level schema item in schema properties are objects
+                    # with no "properties" - but can have "type".
                     final_schema.update(
                         {param: {"type": schema_nested_dict[k]["type"]}}
                     )
             # else if value is a (non-empty) dictionary (i.e another layer of nesting)
             elif hasattr(v, "items") and v.items():
                 logger.debug("Found dict value for key %s. Find schema type", k)
-                # handling schema having properties which doesn't map directly to the values file nesting
+                # handling schema having properties which doesn't map directly to the
+                # values file nesting
                 if "properties" in schema_nested_dict.keys():
                     schema_nested_dict = schema_nested_dict["properties"][k]
                 else:
                     schema_nested_dict = schema_nested_dict[k]
                 # recursively call function with values (i.e the nested dictionary)
                 self.find_deploy_params(v, schema_nested_dict, final_schema)
-                # reset the schema dict to its original value (once finished with that level of recursion)
+                # reset the schema dict to its original value (once finished with that
+                # level of recursion)
                 schema_nested_dict = original_schema_nested_dict
 
         return final_schema
+
+    def _replace_values_with_deploy_params(
+        self,
+        values_yaml_dict,
+        param_prefix: Optional[str] = None,
+    ) -> Dict[Any, Any]:
+        """
+        Given the yaml dictionary read from values.yaml, replace all the values with {deploymentParameter.keyname}.
+
+        Thus creating a values mapping file if the user has not provided one in config.
+        """
+        logger.debug("Replacing values with deploy parameters")
+        final_values_mapping_dict: Dict[Any, Any] = {}
+        for k, v in values_yaml_dict.items():
+            # if value is a string and contains deployParameters.
+            logger.debug("Processing key %s", k)
+            param_name = k if param_prefix is None else f"{param_prefix}_{k}"
+            if isinstance(v, (str, int, bool)):
+                # Replace the parameter with {deploymentParameter.keyname}
+                if self.interactive:
+                    # Interactive mode. Prompt user to include or exclude parameters
+                    # This requires the enter key after the y/n input which isn't ideal
+                    if not input_ack("y", f"Expose parameter {param_name}? y/n "):
+                        logger.debug("Excluding parameter %s", param_name)
+                        final_values_mapping_dict.update({k: v})
+                        continue
+                replacement_value = f"{{deployParameters.{param_name}}}"
+
+                # add the schema for k (from the big schema) to the (smaller) schema
+                final_values_mapping_dict.update({k: replacement_value})
+            elif isinstance(v, dict):
+                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(
+                    v, param_name
+                )
+            elif isinstance(v, list):
+                final_values_mapping_dict[k] = []
+                for index, item in enumerate(v):
+                    param_name = (
+                        f"{param_prefix}_{k}_{index}"
+                        if param_prefix
+                        else f"{k})_{index}"
+                    )
+                    if isinstance(item, dict):
+                        final_values_mapping_dict[k].append(
+                            self._replace_values_with_deploy_params(item, param_name)
+                        )
+                    elif isinstance(v, (str, int, bool)):
+                        replacement_value = f"{{deployParameters.{param_name}}}"
+                        final_values_mapping_dict[k].append(replacement_value)
+                    else:
+                        raise ValueError(
+                            f"Found an unexpected type {type(v)} of key {k} in "
+                            "values.yaml, cannot generate values mapping file."
+                        )
+            else:
+                raise ValueError(
+                    f"Found an unexpected type {type(v)} of key {k} in values.yaml, "
+                    "cannot generate values mapping file."
+                )
+
+        return final_values_mapping_dict
 
     def get_chart_name_and_version(
         self, helm_package: HelmPackageConfig

@@ -129,7 +129,7 @@ class VnfNfdGenerator(NFDGenerator):
 
         return parameters
 
-    @cached_property
+    @property
     def vm_parameters_ordered(self) -> Dict[str, Any]:
         """The parameters from the VM ARM template, ordered as those without defaults then those with."""
         vm_parameters_no_default: Dict[str, Any] = {}
@@ -179,7 +179,7 @@ class VnfNfdGenerator(NFDGenerator):
         )
 
         for key in vm_parameters:
-            # Order parameters into those with and without defaults
+            # Order parameters into those without and then with defaults
             has_default_field = "defaultValue" in self.vm_parameters[key]
             has_default = (
                 has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
@@ -195,9 +195,7 @@ class VnfNfdGenerator(NFDGenerator):
 
             # Map ARM parameter types to JSON parameter types accepted by AOSM
             arm_type = self.vm_parameters[key]["type"]
-            json_type = arm_type
-            if arm_type in ARM_TO_JSON_PARAM_TYPES.keys(): # pylint: disable=consider-iterating-dictionary
-                json_type = ARM_TO_JSON_PARAM_TYPES[arm_type]
+            json_type = ARM_TO_JSON_PARAM_TYPES.get(arm_type, arm_type)
 
             if has_default:
                 nfd_parameters_with_default[key] = {"type": json_type}
@@ -209,7 +207,6 @@ class VnfNfdGenerator(NFDGenerator):
         # Remove from both ordered and unordered dicts
         for key in vm_parameters_to_exclude:
             self.vm_parameters.pop(key, None)
-            self.vm_parameters_ordered.pop(key, None)
 
         deployment_parameters_path = os.path.join(folder_path, DEPLOYMENT_PARAMETERS)
 

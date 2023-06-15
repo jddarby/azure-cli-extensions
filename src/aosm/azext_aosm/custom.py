@@ -16,14 +16,6 @@ from azure.cli.core.azclierror import (
 )
 from knack.log import get_logger
 
-from azext_aosm._client_factory import cf_resources
-from azext_aosm._configuration import (
-    CNFConfiguration,
-    NFConfiguration,
-    NSConfiguration,
-    VNFConfiguration,
-    get_configuration,
-)
 from azext_aosm.delete.delete import ResourceDeleter
 from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
 from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
@@ -33,6 +25,14 @@ from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
 from azext_aosm.util.constants import CNF, NSD, VNF
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azext_aosm._client_factory import cf_resources, cf_acr_registries
+from azext_aosm._configuration import (
+    CNFConfiguration,
+    NFConfiguration,
+    NSConfiguration,
+    VNFConfiguration,
+    get_configuration,
+)
 
 logger = get_logger(__name__)
 
@@ -172,11 +172,15 @@ def publish_definition(
     """
     print("Publishing definition.")
     api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
+        aosm_client=client,
+        resource_client=cf_resources(cmd.cli_ctx),
+        container_registry_client=cf_acr_registries(cmd.cli_ctx),
     )
+
     config = _get_config_from_file(
         config_file=config_file, configuration_type=definition_type
     )
+
     if definition_type == VNF:
         deployer = DeployerViaArm(api_clients, config=config)
         deployer.deploy_vnfd_from_bicep(
@@ -185,10 +189,18 @@ def publish_definition(
             manifest_bicep_path=manifest_file,
             manifest_parameters_json_file=manifest_parameters_json_file,
         )
+    elif definition_type == CNF:
+        deployer = DeployerViaArm(api_clients, config=config)
+        deployer.deploy_cnfd_from_bicep(
+            cli_ctx=cmd.cli_ctx,
+            bicep_path=definition_file,
+            parameters_json_file=parameters_json_file,
+            manifest_bicep_path=manifest_file,
+            manifest_parameters_json_file=manifest_parameters_json_file,
+        )
     else:
-        raise NotImplementedError(
-            "Publishing of CNF definitions is not yet implemented. \
-            You should manually deploy your bicep file and upload charts and images to your artifact store. "
+        raise ValueError(
+            f"Definition type must be either 'vnf' or 'cnf'. Definition type {definition_type} is not recognised."
         )
 
 
@@ -219,10 +231,8 @@ def delete_published_definition(
     delly = ResourceDeleter(api_clients, config)
     if definition_type == VNF:
         delly.delete_vnf(clean=clean)
-    else:
-        raise NotImplementedError(
-            "Deleting of published CNF definitions is not yet implemented."
-        )
+    elif definition_type == CNF:
+        delly.delete_vnf(clean=clean)
 
 
 def generate_design_config(output_file: str = "input.json"):
@@ -255,7 +265,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(config_as_dict)
-        if configuration_type in (CNF,VNF):
+        if configuration_type in (CNF, VNF):
             prtName = "definition"
         else:
             prtName = "design"

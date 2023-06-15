@@ -130,6 +130,28 @@ class PreDeployerViaSDK:
             location=self.config.location,
         )
 
+    def ensure_config_source_registry_exists(self) -> None:
+        """
+        Ensures that the source registry exists
+
+        Finds the parameters from self.config
+        """
+
+        logger.info(
+            "Check if the source registry %s exists",
+            self.config.source_registry_id,
+        )
+
+        source_registry_name = self.config.source_registry_id.split("/")[-1]
+        source_registry_resource_group_name = self.config.source_registry_id.split("/")[
+            -5
+        ]
+
+        self.api_clients.container_registry_client.get(
+            resource_group_name=source_registry_resource_group_name,
+            registry_name=source_registry_name,
+        )
+
     def ensure_artifact_store_exists(
         self,
         resource_group_name: str,

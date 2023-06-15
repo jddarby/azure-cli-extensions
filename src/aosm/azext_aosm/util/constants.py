@@ -10,8 +10,6 @@ CNF = "cnf"
 NSD = "nsd"
 SCHEMA = "schema"
 
-## TODO pk5: clean up these names
-
 # Names of files used in the repo
 NSD_DEFINITION_BICEP_SOURCE_TEMPLATE = "nsd_template.bicep"
 NSD_DEFINITION_BICEP_FILE = "nsd_definition.bicep"
@@ -51,7 +49,8 @@ OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING = (
     f"# {DEPLOYMENT_PARAMETERS} and {TEMPLATE_PARAMETERS} (and {VHD_PARAMETERS} if\n"
     "they are there)\n"
     "# You can re-run the build command with the --order-params flag to order those\n"
-    "# files with the optional parameters at the end of the file.\n\n"
+    "# files with the optional parameters at the end of the file, and with the \n"
+    "# --interactive flag to interactively choose y/n for each parameter to expose.\n\n"
 )
 
 # Deployment Schema
