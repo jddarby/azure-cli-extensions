@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.17.1.54307",
+      "templateHash": "11506025632532119082"
+    }
+  },
+  "parameters": {
+    "aksClusterName": {
+      "type": "string"
+    },
+    "aksClusterRGName": {
+      "type": "string"
+    },
+    "nfAgentMagicUAMIId": {
+      "type": "string"
+    },
+    "scriptRunnerUAMIId": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "uksouth"
+    },
+    "utcValue": {
+      "type": "string",
+      "defaultValue": "[utcNow()]"
+    },
+    "roleGuid": {
+      "type": "string",
+      "defaultValue": "[newGuid()]"
+    }
+  },
+  "variables": {
+    "splitId": "[split(parameters('nfAgentMagicUAMIId'), '/')]",
+    "nfAgentMagicUAMIName": "[variables('splitId')[8]]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "AssignKubeletIdentityToCluster_script",
+      "location": "[parameters('location')]",
+      "kind": "AzureCLI",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', parameters('scriptRunnerUAMIId'))]": {}
+        }
+      },
+      "properties": {
+        "forceUpdateTag": "[parameters('utcValue')]",
+        "azCliVersion": "2.42.0",
+        "timeout": "PT30M",
+        "environmentVariables": [
+          {
+            "name": "RESOURCE_GROUP_NAME",
+            "value": "[parameters('aksClusterRGName')]"
+          },
+          {
+            "name": "CLUSTER_NAME",
+            "value": "[parameters('aksClusterName')]"
+          },
+          {
+            "name": "KUBELET_UAMI_ID",
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('nfAgentMagicUAMIName'))]"
+          }
+        ],
+        "scriptContent": "      set -e\n      shopt -s nullglob\n\n      az account set --subscription c7bd9d96-70dd-4f61-af56-6e0abd8d80b5\n      \n      echo \"Getting cluster credentials for ${CLUSTER_NAME}.\"\n      az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME} --admin\n      \n      echo \"Finding existing control identity of cluster.\"\n      IDENTITY_JSON=$(az aks show -g ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME} --query \"identity\")\n      echo \"Found identity: ${IDENTITY_JSON}\"\n      CONTROL_UAMI_ID=$(echo $IDENTITY_JSON | jq -r '.userAssignedIdentities | keys[0]')\n      echo \"Found control identity: ${CONTROL_UAMI_ID}\"\n      \n      echo \"Updating cluster kubelet identity\"\n      az aks update -g ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME} --enable-managed-identity --assign-identity ${CONTROL_UAMI_ID} --assign-kubelet-identity ${KUBELET_UAMI_ID}  --yes\n      \n      echo \"${CLUSTER_NAME} is now ready for NFM to install a NF-Agent on it.\"\n    ",
+        "cleanupPreference": "Always",
+        "retentionInterval": "P1D"
+      }
+    }
+  ],
+  "outputs": {
+    "uamiName": {
+      "type": "string",
+      "value": "[variables('nfAgentMagicUAMIName')]"
+    }
+  }
+}

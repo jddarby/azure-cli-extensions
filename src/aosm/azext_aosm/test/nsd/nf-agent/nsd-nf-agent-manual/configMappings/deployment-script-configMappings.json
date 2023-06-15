@@ -1,0 +1,7 @@
+{
+    "nfAgentMagicUAMIId": "{configurationparameters('SNSSelf').nfAgentConfiguration.userAssignedIdentityResourceId}",
+    "scriptRunnerUAMIId": "/subscriptions/c7bd9d96-70dd-4f61-af56-6e0abd8d80b5/resourcegroups/sunny-uksouth/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nfagent-script-uami",
+    "aksClusterName": "sunny-uks-aks",
+    "aksClusterRGName": "sunny-uksouth",
+    "location": "uksouth"
+}

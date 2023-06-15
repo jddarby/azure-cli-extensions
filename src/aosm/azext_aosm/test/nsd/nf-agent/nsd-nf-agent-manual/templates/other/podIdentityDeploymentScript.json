@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "identity": {
+        "type": "string"
+      },
+      "utcValue": {
+        "type": "string",
+        "defaultValue": "[utcNow()]"
+      }
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Resources/deploymentScripts",
+        "apiVersion": "2020-10-01",
+        "name": "createPodIdentityWithOutputs",
+        "location": "[resourceGroup().location]",
+        "kind": "AzureCLI",
+        "identity": {
+          "type": "UserAssigned",
+          "userAssignedIdentities": {
+            "[parameters('identity')]": {
+            }
+          }
+        },
+        "properties": {
+          "forceUpdateTag": "[parameters('utcValue')]",
+          "AzCliVersion": "2.40.0",
+          "timeout": "PT30M",
+          "arguments": "'rg' 'bar'",
+          "environmentVariables": [
+            {
+              "name": "UserName",
+              "value": "jdole"
+            },
+            {
+              "name": "Password",
+              "secureValue": "jDolePassword"
+            }
+          ],
+          "scriptContent": "result=$(az aks pod-identity add --resource-group [resourceGroup().name] --cluster-name myAKSCluster --namespace ${POD_IDENTITY_NAMESPACE}  --name ${POD_IDENTITY_NAME} --identity-resource-id ${IDENTITY_RESOURCE_ID}); echo \"arg1 is: $1\"; echo \"arg2 is: $2\"; echo \"Username is: $UserName\"; echo \"password is: $Password\"; echo $result | jq -c '{Result: map({id: .id})}' > $AZ_SCRIPTS_OUTPUT_PATH",
+          "cleanupPreference": "OnSuccess",
+          "retentionInterval": "P1D"
+
+
+export POD_IDENTITY_NAME="my-pod-identity"
+export POD_IDENTITY_NAMESPACE="my-app"

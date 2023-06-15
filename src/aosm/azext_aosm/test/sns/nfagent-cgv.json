@@ -1,0 +1,5 @@
+{
+    "nfagent_topic": "simpl",
+    "serviceAccount_create": false,
+    "config_body": "hello Sunny some config has arrived"
+}

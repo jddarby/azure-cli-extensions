@@ -1,0 +1,3 @@
+{
+    "serviceAccount_create": "{configurationparameters('nfagent_nsdg_ConfigGroupSchema').serviceAccount_create}"
+}

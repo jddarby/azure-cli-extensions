@@ -1,0 +1,5 @@
+{
+    "nfAgentServiceBusNamespace": "{configurationparameters('SNSSelf').nfAgentConfiguration.resourceNamespace}",
+    "nfAgentUserAssignedIdentityResourceId": "{configurationparameters('SNSSelf').nfAgentConfiguration.userAssignedIdentityResourceId}",
+    "nfagent_topic": "{configurationparameters('nfagent_nsdg_ConfigGroupSchema').nfagent_topic}"
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.17.1.54307",
+      "templateHash": "433933765964845204"
+    }
+  },
+  "parameters": {
+    "publisherName": {
+      "type": "string",
+      "defaultValue": "sunnyclipub",
+      "metadata": {
+        "description": "Publisher where the NFD is published"
+      }
+    },
+    "networkFunctionDefinitionGroupName": {
+      "type": "string",
+      "defaultValue": "nginx-basic-test-nfdg",
+      "metadata": {
+        "description": "NFD Group name for the Network Function"
+      }
+    },
+    "networkFunctionDefinitionVersion": {
+      "type": "string",
+      "defaultValue": "0.1.0",
+      "metadata": {
+        "description": "NFD version"
+      }
+    },
+    "networkFunctionDefinitionOfferingLocation": {
+      "type": "string",
+      "defaultValue": "uksouth",
+      "metadata": {
+        "description": "Offering location for the Network Function"
+      }
+    },
+    "customLocationId": {
+      "type": "string",
+      "defaultValue": "/subscriptions/c7bd9d96-70dd-4f61-af56-6e0abd8d80b5/resourcegroups/sunny-uksouth/providers/microsoft.extendedlocation/customlocations/nfagent-custom-location",
+      "metadata": {
+        "description": "Custom location ID for the Network Function"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "uksouth"
+    },
+    "serviceAccount_create": {
+      "type": "bool"
+    }
+  },
+  "variables": {
+    "deploymentValues": {
+      "serviceAccount_create": "[parameters('serviceAccount_create')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.HybridNetwork/networkFunctions",
+      "apiVersion": "2023-04-01-preview",
+      "name": "nfagent-nsdg_NF",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisherName": "[parameters('publisherName')]",
+        "publisherScope": "Private",
+        "networkFunctionDefinitionGroupName": "[parameters('networkFunctionDefinitionGroupName')]",
+        "networkFunctionDefinitionVersion": "[parameters('networkFunctionDefinitionVersion')]",
+        "networkFunctionDefinitionOfferingLocation": "[parameters('networkFunctionDefinitionOfferingLocation')]",
+        "nfviType": "AzureArcKubernetes",
+        "nfviId": "[parameters('customLocationId')]",
+        "allowSoftwareUpdate": true,
+        "deploymentValues": "[string(variables('deploymentValues'))]"
+      }
+    }
+  ]
+}

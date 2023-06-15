@@ -1,0 +1,12 @@
+{
+    "location": "uksouth",
+    "publisher_name": "sunnyclipub",
+    "publisher_resource_group_name": "sunny-uksouth",
+    "acr_artifact_store_name": "sunny-nfagent-acr-2",
+    "network_function_definition_group_name": "nf-agent-cnf-nfdg",
+    "network_function_definition_version_name": "0.1.0",
+    "network_function_definition_offering_location": "uksouth",
+    "nsdg_name": "nfagent-nsdg",
+    "nsd_version": "0.1.0",
+    "nsdv_description": "Deploys two NFDs - basic nginx CNF and nfagent CNF, and a deployment script to assign permissions"
+}

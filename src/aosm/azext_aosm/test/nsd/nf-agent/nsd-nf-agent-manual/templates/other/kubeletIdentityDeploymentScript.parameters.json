@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "aksClusterName": {
+      "value": "sunny-uks-aks"
+    },
+    "aksClusterRGName": {
+      "value": "sunny-uksouth"
+    },
+    "nfAgentMagicUAMIId": {
+      "value": "/subscriptions/c7bd9d96-70dd-4f61-af56-6e0abd8d80b5/resourcegroups/nfagent-sns-HostedResources-1057B1CF/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-uowvjfivpyuow"
+    },
+    "scriptRunnerUAMIId": {
+      "value": "/subscriptions/c7bd9d96-70dd-4f61-af56-6e0abd8d80b5/resourcegroups/sunny-uksouth/providers/Microsoft.ManagedIdentity/userAssignedIdentities/nfagent-script-uami"
+    },
+    "location": {
+      "value": "uksouth"
+    }
+  }
+}

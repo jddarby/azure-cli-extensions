@@ -1,0 +1,21 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "DeployParametersSchema",
+    "type": "object",
+    "properties": {
+        "nfagent_topic": {
+            "type": "string"
+        },
+        "serviceAccount_create": {
+            "type": "boolean"
+        },
+        "config_body": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "nfagent_topic",
+        "serviceAccount_create",
+        "config_body"
+    ]
+}

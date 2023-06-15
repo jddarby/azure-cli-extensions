@@ -1,0 +1,3 @@
+{
+    "config_body": "{configurationparameters('nfagent_nsdg_ConfigGroupSchema').config_body}"
+}

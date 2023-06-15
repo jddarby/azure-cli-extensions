@@ -1,0 +1,4 @@
+{{! Configuration template for Sunnys Test CNF }}
+site-params: &site-params
+  deployment-id: sunny-is-great
+  site-id: {{@root.config_body}}

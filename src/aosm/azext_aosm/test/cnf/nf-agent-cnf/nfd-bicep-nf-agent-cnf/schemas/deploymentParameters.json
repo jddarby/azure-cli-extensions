@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "DeployParametersSchema",
+    "type": "object",
+    "properties": {
+        "nfAgentServiceBusNamespace": {
+            "type": "string"
+        },
+        "nfAgentUserAssignedIdentityResourceId": {
+            "type": "string"
+        },
+        "nfagent_topic": {
+            "type": "string"
+        }
+    }
+}
