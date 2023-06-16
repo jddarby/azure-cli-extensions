@@ -6,7 +6,7 @@
         "nfAgentServiceBusNamespace": {
             "type": "string"
         },
-        "nfAgentUserAssignedIdentityResourceId": {
+        "nfAgentUserAssignedIdentityClientId": {
             "type": "string"
         },
         "nfagent_topic": {

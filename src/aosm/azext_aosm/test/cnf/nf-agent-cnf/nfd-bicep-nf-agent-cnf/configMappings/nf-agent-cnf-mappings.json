@@ -49,7 +49,7 @@
     "affinity": {},
     "nfagent": {
         "namespace": "{deployParameters.nfAgentServiceBusNamespace}",
-        "identity": "{deployParameters.nfAgentUserAssignedIdentityResourceId}",
+        "identity": "{deployParameters.nfAgentUserAssignedIdentityClientId}",
         "topic": "{deployParameters.nfagent_topic}"
     }
 }
