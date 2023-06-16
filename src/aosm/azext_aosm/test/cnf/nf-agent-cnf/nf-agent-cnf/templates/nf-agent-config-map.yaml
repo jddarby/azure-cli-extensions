@@ -20,4 +20,6 @@ data:
     # Handler-specific config
     handler_config:
       simpl:
-        endpoint: http://127.0.0.1:5222 # DevSkim: ignore DS162092
+        # The endpoint is constructed from the namespace and service name of the receiving thing. 
+        # We couldn't get AOSM to install the service to listen on anything but port 80
+        endpoint: http://nfconfigchart.nfconfigchart.svc.cluster.local:80 # DevSkim: ignore DS162092

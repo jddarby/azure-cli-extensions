@@ -91,26 +91,26 @@ resource cgValues 'Microsoft.HybridNetwork/configurationGroupValues@2023-04-01-p
 //   }
 // }
 
-// resource site 'Microsoft.HybridNetwork/sites@2023-04-01-preview' = {
-//   name: 'nfagent-site'
-//   location: location
-//   properties: {
-//     nfvis : [
-//       {
-//         name: nfviSiteName
-//         nfviType: nfviSiteType
-//         location: location
-//       }
-//     ]
-//   }
-// }
-
-resource site 'Microsoft.HybridNetwork/sites@2023-04-01-preview' existing = {
-  name: 'nfagent-site'
+resource site 'Microsoft.HybridNetwork/sites@2023-04-01-preview' = {
+  name: 'nfagent-site2'
+  location: location
+  properties: {
+    nfvis : [
+      {
+        name: nfviSiteName
+        nfviType: nfviSiteType
+        location: location
+      }
+    ]
+  }
 }
 
+// resource site 'Microsoft.HybridNetwork/sites@2023-04-01-preview' existing = {
+//   name: 'nfagent-site'
+// }
+
 resource sns 'Microsoft.HybridNetwork/sitenetworkservices@2023-04-01-preview' = {
-  name: 'nfagent-sns'
+  name: 'nfagent-sns2'
   location: location
   // identity: {
   //   type: 'UserAssigned'

@@ -28,6 +28,7 @@ spec:
           # Want this to evaluate to acr-name.azurecr.io/nginx:stable (or specific version)
           # docker tag nginx:stable acr-name.azurecr.io/nginx:stable
           # docker push acr-name.azurecr.io/nginx:stable
+          # Image hard coded to that put in the Artifact Store ACR for this CNF POC
           image: "{{ .Values.image.repository }}/nginx:stable"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

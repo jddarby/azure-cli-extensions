@@ -5,11 +5,13 @@
 replicaCount: 1
 
 image:
+  # NFDV defines that AOSM overwrites image.repository with the Articfact Store ACR
   repository: sunnyclipubsunnynfagentacr2dd56aed266.azurecr.io
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "879624"
 
+# NFDV defines that AOSM overwrites imagePullSecrets with whatever is needed for the Artifact Store ACR
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

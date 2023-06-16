@@ -29,6 +29,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          # Edited the image to point to the nf-agent image in the Artifact Store ACR
           image: "{{ .Values.image.repository }}/pez-nfagent:879624"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

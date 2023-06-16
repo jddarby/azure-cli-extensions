@@ -154,7 +154,9 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             'deployment-script-resource-element'
           ]
           uninstallDependsOn: []
-          updateDependsOn: []
+          updateDependsOn: [
+            'deployment-script-resource-element'
+          ]
         }
       }
       {
@@ -187,7 +189,9 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             'deployment-script-resource-element'
           ]
           uninstallDependsOn: []
-          updateDependsOn: []
+          updateDependsOn: [
+            'deployment-script-resource-element'
+          ]
         }
       }
       {
@@ -223,7 +227,9 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             'nf-agent-cnf-nfdg-resource-element'
           ]
           uninstallDependsOn: []
-          updateDependsOn: []
+          updateDependsOn: [
+            'nf-agent-cnf-nfdg-resource-element'
+          ]
         }
       }
     ]
