@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.17.1.54307",
-      "templateHash": "11506025632532119082"
+      "version": "0.18.4.5664",
+      "templateHash": "6222070530414686370"
     }
   },
   "parameters": {
@@ -79,6 +79,10 @@
     "uamiName": {
       "type": "string",
       "value": "[variables('nfAgentMagicUAMIName')]"
+    },
+    "uamiClientID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('nfAgentMagicUAMIName')), '2022-01-31-preview').clientId]"
     }
   }
 }

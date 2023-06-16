@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: sunnyclipubsunnynfagentacre00abc1832.azurecr.io/pez-nfagent
+  repository: sunnyclipubsunnynfagentacr2dd56aed266.azurecr.io
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "879624"
@@ -38,7 +38,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8123
 
 ingress:
   enabled: false
@@ -82,8 +82,8 @@ tolerations: []
 affinity: {}
 
 nfagent:
-  namespace: wibble
-  identity: wobble/hello/myidentity
-  topic: topicy
+  namespace: sb-uowvjfivpyuow
+  identity: 041db2eb-36e0-42cd-ac13-03ae8e997cd1
+  topic: simpl
   # name of pod identity - not using this any more
   # podIdentity: mypeapod

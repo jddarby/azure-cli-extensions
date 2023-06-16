@@ -6,7 +6,7 @@ data:
   config.yaml: |
     # Example NF Agent config file.
     # Config is read from /etc/nf-agent/config.yaml.
-    log_level: info
+    log_level: debug
     service_bus:
       # Using a namespace and Managed Identity (specified by client ID) for auth.
       namespace: {{ .Values.nfagent.namespace }}

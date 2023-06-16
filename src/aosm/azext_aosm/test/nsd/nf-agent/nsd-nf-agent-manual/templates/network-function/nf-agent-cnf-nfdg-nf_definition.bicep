@@ -21,19 +21,19 @@ param customLocationId string = '/subscriptions/c7bd9d96-70dd-4f61-af56-6e0abd8d
 param location string = 'uksouth'
 
 param nfAgentServiceBusNamespace string
-param nfAgentUserAssignedIdentityResourceId string
+param nfAgentUserAssignedIdentityClientId string
 param nfagent_topic string
 
 
 var deploymentValues = {
   nfAgentServiceBusNamespace: nfAgentServiceBusNamespace
-  nfAgentUserAssignedIdentityResourceId: nfAgentUserAssignedIdentityResourceId
+  nfAgentUserAssignedIdentityClientId: nfAgentUserAssignedIdentityClientId
   nfagent_topic: nfagent_topic
   
 }
 
 resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-preview' = {
-  name: 'nfagent-nsdg_NF'
+  name: 'nfagent-nsdg_NF2'
   location: location
   properties: {
     publisherName: publisherName

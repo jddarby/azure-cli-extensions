@@ -34,6 +34,8 @@ resource nfAgentMagicIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@
   name: nfAgentMagicUAMIName
 }
 
+var nfMagicIdentityClientID = nfAgentMagicIdentity.properties.clientId
+
 // Find the existing control plane UAMI of the cluster. The cluster must have been set up with one already
 // or else this will fail. It is not by default so write instructions later.
 resource aks_cluster 'Microsoft.ContainerService/managedClusters@2021-07-01' existing = {
@@ -115,3 +117,4 @@ resource AssignKubeletIdentityToCluster_script 'Microsoft.Resources/deploymentSc
 }
 
 output uamiName string = nfAgentMagicUAMIName
+output uamiClientID string = nfMagicIdentityClientID

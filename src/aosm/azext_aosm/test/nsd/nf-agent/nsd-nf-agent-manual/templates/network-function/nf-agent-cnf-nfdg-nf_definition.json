@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.17.1.54307",
-      "templateHash": "1557633233933176527"
+      "version": "0.18.4.5664",
+      "templateHash": "8304347932736882503"
     }
   },
   "parameters": {
@@ -51,7 +51,7 @@
     "nfAgentServiceBusNamespace": {
       "type": "string"
     },
-    "nfAgentUserAssignedIdentityResourceId": {
+    "nfAgentUserAssignedIdentityClientId": {
       "type": "string"
     },
     "nfagent_topic": {
@@ -61,7 +61,7 @@
   "variables": {
     "deploymentValues": {
       "nfAgentServiceBusNamespace": "[parameters('nfAgentServiceBusNamespace')]",
-      "nfAgentUserAssignedIdentityResourceId": "[parameters('nfAgentUserAssignedIdentityResourceId')]",
+      "nfAgentUserAssignedIdentityClientId": "[parameters('nfAgentUserAssignedIdentityClientId')]",
       "nfagent_topic": "[parameters('nfagent_topic')]"
     }
   },
@@ -69,7 +69,7 @@
     {
       "type": "Microsoft.HybridNetwork/networkFunctions",
       "apiVersion": "2023-04-01-preview",
-      "name": "nfagent-nsdg_NF",
+      "name": "nfagent-nsdg_NF2",
       "location": "[parameters('location')]",
       "properties": {
         "publisherName": "[parameters('publisherName')]",
