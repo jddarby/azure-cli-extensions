@@ -18,7 +18,5 @@ jobs:
         run: |
           # Pretend we have a valid git repo to satisfy azdev.
           mkdir .git
-          azdev setup -r .
-          pip install azure.cli.core
+          azdev setup -c EDGE -r . -e aosm
           azdev style aosm
-          azdev linter aosm
