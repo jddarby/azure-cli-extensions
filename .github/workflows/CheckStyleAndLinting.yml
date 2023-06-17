@@ -19,7 +19,5 @@ jobs:
           # Pretend we have a valid git repo to satisfy azdev.
           mkdir .git
           azdev setup -r .
-      - name: Check Style
-        run: azdev style aosm
-      - name: Check Linting
-        run: azdev linter aosm
+          azdev style aosm
+          azdev linter aosm
