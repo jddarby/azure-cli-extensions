@@ -19,4 +19,5 @@ jobs:
           # Pretend we have a valid git repo to satisfy azdev.
           mkdir .git
           azdev setup -c EDGE -r .
+          azdev extension add aosm
           azdev style aosm
