@@ -32,7 +32,7 @@ from azext_aosm.util.constants import (
     SCHEMA_PREFIX,
     SCHEMAS,
     IMAGE_PULL_SECRETS_START_STRING,
-    IMAGE_START_STRING
+    IMAGE_START_STRING,
 )
 from azext_aosm.util.utils import input_ack
 
@@ -76,9 +76,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         self.nf_application_configurations = []
         self.deployment_parameter_schema = SCHEMA_PREFIX
 
-        self._bicep_path = os.path.join(
-            self.output_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
-        )
+        self._bicep_path = os.path.join(self.output_folder_name, CNF_DEFINITION_BICEP_TEMPLATE)
         self.interactive = interactive
         self._tmp_folder_name = ""
 
@@ -105,15 +103,11 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     # Get schema for each chart
                     # (extract mappings and take the schema bits we need from values.schema.json)
                     # + Add that schema to the big schema.
-                    self.deployment_parameter_schema["properties"].update(
-                        self.get_chart_mapping_schema(helm_package)
-                    )
+                    self.deployment_parameter_schema["properties"].update(self.get_chart_mapping_schema(helm_package))
 
                     # Get all image line matches for files in the chart.
                     # Do this here so we don't have to do it multiple times.
-                    image_line_matches = self.find_pattern_matches_in_chart(
-                        helm_package, IMAGE_START_STRING
-                    )
+                    image_line_matches = self.find_pattern_matches_in_chart(helm_package, IMAGE_START_STRING)
                     # Creates a flattened list of image registry paths to prevent set error
                     image_registry_paths = []
                     for registry_path in image_line_matches:
@@ -125,26 +119,18 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                         self.generate_nf_application_config(
                             helm_package,
                             image_registry_paths,
-                            self.find_pattern_matches_in_chart(
-                                helm_package, IMAGE_PULL_SECRETS_START_STRING
-                            ),
+                            self.find_pattern_matches_in_chart(helm_package, IMAGE_PULL_SECRETS_START_STRING),
                         )
                     )
                     # Workout the list of artifacts for the chart and
                     # update the list for the NFD with any unique artifacts.
-                    chart_artifacts = self.get_artifact_list(
-                        helm_package, image_line_matches
-                    )
-                    self.artifacts += [
-                        a for a in chart_artifacts if a not in self.artifacts
-                    ]
+                    chart_artifacts = self.get_artifact_list(helm_package, image_line_matches)
+                    self.artifacts += [a for a in chart_artifacts if a not in self.artifacts]
                 self.write_nfd_bicep_file()
                 self.write_schema_to_file()
                 self.write_manifest_bicep_file()
                 self.copy_to_output_folder()
-                print(
-                    f"Generated NFD bicep template created in {self.output_folder_name}"
-                )
+                print(f"Generated NFD bicep template created in {self.output_folder_name}")
                 print(
                     "Please review these templates."
                     "If you are happy with them, you should manually deploy your bicep "
@@ -193,17 +179,13 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         Expected use when a helm chart is very simple and user wants every value to be a
         deployment parameter.
         """
-        logger.debug(
-            "Creating chart value mappings file for %s", helm_package.path_to_chart
-        )
+        logger.debug("Creating chart value mappings file for %s", helm_package.path_to_chart)
         print("Creating chart value mappings file for %s", helm_package.path_to_chart)
 
         # Get all the values files in the chart
         top_level_values_yaml = self._read_top_level_values_yaml(helm_package)
 
-        mapping_to_write = self._replace_values_with_deploy_params(
-            top_level_values_yaml, {}
-        )
+        mapping_to_write = self._replace_values_with_deploy_params(top_level_values_yaml, {})
 
         # Write the mapping to a file
         folder_name = os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)
@@ -219,9 +201,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         # Update the config that points to the mapping file
         helm_package.path_to_mappings = mapping_filepath
 
-    def _read_top_level_values_yaml(
-        self, helm_package: HelmPackageConfig
-    ) -> Dict[str, Any]:
+    def _read_top_level_values_yaml(self, helm_package: HelmPackageConfig) -> Dict[str, Any]:
         """Return a dictionary of the values.yaml|yml read from the root of the helm package.
 
         :param helm_package: The helm package to look in
@@ -240,9 +220,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     values_yaml = yaml.safe_load(values_file)
                 return values_yaml
 
-        raise FileOperationError(
-            "Cannot find top level values.yaml/.yml file in Helm package."
-        )
+        raise FileOperationError("Cannot find top level values.yaml/.yml file in Helm package.")
 
     def write_manifest_bicep_file(self) -> None:
         """Write the bicep file for the Artifact Manifest."""
@@ -301,25 +279,17 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
 
         # Copy the nfd and the manifest bicep files to the output folder
-        tmp_nfd_bicep_path = os.path.join(
-            self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
-        )
+        tmp_nfd_bicep_path = os.path.join(self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE)
         shutil.copy(tmp_nfd_bicep_path, self.output_folder_name)
 
-        tmp_manifest_bicep_path = os.path.join(
-            self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE
-        )
+        tmp_manifest_bicep_path = os.path.join(self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE)
         shutil.copy(tmp_manifest_bicep_path, self.output_folder_name)
-        
+
         # Copy any generated values mappings YAML files to the corresponding folder in
         # the output directory so that the user can edit them and re-run the build if
         # required
-        if os.path.exists(
-            os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)
-        ):
-            generated_mappings_path = os.path.join(
-                self.output_folder_name, GENERATED_VALUES_MAPPINGS
-            )
+        if os.path.exists(os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)):
+            generated_mappings_path = os.path.join(self.output_folder_name, GENERATED_VALUES_MAPPINGS)
             shutil.copytree(
                 os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS),
                 generated_mappings_path,
@@ -328,9 +298,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         # Copy the JSON config mappings and deploymentParameters schema that are used
         # for the NFD to the output folder
         tmp_config_mappings_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS)
-        output_config_mappings_path = os.path.join(
-            self.output_folder_name, CONFIG_MAPPINGS
-        )
+        output_config_mappings_path = os.path.join(self.output_folder_name, CONFIG_MAPPINGS)
         shutil.copytree(
             tmp_config_mappings_path,
             output_config_mappings_path,
@@ -338,9 +306,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         )
 
         tmp_schema_path = os.path.join(self._tmp_folder_name, DEPLOYMENT_PARAMETERS)
-        output_schema_path = os.path.join(
-            self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
-        )
+        output_schema_path = os.path.join(self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS)
         shutil.copy(
             tmp_schema_path,
             output_schema_path,
@@ -443,9 +409,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         return artifact_list
 
-    def get_chart_mapping_schema(
-        self, helm_package: HelmPackageConfig
-    ) -> Dict[Any, Any]:
+    def get_chart_mapping_schema(self, helm_package: HelmPackageConfig) -> Dict[Any, Any]:
         """
         Get the schema for the non default values (those with {deploymentParameter...}).
         Based on user provided values.schema.json.
@@ -456,9 +420,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         logger.debug("Get chart mapping schema for %s", helm_package.name)
 
         mappings_path = helm_package.path_to_mappings
-        values_schema = os.path.join(
-            self._tmp_folder_name, helm_package.name, "values.schema.json"
-        )
+        values_schema = os.path.join(self._tmp_folder_name, helm_package.name, "values.schema.json")
         if not os.path.exists(mappings_path):
             raise InvalidTemplateError(
                 f"ERROR: The helm package '{helm_package.name}' does not have a valid values mappings file. \
@@ -489,15 +451,14 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         logger.debug("Generated chart mapping schema for %s", helm_package.name)
         return final_schema
 
-    def find_deploy_params(
-        self, nested_dict, schema_nested_dict, final_schema
-    ) -> Dict[Any, Any]:
+    def find_deploy_params(self, nested_dict, schema_nested_dict, final_schema) -> Dict[Any, Any]:
         """
-        Create a schema of types of only those values in the values.mappings.yaml file which have a deployParameters mapping.
-        
-        Finds the relevant part of the full schema of the values file and finds the 
+        Create a schema of types of only those values in the values.mappings.yaml file which have a deployParameters
+        mapping.
+
+        Finds the relevant part of the full schema of the values file and finds the
         type of the parameter name, then adds that to the final schema, with no nesting.
-        
+
         Returns a schema of form:
         {
             "$schema": "https://json-schema.org/draft-07/schema#",
@@ -510,12 +471,12 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 "<parameter2>": {
                     "type": "<type>"
                 },
-        
-        nested_dict: the dictionary of the values mappings yaml which contains 
+
+        nested_dict: the dictionary of the values mappings yaml which contains
                      deployParameters mapping placeholders
-        schema_nested_dict: the properties section of the full schema (or sub-object in 
+        schema_nested_dict: the properties section of the full schema (or sub-object in
                             schema)
-        final_schema: Blank dictionary if this is the top level starting point, 
+        final_schema: Blank dictionary if this is the top level starting point,
                       otherwise the final_schema as far as we have got.
         """
         original_schema_nested_dict = schema_nested_dict
@@ -539,15 +500,11 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 if "properties" in schema_nested_dict.keys():
                     # Occurs if top level item in schema properties is an object with
                     # properties itself
-                    final_schema.update(
-                        {param: {"type": schema_nested_dict["properties"][k]["type"]}}
-                    )
+                    final_schema.update({param: {"type": schema_nested_dict["properties"][k]["type"]}})
                 else:
                     # Occurs if top level schema item in schema properties are objects
                     # with no "properties" - but can have "type".
-                    final_schema.update(
-                        {param: {"type": schema_nested_dict[k]["type"]}}
-                    )
+                    final_schema.update({param: {"type": schema_nested_dict[k]["type"]}})
             # else if value is a (non-empty) dictionary (i.e another layer of nesting)
             elif hasattr(v, "items") and v.items():
                 logger.debug("Found dict value for key %s. Find schema type", k)
@@ -595,37 +552,31 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 # add the schema for k (from the big schema) to the (smaller) schema
                 final_values_mapping_dict.update({k: replacement_value})
             elif isinstance(v, dict):
-                
-                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(
-                    v, param_name
-                )
+
+                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(v, param_name)
             elif isinstance(v, list):
                 final_values_mapping_dict[k] = []
                 for index, item in enumerate(v):
-                    param_name = f"{param_prefix}_{k}_{index}" if param_prefix else f"{k})_{index}"        
+                    param_name = f"{param_prefix}_{k}_{index}" if param_prefix else f"{k})_{index}"
                     if isinstance(item, dict):
-                        final_values_mapping_dict[k].append(
-                            self._replace_values_with_deploy_params(
-                                item, param_name
-                            )
-                        )
+                        final_values_mapping_dict[k].append(self._replace_values_with_deploy_params(item, param_name))
                     elif isinstance(v, (str, int, bool)):
                         replacement_value = f"{{deployParameters.{param_name}}}"
                         final_values_mapping_dict[k].append(replacement_value)
                     else:
                         raise ValueError(
                             f"Found an unexpected type {type(v)} of key {k} in "
-                            "values.yaml, cannot generate values mapping file.")                        
+                            "values.yaml, cannot generate values mapping file."
+                        )
             else:
                 raise ValueError(
                     f"Found an unexpected type {type(v)} of key {k} in values.yaml, "
-                    "cannot generate values mapping file.")
+                    "cannot generate values mapping file."
+                )
 
         return final_values_mapping_dict
 
-    def get_chart_name_and_version(
-        self, helm_package: HelmPackageConfig
-    ) -> Tuple[str, str]:
+    def get_chart_name_and_version(self, helm_package: HelmPackageConfig) -> Tuple[str, str]:
         """Get the name and version of the chart."""
         chart = os.path.join(self._tmp_folder_name, helm_package.name, "Chart.yaml")
 

@@ -4,19 +4,14 @@
 # --------------------------------------------------------------------------------------
 """Contains a class for generating VNF NFDs and associated resources."""
 import json
-import logging
 import os
 import shutil
 import tempfile
-from functools import cached_property
-from pathlib import Path
-from typing import Any, Dict, Optional
 
 from jinja2 import Template
 from knack.log import get_logger
 
 from azext_aosm._configuration import NSConfiguration
-from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
     CONFIG_MAPPINGS,
     NF_DEFINITION_BICEP_FILE,
@@ -51,12 +46,14 @@ class NSDGenerator:
         self.nsd_bicep_template_name = NSD_DEFINITION_BICEP_SOURCE_TEMPLATE
         self.nf_bicep_template_name = NF_TEMPLATE_BICEP_FILE
         self.nsd_bicep_output_name = NSD_DEFINITION_BICEP_FILE
+        self.tmp_folder_name = ""
+        self.deploy_parameters = {}
 
         self.build_folder_name = self.config.build_output_folder_name
 
     def generate_nsd(self, deploy_parameters) -> None:
         """Generate a NSD templates which includes an Artifact Manifest, NFDV and NF templates."""
-        logger.info(f"Generate NSD bicep templates")
+        logger.info("Generate NSD bicep templates")
 
         self.deploy_parameters = deploy_parameters
 
@@ -92,14 +89,14 @@ class NSDGenerator:
 
         :param folder_path: The folder to put this file in.
         """
-        logger.debug(f"Create {self.config.cg_schema_name}.json")
+        logger.debug("Create %s.json", self.config.cg_schema_name)
 
         schema_path = os.path.join(folder_path, f"{self.config.cg_schema_name}.json")
 
-        with open(schema_path, "w") as _file:
+        with open(schema_path, "w", encoding="utf-8") as _file:
             _file.write(json.dumps(json.loads(self.deploy_parameters), indent=4))
 
-        logger.debug(f"{schema_path} created")
+        logger.debug("%s created", schema_path)
 
     def write_config_mappings(self, folder_path: str) -> None:
         """
@@ -113,16 +110,15 @@ class NSDGenerator:
 
         logger.debug("Create configMappings.json")
         config_mappings = {
-            key: f"{{configurationparameters('{self.config.cg_schema_name}').{key}}}"
-            for key in deploy_properties
+            key: f"{{configurationparameters('{self.config.cg_schema_name}').{key}}}" for key in deploy_properties
         }
 
         config_mappings_path = os.path.join(folder_path, NSD_CONFIG_MAPPING_FILE)
 
-        with open(config_mappings_path, "w") as _file:
+        with open(config_mappings_path, "w", encoding="utf-8") as _file:
             _file.write(json.dumps(config_mappings, indent=4))
 
-        logger.debug(f"{config_mappings_path} created")
+        logger.debug("%s created", config_mappings_path)
 
     def write_nf_bicep(self) -> None:
         """Write out the Network Function bicep file."""
@@ -150,7 +146,8 @@ class NSDGenerator:
                 "publisher_name": self.config.publisher_name,
                 "network_function_definition_group_name": self.config.network_function_definition_group_name,
                 "network_function_definition_version_name": self.config.network_function_definition_version_name,
-                "network_function_definition_offering_location": self.config.network_function_definition_offering_location,
+                "network_function_definition_offering_location":
+                    self.config.network_function_definition_offering_location,
                 "location": self.config.location,
             },
         )
@@ -166,17 +163,13 @@ class NSDGenerator:
             "ResourceElementName": self.config.resource_element_name,
         }
 
-        self.generate_bicep(
-            self.nsd_bicep_template_name, self.nsd_bicep_output_name, params
-        )
+        self.generate_bicep(self.nsd_bicep_template_name, self.nsd_bicep_output_name, params)
 
     def write_nsd_manifest(self) -> None:
         """Write out the NSD manifest bicep file."""
         logger.debug("Create NSD manifest")
 
-        self.generate_bicep(
-            NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE, NSD_ARTIFACT_MANIFEST_BICEP_FILE, {}
-        )
+        self.generate_bicep(NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE, NSD_ARTIFACT_MANIFEST_BICEP_FILE, {})
 
     def generate_bicep(self, template_name, output_file_name, params) -> None:
         """
@@ -191,7 +184,7 @@ class NSDGenerator:
 
         bicep_template_path = os.path.join(code_dir, TEMPLATES, template_name)
 
-        with open(bicep_template_path, "r") as file:
+        with open(bicep_template_path, "r", encoding="utf-8") as file:
             bicep_contents = file.read()
 
         bicep_template = Template(bicep_contents)
@@ -201,13 +194,11 @@ class NSDGenerator:
 
         bicep_file_build_path = os.path.join(self.tmp_folder_name, output_file_name)
 
-        with open(bicep_file_build_path, "w") as file:
+        with open(bicep_file_build_path, "w", encoding="utf-8") as file:
             file.write(rendered_template)
 
     def copy_to_output_folder(self) -> None:
         """Copy the bicep templates, config mappings and schema into the build output folder."""
-        code_dir = os.path.dirname(__file__)
-
         logger.info("Create NSD bicep %s", self.build_folder_name)
         os.mkdir(self.build_folder_name)
 

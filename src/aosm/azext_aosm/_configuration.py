@@ -18,59 +18,44 @@ from azext_aosm.util.constants import (
 )
 
 DESCRIPTION_MAP: Dict[str, str] = {
-    "publisher_resource_group_name":
-        "Resource group for the Publisher resource. "
-        "Will be created if it does not exist.",
-    "publisher_name":
-        "Name of the Publisher resource you want your definition published to. "
-        "Will be created if it does not exist.",
-    "publisher_name_nsd":
-        "Name of the Publisher resource you want your design published to. "
-        "This should be the same as the publisher used for your NFDVs"
-    ,
+    "publisher_resource_group_name": "Resource group for the Publisher resource. "
+    "Will be created if it does not exist.",
+    "publisher_name": "Name of the Publisher resource you want your definition published to. "
+    "Will be created if it does not exist.",
+    "publisher_name_nsd": "Name of the Publisher resource you want your design published to. "
+    "This should be the same as the publisher used for your NFDVs",
     "publisher_resource_group_name_nsd": "Resource group for the Publisher resource.",
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource. Will be created if it does not exist.",
     "location": "Azure location to use when creating resources.",
-    "blob_artifact_store_name":
-        "Name of the storage account Artifact Store resource. Will be created if it "
-        "does not exist.",
+    "blob_artifact_store_name": "Name of the storage account Artifact Store resource. Will be created if it "
+    "does not exist.",
     "artifact_name": "Name of the artifact",
-    "file_path":
-        "Optional. File path of the artifact you wish to upload from your local disk. "
-        "Delete if not required.",
-    "blob_sas_url":
-        "Optional. SAS URL of the blob artifact you wish to copy to your Artifact Store. "
-        "Delete if not required.",
-    "artifact_version":
-        "Version of the artifact. For VHDs this must be in format A-B-C. "
-        "For ARM templates this must be in format A.B.C",
+    "file_path": "Optional. File path of the artifact you wish to upload from your local disk. "
+    "Delete if not required.",
+    "blob_sas_url": "Optional. SAS URL of the blob artifact you wish to copy to your Artifact Store. "
+    "Delete if not required.",
+    "artifact_version": "Version of the artifact. For VHDs this must be in format A-B-C. "
+    "For ARM templates this must be in format A.B.C",
     "nsdv_description": "Description of the NSDV",
-    "nsdg_name":
-        "Network Service Design Group Name. This is the collection of Network Service Design Versions. "
-        "Will be created if it does not exist.",
+    "nsdg_name": "Network Service Design Group Name. This is the collection of Network Service Design Versions. "
+    "Will be created if it does not exist.",
     "nsd_version": "Version of the NSD to be created. This should be in the format A.B.C",
-    "network_function_definition_group_name":
-        "Exising Network Function Definition Group Name. "
-        "This can be created using the 'az aosm nfd' commands.",
-    "network_function_definition_version_name":
-        "Exising Network Function Definition Version Name. "
-        "This can be created using the 'az aosm nfd' commands.",
+    "network_function_definition_group_name": "Exising Network Function Definition Group Name. "
+    "This can be created using the 'az aosm nfd' commands.",
+    "network_function_definition_version_name": "Exising Network Function Definition Version Name. "
+    "This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_offering_location": "Offering location of the Network Function Definition",
     "helm_package_name": "Name of the Helm package",
-    "path_to_chart":
-        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
-    "path_to_mappings":
-        "File path of value mappings on local disk where chosen values are replaced "
-        "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
-        "blank string, a value mappings file will be generated with every value "
-        "mapped to a deployment parameter. Use a blank string and --interactive on "
-        "the build command to interactively choose which values to map."
-    ,
-    "helm_depends_on":
-        "Names of the Helm packages this package depends on. "
-        "Leave as an empty array if no dependencies",
+    "path_to_chart": "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
+    "path_to_mappings": "File path of value mappings on local disk where chosen values are replaced "
+    "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
+    "blank string, a value mappings file will be generated with every value "
+    "mapped to a deployment parameter. Use a blank string and --interactive on "
+    "the build command to interactively choose which values to map.",
+    "helm_depends_on": "Names of the Helm packages this package depends on. "
+    "Leave as an empty array if no dependencies",
 }
 
 
@@ -86,9 +71,7 @@ class ArtifactConfig:
 @dataclass
 class NFConfiguration:
     publisher_name: str = DESCRIPTION_MAP["publisher_name"]
-    publisher_resource_group_name: str = DESCRIPTION_MAP[
-        "publisher_resource_group_name"
-    ]
+    publisher_resource_group_name: str = DESCRIPTION_MAP["publisher_resource_group_name"]
     nf_name: str = DESCRIPTION_MAP["nf_name"]
     version: str = DESCRIPTION_MAP["version"]
     acr_artifact_store_name: str = DESCRIPTION_MAP["acr_artifact_store_name"]
@@ -110,16 +93,10 @@ class NSConfiguration:
     # pylint: disable=too-many-instance-attributes
     location: str = DESCRIPTION_MAP["location"]
     publisher_name: str = DESCRIPTION_MAP["publisher_name_nsd"]
-    publisher_resource_group_name: str = DESCRIPTION_MAP[
-        "publisher_resource_group_name_nsd"
-    ]
+    publisher_resource_group_name: str = DESCRIPTION_MAP["publisher_resource_group_name_nsd"]
     acr_artifact_store_name: str = DESCRIPTION_MAP["acr_artifact_store_name"]
-    network_function_definition_group_name: str = DESCRIPTION_MAP[
-        "network_function_definition_group_name"
-    ]
-    network_function_definition_version_name: str = DESCRIPTION_MAP[
-        "network_function_definition_version_name"
-    ]
+    network_function_definition_group_name: str = DESCRIPTION_MAP["network_function_definition_group_name"]
+    network_function_definition_version_name: str = DESCRIPTION_MAP["network_function_definition_version_name"]
     network_function_definition_offering_location: str = DESCRIPTION_MAP[
         "network_function_definition_offering_location"
     ]
@@ -134,26 +111,17 @@ class NSConfiguration:
             raise ValueError("Location must be set")
         if self.publisher_name == DESCRIPTION_MAP["publisher_name_nsd"] or "":
             raise ValueError("Publisher name must be set")
-        if (
-            self.publisher_resource_group_name
-            == DESCRIPTION_MAP["publisher_resource_group_name_nsd"]
-            or ""
-        ):
+        if self.publisher_resource_group_name == DESCRIPTION_MAP["publisher_resource_group_name_nsd"] or "":
             raise ValueError("Publisher resource group name must be set")
-        if (
-            self.acr_artifact_store_name == DESCRIPTION_MAP["acr_artifact_store_name"]
-            or ""
-        ):
+        if self.acr_artifact_store_name == DESCRIPTION_MAP["acr_artifact_store_name"] or "":
             raise ValueError("ACR Artifact Store name must be set")
         if (
-            self.network_function_definition_group_name
-            == DESCRIPTION_MAP["network_function_definition_group_name"]
+            self.network_function_definition_group_name == DESCRIPTION_MAP["network_function_definition_group_name"]
             or ""
         ):
             raise ValueError("Network Function Definition Group name must be set")
         if (
-            self.network_function_definition_version_name
-            == DESCRIPTION_MAP["network_function_definition_version_name"]
+            self.network_function_definition_version_name == DESCRIPTION_MAP["network_function_definition_version_name"]
             or ""
         ):
             raise ValueError("Network Function Definition Version name must be set")
@@ -162,9 +130,7 @@ class NSConfiguration:
             == DESCRIPTION_MAP["network_function_definition_offering_location"]
             or ""
         ):
-            raise ValueError(
-                "Network Function Definition Offering Location must be set"
-            )
+            raise ValueError("Network Function Definition Offering Location must be set")
         if self.nsdg_name == DESCRIPTION_MAP["nsdg_name"] or "":
             raise ValueError("NSDG name must be set")
         if self.nsd_version == DESCRIPTION_MAP["nsd_version"] or "":
@@ -189,7 +155,9 @@ class NSConfiguration:
     @property
     def acr_manifest_name(self) -> str:
         """Return the ACR manifest name from the NFD name."""
-        return f"{self.network_function_name.lower().replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
+        return (
+            f"{self.network_function_name.lower().replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
+        )
 
     @property
     def nfvi_site_name(self) -> str:
@@ -206,9 +174,7 @@ class NSConfiguration:
         """Return the parameters of the ARM template to be uploaded as part of the NSDV."""
         artifact = ArtifactConfig()
         artifact.version = self.nsd_version
-        artifact.file_path = os.path.join(
-            self.build_output_folder_name, NF_DEFINITION_JSON_FILE
-        )
+        artifact.file_path = os.path.join(self.build_output_folder_name, NF_DEFINITION_JSON_FILE)
         return artifact
 
     @property
@@ -248,20 +214,11 @@ class VNFConfiguration(NFConfiguration):
             return
 
         if "." in self.vhd.version or "-" not in self.vhd.version:
-            raise ValidationError(
-                "Config validation error. VHD artifact version should be in format A-B-C"
-            )
+            raise ValidationError("Config validation error. VHD artifact version should be in format A-B-C")
         if "." not in self.arm_template.version or "-" in self.arm_template.version:
-            raise ValidationError(
-                "Config validation error. ARM template artifact version should be in format A.B.C"
-            )
-        filepath_set = (
-            self.vhd.file_path and self.vhd.file_path != DESCRIPTION_MAP["file_path"]
-        )
-        sas_set = (
-            self.vhd.blob_sas_url
-            and self.vhd.blob_sas_url != DESCRIPTION_MAP["blob_sas_url"]
-        )
+            raise ValidationError("Config validation error. ARM template artifact version should be in format A.B.C")
+        filepath_set = self.vhd.file_path and self.vhd.file_path != DESCRIPTION_MAP["file_path"]
+        sas_set = self.vhd.blob_sas_url and self.vhd.blob_sas_url != DESCRIPTION_MAP["blob_sas_url"]
         # If these are the same, either neither is set or both are, both of which are errors
         if filepath_set == sas_set:
             raise ValidationError(
@@ -292,9 +249,7 @@ class HelmPackageConfig:
     name: str = DESCRIPTION_MAP["helm_package_name"]
     path_to_chart: str = DESCRIPTION_MAP["path_to_chart"]
     path_to_mappings: str = DESCRIPTION_MAP["path_to_mappings"]
-    depends_on: List[str] = field(
-        default_factory=lambda: [DESCRIPTION_MAP["helm_depends_on"]]
-    )
+    depends_on: List[str] = field(default_factory=lambda: [DESCRIPTION_MAP["helm_depends_on"]])
 
 
 @dataclass
@@ -330,8 +285,6 @@ def get_configuration(
     elif configuration_type == NSD:
         config = NSConfiguration(**config_as_dict)
     else:
-        raise InvalidArgumentValueError(
-            "Definition type not recognized, options are: vnf, cnf or nsd"
-        )
+        raise InvalidArgumentValueError("Definition type not recognized, options are: vnf, cnf or nsd")
 
     return config

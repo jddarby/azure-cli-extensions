@@ -110,14 +110,9 @@ class DeployerViaArm:
         # Create or check required resources
         deploy_manifest_template = not self.vnfd_predeploy()
         if deploy_manifest_template:
-            self.deploy_manifest_template(
-                manifest_parameters_json_file, manifest_bicep_path, VNF
-            )
+            self.deploy_manifest_template(manifest_parameters_json_file, manifest_bicep_path, VNF)
         else:
-            print(
-                f"Artifact manifests exist for NFD {self.config.nf_name} "
-                f"version {self.config.version}"
-            )
+            print(f"Artifact manifests exist for NFD {self.config.nf_name} " f"version {self.config.version}")
         message = (
             f"Deploy bicep template for NFD {self.config.nf_name} version {self.config.version} "
             f"into {self.config.publisher_resource_group_name} under publisher "
@@ -256,9 +251,7 @@ class DeployerViaArm:
         deploy_manifest_template = not self.nsd_predeploy()
 
         if deploy_manifest_template:
-            self.deploy_manifest_template(
-                manifest_parameters_json_file, manifest_bicep_path, NSD
-            )
+            self.deploy_manifest_template(manifest_parameters_json_file, manifest_bicep_path, NSD)
         else:
             print(f"Artifact manifests {self.config.acr_manifest_name} already exists")
 
@@ -270,9 +263,7 @@ class DeployerViaArm:
         print(message)
         logger.info(message)
         self.deploy_bicep_template(bicep_path, parameters)
-        print(
-            f"Deployed NSD {self.config.acr_manifest_name} version {self.config.nsd_version}."
-        )
+        print(f"Deployed NSD {self.config.acr_manifest_name} version {self.config.nsd_version}.")
         acr_manifest = ArtifactManifestOperator(
             self.config,
             self.api_clients,
@@ -294,9 +285,7 @@ class DeployerViaArm:
         arm_template_artifact.upload(self.config.arm_template)
         print("Done")
 
-    def deploy_manifest_template(
-        self, manifest_parameters_json_file, manifest_bicep_path, configuration_type
-    ) -> None:
+    def deploy_manifest_template(self, manifest_parameters_json_file, manifest_bicep_path, configuration_type) -> None:
         """
         Deploy the bicep template defining the manifest.
 
@@ -352,9 +341,7 @@ class DeployerViaArm:
             "armTemplateVersion": {"value": self.config.arm_template.version},
         }
 
-    def deploy_bicep_template(
-        self, bicep_template_path: str, parameters: Dict[Any, Any]
-    ) -> Any:
+    def deploy_bicep_template(self, bicep_template_path: str, parameters: Dict[Any, Any]) -> Any:
         """
         Deploy a bicep template.
 
@@ -389,9 +376,7 @@ class DeployerViaArm:
 
         return resource_exists
 
-    def validate_and_deploy_arm_template(
-        self, template: Any, parameters: Dict[Any, Any], resource_group: str
-    ) -> Any:
+    def validate_and_deploy_arm_template(self, template: Any, parameters: Dict[Any, Any], resource_group: str) -> Any:
         """
         Validate and deploy an individual ARM template.
 
@@ -494,9 +479,7 @@ class DeployerViaArm:
                 "The Azure CLI is not installed - follow "
                 "https://github.com/Azure/bicep/blob/main/docs/installing.md#linux"
             )
-            raise RuntimeError(
-                "The Azure CLI is not installed - cannot render ARM templates."
-            )
+            raise RuntimeError("The Azure CLI is not installed - cannot render ARM templates.")
         logger.debug("Converting %s to ARM template", bicep_template_path)
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -521,17 +504,14 @@ class DeployerViaArm:
                 logger.debug("az bicep output: %s", str(bicep_output))
             except subprocess.CalledProcessError as e:
                 logger.error(
-                    "ARM template compilation failed! See logs for full "
-                    "output. The failing command was %s",
+                    "ARM template compilation failed! See logs for full output. The failing command was %s",
                     e.cmd,
                 )
                 logger.debug("bicep build stdout: %s", e.stdout)
                 logger.debug("bicep build stderr: %s", e.stderr)
                 raise
 
-            with open(
-                os.path.join(tmpdir, arm_template_name), "r", encoding="utf-8"
-            ) as template_file:
+            with open(os.path.join(tmpdir, arm_template_name), "r", encoding="utf-8") as template_file:
                 arm_json = json.loads(template_file.read())
 
         return arm_json

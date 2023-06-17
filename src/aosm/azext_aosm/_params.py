@@ -23,9 +23,7 @@ def load_arguments(self: AzCommandsLoader, _):
     # is called.
 
     with self.argument_context("aosm nfd") as c:
-        c.argument(
-            "definition_type", arg_type=definition_type, help="Type of AOSM definition."
-        )
+        c.argument("definition_type", arg_type=definition_type, help="Type of AOSM definition.")
         c.argument(
             "config_file",
             options_list=["--config-file", "-f"],

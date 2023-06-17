@@ -69,12 +69,8 @@ class VnfNfdGenerator(NFDGenerator):
         self.arm_template_path = self.config.arm_template.file_path
         self.output_folder_name = self.config.build_output_folder_name
 
-        self._bicep_path = os.path.join(
-            self.output_folder_name, self.bicep_template_name
-        )
-        self._manifest_path = os.path.join(
-            self.output_folder_name, self.manifest_template_name
-        )
+        self._bicep_path = os.path.join(self.output_folder_name, self.bicep_template_name)
+        self._manifest_path = os.path.join(self.output_folder_name, self.manifest_template_name)
         self.order_params = order_params
         self.interactive = interactive
         self.tmp_folder_name = ""
@@ -121,10 +117,7 @@ class VnfNfdGenerator(NFDGenerator):
             if "parameters" in data:
                 parameters: Dict[str, Any] = data["parameters"]
             else:
-                print(
-                    "No parameters found in the template provided. "
-                    "Your NFD will have no deployParameters"
-                )
+                print("No parameters found in the template provided. Your NFD will have no deployParameters")
                 parameters = {}
 
         return parameters
@@ -140,9 +133,7 @@ class VnfNfdGenerator(NFDGenerator):
         for key in self.vm_parameters:
             # Order parameters into those with and without defaults
             has_default_field = "defaultValue" in self.vm_parameters[key]
-            has_default = (
-                has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
-            )
+            has_default = has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
 
             if has_default:
                 vm_parameters_with_default[key] = self.vm_parameters[key]
@@ -174,16 +165,12 @@ class VnfNfdGenerator(NFDGenerator):
         nfd_parameters_with_default = {}
         vm_parameters_to_exclude = []
 
-        vm_parameters = (
-            self.vm_parameters_ordered if self.order_params else self.vm_parameters
-        )
+        vm_parameters = self.vm_parameters_ordered if self.order_params else self.vm_parameters
 
         for key in vm_parameters:
             # Order parameters into those without and then with defaults
             has_default_field = "defaultValue" in self.vm_parameters[key]
-            has_default = (
-                has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
-            )
+            has_default = has_default_field and not self.vm_parameters[key]["defaultValue"] == ""
 
             if self.interactive and has_default:
                 # Interactive mode. Prompt user to include or exclude parameters
@@ -227,12 +214,8 @@ class VnfNfdGenerator(NFDGenerator):
         # Extra output file to help the user know which parameters are optional
         if not self.interactive:
             if nfd_parameters_with_default:
-                optional_deployment_parameters_path = os.path.join(
-                    folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE
-                )
-                with open(
-                    optional_deployment_parameters_path, "w", encoding="utf-8"
-                ) as _file:
+                optional_deployment_parameters_path = os.path.join(folder_path, OPTIONAL_DEPLOYMENT_PARAMETERS_FILE)
+                with open(optional_deployment_parameters_path, "w", encoding="utf-8") as _file:
                     _file.write(OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING)
                     _file.write(json.dumps(nfd_parameters_with_default, indent=4))
                 print(
@@ -248,12 +231,8 @@ class VnfNfdGenerator(NFDGenerator):
         :param folder_path: The folder to put this file in.
         """
         logger.debug("Create %s", TEMPLATE_PARAMETERS)
-        vm_parameters = (
-            self.vm_parameters_ordered if self.order_params else self.vm_parameters
-        )
-        template_parameters = {
-            key: f"{{deployParameters.{key}}}" for key in vm_parameters
-        }
+        vm_parameters = self.vm_parameters_ordered if self.order_params else self.vm_parameters
+        template_parameters = {key: f"{{deployParameters.{key}}}" for key in vm_parameters}
 
         template_parameters_path = os.path.join(folder_path, TEMPLATE_PARAMETERS)
 

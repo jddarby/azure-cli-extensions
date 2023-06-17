@@ -71,23 +71,17 @@ class ArtifactManifestOperator:
         """Get the list of Artifacts in the Artifact Manifest."""
         artifacts = []
 
-        manifest: ArtifactManifest = (
-            self.api_clients.aosm_client.artifact_manifests.get(
-                resource_group_name=self.config.publisher_resource_group_name,
-                publisher_name=self.config.publisher_name,
-                artifact_store_name=self.store_name,
-                artifact_manifest_name=self.manifest_name,
-            )
+        manifest: ArtifactManifest = self.api_clients.aosm_client.artifact_manifests.get(
+            resource_group_name=self.config.publisher_resource_group_name,
+            publisher_name=self.config.publisher_name,
+            artifact_store_name=self.store_name,
+            artifact_manifest_name=self.manifest_name,
         )
 
         # Instatiate an Artifact object for each artifact in the manifest.
         if manifest.artifacts:
             for artifact in manifest.artifacts:
-                if not (
-                    artifact.artifact_name
-                    and artifact.artifact_type
-                    and artifact.artifact_version
-                ):
+                if not (artifact.artifact_name and artifact.artifact_type and artifact.artifact_version):
                     raise AzCLIError(
                         "Cannot upload artifact. Artifact returned from "
                         "manifest query is missing required information."
@@ -105,9 +99,7 @@ class ArtifactManifestOperator:
 
         return artifacts
 
-    def _get_artifact_client(
-        self, artifact: ManifestArtifactFormat
-    ) -> Union[BlobClient, OrasClient]:
+    def _get_artifact_client(self, artifact: ManifestArtifactFormat) -> Union[BlobClient, OrasClient]:
         """
         Get the artifact client required for uploading the artifact.
 
@@ -117,16 +109,10 @@ class ArtifactManifestOperator:
         assert artifact.artifact_name
         assert artifact.artifact_type
         assert artifact.artifact_version
-        if (
-            self._manifest_credentials["credential_type"]
-            == CredentialType.AZURE_STORAGE_ACCOUNT_TOKEN
-        ):
+        if self._manifest_credentials["credential_type"] == CredentialType.AZURE_STORAGE_ACCOUNT_TOKEN:
             # Check we have the required artifact types for this credential. Indicates
             # a coding error if we hit this but worth checking.
-            if not (
-                artifact.artifact_type
-                in (ArtifactType.IMAGE_FILE, ArtifactType.VHD_IMAGE_FILE)
-            ):
+            if artifact.artifact_type not in (ArtifactType.IMAGE_FILE, ArtifactType.VHD_IMAGE_FILE):
                 raise AzCLIError(
                     f"Cannot upload artifact {artifact.artifact_name}."
                     " Artifact manifest credentials of type "

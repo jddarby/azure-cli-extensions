@@ -53,9 +53,7 @@ def build_definition(
     """
 
     # Read the config from the given file
-    config = _get_config_from_file(
-        config_file=config_file, configuration_type=definition_type
-    )
+    config = _get_config_from_file(config_file=config_file, configuration_type=definition_type)
 
     # Generate the NFD and the artifact manifest.
     _generate_nfd(
@@ -77,9 +75,7 @@ def generate_definition_config(definition_type: str, output_file: str = "input.j
     _generate_config(configuration_type=definition_type, output_file=output_file)
 
 
-def _get_config_from_file(
-    config_file: str, configuration_type: str
-) -> NFConfiguration or NSConfiguration:
+def _get_config_from_file(config_file: str, configuration_type: str) -> NFConfiguration or NSConfiguration:
     """
     Read input config file JSON and turn it into a Configuration object.
 
@@ -99,9 +95,7 @@ def _get_config_from_file(
     return config
 
 
-def _generate_nfd(
-    definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool
-):
+def _generate_nfd(definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool):
     """Generate a Network Function Definition for the given type and config."""
     nfd_generator: NFDGenerator
     if definition_type == VNF:
@@ -155,12 +149,8 @@ def publish_definition(
         file for manifest parameters
     """
     print("Publishing definition.")
-    api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
-    )
-    config = _get_config_from_file(
-        config_file=config_file, configuration_type=definition_type
-    )
+    api_clients = ApiClients(aosm_client=client, resource_client=cf_resources(cmd.cli_ctx))
+    config = _get_config_from_file(config_file=config_file, configuration_type=definition_type)
     if definition_type == VNF:
         deployer = DeployerViaArm(api_clients, config=config)
         deployer.deploy_vnfd_from_bicep(
@@ -192,21 +182,15 @@ def delete_published_definition(
         Defaults to False. Only works if no resources have those as a parent.     Use
         with care.
     """
-    config = _get_config_from_file(
-        config_file=config_file, configuration_type=definition_type
-    )
+    config = _get_config_from_file(config_file=config_file, configuration_type=definition_type)
 
-    api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
-    )
+    api_clients = ApiClients(aosm_client=client, resource_client=cf_resources(cmd.cli_ctx))
 
     delly = ResourceDeleter(api_clients, config)
     if definition_type == VNF:
         delly.delete_vnf(clean=clean)
     else:
-        raise NotImplementedError(
-            "Deleting of published CNF definitions is not yet implemented."
-        )
+        raise NotImplementedError("Deleting of published CNF definitions is not yet implemented.")
 
 
 def generate_design_config(output_file: str = "input.json"):
@@ -231,15 +215,13 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
     config_as_dict = json.dumps(asdict(config), indent=4)
 
     if os.path.exists(output_file):
-        carry_on = input(
-            f"The file {output_file} already exists - do you want to overwrite it? (y/n)"
-        )
+        carry_on = input(f"The file {output_file} already exists - do you want to overwrite it? (y/n)")
         if carry_on != "y":
             raise UnclassifiedUserFault("User aborted!")
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(config_as_dict)
-        if configuration_type in (CNF,VNF):
+        if configuration_type in (CNF, VNF):
             prtName = "definition"
         else:
             prtName = "design"
@@ -258,9 +240,7 @@ def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     :param config_file: path to the file
     """
 
-    api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
-    )
+    api_clients = ApiClients(aosm_client=client, resource_client=cf_resources(cmd.cli_ctx))
 
     # Read the config from the given file
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
@@ -290,9 +270,7 @@ def delete_published_design(
     """
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
 
-    api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
-    )
+    api_clients = ApiClients(aosm_client=client, resource_client=cf_resources(cmd.cli_ctx))
 
     destroyer = ResourceDeleter(api_clients, config)
     destroyer.delete_nsd()
@@ -326,9 +304,7 @@ def publish_design(
     """
 
     print("Publishing design.")
-    api_clients = ApiClients(
-        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
-    )
+    api_clients = ApiClients(aosm_client=client, resource_client=cf_resources(cmd.cli_ctx))
 
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
 
@@ -353,9 +329,7 @@ def _generate_nsd(config: NSDGenerator, api_clients):
     deploy_parameters = _get_nfdv_deployment_parameters(config, api_clients)
 
     if os.path.exists(config.build_output_folder_name):
-        carry_on = input(
-            f"The folder {config.build_output_folder_name} already exists - delete it and continue? (y/n)"
-        )
+        carry_on = input(f"The folder {config.build_output_folder_name} already exists - delete it and continue? (y/n)")
         if carry_on != "y":
             raise UnclassifiedUserFault("User aborted! ")
 

@@ -57,9 +57,7 @@ class Artifact:
                 target=target,
             )
         else:
-            raise NotImplementedError(
-                "Copying artifacts is not implemented for ACR artifacts stores."
-            )
+            raise NotImplementedError("Copying artifacts is not implemented for ACR artifacts stores.")
 
     def _upload_to_storage_account(self, artifact_config: ArtifactConfig) -> None:
         """
@@ -73,9 +71,7 @@ class Artifact:
         if artifact_config.file_path:
             logger.info("Upload to blob store")
             with open(artifact_config.file_path, "rb") as artifact:
-                self.artifact_client.upload_blob(
-                    artifact, overwrite=True, blob_type=BlobType.PAGEBLOB
-                )
+                self.artifact_client.upload_blob(artifact, overwrite=True, blob_type=BlobType.PAGEBLOB)
             logger.info(
                 "Successfully uploaded %s to %s",
                 artifact_config.file_path,
@@ -95,6 +91,4 @@ class Artifact:
                     self.artifact_client.account_name,
                 )
             else:
-                raise RuntimeError(
-                    f"{source_blob.blob_name} does not exist in {source_blob.account_name}."
-                )
+                raise RuntimeError(f"{source_blob.blob_name} does not exist in {source_blob.account_name}.")
