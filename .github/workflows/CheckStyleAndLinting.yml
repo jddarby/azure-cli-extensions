@@ -5,13 +5,18 @@ on:
     types: [opened]
 
 jobs:
-  build_aosm:
+  check_style_and_linting:
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/azure-cli/tools:latest
     permissions: write-all
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+      - name: Setup azdev
+        run: |
+          # Pretend we have a valid git repo to satisfy azdev.
+          mkdir .git
+          azdev setup -r .
       - name: Check Style
         run: azdev style aosm
       - name: Check Linting
