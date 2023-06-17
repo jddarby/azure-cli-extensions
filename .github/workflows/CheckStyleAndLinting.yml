@@ -1,8 +1,10 @@
 name: Style and Lint Check
 
 on:
+  push:
+    branches: [add-aosm-extension]
   pull_request:
-    types: [opened]
+    branches: [add-aosm-extension]
 
 jobs:
   check_style_and_linting:
