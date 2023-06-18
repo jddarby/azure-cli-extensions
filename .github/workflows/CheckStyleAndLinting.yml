@@ -7,10 +7,9 @@ on:
     branches: [add-aosm-extension]
 
 jobs:
-  check_style_and_linting:
+  check_style:
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/azure-cli/tools:latest
-    permissions: write-all
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -18,6 +17,19 @@ jobs:
         run: |
           # Pretend we have a valid git repo to satisfy azdev.
           mkdir .git
-          azdev setup -c EDGE -r .
-          azdev extension add aosm
-          azdev style aosm
+          azdev setup -c EDGE -r . -e aosm
+      - name: Check Style
+        run: azdev style aosm
+  check_linting:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/azure-cli/tools:latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup azdev
+        run: |
+          # Pretend we have a valid git repo to satisfy azdev.
+          mkdir .git
+          azdev setup -c EDGE -r . -e aosm
+      - name: Check linting
+        run: azdev style aosm
