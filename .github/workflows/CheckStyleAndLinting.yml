@@ -32,4 +32,4 @@ jobs:
           mkdir .git
           azdev setup -c EDGE -r . -e aosm
       - name: Check linting
-        run: azdev style aosm
+        run: azdev linter aosm
