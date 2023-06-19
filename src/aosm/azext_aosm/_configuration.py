@@ -1,21 +1,19 @@
-## Disabling as every if statement in validate in NSConfig class has this condition
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
+# Disabling as every if statement in validate in NSConfig class has this condition
 # pylint: disable=simplifiable-condition
 
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
+from azext_aosm.util.constants import (CNF, DEFINITION_OUTPUT_BICEP_PREFIX,
+                                       NF_DEFINITION_JSON_FILE, NSD,
+                                       NSD_DEFINITION_OUTPUT_BICEP_PREFIX, VNF)
 from azure.cli.core.azclierror import InvalidArgumentValueError, ValidationError
 
-from azext_aosm.util.constants import (
-    CNF,
-    DEFINITION_OUTPUT_BICEP_PREFIX,
-    NF_DEFINITION_JSON_FILE,
-    NSD,
-    NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
-    VNF,
-)
 
 DESCRIPTION_MAP: Dict[str, str] = {
     "publisher_resource_group_name": "Resource group for the Publisher resource. "

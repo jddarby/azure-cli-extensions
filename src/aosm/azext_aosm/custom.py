@@ -9,13 +9,6 @@ import shutil
 from dataclasses import asdict
 from typing import Optional
 
-from azure.cli.core.azclierror import (
-    CLIInternalError,
-    InvalidArgumentValueError,
-    UnclassifiedUserFault,
-)
-from knack.log import get_logger
-
 from azext_aosm._client_factory import cf_resources
 from azext_aosm._configuration import (
     CNFConfiguration,
@@ -33,6 +26,13 @@ from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
 from azext_aosm.util.constants import CNF, NSD, VNF
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azure.cli.core.azclierror import (
+    CLIInternalError,
+    InvalidArgumentValueError,
+    UnclassifiedUserFault,
+)
+from knack.log import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -226,7 +226,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
         else:
             prtName = "design"
         print(f"Empty {prtName} configuration has been written to {output_file}")
-        logger.info(f"Empty {prtName} configuration has been written to {output_file}")
+        logger.info("Empty %s configuration has been written to %s", prtName, output_file)
 
 
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
