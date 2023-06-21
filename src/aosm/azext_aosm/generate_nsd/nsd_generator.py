@@ -11,9 +11,7 @@ from typing import Dict
 
 from jinja2 import Template
 from knack.log import get_logger
-from azext_aosm.vendored_sdks.models import (
-    NFVIType
-)
+from azext_aosm.vendored_sdks.models import NFVIType
 
 from azext_aosm._configuration import NSConfiguration
 from azext_aosm.util.constants import (
@@ -30,9 +28,7 @@ from azext_aosm.util.constants import (
     VNF,
 )
 from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks.models import (
-    NetworkFunctionDefinitionVersion
-)
+from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 
 logger = get_logger(__name__)
 
@@ -44,6 +40,7 @@ NFV_TO_BICEP_PARAM_TYPES: Dict[str, str] = {
     "integer": "int",
     "boolean": "bool",
 }
+
 
 class NSDGenerator:
     """
@@ -68,14 +65,20 @@ class NSDGenerator:
         nfdv = self._get_nfdv(config, api_clients)
         print("Finding the deploy parameters of the NFDV resource")
         if not nfdv.deploy_parameters:
-            raise NotImplementedError("NFDV has no deploy parameters, cannot generate NSD.")
+            raise NotImplementedError(
+                "NFDV has no deploy parameters, cannot generate NSD."
+            )
         self.deploy_parameters: str = nfdv.deploy_parameters
 
-    def _get_nfdv(self, config: NSConfiguration, api_clients) -> NetworkFunctionDefinitionVersion:
+    def _get_nfdv(
+        self, config: NSConfiguration, api_clients
+    ) -> NetworkFunctionDefinitionVersion:
         """Get the existing NFDV resource object."""
-        print("Reading existing NFDV resource object "
-              f"{config.network_function_definition_version_name} from group "
-              f"{config.network_function_definition_group_name}")
+        print(
+            "Reading existing NFDV resource object "
+            f"{config.network_function_definition_version_name} from group "
+            f"{config.network_function_definition_group_name}"
+        )
         nfdv_object = api_clients.aosm_client.network_function_definition_versions.get(
             resource_group_name=config.publisher_resource_group_name,
             publisher_name=config.publisher_name,
@@ -166,13 +169,16 @@ class NSDGenerator:
                 # location is sometimes part of deploy_properties.
                 # We want to avoid having duplicate params in the bicep template
                 if key != "location":
-                    bicep_type = NFV_TO_BICEP_PARAM_TYPES.get(value["type"]) or value["type"]
+                    bicep_type = (
+                        NFV_TO_BICEP_PARAM_TYPES.get(value["type"]) or value["type"]
+                    )
                     bicep_params += f"param {key} {bicep_type}\n"
                 bicep_deploymentValues += f"{key}: {key}\n  "
         else:
             raise ValueError(
                 f"NFDV in {self.config.network_function_definition_group_name} has "
-                "no properties within deployParameters")
+                "no properties within deployParameters"
+            )
 
         self.generate_bicep(
             self.nf_bicep_template_name,
@@ -189,7 +195,9 @@ class NSDGenerator:
                 # Ideally we would use the network_function_type from reading the actual
                 # NF, as we do for deployParameters, but the SDK currently doesn't
                 # support this and needs to be rebuilt to do so.
-                "nfvi_type": NFVIType.AZURE_CORE if self.config.network_function_type == VNF else NFVIType.AZURE_ARC_KUBERNETES.value,
+                "nfvi_type": NFVIType.AZURE_CORE
+                if self.config.network_function_type == VNF
+                else NFVIType.AZURE_ARC_KUBERNETES.value,
             },
         )
 

@@ -239,7 +239,7 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(config_as_dict)
-        if configuration_type in (CNF,VNF):
+        if configuration_type in (CNF, VNF):
             prtName = "definition"
         else:
             prtName = "design"
@@ -342,6 +342,7 @@ def publish_design(
         manifest_bicep_path=manifest_file,
         manifest_parameters_json_file=manifest_parameters_json_file,
     )
+
 
 def _generate_nsd(config: NSConfiguration, api_clients: ApiClients):
     """Generate a Network Service Design for the given config."""

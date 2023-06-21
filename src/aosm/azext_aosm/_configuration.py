@@ -167,12 +167,8 @@ class NSConfiguration:
             raise ValueError(
                 "Network Function Definition Offering Location must be set"
             )
-        if (
-            self.network_function_type not in [CNF, VNF]
-        ):
-            raise ValueError(
-                "Network Function Type must be cnf or vnf"
-            )
+        if self.network_function_type not in [CNF, VNF]:
+            raise ValueError("Network Function Type must be cnf or vnf")
         if self.nsdg_name == DESCRIPTION_MAP["nsdg_name"] or "":
             raise ValueError("NSDG name must be set")
         if self.nsd_version == DESCRIPTION_MAP["nsd_version"] or "":
