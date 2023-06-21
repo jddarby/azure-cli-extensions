@@ -10,7 +10,7 @@ param publisherName string = '{{publisher_name}}'
 param networkFunctionDefinitionGroupName string = '{{network_function_definition_group_name}}'
 
 @description('NFD version')
-param networkFunctionDefinitionVersion string = '{{network_function_definition_version_name}}'
+param {{network_function_definition_version_parameter}} string
 
 @description('Offering location for the Network Function')
 param networkFunctionDefinitionOfferingLocation string = '{{network_function_definition_offering_location}}'
@@ -32,7 +32,7 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-previe
     publisherName: publisherName
     publisherScope: 'Private'
     networkFunctionDefinitionGroupName: networkFunctionDefinitionGroupName
-    networkFunctionDefinitionVersion: networkFunctionDefinitionVersion
+    networkFunctionDefinitionVersion: {{network_function_definition_version_parameter}}
     networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation
     nfviType: 'AzureCore'
     nfviId: resourceGroupId

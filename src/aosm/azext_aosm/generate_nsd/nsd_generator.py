@@ -4,19 +4,17 @@
 # --------------------------------------------------------------------------------------
 """Contains a class for generating VNF NFDs and associated resources."""
 import json
-import logging
+import copy
 import os
 import shutil
 import tempfile
 from functools import cached_property
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 from jinja2 import Template
 from knack.log import get_logger
 
 from azext_aosm._configuration import NSConfiguration
-from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
     CONFIG_MAPPINGS,
     NF_DEFINITION_BICEP_FILE,
@@ -51,20 +49,23 @@ class NSDGenerator:
         self.nsd_bicep_template_name = NSD_DEFINITION_BICEP_SOURCE_TEMPLATE
         self.nf_bicep_template_name = NF_TEMPLATE_BICEP_FILE
         self.nsd_bicep_output_name = NSD_DEFINITION_BICEP_FILE
+        self.nfdv_parameter_name = \
+            f"{self.config.network_function_definition_group_name.replace('-', '_')}_nfd_version"
 
         self.build_folder_name = self.config.build_output_folder_name
+        self.deploy_parameters: Optional[Dict[str, Any]] = None
 
     def generate_nsd(self, deploy_parameters) -> None:
         """Generate a NSD templates which includes an Artifact Manifest, NFDV and NF templates."""
-        logger.info(f"Generate NSD bicep templates")
+        logger.info("Generate NSD bicep templates")
 
-        self.deploy_parameters = deploy_parameters
+        self.deploy_parameters = json.loads(deploy_parameters)
 
         # Create temporary folder.
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.tmp_folder_name = tmpdirname
 
-            self.create_parameter_files()
+            self.create_config_group_schema_files()
             self.write_nsd_manifest()
             self.write_nf_bicep()
             self.write_nsd_bicep()
@@ -76,7 +77,34 @@ class NSDGenerator:
                 "`az aosm nsd publish` with the same arguments."
             )
 
-    def create_parameter_files(self) -> None:
+    @cached_property
+    def config_group_schema_dict(self) -> Dict[str, Any]:
+        """
+        :return: The Config Group Schema as a dictionary.
+        """
+        # This function cannot be called before deployment parameters have been
+        # supplied.
+        assert self.deploy_parameters
+
+        # Take a copy of the deploy parameters.
+        cgs_dict = copy.deepcopy(self.deploy_parameters)
+
+        # Re-title it.
+        cgs_dict["title"] = self.config.cg_schema_name
+
+        # Add in the NFDV version as a parameter.
+        description_string = (
+            f"The version of the {self.config.network_function_definition_group_name} "
+            f"NFD to use.  This version must be compatable with (have the same "
+            f"parameters exposed as) "
+            f"{self.config.network_function_definition_version_name}."
+        )
+        cgs_dict["properties"][self.nfdv_parameter_name] = \
+            {"type": "string", "description": description_string}
+
+        return cgs_dict
+
+    def create_config_group_schema_files(self) -> None:
         """Create the Schema and configMappings json files."""
         temp_schemas_folder_path = os.path.join(self.tmp_folder_name, SCHEMAS)
         os.mkdir(temp_schemas_folder_path)
@@ -97,7 +125,7 @@ class NSDGenerator:
         schema_path = os.path.join(folder_path, f"{self.config.cg_schema_name}.json")
 
         with open(schema_path, "w") as _file:
-            _file.write(json.dumps(json.loads(self.deploy_parameters), indent=4))
+            _file.write(json.dumps(self.config_group_schema_dict, indent=4))
 
         logger.debug(f"{schema_path} created")
 
@@ -107,9 +135,7 @@ class NSDGenerator:
 
         :param folder_path: The folder to put this file in.
         """
-
-        deploy_parameters_dict = json.loads(self.deploy_parameters)
-        deploy_properties = deploy_parameters_dict["properties"]
+        deploy_properties = self.config_group_schema_dict["properties"]
 
         logger.debug("Create configMappings.json")
         config_mappings = {
@@ -130,8 +156,7 @@ class NSDGenerator:
 
         bicep_deploymentValues = ""
 
-        deploy_parameters_dict = json.loads(self.deploy_parameters)
-        deploy_properties = deploy_parameters_dict["properties"]
+        deploy_properties = self.deploy_parameters["properties"]
 
         for key, value in deploy_properties.items():
             # location is sometimes part of deploy_properties.
@@ -149,7 +174,7 @@ class NSDGenerator:
                 "network_function_name": self.config.network_function_name,
                 "publisher_name": self.config.publisher_name,
                 "network_function_definition_group_name": self.config.network_function_definition_group_name,
-                "network_function_definition_version_name": self.config.network_function_definition_version_name,
+                "network_function_definition_version_parameter": self.nfdv_parameter_name,
                 "network_function_definition_offering_location": self.config.network_function_definition_offering_location,
                 "location": self.config.location,
             },

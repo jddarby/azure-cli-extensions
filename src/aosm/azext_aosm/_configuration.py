@@ -55,7 +55,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "Exising Network Function Definition Group Name. "
         "This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_version_name":
-        "Exising Network Function Definition Version Name. "
+        "Existing Network Function Definition Version Name. "
         "This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_offering_location": "Offering location of the Network Function Definition",
     "helm_package_name": "Name of the Helm package",
