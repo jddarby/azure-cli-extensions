@@ -5,6 +5,7 @@
 """A module to handle interacting with artifacts."""
 from dataclasses import dataclass
 from typing import Union
+import subprocess
 from knack.log import get_logger
 from oras.client import OrasClient
 
@@ -72,23 +73,20 @@ class Artifact:
 
         :param artifact_config: configuration for the artifact being uploaded
         """
-        assert type(self.artifact_client) == OrasClient
+        chart_path = artifact_config.path_to_chart
+        registry = self.artifact_client.remote.hostname.replace("https://", "")
+        target_registry = f"oci://{registry}"
+        registry_name = registry.replace(".azurecr.io", "")
 
-        # If not included in config, the file path value will be the description of
-        # the field.
+        # az acr login --name "registry_name"
+        login_command = ["az", "acr", "login", "--name", registry_name]
+        subprocess.run(login_command, check=True)
 
-        if artifact_config.path_to_chart:
-            target = f"{self.artifact_client.remote.hostname.replace('https://', '')}/{self.artifact_name}:{self.artifact_version}"
-            logger.debug(f"Uploading {artifact_config.path_to_chart} to {target}")
-            self.artifact_client.push(
-                files=[artifact_config.path_to_chart],
-                target=target,
-            )
+        logger.debug(f"Uploading {chart_path} to {target_registry}")
 
-        else:
-            raise NotImplementedError(
-                "Copying artifacts is not implemented for ACR artifacts stores."
-            )
+        # helm push "$chart_path" "$target_registry"
+        push_command = ["helm", "push", chart_path, target_registry]
+        subprocess.run(push_command, check=True)
 
     def _upload_to_storage_account(self, artifact_config: ArtifactConfig) -> None:
         """
@@ -139,6 +137,17 @@ class Artifact:
         target_registry_name,
         mode="NoForce",
     ):
+        """
+        Copy image from one ACR to another.
+
+        :param cli_ctx: CLI context
+        :param container_registry_client: container registry client
+        :param source_registry_id: source registry ID
+        :param source_image: source image
+        :param target_registry_resource_group_name: target registry resource group name
+        :param target_registry_name: target registry name
+        :param mode: mode for import
+        """
         target_tags = [source_image]
 
         source = ImportSource(resource_id=source_registry_id, source_image=source_image)
@@ -161,10 +170,10 @@ class Artifact:
             logger.info(
                 "Successfully imported %s to %s", source_image, target_registry_name
             )
-        except Exception as e:
+        except Exception as error:
             logger.error(
                 "Failed to import %s to %s. Check if this image exists in the source registry",
                 source_image,
                 target_registry_name,
             )
-            logger.debug(e)
+            logger.debug(error, exc_info=True)
