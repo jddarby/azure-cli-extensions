@@ -230,9 +230,13 @@ def delete_published_definition(
 
     delly = ResourceDeleter(api_clients, config)
     if definition_type == VNF:
-        delly.delete_vnf(clean=clean)
+        delly.delete_nfd(clean=clean)
     elif definition_type == CNF:
-        delly.delete_vnf(clean=clean)
+        delly.delete_nfd(clean=clean)
+    else:
+        raise ValueError(
+            f"Definition type must be either 'vnf' or 'cnf'. Definition type {definition_type} is not recognised."
+        )
 
 
 def generate_design_config(output_file: str = "input.json"):

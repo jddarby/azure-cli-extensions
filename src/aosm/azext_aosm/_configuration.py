@@ -18,24 +18,19 @@ from azext_aosm.util.constants import (
 )
 
 DESCRIPTION_MAP: Dict[str, str] = {
-    "publisher_resource_group_name":
-        "Resource group for the Publisher resource. "
-        "Will be created if it does not exist.",
-    "publisher_name":
-        "Name of the Publisher resource you want your definition published to. "
-        "Will be created if it does not exist.",
-    "publisher_name_nsd":
-        "Name of the Publisher resource you want your design published to. "
-        "This should be the same as the publisher used for your NFDVs"
-    ,
+    "publisher_resource_group_name": "Resource group for the Publisher resource. "
+    "Will be created if it does not exist.",
+    "publisher_name": "Name of the Publisher resource you want your definition published to. "
+    "Will be created if it does not exist.",
+    "publisher_name_nsd": "Name of the Publisher resource you want your design published to. "
+    "This should be the same as the publisher used for your NFDVs",
     "publisher_resource_group_name_nsd": "Resource group for the Publisher resource.",
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource. Will be created if it does not exist.",
     "location": "Azure location to use when creating resources.",
-    "blob_artifact_store_name":
-        "Name of the storage account Artifact Store resource. Will be created if it "
-        "does not exist.",
+    "blob_artifact_store_name": "Name of the storage account Artifact Store resource. Will be created if it "
+    "does not exist.",
     "artifact_name": "Name of the artifact",
     "file_path": "Optional. File path of the artifact you wish to upload from your local disk. "
     "Delete if not required.",
@@ -53,19 +48,15 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_offering_location": "Offering location of the Network Function Definition",
     "helm_package_name": "Name of the Helm package",
-    "path_to_chart":
-        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
-    "path_to_mappings":
-        "File path of value mappings on local disk where chosen values are replaced "
-        "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
-        "blank string, a value mappings file will be generated with every value "
-        "mapped to a deployment parameter. Use a blank string and --interactive on "
-        "the build command to interactively choose which values to map."
-    ,
-    "helm_depends_on":
-        "Names of the Helm packages this package depends on. "
-        "Leave as an empty array if no dependencies",
-    "source_registry_id": "Name of the source acr registry from which to pull the image",
+    "path_to_chart": "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
+    "path_to_mappings": "File path of value mappings on local disk where chosen values are replaced "
+    "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
+    "blank string, a value mappings file will be generated with every value "
+    "mapped to a deployment parameter. Use a blank string and --interactive on "
+    "the build command to interactively choose which values to map.",
+    "helm_depends_on": "Names of the Helm packages this package depends on. "
+    "Leave as an empty array if no dependencies",
+    "source_registry_id": "Resource ID of the source acr registry from which to pull the image",
 }
 
 
@@ -303,8 +294,7 @@ class CNFConfiguration(NFConfiguration):
 
         Used when creating CNFConfiguration object from a loaded json config file.
         """
-        for package_index in range(len(self.helm_packages)):
-            package = self.helm_packages[package_index]
+        for package_index, package in enumerate(self.helm_packages):
             if isinstance(package, dict):
                 self.helm_packages[package_index] = HelmPackageConfig(**dict(package))
 
@@ -317,6 +307,13 @@ class CNFConfiguration(NFConfiguration):
 def get_configuration(
     configuration_type: str, config_as_dict: Optional[Dict[Any, Any]] = None
 ) -> NFConfiguration or NSConfiguration:
+    """
+    Return the correct configuration object based on the type.
+
+    :param configuration_type: The type of configuration to return
+    :param config_as_dict: The configuration as a dictionary
+    :return: The configuration object
+    """
     if config_as_dict is None:
         config_as_dict = {}
 

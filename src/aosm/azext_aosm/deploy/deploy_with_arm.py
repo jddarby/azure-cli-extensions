@@ -201,9 +201,7 @@ class DeployerViaArm:
 
     def construct_cnfd_parameters(self) -> Dict[str, Any]:
         """
-        Create the parmeters dictionary for vnfdefinitions.bicep. VNF specific.
-
-        :param config: The contents of the configuration file.
+        Create the parmeters dictionary for cnfdefinition.bicep. CNF specific.
         """
         assert isinstance(self.config, CNFConfiguration)
         return {
@@ -215,7 +213,7 @@ class DeployerViaArm:
         }
 
     def construct_manifest_parameters(self) -> Dict[str, Any]:
-        """Create the parmeters dictionary for VNF or NSD."""
+        """Create the parmeters dictionary for VNF, CNF or NSD."""
         if isinstance(self.config, VNFConfiguration):
             return {
                 "location": {"value": self.config.location},
@@ -262,8 +260,7 @@ class DeployerViaArm:
         :param cli_ctx: The CLI context
         :param management_client: The container registry management client
         :param bicep_path: The path to the bicep template of the nfdv
-        :type bicep_path: str
-        :param parameters_json_file: path to an override file of set parameters for the nfdv        :param
+        :param parameters_json_file: path to an override file of set parameters for the nfdv
         :param manifest_bicep_path: The path to the bicep template of the manifest
         :param manifest_parameters_json_file: path to an override file of set parameters for
         the manifest
@@ -339,20 +336,19 @@ class DeployerViaArm:
         for artifact in acr_manifest.artifacts:
             artifact_dictionary[artifact.artifact_name] = artifact
 
-        for package_number in range(len(self.config.helm_packages)):
-            helm_package_name = self.config.helm_packages[package_number].name
+        for helm_package in self.config.helm_packages:
+            helm_package_name = helm_package.name
 
-            if helm_package_name not in artifact_dictionary.keys():
-                print(
+            if helm_package_name not in artifact_dictionary:
+                raise ValueError(
                     f"Artifact {helm_package_name} not found in the artifact manifest"
                 )
-                continue
 
             manifest_artifact = artifact_dictionary[helm_package_name]
 
             print(f"Uploading Helm package: {helm_package_name}")
 
-            manifest_artifact.upload(self.config.helm_packages[package_number])
+            manifest_artifact.upload(helm_package)
 
             print(f"Finished uploading Helm package: {helm_package_name}")
 
