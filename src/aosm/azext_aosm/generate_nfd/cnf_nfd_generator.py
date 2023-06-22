@@ -388,8 +388,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         Find pattern matches in Helm chart, using provided REGEX pattern.
 
-        param helm_package: The helm package config. param start_string: The string to
-        search for, either imagePullSecrets: or image:
+        :param helm_package: The helm package config.
+        :param start_string: The string to search for, either imagePullSecrets: or image:
 
         If searching for imagePullSecrets, returns list of lists containing image pull
         secrets paths, e.g. Values.foo.bar.imagePullSecret
@@ -431,8 +431,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         Get the list of artifacts for the chart.
 
-        param helm_package: The helm package config. param image_line_matches: The list
-        of image line matches.
+        :param helm_package: The helm package config. 
+        :param image_line_matches: The list of image line matches.
         """
         artifact_list = []
         (chart_name, chart_version) = self.get_chart_name_and_version(helm_package)
@@ -502,31 +502,39 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     def traverse_dict(self, d, target):
         """
         Traverse the dictionary that is loaded from the file provided by path_to_mappings in the input.json.
+
         Returns a dictionary of all the values that match the target regex,
         with the key being the deploy parameter and the value being the path to the value.
         e.g. {"foo": ["global", "foo", "bar"]}
 
-        param d: The dictionary to traverse. param target: The regex to search for.
+        :param d: The dictionary to traverse.
+        :param target: The regex to search for.
         """
         stack = [(d, [])]  # Initialize the stack with the dictionary and an empty path
         result = {}  # Initialize empty dictionary to store the results
         while stack:  # While there are still items in the stack
             # Pop the last item from the stack and unpack it into node (the dictionary) and path
             (node, path) = stack.pop()
-            for k, v in node.items():  # For each key-value pair in the popped item
-                if isinstance(v, dict):  # If the value is a dictionary
+            # For each key-value pair in the popped item
+            for k, v in node.items():
+                # If the value is a dictionary
+                if isinstance(v, dict):
+                    # Add the dictionary to the stack with the path
                     stack.append(
                         (v, path + [k])
-                    )  # Add the dictionary to the stack with the path
+                    )
+                # If the value is a string + matches target regex
                 elif isinstance(v, str) and re.search(
                     target, v
-                ):  # If the value is a string + matches target regex
+                ):
+                    # Take the match i.e, foo from {deployParameter.foo}
                     match = re.search(
                         target, v
-                    )  # Take the match i.e, foo from {deployParameter.foo}
+                    )
+                    # Add it to the result dictionary with its path as the value
                     result[match.group(1)] = path + [
                         k
-                    ]  # Add it to the result dictionary with its path as the value
+                    ]
                 elif isinstance(v, list):
                     for i in v:
                         if isinstance(i, str) and re.search(target, i):

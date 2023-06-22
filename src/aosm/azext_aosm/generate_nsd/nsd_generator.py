@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT
 # License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------
-"""Contains a class for generating NFDs and associated resources."""
+"""Contains a class for generating NSDs and associated resources."""
 import json
 import os
 import shutil
@@ -162,23 +162,23 @@ class NSDGenerator:
         bicep_deploymentValues = ""
 
         deploy_parameters_dict = json.loads(self.deploy_parameters)
-        if "properties" in deploy_parameters_dict:
-            deploy_properties = deploy_parameters_dict["properties"]
-
-            for key, value in deploy_properties.items():
-                # location is sometimes part of deploy_properties.
-                # We want to avoid having duplicate params in the bicep template
-                if key != "location":
-                    bicep_type = (
-                        NFV_TO_BICEP_PARAM_TYPES.get(value["type"]) or value["type"]
-                    )
-                    bicep_params += f"param {key} {bicep_type}\n"
-                bicep_deploymentValues += f"{key}: {key}\n  "
-        else:
+        if "properties" not in deploy_parameters_dict:
             raise ValueError(
                 f"NFDV in {self.config.network_function_definition_group_name} has "
                 "no properties within deployParameters"
             )
+
+        deploy_properties = deploy_parameters_dict["properties"]
+
+        for key, value in deploy_properties.items():
+            # location is sometimes part of deploy_properties.
+            # We want to avoid having duplicate params in the bicep template
+            if key != "location":
+                bicep_type = (
+                    NFV_TO_BICEP_PARAM_TYPES.get(value["type"]) or value["type"]
+                )
+                bicep_params += f"param {key} {bicep_type}\n"
+            bicep_deploymentValues += f"{key}: {key}\n  "
 
         self.generate_bicep(
             self.nf_bicep_template_name,
