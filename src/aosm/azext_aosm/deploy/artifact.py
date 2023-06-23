@@ -55,8 +55,10 @@ class Artifact:
         assert type(self.artifact_client) == OrasClient
 
         if artifact_config.file_path:
-            target = f"{self.artifact_client.remote.hostname.replace('https://', '')}\
-                /{self.artifact_name}:{self.artifact_version}"
+            target = (
+                f"{self.artifact_client.remote.hostname.replace('https://', '')}"
+                f"/{self.artifact_name}:{self.artifact_version}"
+            )
             logger.debug("Uploading %s to %s", artifact_config.file_path, target)
             self.artifact_client.push(
                 files=[artifact_config.file_path],

@@ -18,19 +18,24 @@ from azext_aosm.util.constants import (
 )
 
 DESCRIPTION_MAP: Dict[str, str] = {
-    "publisher_resource_group_name": "Resource group for the Publisher resource. "
-    "Will be created if it does not exist.",
-    "publisher_name": "Name of the Publisher resource you want your definition published to. "
-    "Will be created if it does not exist.",
-    "publisher_name_nsd": "Name of the Publisher resource you want your design published to. "
-    "This should be the same as the publisher used for your NFDVs",
+    "publisher_resource_group_name":
+        "Resource group for the Publisher resource. "
+        "Will be created if it does not exist.",
+    "publisher_name":
+        "Name of the Publisher resource you want your definition published to. "
+        "Will be created if it does not exist.",
+    "publisher_name_nsd":
+        "Name of the Publisher resource you want your design published to. "
+        "This should be the same as the publisher used for your NFDVs"
+    ,
     "publisher_resource_group_name_nsd": "Resource group for the Publisher resource.",
     "nf_name": "Name of NF definition",
     "version": "Version of the NF definition",
     "acr_artifact_store_name": "Name of the ACR Artifact Store resource. Will be created if it does not exist.",
     "location": "Azure location to use when creating resources.",
-    "blob_artifact_store_name": "Name of the storage account Artifact Store resource. Will be created if it "
-    "does not exist.",
+    "blob_artifact_store_name":
+        "Name of the storage account Artifact Store resource. Will be created if it "
+        "does not exist.",
     "artifact_name": "Name of the artifact",
     "file_path": "Optional. File path of the artifact you wish to upload from your local disk. "
     "Delete if not required.",
@@ -47,15 +52,20 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "network_function_definition_version_name": "Exising Network Function Definition Version Name. "
     "This can be created using the 'az aosm nfd' commands.",
     "network_function_definition_offering_location": "Offering location of the Network Function Definition",
+    "network_function_type": "Type of nf in the definition. Valid values are 'cnf' or 'vnf'",
     "helm_package_name": "Name of the Helm package",
-    "path_to_chart": "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
-    "path_to_mappings": "File path of value mappings on local disk where chosen values are replaced "
-    "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
-    "blank string, a value mappings file will be generated with every value "
-    "mapped to a deployment parameter. Use a blank string and --interactive on "
-    "the build command to interactively choose which values to map.",
-    "helm_depends_on": "Names of the Helm packages this package depends on. "
-    "Leave as an empty array if no dependencies",
+    "path_to_chart":
+        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz",
+    "path_to_mappings":
+        "File path of value mappings on local disk where chosen values are replaced "
+        "with deploymentParameter placeholders. Accepts .yaml or .yml. If left as a "
+        "blank string, a value mappings file will be generated with every value "
+        "mapped to a deployment parameter. Use a blank string and --interactive on "
+        "the build command to interactively choose which values to map."
+    ,
+    "helm_depends_on":
+        "Names of the Helm packages this package depends on. "
+        "Leave as an empty array if no dependencies",
     "source_registry_id": "Resource ID of the source acr registry from which to pull the image",
 }
 
@@ -109,6 +119,7 @@ class NSConfiguration:
     network_function_definition_offering_location: str = DESCRIPTION_MAP[
         "network_function_definition_offering_location"
     ]
+    network_function_type: str = DESCRIPTION_MAP["network_function_type"]
     nsdg_name: str = DESCRIPTION_MAP["nsdg_name"]
     nsd_version: str = DESCRIPTION_MAP["nsd_version"]
     nsdv_description: str = DESCRIPTION_MAP["nsdv_description"]
@@ -151,6 +162,8 @@ class NSConfiguration:
             raise ValueError(
                 "Network Function Definition Offering Location must be set"
             )
+        if self.network_function_type not in [CNF, VNF]:
+            raise ValueError("Network Function Type must be cnf or vnf")
         if self.nsdg_name == DESCRIPTION_MAP["nsdg_name"] or "":
             raise ValueError("NSDG name must be set")
         if self.nsd_version == DESCRIPTION_MAP["nsd_version"] or "":

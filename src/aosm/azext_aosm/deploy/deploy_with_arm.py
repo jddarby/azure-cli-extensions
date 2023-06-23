@@ -36,6 +36,7 @@ from azext_aosm.util.constants import (
     VNF_DEFINITION_BICEP_TEMPLATE,
     VNF_MANIFEST_BICEP_TEMPLATE,
 )
+from azext_aosm.util.management_clients import ApiClients
 
 logger = get_logger(__name__)
 

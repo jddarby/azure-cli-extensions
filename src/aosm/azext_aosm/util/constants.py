@@ -61,8 +61,14 @@ SCHEMA_PREFIX = {
     "type": "object",
     "properties": {},
 }
-IMAGE_LINE_REGEX = (
-    r"image: \{\{ .Values.(.+?) \}\}/(.+?):(\d+\.\d+\.\d+(-\w+)?(\.\d+)?)"
-)
-IMAGE_PULL_SECRET_LINE_REGEX = r"imagePullSecrets: \[name: \{\{ .Values.(.+?) \}\}\]"
+
+# For CNF NFD Generator
+# To match the image path if image: is present in the yaml file
+IMAGE_START_STRING = "image:"
+IMAGE_PATH_REGEX = r".Values\.([^\s})]*)"
+
+# To match the image name and version if imagePullSecrets: is present in the yaml file
+IMAGE_PULL_SECRETS_START_STRING = "imagePullSecrets:"
+IMAGE_NAME_AND_VERSION_REGEX = r"\/([^\s]*):([^\s)\"}]*)"
+
 DEPLOYMENT_PARAMETER_MAPPING_REGEX = r"\{deployParameters.(.+?)\}"

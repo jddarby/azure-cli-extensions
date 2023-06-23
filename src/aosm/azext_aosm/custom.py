@@ -16,6 +16,14 @@ from azure.cli.core.azclierror import (
 )
 from knack.log import get_logger
 
+from azext_aosm._client_factory import cf_resources, cf_acr_registries
+from azext_aosm._configuration import (
+    CNFConfiguration,
+    NFConfiguration,
+    NSConfiguration,
+    VNFConfiguration,
+    get_configuration,
+)
 from azext_aosm.delete.delete import ResourceDeleter
 from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
 from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
@@ -25,14 +33,6 @@ from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
 from azext_aosm.util.constants import CNF, NSD, VNF
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm._client_factory import cf_resources, cf_acr_registries
-from azext_aosm._configuration import (
-    CNFConfiguration,
-    NFConfiguration,
-    NSConfiguration,
-    VNFConfiguration,
-    get_configuration,
-)
 
 logger = get_logger(__name__)
 
@@ -138,33 +138,17 @@ def publish_definition(
     """
     Publish a generated definition.
 
-    :param cmd: :param client: :type client: HybridNetworkManagementClient :param
-    definition_type: VNF or CNF :param config_
-    file:
-    Path to the config file for the NFDV    :param definition_file: Optional path to a
-    bicep template to deploy, in case the user                       wants to edit the
-    built NFDV template. If omitted, the default                       built NFDV
-    template will be used.    :param parameters_json_
-    file:
-    Optional path to a parameters file for the bicep file,                      in case
-    the user wants to edit the built NFDV template. If                      omitted,
-    parameters from config will be turned into parameters                      for the
-    bicep file    :param manifest_
-    file:
-    Optional path to an override bicep template to deploy
-    manifests    :param manifest_parameters_json_
-    file:
     :param cmd:
     :param client:
     :type client: HybridNetworkManagementClient
     :param definition_type: VNF or CNF
     :param config_file: Path to the config file for the NFDV
     :param definition_file: Optional path to a bicep template to deploy, in case the
-        user        wants to edit the built NFDV template. If omitted, the default
-        built NFDV template will be used.
+        user wants to edit the built NFDV template.
+        If omitted, the default built NFDV template will be used.
     :param parameters_json_file: Optional path to a parameters file for the bicep file,
-        in case the user wants to edit the built NFDV template. If       omitted,
-        parameters from config will be turned into parameters       for the bicep file
+        in case the user wants to edit the built NFDV template. If omitted,
+        parameters from config will be turned into parameters for the bicep file
     :param manifest_file: Optional path to an override bicep template to deploy
         manifests
     :param manifest_parameters_json_file: Optional path to an override bicep parameters
@@ -294,7 +278,7 @@ def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
 
     # Read the config from the given file
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
-
+    assert isinstance(config, NSConfiguration)
     config.validate()
 
     # Generate the NSD and the artifact manifest.
@@ -374,14 +358,8 @@ def publish_design(
     )
 
 
-def _generate_nsd(config: NSDGenerator, api_clients):
-    """Generate a Network Service Design for the given type and config."""
-    if config:
-        nsd_generator = NSDGenerator(config)
-    else:
-        raise CLIInternalError("Generate NSD called without a config file")
-    deploy_parameters = _get_nfdv_deployment_parameters(config, api_clients)
-
+def _generate_nsd(config: NSConfiguration, api_clients: ApiClients):
+    """Generate a Network Service Design for the given config."""
     if os.path.exists(config.build_output_folder_name):
         carry_on = input(
             f"The folder {config.build_output_folder_name} already exists - delete it and continue? (y/n)"
@@ -390,17 +368,5 @@ def _generate_nsd(config: NSDGenerator, api_clients):
             raise UnclassifiedUserFault("User aborted! ")
 
         shutil.rmtree(config.build_output_folder_name)
-
-    nsd_generator.generate_nsd(deploy_parameters)
-
-
-def _get_nfdv_deployment_parameters(config: NSConfiguration, api_clients):
-    """Get the properties of the existing NFDV."""
-    NFDV_object = api_clients.aosm_client.network_function_definition_versions.get(
-        resource_group_name=config.publisher_resource_group_name,
-        publisher_name=config.publisher_name,
-        network_function_definition_group_name=config.network_function_definition_group_name,
-        network_function_definition_version_name=config.network_function_definition_version_name,
-    )
-
-    return NFDV_object.deploy_parameters
+    nsd_generator = NSDGenerator(api_clients, config)
+    nsd_generator.generate_nsd()

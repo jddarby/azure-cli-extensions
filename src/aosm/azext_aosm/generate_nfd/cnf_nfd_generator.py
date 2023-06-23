@@ -25,12 +25,14 @@ from azext_aosm.util.constants import (
     CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
     CONFIG_MAPPINGS,
     DEPLOYMENT_PARAMETER_MAPPING_REGEX,
+    IMAGE_NAME_AND_VERSION_REGEX,
+    IMAGE_PATH_REGEX,
     DEPLOYMENT_PARAMETERS,
     GENERATED_VALUES_MAPPINGS,
-    IMAGE_LINE_REGEX,
-    IMAGE_PULL_SECRET_LINE_REGEX,
     SCHEMA_PREFIX,
     SCHEMAS,
+    IMAGE_PULL_SECRETS_START_STRING,
+    IMAGE_START_STRING,
 )
 from azext_aosm.util.utils import input_ack
 
@@ -107,24 +109,28 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     # Get all image line matches for files in the chart.
                     # Do this here so we don't have to do it multiple times.
                     image_line_matches = self.find_pattern_matches_in_chart(
-                        helm_package, IMAGE_LINE_REGEX
+                        helm_package, IMAGE_START_STRING
                     )
+                    # Creates a flattened list of image registry paths to prevent set error
+                    image_registry_paths = []
+                    for registry_path in image_line_matches:
+                        image_registry_paths += registry_path[0]
 
                     # Generate the NF application configuration for the chart
                     # passed to jinja2 renderer to render bicep template
                     self.nf_application_configurations.append(
                         self.generate_nf_application_config(
                             helm_package,
-                            image_line_matches,
+                            image_registry_paths,
                             self.find_pattern_matches_in_chart(
-                                helm_package, IMAGE_PULL_SECRET_LINE_REGEX
+                                helm_package, IMAGE_PULL_SECRETS_START_STRING
                             ),
                         )
                     )
                     # Workout the list of artifacts for the chart and
                     # update the list for the NFD with any unique artifacts.
                     chart_artifacts = self.get_artifact_list(
-                        helm_package, set(image_line_matches)
+                        helm_package, image_line_matches
                     )
                     self.artifacts += [
                         a for a in chart_artifacts if a not in self.artifacts
@@ -213,7 +219,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     def _read_top_level_values_yaml(
         self, helm_package: HelmPackageConfig
     ) -> Dict[str, Any]:
-        """Return a dictionary of the values.yaml|yml read from the root of the helm package.
+        """
+        Return a dictionary of the values.yaml|yml read from the root of the helm package.
 
         :param helm_package: The helm package to look in
         :type helm_package: HelmPackageConfig
@@ -342,21 +349,22 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
     def generate_nf_application_config(
         self,
         helm_package: HelmPackageConfig,
-        image_line_matches: List[Tuple[str, ...]],
+        image_registry_path: List[str],
         image_pull_secret_line_matches: List[Tuple[str, ...]],
     ) -> Dict[str, Any]:
         """Generate NF application config."""
         (name, version) = self.get_chart_name_and_version(helm_package)
-        registryValuesPaths = set({m[0] for m in image_line_matches})
-        imagePullSecretsValuesPaths = set(image_pull_secret_line_matches)
+
+        registry_values_paths = set(image_registry_path)
+        image_pull_secrets_values_paths = set(image_pull_secret_line_matches)
 
         return {
             "name": helm_package.name,
             "chartName": name,
             "chartVersion": version,
             "dependsOnProfile": helm_package.depends_on,
-            "registryValuesPaths": list(registryValuesPaths),
-            "imagePullSecretsValuesPaths": list(imagePullSecretsValuesPaths),
+            "registryValuesPaths": list(registry_values_paths),
+            "imagePullSecretsValuesPaths": list(image_pull_secrets_values_paths),
             "valueMappingsPath": self.jsonify_value_mappings(helm_package),
         }
 
@@ -372,22 +380,44 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     yield os.path.join(root, file)
 
     def find_pattern_matches_in_chart(
-        self, helm_package: HelmPackageConfig, pattern: str
+        self, helm_package: HelmPackageConfig, start_string: str
     ) -> List[Tuple[str, ...]]:
         """
         Find pattern matches in Helm chart, using provided REGEX pattern.
 
-        param helm_package: The helm package config. param pattern: The regex pattern to
-        match.
+        :param helm_package: The helm package config.
+        :param start_string: The string to search for, either imagePullSecrets: or image:
+
+        If searching for imagePullSecrets, returns list of lists containing image pull
+        secrets paths, e.g. Values.foo.bar.imagePullSecret
+
+        If searching for image, returns list of tuples containing the list of image
+        paths and the name and version of the image. e.g. (Values.foo.bar.repoPath, foo,
+        1.2.3)
         """
         chart_dir = os.path.join(self._tmp_folder_name, helm_package.name)
         matches = []
+        path = []
 
         for file in self._find_yaml_files(chart_dir):
             with open(file, "r", encoding="UTF-8") as f:
-                contents = f.read()
-                matches += re.findall(pattern, contents)
-
+                for line in f:
+                    if start_string in line:
+                        path = re.findall(IMAGE_PATH_REGEX, line)
+                        # If "image:", search for chart name and version
+                        if start_string == IMAGE_START_STRING:
+                            name_and_version = re.search(
+                                IMAGE_NAME_AND_VERSION_REGEX, line
+                            )
+                            matches.append(
+                                (
+                                    path,
+                                    name_and_version.group(1),
+                                    name_and_version.group(2),
+                                )
+                            )
+                        else:
+                            matches += path
         return matches
 
     def get_artifact_list(
@@ -398,8 +428,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         Get the list of artifacts for the chart.
 
-        param helm_package: The helm package config. param image_line_matches: The list
-        of image line matches.
+        :param helm_package: The helm package config. 
+        :param image_line_matches: The list of image line matches.
         """
         artifact_list = []
         (chart_name, chart_version) = self.get_chart_name_and_version(helm_package)
@@ -408,7 +438,6 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             "version": chart_version,
         }
         artifact_list.append(helm_artifact)
-
         for match in image_line_matches:
             artifact_list.append(
                 {
@@ -435,7 +464,6 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         values_schema = os.path.join(
             self._tmp_folder_name, helm_package.name, "values.schema.json"
         )
-
         if not os.path.exists(mappings_path):
             raise InvalidTemplateError(
                 f"ERROR: The helm package '{helm_package.name}' does not have a valid values mappings file. \
@@ -444,100 +472,162 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             )
         if not os.path.exists(values_schema):
             raise InvalidTemplateError(
-                f"ERROR: The helm package '{helm_package.name}' is missing values.schema.json. \
-                    Please fix this and run the command again."
+                f"ERROR: The helm package '{helm_package.name}' is missing values.schema.json.\n\
+                Please fix this and run the command again."
             )
 
         with open(mappings_path, "r", encoding="utf-8") as stream:
             values_data = yaml.load(stream, Loader=yaml.SafeLoader)
 
         with open(values_schema, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            schema_data = data["properties"]
+            schema_data = json.load(f)
 
         try:
-            final_schema = self.find_deploy_params(values_data, schema_data, {})
+            deploy_params_dict = self.traverse_dict(
+                values_data, DEPLOYMENT_PARAMETER_MAPPING_REGEX
+            )
+            new_schema = self.search_schema(deploy_params_dict, schema_data)
         except KeyError as e:
             raise InvalidTemplateError(
-                f"ERROR: Your schema and values for the helm package '{helm_package.name}' do not match. \
+                f"ERROR: There is a problem with your schema or values for the helm package '{helm_package.name}'. \
                     Please fix this and run the command again."
             ) from e
 
         logger.debug("Generated chart mapping schema for %s", helm_package.name)
-        return final_schema
+        return new_schema
 
-    def find_deploy_params(
-        self, nested_dict, schema_nested_dict, final_schema
+    def traverse_dict(self, d, target):
+        """
+        Traverse the dictionary that is loaded from the file provided by path_to_mappings in the input.json.
+
+        Returns a dictionary of all the values that match the target regex,
+        with the key being the deploy parameter and the value being the path to the value.
+        e.g. {"foo": ["global", "foo", "bar"]}
+
+        :param d: The dictionary to traverse.
+        :param target: The regex to search for.
+        """
+        stack = [(d, [])]  # Initialize the stack with the dictionary and an empty path
+        result = {}  # Initialize empty dictionary to store the results
+        while stack:  # While there are still items in the stack
+            # Pop the last item from the stack and unpack it into node (the dictionary) and path
+            (node, path) = stack.pop()
+            # For each key-value pair in the popped item
+            for k, v in node.items():
+                # If the value is a dictionary
+                if isinstance(v, dict):
+                    # Add the dictionary to the stack with the path
+                    stack.append(
+                        (v, path + [k])
+                    )
+                # If the value is a string + matches target regex
+                elif isinstance(v, str) and re.search(
+                    target, v
+                ):
+                    # Take the match i.e, foo from {deployParameter.foo}
+                    match = re.search(
+                        target, v
+                    )
+                    # Add it to the result dictionary with its path as the value
+                    result[match.group(1)] = path + [
+                        k
+                    ]
+                elif isinstance(v, list):
+                    for i in v:
+                        if isinstance(i, str) and re.search(target, i):
+                            match = re.search(target, i)
+                            result[match.group(1)] = path + [k]
+        return result
+
+    def search_schema(self, result, full_schema):
+        """
+        Search through provided schema for the types of the deployment parameters.
+        This assumes that the type of the key will be the type of the deployment parameter.
+        e.g. if foo: {deployParameter.bar} and foo is type string, then bar is type string.
+
+        Returns a dictionary of the deployment parameters in the format:
+        {"foo": {"type": "string"}, "bar": {"type": "string"}}
+
+        param result: The result of the traverse_dict function.
+        param full_schema: The schema to search through.
+        """
+        new_schema = {}
+        no_schema_list = []
+        for deploy_param in result:
+            node = full_schema
+            for path_list in result[deploy_param]:
+                if "properties" in node.keys():
+                    node = node["properties"][path_list]
+                else:
+                    no_schema_list.append(deploy_param)
+                    new_schema.update({deploy_param: {"type": "string"}})
+            if deploy_param not in new_schema:
+                new_schema.update({deploy_param: {"type": node.get("type", None)}})
+        if no_schema_list:
+            print("No schema found for deployment parameter(s):", no_schema_list)
+            print("We default these parameters to type string")
+        return new_schema
+
+    def _replace_values_with_deploy_params(
+        self,
+        values_yaml_dict,
+        param_prefix: Optional[str] = None,
     ) -> Dict[Any, Any]:
         """
-        Create a schema of types of only those values in the values.mappings.yaml file which have a deployParameters mapping.
+        Given the yaml dictionary read from values.yaml, replace all the values with {deploymentParameter.keyname}.
 
-        Finds the relevant part of the full schema of the values file and finds the
-        type of the parameter name, then adds that to the final schema, with no nesting.
-
-        Returns a schema of form:
-        {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "DeployParametersSchema",
-            "type": "object",
-            "properties": {
-                "<parameter1>": {
-                    "type": "<type>"
-                },
-                "<parameter2>": {
-                    "type": "<type>"
-                },
-
-        nested_dict: the dictionary of the values mappings yaml which contains
-                     deployParameters mapping placeholders
-        schema_nested_dict: the properties section of the full schema (or sub-object in
-                            schema)
-        final_schema: Blank dictionary if this is the top level starting point,
-                      otherwise the final_schema as far as we have got.
+        Thus creating a values mapping file if the user has not provided one in config.
         """
-        original_schema_nested_dict = schema_nested_dict
-        for k, v in nested_dict.items():
+        logger.debug("Replacing values with deploy parameters")
+        final_values_mapping_dict: Dict[Any, Any] = {}
+        for k, v in values_yaml_dict.items():
             # if value is a string and contains deployParameters.
-            if isinstance(v, str) and re.search(DEPLOYMENT_PARAMETER_MAPPING_REGEX, v):
-                logger.debug(
-                    "Found string deploy parameter for key %s, value %s. Find schema type",
-                    k,
-                    v,
+            logger.debug("Processing key %s", k)
+            param_name = k if param_prefix is None else f"{param_prefix}_{k}"
+            if isinstance(v, (str, int, bool)):
+                # Replace the parameter with {deploymentParameter.keyname}
+                if self.interactive:
+                    # Interactive mode. Prompt user to include or exclude parameters
+                    # This requires the enter key after the y/n input which isn't ideal
+                    if not input_ack("y", f"Expose parameter {param_name}? y/n "):
+                        logger.debug("Excluding parameter %s", param_name)
+                        final_values_mapping_dict.update({k: v})
+                        continue
+                replacement_value = f"{{deployParameters.{param_name}}}"
+
+                # add the schema for k (from the big schema) to the (smaller) schema
+                final_values_mapping_dict.update({k: replacement_value})
+            elif isinstance(v, dict):
+                final_values_mapping_dict[k] = self._replace_values_with_deploy_params(
+                    v, param_name
                 )
-                # only add the parameter name (e.g. from {deployParameter.zone} only
-                # param = zone)
-                param = v.split(".", 1)[1]
-                param = param.split("}", 1)[0]
-
-                # add the schema for k (from the full schema) to the (new) schema
-                if "properties" in schema_nested_dict.keys():
-                    # Occurs if top level item in schema properties is an object with
-                    # properties itself
-                    final_schema.update(
-                        {param: {"type": schema_nested_dict["properties"][k]["type"]}}
+            elif isinstance(v, list):
+                final_values_mapping_dict[k] = []
+                for index, item in enumerate(v):
+                    param_name = (
+                        f"{param_prefix}_{k}_{index}"
+                        if param_prefix
+                        else f"{k})_{index}"
                     )
-                else:
-                    # Occurs if top level schema item in schema properties are objects
-                    # with no "properties" - but can have "type".
-                    final_schema.update(
-                        {param: {"type": schema_nested_dict[k]["type"]}}
-                    )
-            # else if value is a (non-empty) dictionary (i.e another layer of nesting)
-            elif hasattr(v, "items") and v.items():
-                logger.debug("Found dict value for key %s. Find schema type", k)
-                # handling schema having properties which doesn't map directly to the
-                # values file nesting
-                if "properties" in schema_nested_dict.keys():
-                    schema_nested_dict = schema_nested_dict["properties"][k]
-                else:
-                    schema_nested_dict = schema_nested_dict[k]
-                # recursively call function with values (i.e the nested dictionary)
-                self.find_deploy_params(v, schema_nested_dict, final_schema)
-                # reset the schema dict to its original value (once finished with that
-                # level of recursion)
-                schema_nested_dict = original_schema_nested_dict
+                    if isinstance(item, dict):
+                        final_values_mapping_dict[k].append(
+                            self._replace_values_with_deploy_params(item, param_name)
+                        )
+                    elif isinstance(v, (str, int, bool)):
+                        replacement_value = f"{{deployParameters.{param_name}}}"
+                        final_values_mapping_dict[k].append(replacement_value)
+                    else:
+                        raise ValueError(
+                            f"Found an unexpected type {type(v)} of key {k} in "
+                            "values.yaml, cannot generate values mapping file."
+                        )
+            else:
+                raise ValueError(
+                    f"Found an unexpected type {type(v)} of key {k} in values.yaml, "
+                    "cannot generate values mapping file."
+                )
 
-        return final_schema
+        return final_values_mapping_dict
 
     def _replace_values_with_deploy_params(
         self,
