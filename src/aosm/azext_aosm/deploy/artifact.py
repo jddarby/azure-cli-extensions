@@ -172,7 +172,7 @@ class Artifact:
             )
         except Exception as error:
             logger.error(
-                "Failed to import %s to %s. Check if this image exists in the source registry",
+                "Failed to import %s to %s. Check if this image exists in the source registry or is already present in the target registry.",
                 source_image,
                 target_registry_name,
             )
