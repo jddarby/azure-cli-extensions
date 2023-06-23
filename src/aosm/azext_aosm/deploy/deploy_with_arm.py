@@ -14,17 +14,16 @@ from typing import Any, Dict, Optional
 from azure.mgmt.resource.resources.models import DeploymentExtended
 from knack.log import get_logger
 
-from azext_aosm._configuration import NFConfiguration, NSConfiguration, VNFConfiguration
-from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
-from azext_aosm.deploy.artifact import Artifact
-from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
 from azext_aosm._configuration import (
     NFConfiguration,
     NSConfiguration,
     VNFConfiguration,
     CNFConfiguration,
 )
+from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
+from azext_aosm.deploy.artifact import Artifact
+from azext_aosm.util.management_clients import ApiClients
+from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
 from azext_aosm.util.constants import (
     NF_DEFINITION_BICEP_FILE,
     NSD,
@@ -37,7 +36,6 @@ from azext_aosm.util.constants import (
     VNF_DEFINITION_BICEP_TEMPLATE,
     VNF_MANIFEST_BICEP_TEMPLATE,
 )
-from azext_aosm.util.management_clients import ApiClients
 
 logger = get_logger(__name__)
 
@@ -65,6 +63,22 @@ class DeployerViaArm:
         self.api_clients = api_clients
         self.config = config
         self.pre_deployer = PreDeployerViaSDK(api_clients, self.config)
+
+    def read_parameters_from_file(self, parameters_json_file: str) -> Dict[str, Any]:
+        """
+        Read parameters from a file.
+
+        :param parameters_json_file: path to the parameters file
+        :return: parameters
+        """
+        message = f"Use parameters from file {parameters_json_file}"
+        logger.info(message)
+        print(message)
+        with open(parameters_json_file, "r", encoding="utf-8") as f:
+            parameters_json = json.loads(f.read())
+            parameters = parameters_json["parameters"]
+
+        return parameters
 
     def deploy_vnfd_from_bicep(
         self,
@@ -103,12 +117,7 @@ class DeployerViaArm:
             )
 
         if parameters_json_file:
-            message = f"Use parameters from file {parameters_json_file}"
-            logger.info(message)
-            print(message)
-            with open(parameters_json_file, "r", encoding="utf-8") as f:
-                parameters_json = json.loads(f.read())
-                parameters = parameters_json["parameters"]
+            parameters = self.read_parameters_from_file(parameters_json_file)
 
         else:
             # User has not passed in parameters file, so we use the parameters required
@@ -277,13 +286,7 @@ class DeployerViaArm:
             )
 
         if parameters_json_file:
-            message = f"Use parameters from file {parameters_json_file}"
-            logger.info(message)
-            print(message)
-            with open(parameters_json_file, "r", encoding="utf-8") as f:
-                parameters_json = json.loads(f.read())
-                parameters = parameters_json["parameters"]
-
+            parameters = self.read_parameters_from_file(parameters_json_file)
         else:
             # User has not passed in parameters file, so we use the parameters required
             # from config for the default bicep template produced from building the
@@ -401,13 +404,7 @@ class DeployerViaArm:
             )
 
         if parameters_json_file:
-            message = f"Use parameters from file {parameters_json_file}"
-            logger.info(message)
-            print(message)
-            with open(parameters_json_file, "r", encoding="utf-8") as f:
-                parameters_json = json.loads(f.read())
-                parameters = parameters_json["parameters"]
-
+            parameters = self.read_parameters_from_file(parameters_json_file)
         else:
             # User has not passed in parameters file, so we use the parameters required
             # from config for the default bicep template produced from building the

@@ -67,6 +67,8 @@ image that would be used for the VNF Virtual Machine.
 
 #### CNFs
 
+For CNFs you must have the `helm` package installed on the machine you are running the CLI from. Instructions on how to do this can be found [here](https://helm.sh/docs/intro/install/).
+
 For CNFs, you must provide:
 * helm packages with an associated schema. These files must be on your disk and will be referenced in the `input.json` config file. 
 * a reference to an existing Azure Container Registry which contains the images for your CNF. Currently, only one ACR is supported per CNF. The images to be copied from this ACR are populated automatically based on the helm package schema.
