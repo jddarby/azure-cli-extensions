@@ -7,6 +7,7 @@ unreleased
 ++++++++++
 * `az aosm nfd build` options `--order-params` and `--interactive` to help users choose which NF parameters to expose as deployParameters. Feature added that allows CNF value mappings file to be generated if none is supplied.
 * NFDV version exposed as a CGV on an SNS.
+* `az aosm nfd publish` option added for `--definition-type cnf` to publish the CNF bicep templates, upload helm charts from disk to the ACR and copy the images from a source ACR to the target ACR.
 
 0.2.0
 ++++++

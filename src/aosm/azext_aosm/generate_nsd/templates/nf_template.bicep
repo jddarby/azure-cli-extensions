@@ -20,6 +20,8 @@ param managedIdentity string
 
 param location string = '{{location}}'
 
+param nfviType string = '{{nfvi_type}}'
+
 param resourceGroupId string = resourceGroup().id
 
 {{bicep_params}}
@@ -37,7 +39,7 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-previe
     networkFunctionDefinitionGroupName: networkFunctionDefinitionGroupName
     networkFunctionDefinitionVersion: {{network_function_definition_version_parameter}}
     networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation
-    nfviType: 'AzureCore'
+    nfviType: nfviType
     nfviId: resourceGroupId
     identity: {managedIdentity: {}}
     allowSoftwareUpdate: true
