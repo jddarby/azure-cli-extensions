@@ -14,18 +14,27 @@ from typing import Any, Dict, Optional
 from azure.mgmt.resource.resources.models import DeploymentExtended
 from knack.log import get_logger
 
-from azext_aosm._configuration import (CNFConfiguration, NFConfiguration,
-                                       NSConfiguration, VNFConfiguration)
+from azext_aosm._configuration import (
+    CNFConfiguration,
+    NFConfiguration,
+    NSConfiguration,
+    VNFConfiguration,
+)
 from azext_aosm.deploy.artifact import Artifact
 from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
 from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
-from azext_aosm.util.constants import (CNF, CNF_DEFINITION_BICEP_TEMPLATE,
-                                       CNF_MANIFEST_BICEP_TEMPLATE,
-                                       NF_DEFINITION_BICEP_FILE, NSD,
-                                       NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-                                       NSD_DEFINITION_BICEP_FILE, VNF,
-                                       VNF_DEFINITION_BICEP_TEMPLATE,
-                                       VNF_MANIFEST_BICEP_TEMPLATE)
+from azext_aosm.util.constants import (
+    CNF,
+    CNF_DEFINITION_BICEP_TEMPLATE,
+    CNF_MANIFEST_BICEP_TEMPLATE,
+    NF_DEFINITION_BICEP_FILE,
+    NSD,
+    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
+    NSD_DEFINITION_BICEP_FILE,
+    VNF,
+    VNF_DEFINITION_BICEP_TEMPLATE,
+    VNF_MANIFEST_BICEP_TEMPLATE,
+)
 from azext_aosm.util.management_clients import ApiClients
 
 logger = get_logger(__name__)
@@ -131,9 +140,10 @@ class DeployerViaArm:
                 f"version {self.config.version}"
             )
         message = (
-            f"Deploy bicep template for NFD {self.config.nf_name} version {self.config.version} "
-            f"into {self.config.publisher_resource_group_name} under publisher "
-            f"{self.config.publisher_name}"
+            f"Deploy bicep template for NFD {self.config.nf_name} version"
+            f" {self.config.version} into"
+            f" {self.config.publisher_resource_group_name} under publisher"
+            f" {self.config.publisher_name}"
         )
         print(message)
         logger.info(message)
@@ -301,9 +311,10 @@ class DeployerViaArm:
                 f"version {self.config.version}"
             )
         message = (
-            f"Deploy bicep template for NFD {self.config.nf_name} version {self.config.version} "
-            f"into {self.config.publisher_resource_group_name} under publisher "
-            f"{self.config.publisher_name}"
+            f"Deploy bicep template for NFD {self.config.nf_name} version"
+            f" {self.config.version} into"
+            f" {self.config.publisher_resource_group_name} under publisher"
+            f" {self.config.publisher_name}"
         )
         print(message)
         logger.info(message)
@@ -424,7 +435,8 @@ class DeployerViaArm:
         logger.info(message)
         self.deploy_bicep_template(bicep_path, parameters)
         print(
-            f"Deployed NSD {self.config.acr_manifest_name} version {self.config.nsd_version}."
+            f"Deployed NSD {self.config.acr_manifest_name} version"
+            f" {self.config.nsd_version}."
         )
         acr_manifest = ArtifactManifestOperator(
             self.config,
@@ -584,14 +596,18 @@ class DeployerViaArm:
         if validation_res.error:
             # Validation failed so don't even try to deploy
             logger.error(
-                "Template for resource group %s has failed validation. The message was: %s.\
-                See logs for additional details.",
+                (
+                    "Template for resource group %s has failed validation. The message"
+                    " was: %s.                See logs for additional details."
+                ),
                 resource_group,
                 validation_res.error.message,
             )
             logger.debug(
-                "Template for resource group %s failed validation. \
-                Full error details: %s",
+                (
+                    "Template for resource group %s failed validation.                "
+                    " Full error details: %s"
+                ),
                 resource_group,
                 validation_res.error,
             )
@@ -626,10 +642,10 @@ class DeployerViaArm:
         if depl_props.provisioning_state != "Succeeded":
             logger.debug("Failed to provision: %s", depl_props)
             raise RuntimeError(
-                f"Deploy of template to resource group"
+                "Deploy of template to resource group"
                 f" {resource_group} proceeded but the provisioning"
-                f" state returned is {depl_props.provisioning_state}. "
-                f"\nAborting"
+                f" state returned is {depl_props.provisioning_state}."
+                "\nAborting"
             )
         logger.debug(
             "Provisioning state of deployment %s : %s",
@@ -679,8 +695,10 @@ class DeployerViaArm:
                 logger.debug("az bicep output: %s", str(bicep_output))
             except subprocess.CalledProcessError as e:
                 logger.error(
-                    "ARM template compilation failed! See logs for full "
-                    "output. The failing command was %s",
+                    (
+                        "ARM template compilation failed! See logs for full "
+                        "output. The failing command was %s"
+                    ),
                     e.cmd,
                 )
                 logger.debug("bicep build stdout: %s", e.stdout)

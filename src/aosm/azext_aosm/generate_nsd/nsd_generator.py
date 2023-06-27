@@ -14,18 +14,21 @@ from knack.log import get_logger
 
 from azext_aosm._configuration import NSConfiguration
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.util.constants import (CONFIG_MAPPINGS,
-                                       NF_DEFINITION_BICEP_FILE,
-                                       NF_TEMPLATE_BICEP_FILE,
-                                       NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-                                       NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE,
-                                       NSD_CONFIG_MAPPING_FILE,
-                                       NSD_DEFINITION_BICEP_FILE,
-                                       NSD_DEFINITION_BICEP_SOURCE_TEMPLATE,
-                                       SCHEMAS, TEMPLATES, VNF)
+from azext_aosm.util.constants import (
+    CONFIG_MAPPINGS,
+    NF_DEFINITION_BICEP_FILE,
+    NF_TEMPLATE_BICEP_FILE,
+    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
+    NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE,
+    NSD_CONFIG_MAPPING_FILE,
+    NSD_DEFINITION_BICEP_FILE,
+    NSD_DEFINITION_BICEP_SOURCE_TEMPLATE,
+    SCHEMAS,
+    TEMPLATES,
+    VNF,
+)
 from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks.models import (NetworkFunctionDefinitionVersion,
-                                             NFVIType)
+from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion, NFVIType
 
 logger = get_logger(__name__)
 
@@ -86,7 +89,7 @@ class NSDGenerator:
 
     def generate_nsd(self) -> None:
         """Generate a NSD templates which includes an Artifact Manifest, NFDV and NF templates."""
-        logger.info(f"Generate NSD bicep templates")
+        logger.info("Generate NSD bicep templates")
 
         # Create temporary folder.
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -185,16 +188,24 @@ class NSDGenerator:
                 "deploymentValues": bicep_deploymentValues,
                 "network_function_name": self.config.network_function_name,
                 "publisher_name": self.config.publisher_name,
-                "network_function_definition_group_name": self.config.network_function_definition_group_name,
-                "network_function_definition_version_name": self.config.network_function_definition_version_name,
-                "network_function_definition_offering_location": self.config.network_function_definition_offering_location,
+                "network_function_definition_group_name": (
+                    self.config.network_function_definition_group_name
+                ),
+                "network_function_definition_version_name": (
+                    self.config.network_function_definition_version_name
+                ),
+                "network_function_definition_offering_location": (
+                    self.config.network_function_definition_offering_location
+                ),
                 "location": self.config.location,
                 # Ideally we would use the network_function_type from reading the actual
                 # NF, as we do for deployParameters, but the SDK currently doesn't
                 # support this and needs to be rebuilt to do so.
-                "nfvi_type": NFVIType.AZURE_CORE
-                if self.config.network_function_type == VNF
-                else NFVIType.AZURE_ARC_KUBERNETES.value,
+                "nfvi_type": (
+                    NFVIType.AZURE_CORE
+                    if self.config.network_function_type == VNF
+                    else NFVIType.AZURE_ARC_KUBERNETES.value
+                ),
             },
         )
 

@@ -9,15 +9,21 @@ import shutil
 from dataclasses import asdict
 from typing import Optional
 
-from azure.cli.core.azclierror import (CLIInternalError,
-                                       InvalidArgumentValueError,
-                                       UnclassifiedUserFault)
+from azure.cli.core.azclierror import (
+    CLIInternalError,
+    InvalidArgumentValueError,
+    UnclassifiedUserFault,
+)
 from knack.log import get_logger
 
 from azext_aosm._client_factory import cf_acr_registries, cf_resources
-from azext_aosm._configuration import (CNFConfiguration, NFConfiguration,
-                                       NSConfiguration, VNFConfiguration,
-                                       get_configuration)
+from azext_aosm._configuration import (
+    CNFConfiguration,
+    NFConfiguration,
+    NSConfiguration,
+    VNFConfiguration,
+    get_configuration,
+)
 from azext_aosm.delete.delete import ResourceDeleter
 from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
 from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
@@ -84,7 +90,8 @@ def _get_config_from_file(
 
     if not os.path.exists(config_file):
         raise InvalidArgumentValueError(
-            f"Config file {config_file} not found. Please specify a valid config file path."
+            f"Config file {config_file} not found. Please specify a valid config file"
+            " path."
         )
 
     with open(config_file, "r", encoding="utf-8") as f:
@@ -106,11 +113,13 @@ def _generate_nfd(
         nfd_generator = CnfNfdGenerator(config, interactive)
     else:
         raise CLIInternalError(
-            "Generate NFD called for unrecognised definition_type. Only VNF and CNF have been implemented."
+            "Generate NFD called for unrecognised definition_type. Only VNF and CNF"
+            " have been implemented."
         )
     if nfd_generator.bicep_path:
         carry_on = input(
-            f"The folder {os.path.dirname(nfd_generator.bicep_path)} already exists - delete it and continue? (y/n)"
+            f"The folder {os.path.dirname(nfd_generator.bicep_path)} already exists -"
+            " delete it and continue? (y/n)"
         )
         if carry_on != "y":
             raise UnclassifiedUserFault("User aborted! ")
@@ -178,7 +187,8 @@ def publish_definition(
         )
     else:
         raise ValueError(
-            f"Definition type must be either 'vnf' or 'cnf'. Definition type {definition_type} is not recognised."
+            "Definition type must be either 'vnf' or 'cnf'. Definition type"
+            f" {definition_type} is not recognised."
         )
 
 
@@ -213,7 +223,8 @@ def delete_published_definition(
         delly.delete_nfd(clean=clean)
     else:
         raise ValueError(
-            f"Definition type must be either 'vnf' or 'cnf'. Definition type {definition_type} is not recognised."
+            "Definition type must be either 'vnf' or 'cnf'. Definition type"
+            f" {definition_type} is not recognised."
         )
 
 
@@ -240,7 +251,8 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
     if os.path.exists(output_file):
         carry_on = input(
-            f"The file {output_file} already exists - do you want to overwrite it? (y/n)"
+            f"The file {output_file} already exists - do you want to overwrite it?"
+            " (y/n)"
         )
         if carry_on != "y":
             raise UnclassifiedUserFault("User aborted!")
@@ -356,7 +368,8 @@ def _generate_nsd(config: NSConfiguration, api_clients: ApiClients):
     """Generate a Network Service Design for the given config."""
     if os.path.exists(config.build_output_folder_name):
         carry_on = input(
-            f"The folder {config.build_output_folder_name} already exists - delete it and continue? (y/n)"
+            f"The folder {config.build_output_folder_name} already exists - delete it"
+            " and continue? (y/n)"
         )
         if carry_on != "y":
             raise UnclassifiedUserFault("User aborted! ")

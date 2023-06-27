@@ -8,8 +8,7 @@ from dataclasses import dataclass
 from typing import Union
 
 from azure.cli.core.commands import LongRunningOperation
-from azure.mgmt.containerregistry.models import (ImportImageParameters,
-                                                 ImportSource)
+from azure.mgmt.containerregistry.models import ImportImageParameters, ImportSource
 from azure.storage.blob import BlobClient, BlobType
 from knack.log import get_logger
 from oras.client import OrasClient
@@ -124,7 +123,8 @@ class Artifact:
                 )
             else:
                 raise RuntimeError(
-                    f"{source_blob.blob_name} does not exist in {source_blob.account_name}."
+                    f"{source_blob.blob_name} does not exist in"
+                    f" {source_blob.account_name}."
                 )
 
     def copy_image(
@@ -172,7 +172,10 @@ class Artifact:
             )
         except Exception as error:
             logger.error(
-                "Failed to import %s to %s. Check if this image exists in the source registry or is already present in the target registry.",
+                (
+                    "Failed to import %s to %s. Check if this image exists in the"
+                    " source registry or is already present in the target registry."
+                ),
                 source_image,
                 target_registry_name,
             )

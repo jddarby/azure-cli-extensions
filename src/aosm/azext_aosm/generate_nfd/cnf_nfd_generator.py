@@ -18,19 +18,22 @@ from knack.log import get_logger
 
 from azext_aosm._configuration import CNFConfiguration, HelmPackageConfig
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.util.constants import (CNF_DEFINITION_BICEP_TEMPLATE,
-                                       CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
-                                       CNF_MANIFEST_BICEP_TEMPLATE,
-                                       CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
-                                       CONFIG_MAPPINGS,
-                                       DEPLOYMENT_PARAMETER_MAPPING_REGEX,
-                                       DEPLOYMENT_PARAMETERS,
-                                       GENERATED_VALUES_MAPPINGS,
-                                       IMAGE_NAME_AND_VERSION_REGEX,
-                                       IMAGE_PATH_REGEX,
-                                       IMAGE_PULL_SECRETS_START_STRING,
-                                       IMAGE_START_STRING, SCHEMA_PREFIX,
-                                       SCHEMAS)
+from azext_aosm.util.constants import (
+    CNF_DEFINITION_BICEP_TEMPLATE,
+    CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
+    CNF_MANIFEST_BICEP_TEMPLATE,
+    CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
+    CONFIG_MAPPINGS,
+    DEPLOYMENT_PARAMETER_MAPPING_REGEX,
+    DEPLOYMENT_PARAMETERS,
+    GENERATED_VALUES_MAPPINGS,
+    IMAGE_NAME_AND_VERSION_REGEX,
+    IMAGE_PATH_REGEX,
+    IMAGE_PULL_SECRETS_START_STRING,
+    IMAGE_START_STRING,
+    SCHEMA_PREFIX,
+    SCHEMAS,
+)
 from azext_aosm.util.utils import input_ack
 
 logger = get_logger(__name__)
@@ -176,8 +179,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         else:
             raise InvalidTemplateError(
-                f"ERROR: The helm package '{path}' is not a .tgz, .tar or .tar.gz file.\
-                Please fix this and run the command again."
+                f"ERROR: The helm package '{path}' is not a .tgz, .tar or .tar.gz file."
+                " Please fix this and run the command again."
             )
 
     def _generate_chart_value_mappings(self, helm_package: HelmPackageConfig) -> None:
@@ -425,7 +428,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         Get the list of artifacts for the chart.
 
-        :param helm_package: The helm package config. 
+        :param helm_package: The helm package config.
         :param image_line_matches: The list of image line matches.
         """
         artifact_list = []
@@ -463,14 +466,16 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         )
         if not os.path.exists(mappings_path):
             raise InvalidTemplateError(
-                f"ERROR: The helm package '{helm_package.name}' does not have a valid values mappings file. \
-                    The file at '{helm_package.path_to_mappings}' does not exist.\n\
-                    Please fix this and run the command again."
+                f"ERROR: The helm package '{helm_package.name}' does not have a valid"
+                " values mappings file.                     The file at"
+                f" '{helm_package.path_to_mappings}' does not exist.\n                 "
+                "   Please fix this and run the command again."
             )
         if not os.path.exists(values_schema):
             raise InvalidTemplateError(
-                f"ERROR: The helm package '{helm_package.name}' is missing values.schema.json.\n\
-                Please fix this and run the command again."
+                f"ERROR: The helm package '{helm_package.name}' is missing"
+                " values.schema.json.\n                Please fix this and run the"
+                " command again."
             )
 
         with open(mappings_path, "r", encoding="utf-8") as stream:
@@ -486,8 +491,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             new_schema = self.search_schema(deploy_params_dict, schema_data)
         except KeyError as e:
             raise InvalidTemplateError(
-                f"ERROR: There is a problem with your schema or values for the helm package '{helm_package.name}'. \
-                    Please fix this and run the command again."
+                "ERROR: There is a problem with your schema or values for the helm"
+                f" package '{helm_package.name}'.                     Please fix this"
+                " and run the command again."
             ) from e
 
         logger.debug("Generated chart mapping schema for %s", helm_package.name)
@@ -514,21 +520,13 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 # If the value is a dictionary
                 if isinstance(v, dict):
                     # Add the dictionary to the stack with the path
-                    stack.append(
-                        (v, path + [k])
-                    )
+                    stack.append((v, path + [k]))
                 # If the value is a string + matches target regex
-                elif isinstance(v, str) and re.search(
-                    target, v
-                ):
+                elif isinstance(v, str) and re.search(target, v):
                     # Take the match i.e, foo from {deployParameter.foo}
-                    match = re.search(
-                        target, v
-                    )
+                    match = re.search(target, v)
                     # Add it to the result dictionary with its path as the value
-                    result[match.group(1)] = path + [
-                        k
-                    ]
+                    result[match.group(1)] = path + [k]
                 elif isinstance(v, list):
                     for i in v:
                         if isinstance(i, str) and re.search(target, i):
@@ -695,8 +693,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         if not os.path.exists(chart):
             raise InvalidTemplateError(
-                f"There is no Chart.yaml file in the helm package '{helm_package.name}'. \
-                    Please fix this and run the command again."
+                "There is no Chart.yaml file in the helm package"
+                f" '{helm_package.name}'.                     Please fix this and run"
+                " the command again."
             )
 
         with open(chart, "r", encoding="utf-8") as f:
@@ -706,8 +705,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 chart_version = data["version"]
             else:
                 raise FileOperationError(
-                    f"A name or version is missing from Chart.yaml in the helm package '{helm_package.name}'. \
-                        Please fix this and run the command again."
+                    "A name or version is missing from Chart.yaml in the helm package"
+                    f" '{helm_package.name}'.                         Please fix this"
+                    " and run the command again."
                 )
 
         return (chart_name, chart_version)

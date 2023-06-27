@@ -9,13 +9,16 @@ from azure.core import exceptions as azure_exceptions
 from azure.mgmt.resource.resources.models import ResourceGroup
 from knack.log import get_logger
 
-from azext_aosm._configuration import (NFConfiguration, NSConfiguration,
-                                       VNFConfiguration)
+from azext_aosm._configuration import NFConfiguration, NSConfiguration, VNFConfiguration
 from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks.models import (ArtifactStore, ArtifactStoreType,
-                                             NetworkFunctionDefinitionGroup,
-                                             NetworkServiceDesignGroup,
-                                             ProvisioningState, Publisher)
+from azext_aosm.vendored_sdks.models import (
+    ArtifactStore,
+    ArtifactStoreType,
+    NetworkFunctionDefinitionGroup,
+    NetworkServiceDesignGroup,
+    ProvisioningState,
+    Publisher,
+)
 
 logger = get_logger(__name__)
 
@@ -57,7 +60,8 @@ class PreDeployerViaSDK:
         ):
             if isinstance(self.config, NSConfiguration):
                 raise AzCLIError(
-                    f"Resource Group {resource_group_name} does not exist. Please create it before running this command."
+                    f"Resource Group {resource_group_name} does not exist. Please"
+                    " create it before running this command."
                 )
             logger.info(f"RG {resource_group_name} not found. Create it.")
             print(f"Creating resource group {resource_group_name}.")
@@ -96,17 +100,20 @@ class PreDeployerViaSDK:
                 resource_group_name, publisher_name
             )
             print(
-                f"Publisher {publisher.name} exists in resource group {resource_group_name}"
+                f"Publisher {publisher.name} exists in resource group"
+                f" {resource_group_name}"
             )
         except azure_exceptions.ResourceNotFoundError:
             if isinstance(self.config, NSConfiguration):
                 raise AzCLIError(
-                    f"Publisher {publisher_name} does not exist. Please create it before running this command."
+                    f"Publisher {publisher_name} does not exist. Please create it"
+                    " before running this command."
                 )
             # Create the publisher
             logger.info("Creating publisher %s if it does not exist", publisher_name)
             print(
-                f"Creating publisher {publisher_name} in resource group {resource_group_name}"
+                f"Creating publisher {publisher_name} in resource group"
+                f" {resource_group_name}"
             )
             pub = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
@@ -183,11 +190,13 @@ class PreDeployerViaSDK:
                 artifact_store_name=artifact_store_name,
             )
             print(
-                f"Artifact store {artifact_store_name} exists in resource group {resource_group_name}"
+                f"Artifact store {artifact_store_name} exists in resource group"
+                f" {resource_group_name}"
             )
         except azure_exceptions.ResourceNotFoundError:
             print(
-                f"Create Artifact Store {artifact_store_name} of type {artifact_store_type}"
+                f"Create Artifact Store {artifact_store_name} of type"
+                f" {artifact_store_type}"
             )
             poller = (
                 self.api_clients.aosm_client.artifact_stores.begin_create_or_update(
@@ -207,9 +216,9 @@ class PreDeployerViaSDK:
             if arty.provisioning_state != ProvisioningState.SUCCEEDED:
                 logger.debug(f"Failed to provision artifact store: {arty.name}")
                 raise RuntimeError(
-                    f"Creation of artifact store proceeded, but the provisioning"
+                    "Creation of artifact store proceeded, but the provisioning"
                     f" state returned is {arty.provisioning_state}. "
-                    f"\nAborting"
+                    "\nAborting"
                 )
             logger.debug(
                 f"Provisioning state of {artifact_store_name}"
@@ -283,7 +292,8 @@ class PreDeployerViaSDK:
                 network_function_definition_group_name=nfdg_name,
             )
             print(
-                f"Network function definition group {nfdg_name} exists in resource group {resource_group_name}"
+                f"Network function definition group {nfdg_name} exists in resource"
+                f" group {resource_group_name}"
             )
         except azure_exceptions.ResourceNotFoundError:
             print(f"Create Network Function Definition Group {nfdg_name}")
@@ -300,15 +310,16 @@ class PreDeployerViaSDK:
 
             if nfdg.provisioning_state != ProvisioningState.SUCCEEDED:
                 logger.debug(
-                    f"Failed to provision Network Function Definition Group: {nfdg.name}"
+                    "Failed to provision Network Function Definition Group:"
+                    f" {nfdg.name}"
                 )
                 raise RuntimeError(
-                    f"Creation of Network Function Definition Group proceeded, but the provisioning"
-                    f" state returned is {nfdg.provisioning_state}. "
-                    f"\nAborting"
+                    "Creation of Network Function Definition Group proceeded, but the"
+                    f" provisioning state returned is {nfdg.provisioning_state}."
+                    " \nAborting"
                 )
             logger.debug(
-                f"Provisioning state of {nfdg_name}" f": {nfdg.provisioning_state}"
+                f"Provisioning state of {nfdg_name}: {nfdg.provisioning_state}"
             )
 
     def ensure_config_nfdg_exists(
@@ -379,7 +390,9 @@ class PreDeployerViaSDK:
                 return True
             elif acr_manny_exists or sa_manny_exists:
                 raise AzCLIError(
-                    "Only one artifact manifest exists. Cannot proceed. Please delete the NFDV using `az aosm nfd delete` and start the publish again from scratch."
+                    "Only one artifact manifest exists. Cannot proceed. Please delete"
+                    " the NFDV using `az aosm nfd delete` and start the publish again"
+                    " from scratch."
                 )
             else:
                 return False
