@@ -14,28 +14,18 @@ from typing import Any, Dict, Optional
 from azure.mgmt.resource.resources.models import DeploymentExtended
 from knack.log import get_logger
 
-from azext_aosm._configuration import (
-    NFConfiguration,
-    NSConfiguration,
-    VNFConfiguration,
-    CNFConfiguration,
-)
-from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
+from azext_aosm._configuration import (CNFConfiguration, NFConfiguration,
+                                       NSConfiguration, VNFConfiguration)
 from azext_aosm.deploy.artifact import Artifact
-from azext_aosm.util.management_clients import ApiClients
+from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
 from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
-from azext_aosm.util.constants import (
-    NF_DEFINITION_BICEP_FILE,
-    NSD,
-    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-    NSD_DEFINITION_BICEP_FILE,
-    CNF_DEFINITION_BICEP_TEMPLATE,
-    CNF_MANIFEST_BICEP_TEMPLATE,
-    CNF,
-    VNF,
-    VNF_DEFINITION_BICEP_TEMPLATE,
-    VNF_MANIFEST_BICEP_TEMPLATE,
-)
+from azext_aosm.util.constants import (CNF, CNF_DEFINITION_BICEP_TEMPLATE,
+                                       CNF_MANIFEST_BICEP_TEMPLATE,
+                                       NF_DEFINITION_BICEP_FILE, NSD,
+                                       NSD_ARTIFACT_MANIFEST_BICEP_FILE,
+                                       NSD_DEFINITION_BICEP_FILE, VNF,
+                                       VNF_DEFINITION_BICEP_TEMPLATE,
+                                       VNF_MANIFEST_BICEP_TEMPLATE)
 from azext_aosm.util.management_clients import ApiClients
 
 logger = get_logger(__name__)

@@ -13,12 +13,9 @@ from oras.client import OrasClient
 from azext_aosm._configuration import NFConfiguration, NSConfiguration
 from azext_aosm.deploy.artifact import Artifact
 from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks.models import (
-    ArtifactManifest,
-    ArtifactType,
-    CredentialType,
-    ManifestArtifactFormat,
-)
+from azext_aosm.vendored_sdks.models import (ArtifactManifest, ArtifactType,
+                                             CredentialType,
+                                             ManifestArtifactFormat)
 
 logger = get_logger(__name__)
 

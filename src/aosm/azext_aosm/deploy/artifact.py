@@ -3,20 +3,18 @@
 
 # pylint: disable=unidiomatic-typecheck
 """A module to handle interacting with artifacts."""
+import subprocess
 from dataclasses import dataclass
 from typing import Union
-import subprocess
+
+from azure.cli.core.commands import LongRunningOperation
+from azure.mgmt.containerregistry.models import (ImportImageParameters,
+                                                 ImportSource)
+from azure.storage.blob import BlobClient, BlobType
 from knack.log import get_logger
 from oras.client import OrasClient
 
-from azure.storage.blob import BlobClient, BlobType
 from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig
-from azure.mgmt.containerregistry.models import (
-    ImportImageParameters,
-    ImportSource,
-)
-
-from azure.cli.core.commands import LongRunningOperation
 
 logger = get_logger(__name__)
 

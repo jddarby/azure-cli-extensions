@@ -18,22 +18,19 @@ from knack.log import get_logger
 
 from azext_aosm._configuration import CNFConfiguration, HelmPackageConfig
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.util.constants import (
-    CNF_DEFINITION_BICEP_TEMPLATE,
-    CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
-    CNF_MANIFEST_BICEP_TEMPLATE,
-    CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
-    CONFIG_MAPPINGS,
-    DEPLOYMENT_PARAMETER_MAPPING_REGEX,
-    IMAGE_NAME_AND_VERSION_REGEX,
-    IMAGE_PATH_REGEX,
-    DEPLOYMENT_PARAMETERS,
-    GENERATED_VALUES_MAPPINGS,
-    SCHEMA_PREFIX,
-    SCHEMAS,
-    IMAGE_PULL_SECRETS_START_STRING,
-    IMAGE_START_STRING,
-)
+from azext_aosm.util.constants import (CNF_DEFINITION_BICEP_TEMPLATE,
+                                       CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
+                                       CNF_MANIFEST_BICEP_TEMPLATE,
+                                       CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
+                                       CONFIG_MAPPINGS,
+                                       DEPLOYMENT_PARAMETER_MAPPING_REGEX,
+                                       DEPLOYMENT_PARAMETERS,
+                                       GENERATED_VALUES_MAPPINGS,
+                                       IMAGE_NAME_AND_VERSION_REGEX,
+                                       IMAGE_PATH_REGEX,
+                                       IMAGE_PULL_SECRETS_START_STRING,
+                                       IMAGE_START_STRING, SCHEMA_PREFIX,
+                                       SCHEMAS)
 from azext_aosm.util.utils import input_ack
 
 logger = get_logger(__name__)

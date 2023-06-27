@@ -4,13 +4,13 @@
 # --------------------------------------------------------------------------------------------
 """Clients for the python SDK along with useful caches."""
 
+from typing import Optional
+
+from azure.mgmt.containerregistry import ContainerRegistryManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from knack.log import get_logger
 
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azure.mgmt.containerregistry import ContainerRegistryManagementClient
-from typing import Optional
-
 
 logger = get_logger(__name__)
 

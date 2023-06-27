@@ -15,18 +15,13 @@ from knack.log import get_logger
 
 from azext_aosm._configuration import VNFConfiguration
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.util.constants import (
-    CONFIG_MAPPINGS,
-    DEPLOYMENT_PARAMETERS,
-    OPTIONAL_DEPLOYMENT_PARAMETERS_FILE,
-    OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING,
-    SCHEMA_PREFIX,
-    SCHEMAS,
-    TEMPLATE_PARAMETERS,
-    VHD_PARAMETERS,
-    VNF_DEFINITION_BICEP_TEMPLATE,
-    VNF_MANIFEST_BICEP_TEMPLATE,
-)
+from azext_aosm.util.constants import (CONFIG_MAPPINGS, DEPLOYMENT_PARAMETERS,
+                                       OPTIONAL_DEPLOYMENT_PARAMETERS_FILE,
+                                       OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING,
+                                       SCHEMA_PREFIX, SCHEMAS,
+                                       TEMPLATE_PARAMETERS, VHD_PARAMETERS,
+                                       VNF_DEFINITION_BICEP_TEMPLATE,
+                                       VNF_MANIFEST_BICEP_TEMPLATE)
 from azext_aosm.util.utils import input_ack
 
 logger = get_logger(__name__)

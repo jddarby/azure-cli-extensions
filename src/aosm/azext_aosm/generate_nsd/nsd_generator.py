@@ -11,25 +11,21 @@ from typing import Dict
 
 from jinja2 import Template
 from knack.log import get_logger
-from azext_aosm.vendored_sdks.models import NFVIType
 
 from azext_aosm._configuration import NSConfiguration
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
-from azext_aosm.util.constants import (
-    CONFIG_MAPPINGS,
-    NF_DEFINITION_BICEP_FILE,
-    NF_TEMPLATE_BICEP_FILE,
-    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-    NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE,
-    NSD_CONFIG_MAPPING_FILE,
-    NSD_DEFINITION_BICEP_FILE,
-    NSD_DEFINITION_BICEP_SOURCE_TEMPLATE,
-    SCHEMAS,
-    TEMPLATES,
-    VNF,
-)
+from azext_aosm.util.constants import (CONFIG_MAPPINGS,
+                                       NF_DEFINITION_BICEP_FILE,
+                                       NF_TEMPLATE_BICEP_FILE,
+                                       NSD_ARTIFACT_MANIFEST_BICEP_FILE,
+                                       NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE,
+                                       NSD_CONFIG_MAPPING_FILE,
+                                       NSD_DEFINITION_BICEP_FILE,
+                                       NSD_DEFINITION_BICEP_SOURCE_TEMPLATE,
+                                       SCHEMAS, TEMPLATES, VNF)
 from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
+from azext_aosm.vendored_sdks.models import (NetworkFunctionDefinitionVersion,
+                                             NFVIType)
 
 logger = get_logger(__name__)
 

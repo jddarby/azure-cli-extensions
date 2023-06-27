@@ -9,16 +9,13 @@ from azure.core import exceptions as azure_exceptions
 from azure.mgmt.resource.resources.models import ResourceGroup
 from knack.log import get_logger
 
-from azext_aosm._configuration import NFConfiguration, NSConfiguration, VNFConfiguration
+from azext_aosm._configuration import (NFConfiguration, NSConfiguration,
+                                       VNFConfiguration)
 from azext_aosm.util.management_clients import ApiClients
-from azext_aosm.vendored_sdks.models import (
-    ArtifactStore,
-    ArtifactStoreType,
-    NetworkFunctionDefinitionGroup,
-    NetworkServiceDesignGroup,
-    ProvisioningState,
-    Publisher,
-)
+from azext_aosm.vendored_sdks.models import (ArtifactStore, ArtifactStoreType,
+                                             NetworkFunctionDefinitionGroup,
+                                             NetworkServiceDesignGroup,
+                                             ProvisioningState, Publisher)
 
 logger = get_logger(__name__)
 

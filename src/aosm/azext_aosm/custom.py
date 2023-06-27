@@ -9,21 +9,15 @@ import shutil
 from dataclasses import asdict
 from typing import Optional
 
-from azure.cli.core.azclierror import (
-    CLIInternalError,
-    InvalidArgumentValueError,
-    UnclassifiedUserFault,
-)
+from azure.cli.core.azclierror import (CLIInternalError,
+                                       InvalidArgumentValueError,
+                                       UnclassifiedUserFault)
 from knack.log import get_logger
 
-from azext_aosm._client_factory import cf_resources, cf_acr_registries
-from azext_aosm._configuration import (
-    CNFConfiguration,
-    NFConfiguration,
-    NSConfiguration,
-    VNFConfiguration,
-    get_configuration,
-)
+from azext_aosm._client_factory import cf_acr_registries, cf_resources
+from azext_aosm._configuration import (CNFConfiguration, NFConfiguration,
+                                       NSConfiguration, VNFConfiguration,
+                                       get_configuration)
 from azext_aosm.delete.delete import ResourceDeleter
 from azext_aosm.deploy.deploy_with_arm import DeployerViaArm
 from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator

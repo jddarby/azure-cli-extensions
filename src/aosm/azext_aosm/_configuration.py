@@ -6,16 +6,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from azure.cli.core.azclierror import InvalidArgumentValueError, ValidationError
+from azure.cli.core.azclierror import (InvalidArgumentValueError,
+                                       ValidationError)
 
-from azext_aosm.util.constants import (
-    CNF,
-    DEFINITION_OUTPUT_BICEP_PREFIX,
-    NF_DEFINITION_JSON_FILE,
-    NSD,
-    NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
-    VNF,
-)
+from azext_aosm.util.constants import (CNF, DEFINITION_OUTPUT_BICEP_PREFIX,
+                                       NF_DEFINITION_JSON_FILE, NSD,
+                                       NSD_DEFINITION_OUTPUT_BICEP_PREFIX, VNF)
 
 DESCRIPTION_MAP: Dict[str, str] = {
     "publisher_resource_group_name":
