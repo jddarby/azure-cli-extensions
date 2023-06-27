@@ -102,6 +102,17 @@ class NSDGenerator:
         cgs_dict["properties"][self.nfdv_parameter_name] = \
             {"type": "string", "description": description_string}
 
+        managed_identity_description_string = (
+            "The managed identity to use to deploy NFs within this SNS.  This should "
+            "of the form '/subscriptions/{subscriptionId}/resourceGroups/"
+            "{resourceGroupName}/providers/Microsoft.ManagedIdentity/"
+            "userAssignedIdentities/{identityName}.  "
+            "To instead use the System Assigned Managed Identity leave this as an "
+            "empty string."
+        )
+        cgs_dict["properties"]["managedIdentity"] = \
+            {"type": "string", "description": managed_identity_description_string}
+
         return cgs_dict
 
     def create_config_group_schema_files(self) -> None:

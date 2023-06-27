@@ -71,6 +71,8 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "helm_depends_on":
         "Names of the Helm packages this package depends on. "
         "Leave as an empty array if no dependencies",
+    "image_name_parameter":
+        "The parameter name in the VM ARM template which specifies the name of the image to use for the VM.",
 }
 
 
@@ -102,7 +104,8 @@ class NFConfiguration:
     @property
     def acr_manifest_name(self) -> str:
         """Return the ACR manifest name from the NFD name."""
-        return f"{self.nf_name}-acr-manifest-{self.version.replace('.', '-')}"
+        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
+        return f"{sanitized_nf_name}-acr-manifest-{self.version.replace('.', '-')}"
 
 
 @dataclass
@@ -189,7 +192,8 @@ class NSConfiguration:
     @property
     def acr_manifest_name(self) -> str:
         """Return the ACR manifest name from the NFD name."""
-        return f"{self.network_function_name.lower().replace('_', '-')}-acr-manifest-{self.nsd_version.replace('.', '-')}"
+        sanitised_nf_name = self.network_function_name.lower().replace('_', '-')
+        return f"{sanitised_nf_name}-acr-manifest-{self.nsd_version.replace('.', '-')}"
 
     @property
     def nfvi_site_name(self) -> str:
@@ -220,6 +224,7 @@ class NSConfiguration:
 @dataclass
 class VNFConfiguration(NFConfiguration):
     blob_artifact_store_name: str = DESCRIPTION_MAP["blob_artifact_store_name"]
+    image_name_parameter: str = DESCRIPTION_MAP["image_name_parameter"]
     arm_template: Any = ArtifactConfig()
     vhd: Any = ArtifactConfig()
 
@@ -278,7 +283,8 @@ class VNFConfiguration(NFConfiguration):
     @property
     def sa_manifest_name(self) -> str:
         """Return the Storage account manifest name from the NFD name."""
-        return f"{self.nf_name}-sa-manifest-{self.version.replace('.', '-')}"
+        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
+        return f"{sanitized_nf_name}-sa-manifest-{self.version.replace('.', '-')}"
 
     @property
     def build_output_folder_name(self) -> str:

@@ -15,6 +15,9 @@ param {{network_function_definition_version_parameter}} string
 @description('Offering location for the Network Function')
 param networkFunctionDefinitionOfferingLocation string = '{{network_function_definition_offering_location}}'
 
+@description('The managed identity that should be used to create the NF.')
+param managedIdentity string
+
 param location string = '{{location}}'
 
 param resourceGroupId string = resourceGroup().id
@@ -36,6 +39,7 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-previe
     networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation
     nfviType: 'AzureCore'
     nfviId: resourceGroupId
+    identity: {managedIdentity: {}}
     allowSoftwareUpdate: true
     deploymentValues: string(deploymentValues)
   }
