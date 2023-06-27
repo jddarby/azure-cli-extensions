@@ -1,6 +1,3 @@
-## Disabling as every if statement in validate in NSConfig class has this condition
-# pylint: disable=simplifiable-condition
-
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -153,6 +150,9 @@ class NSConfiguration:
 
     def validate(self):
         """Validate that all of the configuration parameters are set."""
+
+        # Exemption for pylint as explicitly including the empty string makes the code clearer
+        # pylint: disable=simplifiable-condition
 
         if self.location == DESCRIPTION_MAP["location"] or "":
             raise ValueError("Location must be set")

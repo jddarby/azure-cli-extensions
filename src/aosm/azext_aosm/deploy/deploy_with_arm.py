@@ -572,9 +572,7 @@ class DeployerViaArm:
         :return: Output dictionary from the bicep template.
         """
         # Get current time from the time module and remove all digits after the decimal point
-        current_time = str(time.time()).split(".")[
-            0
-        ]  # pylint: disable=use-maxsplit-arg
+        current_time = str(time.time()).split(".", maxsplit=1)[0]
 
         # Add a timestamp to the deployment name to ensure it is unique
         deployment_name = f"AOSM_CLI_deployment_into_{resource_group}_{current_time}"

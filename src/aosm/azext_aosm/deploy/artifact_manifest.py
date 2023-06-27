@@ -161,8 +161,7 @@ class ArtifactManifestOperator:
         for container_credential in self._manifest_credentials["container_credentials"]:
             if container_credential["container_name"] == container_name:
                 sas_uri = str(container_credential["container_sas_uri"])
-                sas_uri_prefix = sas_uri.split("?")[0]  # pylint: disable=use-maxsplit-arg
-                sas_uri_token = sas_uri.split("?")[1]
+                sas_uri_prefix, sas_uri_token = sas_uri.split("?", maxsplit=1)
 
                 blob_url = f"{sas_uri_prefix}/{blob_name}?{sas_uri_token}"
                 logger.debug("Blob URL: %s", blob_url)
