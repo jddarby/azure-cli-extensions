@@ -141,8 +141,8 @@ class NSDGenerator:
             "of the form '/subscriptions/{subscriptionId}/resourceGroups/"
             "{resourceGroupName}/providers/Microsoft.ManagedIdentity/"
             "userAssignedIdentities/{identityName}.  "
-            "To instead use the System Assigned Managed Identity leave this as an "
-            "empty string."
+            "The az aosm tool only supports user assigned identities at present, "
+            "you cannot use a System Assigned identity."
         )
         cgs_dict["properties"]["managedIdentity"] = \
             {"type": "string", "description": managed_identity_description_string}

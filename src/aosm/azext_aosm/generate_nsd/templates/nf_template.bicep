@@ -33,6 +33,12 @@ var deploymentValues = {
 resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-preview' = {
   name: '{{network_function_name}}'
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity}': {}
+    }
+  }  
   properties: {
     publisherName: publisherName
     publisherScope: 'Private'
@@ -41,7 +47,6 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-previe
     networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation
     nfviType: nfviType
     nfviId: resourceGroupId
-    identity: {managedIdentity: {}}
     allowSoftwareUpdate: true
     deploymentValues: string(deploymentValues)
   }
