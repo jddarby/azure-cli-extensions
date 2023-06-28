@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 """Clients for the python SDK along with useful caches."""
 
+from dataclasses import dataclass
 from typing import Optional
 
 from azure.mgmt.containerregistry import ContainerRegistryManagementClient
@@ -15,16 +16,10 @@ from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 logger = get_logger(__name__)
 
 
+@dataclass
 class ApiClients:
     """A class for API Clients needed throughout."""
 
-    def __init__(
-        self,
-        aosm_client: HybridNetworkManagementClient,
-        resource_client: ResourceManagementClient,
-        container_registry_client: Optional[ContainerRegistryManagementClient] = None,
-    ):
-        """Initialise with clients."""
-        self.aosm_client = aosm_client
-        self.resource_client = resource_client
-        self.container_registry_client = container_registry_client
+    aosm_client: HybridNetworkManagementClient
+    resource_client: ResourceManagementClient
+    container_registry_client: Optional[ContainerRegistryManagementClient] = None
