@@ -103,12 +103,12 @@ class PreDeployerViaSDK:
                 f"Publisher {publisher.name} exists in resource group"
                 f" {resource_group_name}"
             )
-        except azure_exceptions.ResourceNotFoundError:
+        except azure_exceptions.ResourceNotFoundError as ex:
             if isinstance(self.config, NSConfiguration):
                 raise AzCLIError(
                     f"Publisher {publisher_name} does not exist. Please create it"
                     " before running this command."
-                )
+                ) from ex
             # Create the publisher
             logger.info("Creating publisher %s if it does not exist", publisher_name)
             print(
@@ -193,7 +193,7 @@ class PreDeployerViaSDK:
                 f"Artifact store {artifact_store_name} exists in resource group"
                 f" {resource_group_name}"
             )
-        except azure_exceptions.ResourceNotFoundError:
+        except azure_exceptions.ResourceNotFoundError as ex:
             print(
                 f"Create Artifact Store {artifact_store_name} of type"
                 f" {artifact_store_type}"
@@ -219,7 +219,7 @@ class PreDeployerViaSDK:
                     "Creation of artifact store proceeded, but the provisioning"
                     f" state returned is {arty.provisioning_state}. "
                     "\nAborting"
-                )
+                ) from ex
             logger.debug(
                 "Provisioning state of %s: %s",
                 artifact_store_name,
@@ -296,7 +296,7 @@ class PreDeployerViaSDK:
                 f"Network function definition group {nfdg_name} exists in resource"
                 f" group {resource_group_name}"
             )
-        except azure_exceptions.ResourceNotFoundError:
+        except azure_exceptions.ResourceNotFoundError as ex:
             print(f"Create Network Function Definition Group {nfdg_name}")
             poller = self.api_clients.aosm_client.network_function_definition_groups.begin_create_or_update(
                 resource_group_name=resource_group_name,
@@ -318,7 +318,7 @@ class PreDeployerViaSDK:
                     "Creation of Network Function Definition Group proceeded, but the"
                     f" provisioning state returned is {nfdg.provisioning_state}."
                     " \nAborting"
-                )
+                ) from ex
             logger.debug(
                 "Provisioning state of %s: %s", nfdg_name, nfdg.provisioning_state
             )
