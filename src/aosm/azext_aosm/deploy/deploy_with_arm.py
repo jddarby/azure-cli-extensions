@@ -238,14 +238,14 @@ class DeployerViaArm:
                 "vhdVersion": {"value": self.config.vhd.version},
                 "armTemplateVersion": {"value": self.config.arm_template.version},
             }
-        elif isinstance(self.config, CNFConfiguration):
+        if isinstance(self.config, CNFConfiguration):
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "acrManifestName": {"value": self.config.acr_manifest_name},
             }
-        elif isinstance(self.config, NSConfiguration):
+        if isinstance(self.config, NSConfiguration):
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
