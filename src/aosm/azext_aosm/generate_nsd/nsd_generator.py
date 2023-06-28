@@ -260,7 +260,6 @@ class NSDGenerator:
 
     def copy_to_output_folder(self) -> None:
         """Copy the bicep templates, config mappings and schema into the build output folder."""
-        code_dir = os.path.dirname(__file__)
 
         logger.info("Create NSD bicep %s", self.build_folder_name)
         os.mkdir(self.build_folder_name)
