@@ -368,7 +368,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             "valueMappingsPath": self.jsonify_value_mappings(helm_package),
         }
 
-    def _find_yaml_files(self, directory) -> Iterator[str]:
+    @staticmethod
+    def _find_yaml_files(directory) -> Iterator[str]:
         """
         Find all yaml files in given directory.
 
@@ -499,7 +500,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         logger.debug("Generated chart mapping schema for %s", helm_package.name)
         return new_schema
 
-    def traverse_dict(self, d, target):
+    @staticmethod
+    def traverse_dict(d, target):
         """
         Traverse the dictionary that is loaded from the file provided by path_to_mappings in the input.json.
 
@@ -534,7 +536,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             result[match.group(1)] = path + [k]
         return result
 
-    def search_schema(self, result, full_schema):
+    @staticmethod
+    def search_schema(result, full_schema):
         """
         Search through provided schema for the types of the deployment parameters.
         This assumes that the type of the key will be the type of the deployment parameter.
