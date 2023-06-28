@@ -145,7 +145,8 @@ class PreDeployerViaSDK:
             self.config.source_registry_id,
         )
 
-        # Assume that the registry id is of the form: /subscriptions/<sub_id>/resourceGroups/<rg_name>/providers/Microsoft.ContainerRegistry/registries/<registry_name>
+        # Assume that the registry id is of the form: /subscriptions/<sub_id>
+        # /resourceGroups/<rg_name>/providers/Microsoft.ContainerRegistry/registries/<registry_name>
         source_registry_name = self.config.source_registry_id.split("/")[-1]
         source_registry_resource_group_name = self.config.source_registry_id.split("/")[
             -5

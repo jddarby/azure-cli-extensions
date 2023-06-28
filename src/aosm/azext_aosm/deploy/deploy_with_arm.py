@@ -362,7 +362,8 @@ class DeployerViaArm:
 
             artifact_dictionary.pop(helm_package_name)
 
-        # All the remaining artifacts are not in the helm_packages list. We assume that they are images that need to be copied from another ACR.
+        # All the remaining artifacts are not in the helm_packages list. We assume that they
+        # are images that need to be copied from another ACR.
         for artifact in artifact_dictionary.values():
             assert isinstance(artifact, Artifact)
 
