@@ -21,6 +21,7 @@ class NFDGenerator:
         The sub-classes do the actual work
         """
 
+    # pylint: disable=no-self-use
     def generate_nfd(self) -> None:
         """No-op on base class."""
         logger.error("Generate NFD called on base class. No-op")

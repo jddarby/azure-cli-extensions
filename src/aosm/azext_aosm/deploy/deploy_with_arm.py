@@ -64,7 +64,8 @@ class DeployerViaArm:
         self.config = config
         self.pre_deployer = PreDeployerViaSDK(api_clients, self.config)
 
-    def read_parameters_from_file(self, parameters_json_file: str) -> Dict[str, Any]:
+    @staticmethod
+    def read_parameters_from_file(parameters_json_file: str) -> Dict[str, Any]:
         """
         Read parameters from a file.
 
@@ -653,7 +654,8 @@ class DeployerViaArm:
 
         return depl_props.outputs
 
-    def convert_bicep_to_arm(self, bicep_template_path: str) -> Any:
+    @staticmethod
+    def convert_bicep_to_arm(bicep_template_path: str) -> Any:
         """
         Convert a bicep template into an ARM template.
 

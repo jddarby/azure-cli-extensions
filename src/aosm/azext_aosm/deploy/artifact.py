@@ -127,8 +127,8 @@ class Artifact:
                     f" {source_blob.account_name}."
                 )
 
+    @staticmethod
     def copy_image(
-        self,
         cli_ctx,
         container_registry_client,
         source_registry_id,
