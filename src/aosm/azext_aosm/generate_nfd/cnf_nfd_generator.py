@@ -58,7 +58,6 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         mapping file from the values.yaml in the helm package, and also requires the
         mapping file in config to be blank.
         """
-        super(NFDGenerator, self).__init__()
         self.config = config
         self.nfd_jinja2_template_path = os.path.join(
             os.path.dirname(__file__),

@@ -61,7 +61,6 @@ class VnfNfdGenerator(NFDGenerator):
     """
 
     def __init__(self, config: VNFConfiguration, order_params: bool, interactive: bool):
-        super(NFDGenerator, self).__init__()
         self.config = config
         self.bicep_template_name = VNF_DEFINITION_BICEP_TEMPLATE
         self.manifest_template_name = VNF_MANIFEST_BICEP_TEMPLATE
