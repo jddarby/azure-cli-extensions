@@ -81,7 +81,7 @@ class Artifact:
         login_command = ["az", "acr", "login", "--name", registry_name]
         subprocess.run(login_command, check=True)
 
-        logger.debug(f"Uploading {chart_path} to {target_registry}")
+        logger.debug("Uploading %s to %s", chart_path, target_registry)
 
         # helm push "$chart_path" "$target_registry"
         push_command = ["helm", "push", chart_path, target_registry]

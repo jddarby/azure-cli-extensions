@@ -122,8 +122,9 @@ class ResourceDeleter:
             print("Deleted NFDV.")
         except Exception:
             logger.error(
-                f"Failed to delete NFDV {self.config.version} from group"
-                f" {self.config.nfdg_name}"
+                "Failed to delete NFDV %s from group %s",
+                self.config.version,
+                self.config.nfdg_name,
             )
             raise
 
@@ -146,8 +147,9 @@ class ResourceDeleter:
             print("Deleted NSDV.")
         except Exception:
             logger.error(
-                f"Failed to delete NSDV {self.config.nsd_version} from group"
-                f" {self.config.nsdg_name}"
+                "Failed to delete NSDV %s from group %s",
+                self.config.nsd_version,
+                self.config.nsdg_name,
             )
             raise
 
@@ -189,8 +191,9 @@ class ResourceDeleter:
             print("Deleted Artifact Manifest")
         except Exception:
             logger.error(
-                f"Failed to delete Artifact manifest {manifest_name} from artifact"
-                f" store {store_name}"
+                "Failed to delete Artifact manifest %s from artifact store %s",
+                manifest_name,
+                store_name,
             )
             raise
 
@@ -259,7 +262,7 @@ class ResourceDeleter:
             poller.result()
             print("Deleted Artifact Store")
         except Exception:
-            logger.error(f"Failed to delete Artifact store {store_name}")
+            logger.error("Failed to delete Artifact store %s", store_name)
             raise
 
     def delete_publisher(self) -> None:

@@ -63,7 +63,7 @@ class PreDeployerViaSDK:
                     f"Resource Group {resource_group_name} does not exist. Please"
                     " create it before running this command."
                 )
-            logger.info(f"RG {resource_group_name} not found. Create it.")
+            logger.info("RG %s not found. Create it.", resource_group_name)
             print(f"Creating resource group {resource_group_name}.")
             rg_params: ResourceGroup = ResourceGroup(location=self.config.location)
             self.api_clients.resource_client.resource_groups.create_or_update(
@@ -214,15 +214,16 @@ class PreDeployerViaSDK:
             arty: ArtifactStore = poller.result()
 
             if arty.provisioning_state != ProvisioningState.SUCCEEDED:
-                logger.debug(f"Failed to provision artifact store: {arty.name}")
+                logger.debug("Failed to provision artifact store: %s", arty.name)
                 raise RuntimeError(
                     "Creation of artifact store proceeded, but the provisioning"
                     f" state returned is {arty.provisioning_state}. "
                     "\nAborting"
                 )
             logger.debug(
-                f"Provisioning state of {artifact_store_name}"
-                f": {arty.provisioning_state}"
+                "Provisioning state of %s: %s",
+                artifact_store_name,
+                arty.provisioning_state,
             )
 
     def ensure_acr_artifact_store_exists(self) -> None:
@@ -310,8 +311,8 @@ class PreDeployerViaSDK:
 
             if nfdg.provisioning_state != ProvisioningState.SUCCEEDED:
                 logger.debug(
-                    "Failed to provision Network Function Definition Group:"
-                    f" {nfdg.name}"
+                    "Failed to provision Network Function Definition Group: %s",
+                    nfdg.name,
                 )
                 raise RuntimeError(
                     "Creation of Network Function Definition Group proceeded, but the"
@@ -319,7 +320,7 @@ class PreDeployerViaSDK:
                     " \nAborting"
                 )
             logger.debug(
-                f"Provisioning state of {nfdg_name}: {nfdg.provisioning_state}"
+                "Provisioning state of %s: %s", nfdg_name, nfdg.provisioning_state
             )
 
     def ensure_config_nfdg_exists(
@@ -362,10 +363,10 @@ class PreDeployerViaSDK:
                 artifact_store_name=store_name,
                 artifact_manifest_name=manifest_name,
             )
-            logger.debug(f"Artifact manifest {manifest_name} exists")
+            logger.debug("Artifact manifest %s exists", manifest_name)
             return True
         except azure_exceptions.ResourceNotFoundError:
-            logger.debug(f"Artifact manifest {manifest_name} does not exist")
+            logger.debug("Artifact manifest %s does not exist", manifest_name)
             return False
 
     def do_config_artifact_manifests_exist(

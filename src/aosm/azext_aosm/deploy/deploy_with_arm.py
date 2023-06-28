@@ -296,7 +296,7 @@ class DeployerViaArm:
             parameters = self.construct_cnfd_parameters()
 
         logger.debug(
-            f"Parameters used for CNF definition bicep deployment: {parameters}"
+            "Parameters used for CNF definition bicep deployment: %s", parameters
         )
 
         # Create or check required resources

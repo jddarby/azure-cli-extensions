@@ -264,7 +264,9 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
         else:
             prtName = "design"
         print(f"Empty {prtName} configuration has been written to {output_file}")
-        logger.info(f"Empty {prtName} configuration has been written to {output_file}")
+        logger.info(
+            "Empty %s configuration has been written to %s", prtName, output_file
+        )
 
 
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
