@@ -123,14 +123,14 @@ class NSDGenerator:
 
         :param folder_path: The folder to put this file in.
         """
-        logger.debug(f"Create {self.config.cg_schema_name}.json")
+        logger.debug("Create %s.json", self.config.cg_schema_name)
 
         schema_path = os.path.join(folder_path, f"{self.config.cg_schema_name}.json")
 
         with open(schema_path, "w") as _file:
             _file.write(json.dumps(json.loads(self.deploy_parameters), indent=4))
 
-        logger.debug(f"{schema_path} created")
+        logger.debug("%s created", schema_path)
 
     def write_config_mappings(self, folder_path: str) -> None:
         """
@@ -153,7 +153,7 @@ class NSDGenerator:
         with open(config_mappings_path, "w") as _file:
             _file.write(json.dumps(config_mappings, indent=4))
 
-        logger.debug(f"{config_mappings_path} created")
+        logger.debug("%s created", config_mappings_path)
 
     def write_nf_bicep(self) -> None:
         """Write out the Network Function bicep file."""
