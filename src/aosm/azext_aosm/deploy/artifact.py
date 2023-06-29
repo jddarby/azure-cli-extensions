@@ -11,6 +11,7 @@ from azure.cli.core.commands import LongRunningOperation
 from azure.mgmt.containerregistry.models import ImportImageParameters, ImportSource
 from azure.storage.blob import BlobClient, BlobType
 from knack.log import get_logger
+from knack.util import CLIError
 from oras.client import OrasClient
 
 from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig
@@ -170,7 +171,7 @@ class Artifact:
             logger.info(
                 "Successfully imported %s to %s", source_image, target_registry_name
             )
-        except Exception as error:
+        except CLIError as error:
             logger.error(
                 (
                     "Failed to import %s to %s. Check if this image exists in the"
