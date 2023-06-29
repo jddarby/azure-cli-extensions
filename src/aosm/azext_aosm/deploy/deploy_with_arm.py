@@ -598,14 +598,14 @@ class DeployerViaArm:
             logger.error(
                 (
                     "Template for resource group %s has failed validation. The message"
-                    " was: %s.                See logs for additional details."
+                    " was: %s. See logs for additional details."
                 ),
                 resource_group,
                 validation_res.error.message,
             )
             logger.debug(
                 (
-                    "Template for resource group %s failed validation.                "
+                    "Template for resource group %s failed validation."
                     " Full error details: %s"
                 ),
                 resource_group,

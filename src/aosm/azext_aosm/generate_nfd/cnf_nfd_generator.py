@@ -466,16 +466,14 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         )
         if not os.path.exists(mappings_path):
             raise InvalidTemplateError(
-                f"ERROR: The helm package '{helm_package.name}' does not have a valid"
-                " values mappings file.                     The file at"
-                f" '{helm_package.path_to_mappings}' does not exist.\n                 "
-                "   Please fix this and run the command again."
+                f"ERROR: The helm package '{helm_package.name}' does not have a valid values"
+                " mappings file. The file at '{helm_package.path_to_mappings}' does not exist."
+                "\nPlease fix this and run the command again."
             )
         if not os.path.exists(values_schema):
             raise InvalidTemplateError(
-                f"ERROR: The helm package '{helm_package.name}' is missing"
-                " values.schema.json.\n                Please fix this and run the"
-                " command again."
+                f"ERROR: The helm package '{helm_package.name}' is missing values.schema.json."
+                "\nPlease fix this and run the command again."
             )
 
         with open(mappings_path, "r", encoding="utf-8") as stream:
@@ -492,8 +490,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         except KeyError as e:
             raise InvalidTemplateError(
                 "ERROR: There is a problem with your schema or values for the helm"
-                f" package '{helm_package.name}'.                     Please fix this"
-                " and run the command again."
+                f" package '{helm_package.name}'."
+                "\nPlease fix this and run the command again."
             ) from e
 
         logger.debug("Generated chart mapping schema for %s", helm_package.name)
@@ -695,9 +693,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         if not os.path.exists(chart):
             raise InvalidTemplateError(
-                "There is no Chart.yaml file in the helm package"
-                f" '{helm_package.name}'.                     Please fix this and run"
-                " the command again."
+                f"There is no Chart.yaml file in the helm package '{helm_package.name}'. "
+                "\nPlease fix this and run the command again."
             )
 
         with open(chart, "r", encoding="utf-8") as f:
@@ -708,8 +705,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             else:
                 raise FileOperationError(
                     "A name or version is missing from Chart.yaml in the helm package"
-                    f" '{helm_package.name}'.                         Please fix this"
-                    " and run the command again."
+                    f" '{helm_package.name}'."
+                    "\nPlease fix this and run the command again."
                 )
 
         return (chart_name, chart_version)
