@@ -1,18 +1,36 @@
 name: Style and Lint Check
 
 on:
+  push:
+    branches: [add-aosm-extension]
   pull_request:
-    types: [opened]
+    branches: [add-aosm-extension]
 
 jobs:
-  build_aosm:
+  check_style:
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/azure-cli/tools:latest
-    permissions: write-all
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+      - name: Setup azdev
+        run: |
+          # Pretend we have a valid git repo to satisfy azdev.
+          # mkdir .git
+          # EDGE installs "the latest developer edge build"
+          azdev setup --cli EDGE --repo . --ext aosm
       - name: Check Style
         run: azdev style aosm
-      - name: Check Linting
+  check_linting:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/azure-cli/tools:latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup azdev
+        run: |
+          # Pretend we have a valid git repo to satisfy azdev.
+          mkdir .git
+          azdev setup -c EDGE -r . -e aosm
+      - name: Check linting
         run: azdev linter aosm
