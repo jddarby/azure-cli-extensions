@@ -16,7 +16,7 @@ jobs:
       - name: Setup azdev
         run: |
           # Pretend we have a valid git repo to satisfy azdev.
-          # mkdir .git
+          mkdir .git
           # EDGE installs "the latest developer edge build"
           azdev setup --cli EDGE --repo . --ext aosm
       - name: Check Style
