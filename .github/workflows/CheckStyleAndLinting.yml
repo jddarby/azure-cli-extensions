@@ -2,7 +2,7 @@ name: Style and Lint Check
 
 on:
   push:
-    branches: [add-aosm-extension]
+    # branches: [add-aosm-extension]
   pull_request:
     branches: [add-aosm-extension]
 
