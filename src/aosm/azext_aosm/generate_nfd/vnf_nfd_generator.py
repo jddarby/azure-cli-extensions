@@ -77,6 +77,7 @@ class VnfNfdGenerator(NFDGenerator):
         self.order_params = order_params
         self.interactive = interactive
         self.tmp_folder_name = ""
+        self.image_name = f"{self.config.nf_name}Image"
 
     def generate_nfd(self) -> None:
         """
@@ -178,6 +179,11 @@ class VnfNfdGenerator(NFDGenerator):
         )
 
         for key in vm_parameters:
+            if key == self.config.image_name_parameter:
+                # There is only one correct answer for the image name, so don't ask the 
+                # user, instead it is hardcoded in config mappings.
+                continue
+            
             # Order parameters into those without and then with defaults
             has_default_field = "defaultValue" in self.vm_parameters[key]
             has_default = (
@@ -239,7 +245,7 @@ class VnfNfdGenerator(NFDGenerator):
                     f"{OPTIONAL_DEPLOYMENT_PARAMETERS_FILENAME} to help you choose which "
                     "to expose."
                 )
-
+                
     def write_template_parameters(self, folder_path: str) -> None:
         """
         Write out the NFD templateParameters.json file.
@@ -250,9 +256,15 @@ class VnfNfdGenerator(NFDGenerator):
         vm_parameters = (
             self.vm_parameters_ordered if self.order_params else self.vm_parameters
         )
-        template_parameters = {
-            key: f"{{deployParameters.{key}}}" for key in vm_parameters
-        }
+
+        template_parameters = {}
+
+        for key in vm_parameters:
+            if key == self.config.image_name_parameter:
+                template_parameters[key] = self.image_name
+                continue
+
+            template_parameters[key] = f"{{deployParameters.{key}}}"
 
         template_parameters_path = os.path.join(folder_path, TEMPLATE_PARAMETERS_FILENAME)
 
@@ -277,7 +289,7 @@ class VnfNfdGenerator(NFDGenerator):
             azureDeployLocation = self.config.location
 
         vhd_parameters = {
-            "imageName": f"{self.config.nf_name}Image",
+            "imageName": self.image_name,
             "azureDeployLocation": azureDeployLocation,
         }
 
