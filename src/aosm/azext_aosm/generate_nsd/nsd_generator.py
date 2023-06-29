@@ -15,16 +15,16 @@ from knack.log import get_logger
 from azext_aosm._configuration import NSConfiguration
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
-    CONFIG_MAPPINGS,
-    NF_DEFINITION_BICEP_FILE,
-    NF_TEMPLATE_BICEP_FILE,
-    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-    NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE,
-    NSD_CONFIG_MAPPING_FILE,
-    NSD_DEFINITION_BICEP_FILE,
-    NSD_DEFINITION_BICEP_SOURCE_TEMPLATE,
-    SCHEMAS,
-    TEMPLATES,
+    CONFIG_MAPPINGS_DIR_NAME,
+    NF_DEFINITION_BICEP_FILENAME,
+    NF_TEMPLATE_BICEP_FILENAME,
+    NSD_ARTIFACT_MANIFEST_BICEP_FILENAME,
+    NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME,
+    NSD_CONFIG_MAPPING_FILENAME,
+    NSD_BICEP_FILENAME,
+    NSD_SOURCE_TEMPLATE_BICEP_FILENAME,
+    SCHEMAS_DIR_NAME,
+    TEMPLATES_DIR_NAME,
     VNF,
 )
 from azext_aosm.util.management_clients import ApiClients
@@ -57,9 +57,9 @@ class NSDGenerator:
 
     def __init__(self, api_clients: ApiClients, config: NSConfiguration):
         self.config = config
-        self.nsd_bicep_template_name = NSD_DEFINITION_BICEP_SOURCE_TEMPLATE
-        self.nf_bicep_template_name = NF_TEMPLATE_BICEP_FILE
-        self.nsd_bicep_output_name = NSD_DEFINITION_BICEP_FILE
+        self.nsd_bicep_template_name = NSD_SOURCE_TEMPLATE_BICEP_FILENAME
+        self.nf_bicep_template_name = NF_TEMPLATE_BICEP_FILENAME
+        self.nsd_bicep_output_name = NSD_BICEP_FILENAME
 
         self.build_folder_name = self.config.build_output_folder_name
         nfdv = self._get_nfdv(config, api_clients)
@@ -109,11 +109,11 @@ class NSDGenerator:
 
     def create_parameter_files(self) -> None:
         """Create the Schema and configMappings json files."""
-        temp_schemas_folder_path = os.path.join(self.tmp_folder_name, SCHEMAS)
+        temp_schemas_folder_path = os.path.join(self.tmp_folder_name, SCHEMAS_DIR_NAME)
         os.mkdir(temp_schemas_folder_path)
         self.write_schema(temp_schemas_folder_path)
 
-        temp_mappings_folder_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS)
+        temp_mappings_folder_path = os.path.join(self.tmp_folder_name, CONFIG_MAPPINGS_DIR_NAME)
         os.mkdir(temp_mappings_folder_path)
         self.write_config_mappings(temp_mappings_folder_path)
 
@@ -148,7 +148,7 @@ class NSDGenerator:
             for key in deploy_properties
         }
 
-        config_mappings_path = os.path.join(folder_path, NSD_CONFIG_MAPPING_FILE)
+        config_mappings_path = os.path.join(folder_path, NSD_CONFIG_MAPPING_FILENAME)
 
         with open(config_mappings_path, "w") as _file:
             _file.write(json.dumps(config_mappings, indent=4))
@@ -182,7 +182,7 @@ class NSDGenerator:
 
         self.generate_bicep(
             self.nf_bicep_template_name,
-            NF_DEFINITION_BICEP_FILE,
+            NF_DEFINITION_BICEP_FILENAME,
             {
                 "bicep_params": bicep_params,
                 "deploymentValues": bicep_deploymentValues,
@@ -229,7 +229,7 @@ class NSDGenerator:
         logger.debug("Create NSD manifest")
 
         self.generate_bicep(
-            NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE, NSD_ARTIFACT_MANIFEST_BICEP_FILE, {}
+            NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME, NSD_ARTIFACT_MANIFEST_BICEP_FILENAME, {}
         )
 
     def generate_bicep(self, template_name, output_file_name, params) -> None:
@@ -243,7 +243,7 @@ class NSDGenerator:
 
         code_dir = os.path.dirname(__file__)
 
-        bicep_template_path = os.path.join(code_dir, TEMPLATES, template_name)
+        bicep_template_path = os.path.join(code_dir, TEMPLATES_DIR_NAME, template_name)
 
         with open(bicep_template_path, "r") as file:
             bicep_contents = file.read()

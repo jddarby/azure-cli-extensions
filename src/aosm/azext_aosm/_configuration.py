@@ -7,10 +7,10 @@ from azure.cli.core.azclierror import InvalidArgumentValueError, ValidationError
 
 from azext_aosm.util.constants import (
     CNF,
-    DEFINITION_OUTPUT_BICEP_PREFIX,
-    NF_DEFINITION_JSON_FILE,
+    NF_DEFINITION_OUTPUT_BICEP_PREFIX,
+    NF_DEFINITION_JSON_FILENAME,
     NSD,
-    NSD_DEFINITION_OUTPUT_BICEP_PREFIX,
+    NSD_OUTPUT_BICEP_PREFIX,
     VNF,
 )
 
@@ -200,7 +200,7 @@ class NSConfiguration:
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
         current_working_directory = os.getcwd()
-        return f"{current_working_directory}/{NSD_DEFINITION_OUTPUT_BICEP_PREFIX}"
+        return f"{current_working_directory}/{NSD_OUTPUT_BICEP_PREFIX}"
 
     @property
     def resource_element_name(self) -> str:
@@ -235,7 +235,7 @@ class NSConfiguration:
         artifact = ArtifactConfig()
         artifact.version = self.nsd_version
         artifact.file_path = os.path.join(
-            self.build_output_folder_name, NF_DEFINITION_JSON_FILE
+            self.build_output_folder_name, NF_DEFINITION_JSON_FILENAME
         )
         return artifact
 
@@ -315,7 +315,7 @@ class VNFConfiguration(NFConfiguration):
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
         arm_template_path = self.arm_template.file_path
-        return f"{DEFINITION_OUTPUT_BICEP_PREFIX}{Path(str(arm_template_path)).stem}"
+        return f"{NF_DEFINITION_OUTPUT_BICEP_PREFIX}{Path(str(arm_template_path)).stem}"
 
 
 @dataclass
@@ -346,7 +346,7 @@ class CNFConfiguration(NFConfiguration):
     @property
     def build_output_folder_name(self) -> str:
         """Return the local folder for generating the bicep template to."""
-        return f"{DEFINITION_OUTPUT_BICEP_PREFIX}{self.nf_name}"
+        return f"{NF_DEFINITION_OUTPUT_BICEP_PREFIX}{self.nf_name}"
 
 
 def get_configuration(

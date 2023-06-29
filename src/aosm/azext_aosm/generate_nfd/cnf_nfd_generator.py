@@ -19,20 +19,20 @@ from knack.log import get_logger
 from azext_aosm._configuration import CNFConfiguration, HelmPackageConfig
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
-    CNF_DEFINITION_BICEP_TEMPLATE,
-    CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
-    CNF_MANIFEST_BICEP_TEMPLATE,
-    CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
-    CONFIG_MAPPINGS,
+    CNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
+    CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE_FILENAME,
+    CNF_MANIFEST_BICEP_TEMPLATE_FILENAME,
+    CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE_FILENAME,
+    CONFIG_MAPPINGS_DIR_NAME,
     DEPLOYMENT_PARAMETER_MAPPING_REGEX,
-    DEPLOYMENT_PARAMETERS,
-    GENERATED_VALUES_MAPPINGS,
+    DEPLOYMENT_PARAMETERS_FILENAME,
+    GENERATED_VALUES_MAPPINGS_DIR_NAME,
     IMAGE_NAME_AND_VERSION_REGEX,
     IMAGE_PATH_REGEX,
     IMAGE_PULL_SECRETS_START_STRING,
     IMAGE_START_STRING,
     SCHEMA_PREFIX,
-    SCHEMAS,
+    SCHEMAS_DIR_NAME,
 )
 from azext_aosm.util.utils import input_ack
 
@@ -62,12 +62,12 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         self.nfd_jinja2_template_path = os.path.join(
             os.path.dirname(__file__),
             "templates",
-            CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE,
+            CNF_DEFINITION_JINJA2_SOURCE_TEMPLATE_FILENAME,
         )
         self.manifest_jinja2_template_path = os.path.join(
             os.path.dirname(__file__),
             "templates",
-            CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE,
+            CNF_MANIFEST_JINJA2_SOURCE_TEMPLATE_FILENAME,
         )
         self.output_folder_name = self.config.build_output_folder_name
 
@@ -76,7 +76,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         self.deployment_parameter_schema = SCHEMA_PREFIX
 
         self._bicep_path = os.path.join(
-            self.output_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
+            self.output_folder_name, CNF_DEFINITION_BICEP_TEMPLATE_FILENAME
         )
         self.interactive = interactive
         self._tmp_folder_name = ""
@@ -202,11 +202,11 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         )
 
         # Write the mapping to a file
-        folder_name = os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)
+        folder_name = os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS_DIR_NAME)
         os.makedirs(folder_name, exist_ok=True)
         mapping_filepath = os.path.join(
             self._tmp_folder_name,
-            GENERATED_VALUES_MAPPINGS,
+            GENERATED_VALUES_MAPPINGS_DIR_NAME,
             f"{helm_package.name}-generated-mapping.yaml",
         )
         with open(mapping_filepath, "w", encoding="UTF-8") as mapping_file:
@@ -253,7 +253,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             artifacts=self.artifacts,
         )
 
-        path = os.path.join(self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE)
+        path = os.path.join(self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE_FILENAME)
         with open(path, "w", encoding="utf-8") as f:
             f.write(bicep_contents)
 
@@ -268,11 +268,11 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             )
 
         bicep_contents: str = template.render(
-            deployParametersPath=os.path.join(SCHEMAS, DEPLOYMENT_PARAMETERS),
+            deployParametersPath=os.path.join(SCHEMAS_DIR_NAME, DEPLOYMENT_PARAMETERS_FILENAME),
             nf_application_configurations=self.nf_application_configurations,
         )
 
-        path = os.path.join(self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE)
+        path = os.path.join(self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE_FILENAME)
         with open(path, "w", encoding="utf-8") as f:
             f.write(bicep_contents)
 
@@ -283,7 +283,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         logger.debug("Create deploymentParameters.json")
 
-        full_schema = os.path.join(self._tmp_folder_name, DEPLOYMENT_PARAMETERS)
+        full_schema = os.path.join(self._tmp_folder_name, DEPLOYMENT_PARAMETERS_FILENAME)
         with open(full_schema, "w", encoding="UTF-8") as f:
             json.dump(self.deployment_parameter_schema, f, indent=4)
 
@@ -295,16 +295,16 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         logger.info("Create NFD bicep %s", self.output_folder_name)
 
         os.mkdir(self.output_folder_name)
-        os.mkdir(os.path.join(self.output_folder_name, SCHEMAS))
+        os.mkdir(os.path.join(self.output_folder_name, SCHEMAS_DIR_NAME))
 
         # Copy the nfd and the manifest bicep files to the output folder
         tmp_nfd_bicep_path = os.path.join(
-            self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE
+            self._tmp_folder_name, CNF_DEFINITION_BICEP_TEMPLATE_FILENAME
         )
         shutil.copy(tmp_nfd_bicep_path, self.output_folder_name)
 
         tmp_manifest_bicep_path = os.path.join(
-            self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE
+            self._tmp_folder_name, CNF_MANIFEST_BICEP_TEMPLATE_FILENAME
         )
         shutil.copy(tmp_manifest_bicep_path, self.output_folder_name)
 
@@ -312,21 +312,21 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         # the output directory so that the user can edit them and re-run the build if
         # required
         if os.path.exists(
-            os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS)
+            os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS_DIR_NAME)
         ):
             generated_mappings_path = os.path.join(
-                self.output_folder_name, GENERATED_VALUES_MAPPINGS
+                self.output_folder_name, GENERATED_VALUES_MAPPINGS_DIR_NAME
             )
             shutil.copytree(
-                os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS),
+                os.path.join(self._tmp_folder_name, GENERATED_VALUES_MAPPINGS_DIR_NAME),
                 generated_mappings_path,
             )
 
         # Copy the JSON config mappings and deploymentParameters schema that are used
         # for the NFD to the output folder
-        tmp_config_mappings_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS)
+        tmp_config_mappings_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS_DIR_NAME)
         output_config_mappings_path = os.path.join(
-            self.output_folder_name, CONFIG_MAPPINGS
+            self.output_folder_name, CONFIG_MAPPINGS_DIR_NAME
         )
         shutil.copytree(
             tmp_config_mappings_path,
@@ -334,9 +334,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             dirs_exist_ok=True,
         )
 
-        tmp_schema_path = os.path.join(self._tmp_folder_name, DEPLOYMENT_PARAMETERS)
+        tmp_schema_path = os.path.join(self._tmp_folder_name, DEPLOYMENT_PARAMETERS_FILENAME)
         output_schema_path = os.path.join(
-            self.output_folder_name, SCHEMAS, DEPLOYMENT_PARAMETERS
+            self.output_folder_name, SCHEMAS_DIR_NAME, DEPLOYMENT_PARAMETERS_FILENAME
         )
         shutil.copy(
             tmp_schema_path,
@@ -718,7 +718,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """Yaml->JSON values mapping file, then return path to it."""
         mappings_yaml = helm_package.path_to_mappings
 
-        mappings_folder_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS)
+        mappings_folder_path = os.path.join(self._tmp_folder_name, CONFIG_MAPPINGS_DIR_NAME)
         mappings_filename = f"{helm_package.name}-mappings.json"
 
         if not os.path.exists(mappings_folder_path):
@@ -733,4 +733,4 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             json.dump(data, file, indent=4)
 
         logger.debug("Generated parameter mappings for %s", helm_package.name)
-        return os.path.join(CONFIG_MAPPINGS, mappings_filename)
+        return os.path.join(CONFIG_MAPPINGS_DIR_NAME, mappings_filename)

@@ -25,15 +25,15 @@ from azext_aosm.deploy.artifact_manifest import ArtifactManifestOperator
 from azext_aosm.deploy.pre_deploy import PreDeployerViaSDK
 from azext_aosm.util.constants import (
     CNF,
-    CNF_DEFINITION_BICEP_TEMPLATE,
-    CNF_MANIFEST_BICEP_TEMPLATE,
-    NF_DEFINITION_BICEP_FILE,
+    CNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
+    CNF_MANIFEST_BICEP_TEMPLATE_FILENAME,
+    NF_DEFINITION_BICEP_FILENAME,
     NSD,
-    NSD_ARTIFACT_MANIFEST_BICEP_FILE,
-    NSD_DEFINITION_BICEP_FILE,
+    NSD_ARTIFACT_MANIFEST_BICEP_FILENAME,
+    NSD_BICEP_FILENAME,
     VNF,
-    VNF_DEFINITION_BICEP_TEMPLATE,
-    VNF_MANIFEST_BICEP_TEMPLATE,
+    VNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
+    VNF_MANIFEST_BICEP_TEMPLATE_FILENAME,
 )
 from azext_aosm.util.management_clients import ApiClients
 
@@ -114,7 +114,7 @@ class DeployerViaArm:
             # one produced from building the NFDV using this CLI
             bicep_path = os.path.join(
                 self.config.build_output_folder_name,
-                VNF_DEFINITION_BICEP_TEMPLATE,
+                VNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
             )
 
         if parameters_json_file:
@@ -284,7 +284,7 @@ class DeployerViaArm:
             # one produced from building the NFDV using this CLI
             bicep_path = os.path.join(
                 self.config.build_output_folder_name,
-                CNF_DEFINITION_BICEP_TEMPLATE,
+                CNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
             )
 
         if parameters_json_file:
@@ -404,7 +404,7 @@ class DeployerViaArm:
             # one produced from building the NSDV using this CLI
             bicep_path = os.path.join(
                 self.config.build_output_folder_name,
-                NSD_DEFINITION_BICEP_FILE,
+                NSD_BICEP_FILENAME,
             )
 
         if parameters_json_file:
@@ -451,7 +451,7 @@ class DeployerViaArm:
 
         # Convert the NF bicep to ARM
         arm_template_artifact_json = self.convert_bicep_to_arm(
-            os.path.join(self.config.build_output_folder_name, NF_DEFINITION_BICEP_FILE)
+            os.path.join(self.config.build_output_folder_name, NF_DEFINITION_BICEP_FILENAME)
         )
 
         with open(self.config.arm_template.file_path, "w", encoding="utf-8") as file:
@@ -476,11 +476,11 @@ class DeployerViaArm:
 
         if not manifest_bicep_path:
             if configuration_type == NSD:
-                file_name = NSD_ARTIFACT_MANIFEST_BICEP_FILE
+                file_name = NSD_ARTIFACT_MANIFEST_BICEP_FILENAME
             elif configuration_type == VNF:
-                file_name = VNF_MANIFEST_BICEP_TEMPLATE
+                file_name = VNF_MANIFEST_BICEP_TEMPLATE_FILENAME
             elif configuration_type == CNF:
-                file_name = CNF_MANIFEST_BICEP_TEMPLATE
+                file_name = CNF_MANIFEST_BICEP_TEMPLATE_FILENAME
 
             manifest_bicep_path = os.path.join(
                 self.config.build_output_folder_name,
