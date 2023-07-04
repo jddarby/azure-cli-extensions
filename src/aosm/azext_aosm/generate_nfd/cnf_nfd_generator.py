@@ -102,12 +102,12 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     # (extract mappings and relevant parts of the schema)
                     # + Add that schema to the big schema.
                     self.deployment_parameter_schema["properties"].update(
-                        self.get_chart_mapping_schema(helm_package)
+                        self._get_chart_mapping_schema(helm_package)
                     )
 
                     # Get all image line matches for files in the chart.
                     # Do this here so we don't have to do it multiple times.
-                    image_line_matches = self.find_pattern_matches_in_chart(
+                    image_line_matches = self._find_pattern_matches_in_chart(
                         helm_package, IMAGE_START_STRING
                     )
                     # Creates a flattened list of image registry paths to prevent set error
@@ -118,26 +118,26 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     # Generate the NF application configuration for the chart
                     # passed to jinja2 renderer to render bicep template
                     self.nf_application_configurations.append(
-                        self.generate_nf_application_config(
+                        self._generate_nf_application_config(
                             helm_package,
                             image_registry_paths,
-                            self.find_pattern_matches_in_chart(
+                            self._find_pattern_matches_in_chart(
                                 helm_package, IMAGE_PULL_SECRETS_START_STRING
                             ),
                         )
                     )
                     # Workout the list of artifacts for the chart and
                     # update the list for the NFD with any unique artifacts.
-                    chart_artifacts = self.get_artifact_list(
+                    chart_artifacts = self._get_artifact_list(
                         helm_package, image_line_matches
                     )
                     self.artifacts += [
                         a for a in chart_artifacts if a not in self.artifacts
                     ]
-                self.write_nfd_bicep_file()
-                self.write_schema_to_file()
-                self.write_manifest_bicep_file()
-                self.copy_to_output_directory()
+                self._write_nfd_bicep_file()
+                self._write_schema_to_file()
+                self._write_manifest_bicep_file()
+                self._copy_to_output_directory()
                 print(
                     f"Generated NFD bicep template created in {self.output_directory}"
                 )
@@ -234,8 +234,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             "Cannot find top level values.yaml/.yml file in Helm package."
         )
 
-    def write_manifest_bicep_file(self) -> None:
-        """Write the bicep file for the Artifact Manifest."""
+    def _write_manifest_bicep_file(self) -> None:
+        """Write the bicep file for the Artifact Manifest to the temp directory."""
         with open(self.manifest_jinja2_template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
                 f.read(),
@@ -252,8 +252,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         logger.info("Created artifact manifest bicep template: %s", path)
 
-    def write_nfd_bicep_file(self) -> None:
-        """Write the bicep file for the NFD."""
+    def _write_nfd_bicep_file(self) -> None:
+        """Write the bicep file for the NFD to the temp directory."""
         with open(self.nfd_jinja2_template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
                 f.read(),
@@ -271,8 +271,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         logger.info("Created NFD bicep template: %s", path)
 
-    def write_schema_to_file(self) -> None:
-        """Write the schema to file deploymentParameters.json."""
+    def _write_schema_to_file(self) -> None:
+        """Write the schema to file deploymentParameters.json to the temp directory."""
 
         logger.debug("Create deploymentParameters.json")
 
@@ -282,8 +282,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         logger.debug("%s created", full_schema)
 
-    def copy_to_output_directory(self) -> None:
-        """Copy the config mappings, schema and bicep templates (artifact manifest and NFDV) to the output directory."""
+    def _copy_to_output_directory(self) -> None:
+        """Copy the config mappings, schema and bicep templates (artifact manifest and NFDV) from the temp directory to the output directory."""
 
         logger.info("Create NFD bicep %s", self.output_directory)
 
@@ -323,14 +323,14 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         logger.info("Copied files to %s", self.output_directory)
 
-    def generate_nf_application_config(
+    def _generate_nf_application_config(
         self,
         helm_package: HelmPackageConfig,
         image_registry_path: List[str],
         image_pull_secret_line_matches: List[Tuple[str, ...]],
     ) -> Dict[str, Any]:
         """Generate NF application config."""
-        (name, version) = self.get_chart_name_and_version(helm_package)
+        (name, version) = self._get_chart_name_and_version(helm_package)
 
         registry_values_paths = set(image_registry_path)
         image_pull_secrets_values_paths = set(image_pull_secret_line_matches)
@@ -342,7 +342,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             "dependsOnProfile": helm_package.depends_on,
             "registryValuesPaths": list(registry_values_paths),
             "imagePullSecretsValuesPaths": list(image_pull_secrets_values_paths),
-            "valueMappingsPath": self.jsonify_value_mappings(helm_package),
+            "valueMappingsPath": self._jsonify_value_mappings(helm_package),
         }
 
     @staticmethod
@@ -355,7 +355,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         yield from directory.glob("**/*.yaml")
         yield from directory.glob("**/*.yml")
 
-    def find_pattern_matches_in_chart(
+    def _find_pattern_matches_in_chart(
         self, helm_package: HelmPackageConfig, start_string: str
     ) -> List[Tuple[str, ...]]:
         """
@@ -411,7 +411,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             matches += path
         return matches
 
-    def get_artifact_list(
+    def _get_artifact_list(
         self,
         helm_package: HelmPackageConfig,
         image_line_matches: List[Tuple[str, ...]],
@@ -423,7 +423,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         :param image_line_matches: The list of image line matches.
         """
         artifact_list = []
-        (chart_name, chart_version) = self.get_chart_name_and_version(helm_package)
+        (chart_name, chart_version) = self._get_chart_name_and_version(helm_package)
         helm_artifact = {
             "name": chart_name,
             "version": chart_version,
@@ -439,7 +439,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         return artifact_list
 
-    def get_chart_mapping_schema(
+    def _get_chart_mapping_schema(
         self, helm_package: HelmPackageConfig
     ) -> Dict[Any, Any]:
         """
@@ -492,10 +492,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         dict_to_search: Dict[Any, Any], target_regex: str
     ) -> Dict[str, List[str]]:
         """
-        Traverse the dictionary that is loaded from the file provided by path_to_mappings in the input.json.
-
-        Returns a dictionary of all the values that match the target regex,
-        with the key being the deploy parameter and the value being the path to the value.
+        Traverse the dictionary provided and return a dictionary of all the values that match the target regex,
+        with the key being the deploy parameter and the value being the path (as a list) to the value.
         e.g. {"foo": ["global", "foo", "bar"]}
 
         :param d: The dictionary to traverse.
@@ -545,7 +543,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         deployParams_paths: Dict[str, List[str]], full_schema
     ) -> Dict[str, Dict[str, str]]:
         """
-        Search through provided schema for the types of the deployment parameters.
+        Search through the provided schema for the types of the deployment parameters.
         This assumes that the type of the key will be the type of the deployment parameter.
         e.g. if foo: {deployParameter.bar} and foo is type string, then bar is type string.
 
@@ -667,7 +665,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         return final_values_mapping_dict
 
-    def get_chart_name_and_version(
+    def _get_chart_name_and_version(
         self, helm_package: HelmPackageConfig
     ) -> Tuple[str, str]:
         """Get the name and version of the chart."""
@@ -693,7 +691,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         return (chart_name, chart_version)
 
-    def jsonify_value_mappings(self, helm_package: HelmPackageConfig) -> Path:
+    def _jsonify_value_mappings(self, helm_package: HelmPackageConfig) -> Path:
         """Yaml->JSON values mapping file, then return path to it."""
         mappings_yaml_file = helm_package.path_to_mappings
         mappings_dir = self._tmp_dir / CONFIG_MAPPINGS_DIR_NAME
