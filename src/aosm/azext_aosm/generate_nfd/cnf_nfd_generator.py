@@ -395,14 +395,14 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             if name_and_version and len(name_and_version.groups()) == 2:
                                 logger.debug(
                                     "Found image name and version %s %s",
-                                    name_and_version.group(1),
-                                    name_and_version.group(2),
+                                    name_and_version.group("name"),
+                                    name_and_version.group("version"),
                                 )
                                 matches.append(
                                     (
                                         path,
-                                        name_and_version.group(1),
-                                        name_and_version.group(2),
+                                        name_and_version.group("name"),
+                                        name_and_version.group("version"),
                                     )
                                 )
                             else:

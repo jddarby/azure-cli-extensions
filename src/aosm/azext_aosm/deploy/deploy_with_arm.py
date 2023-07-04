@@ -191,7 +191,6 @@ class DeployerViaArm:
 
         Return True if artifact manifest already exists, False otherwise
         """
-
         logger.debug("Ensure all required resources exist")
         self.pre_deployer.ensure_config_resource_group_exists()
         self.pre_deployer.ensure_config_publisher_exists()

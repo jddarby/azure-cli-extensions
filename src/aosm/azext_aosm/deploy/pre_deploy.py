@@ -158,8 +158,8 @@ class PreDeployerViaSDK:
         # Config validation has already checked and raised an error if the regex doesn't
         # match
         if source_registry_match and len(source_registry_match.groups()) > 1:
-            source_registry_resource_group_name = source_registry_match.group(1)
-            source_registry_name = source_registry_match.group(2)
+            source_registry_resource_group_name = source_registry_match.group('resource_group')
+            source_registry_name = source_registry_match.group('registry_name')
 
             # This will raise an error if the registry does not exist
             self.api_clients.container_registry_client.get(

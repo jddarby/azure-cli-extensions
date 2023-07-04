@@ -157,7 +157,7 @@ class NSDGenerator:
             custom_location_description_string = (
                 "The custom location ID of the ARC-Enabled AKS Cluster to deploy the CNF "
                 "to. Should be of the form "
-                "'/subscriptions/c7bd9d96-70dd-4f61-af56-6e0abd8d80b5/resourcegroups"
+                "'/subscriptions/{subscriptionId}/resourcegroups"
                 "/{resourceGroupName}/providers/microsoft.extendedlocation/"
                 "customlocations/{customLocationName}'"
             )
@@ -298,7 +298,7 @@ class NSDGenerator:
             {},
         )
 
-    def generate_bicep(self, 
+    def generate_bicep(self,
                        template_name: str,
                        output_file_name: str,
                        params: Dict[Any,Any]) -> None:

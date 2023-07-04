@@ -15,6 +15,8 @@ from azure.storage.blob import BlobClient, BlobType
 from knack.log import get_logger
 from knack.util import CLIError
 from oras.client import OrasClient
+from azure.cli.core.commands import LongRunningOperation
+from azure.mgmt.containerregistry import ContainerRegistryManagementClient
 
 from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig
 
@@ -84,11 +86,18 @@ class Artifact:
         login_command = ["az", "acr", "login", "--name", registry_name]
         subprocess.run(login_command, check=True)
 
-        logger.debug("Uploading %s to %s", chart_path, target_registry)
+        try:
+            logger.debug("Uploading %s to %s", chart_path, target_registry)
 
-        # helm push "$chart_path" "$target_registry"
-        push_command = ["helm", "push", chart_path, target_registry]
-        subprocess.run(push_command, check=True)
+            # helm push "$chart_path" "$target_registry"
+            push_command = ["helm", "push", chart_path, target_registry]
+            subprocess.run(push_command, check=True)
+        finally:
+            # If we don't logout from the registry, future Artifact uploads to this ACR
+            # will fail with an UNAUTHORIZED error. There is no az acr logout command,
+            # but it is a wrapper around docker, so a call to docker logout will work.
+            logout_command = ["docker", "logout", registry]
+            subprocess.run(logout_command, check=True)
 
         # If we don't logout from the registry, future Artifact uploads to this ACR
         # will fail with an UNAUTHORIZED error. There is no az acr logout command, but
