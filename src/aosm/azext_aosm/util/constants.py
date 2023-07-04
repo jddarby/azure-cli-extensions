@@ -73,7 +73,7 @@ IMAGE_PATH_REGEX = r".Values\.([^\s})]*)"
 
 # To match the image name and version if 'imagePullSecrets:' is present in the yaml file
 IMAGE_PULL_SECRETS_START_STRING = "imagePullSecrets:"
-IMAGE_NAME_AND_VERSION_REGEX = r"\/([^\s]*):([^\s)\"}]*)"
+IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<version>[^\s)\"}]*)"
 
 DEPLOYMENT_PARAMETER_MAPPING_REGEX = r"\{deployParameters.(.+?)\}"
 
@@ -82,6 +82,6 @@ DEPLOYMENT_PARAMETER_MAPPING_REGEX = r"\{deployParameters.(.+?)\}"
 #   Microsoft.ContainerRegistry/registries/<registry_name>
 # This returns groups for the resource group name and registry name
 SOURCE_ACR_REGEX = (
-    r".*\/resourceGroups\/([^\/]*)\/providers\/Microsoft."
-    r"ContainerRegistry\/registries\/([^\/]*)"
+    r".*\/resourceGroups\/(?P<resource_group>[^\/]*)\/providers\/Microsoft."
+    r"ContainerRegistry\/registries\/(?P<registry_name>[^\/]*)"
     )
