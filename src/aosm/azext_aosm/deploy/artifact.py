@@ -99,12 +99,6 @@ class Artifact:
             logout_command = ["docker", "logout", registry]
             subprocess.run(logout_command, check=True)
 
-        # If we don't logout from the registry, future Artifact uploads to this ACR
-        # will fail with an UNAUTHORIZED error. There is no az acr logout command, but
-        # it is a wrapper around docker, so a call to docker logout will work.
-        logout_command = ["docker", "logout", registry]
-        subprocess.run(logout_command, check=True)
-
     def _upload_to_storage_account(self, artifact_config: ArtifactConfig) -> None:
         """
         Upload artifact to storage account.
