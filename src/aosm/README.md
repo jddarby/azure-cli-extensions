@@ -40,6 +40,24 @@ https://eng.ms/docs/strategic-missions-and-technologies/strategic-missions-and-t
 
 CLI issues should be tagged and triaged as UX bugs.
 
+## Logging
+
+The CLI uses the standard Azure CLI logging mechanism. To enable logging to the console, you can use the following flags depending on the desired level of logging:
+- `--verbose` - This flag changes the logging level to Info and above.
+- `--debug` - This flag changes the logging level to Debug and above.
+- `--only-show-errors` - This flag changes the logging level to Error only, suppressing Warning.
+
+It is also possible to enable logging to file by running the following command:
+```
+az config set logging.enable_log_file=true
+```
+This will create a log file in the `~/.azure/logs` directory. 
+
+**Note:** The above command will enable logging for all Azure CLI commands until the logging is disabled again by the user. Not disabling file logging could slow down the performance of the CLI. To disable file logging, run the following command:
+```
+az config set logging.enable_log_file=false
+```
+
 ## nfd and nsd commands
 
 These commands help with the publishing of Network Function Definition and Network
