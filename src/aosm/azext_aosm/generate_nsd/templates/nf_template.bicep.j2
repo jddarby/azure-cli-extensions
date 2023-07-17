@@ -40,6 +40,9 @@ var identityObject = (managedIdentity == '')  ? {
   }
 }
 
+// Create as many NFs as we have sets of configuration.
+// In the CNF case we supply a unique releaseName and releaseNamespace, so that the NFs
+// don't clash when they are deployed on the Kubernetes cluster.
 resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-preview' = [for (values, i) in deploymentParameters: {
   name: '{{network_function_name}}${i}'
   location: location
@@ -57,6 +60,10 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-previe
     nfviId: resourceGroupId
 {%- endif %}
     allowSoftwareUpdate: true
+{%- if CNF %}
+    deploymentValues: string(union(values, {AOSMNFIndex: '${i}'}))
+{%- else %}
     deploymentValues: string(values)
+{%- endif %}
   }
 }]

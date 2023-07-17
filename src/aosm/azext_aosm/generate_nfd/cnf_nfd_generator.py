@@ -3,6 +3,7 @@
 # License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------
 """Contains a class for generating CNF NFDs and associated resources."""
+import copy
 import json
 import re
 import shutil
@@ -107,7 +108,14 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
 
         self.artifacts: List[Artifact] = []
         self.nf_application_configurations: List[NFApplicationConfiguration] = []
-        self.deployment_parameter_schema: Dict[str, Any] = SCHEMA_PREFIX
+        self.deployment_parameter_schema: Dict[str, Any] = copy.deepcopy(SCHEMA_PREFIX)
+
+        # CNFs always need a special parameter for the index within a list of NFs to
+        # keep certain names/namespaces unique within a Kubernetes cluster.
+        self.deployment_parameter_schema["properties"] = {
+            "AOSMNFIndex": {"type": "string"}
+        }
+
         self.interactive = interactive
 
     def generate_nfd(self) -> None:

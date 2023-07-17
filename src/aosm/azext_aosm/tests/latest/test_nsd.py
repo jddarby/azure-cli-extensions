@@ -185,9 +185,9 @@ class TestNSDGenerator:
                     CGV_DATA,
                     "nsd-bicep-templates/schemas/ubuntu_ConfigGroupSchema.json",
                 )
-                # build_bicep("nsd-bicep-templates/nf_definition.bicep")
-                # build_bicep("nsd-bicep-templates/nsd_definition.bicep")
-                # build_bicep("nsd-bicep-templates/artifact_manifest.bicep")
+                build_bicep("nsd-bicep-templates/nf_definition.bicep")
+                build_bicep("nsd-bicep-templates/nsd_definition.bicep")
+                build_bicep("nsd-bicep-templates/artifact_manifest.bicep")
             finally:
                 os.chdir(starting_directory)
 

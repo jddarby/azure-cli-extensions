@@ -60,6 +60,7 @@ OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING = (
 )
 
 # Deployment Schema
+#
 SCHEMA_PREFIX = {
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "DeployParametersSchema",

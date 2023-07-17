@@ -9,5 +9,6 @@
     "network_function_type": "vnf",
     "nsdg_name": "ubuntu",
     "nsd_version": "1.0.0",
-    "nsdv_description": "Plain ubuntu VM"
+    "nsdv_description": "Plain ubuntu VM",
+    "multiple_instances": false
 }
