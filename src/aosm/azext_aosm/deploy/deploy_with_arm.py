@@ -471,7 +471,7 @@ class DeployerViaArm:
         return self.pre_deployer.do_config_artifact_manifests_exist()
 
     def deploy_bicep_template(
-        self, bicep_template_path: str, parameters: Dict[Any, Any]   # TODO: Need to check carefully whether these params are different from self.parameters
+        self, bicep_template_path: str, parameters: Dict[Any, Any]
     ) -> Any:
         """
         Deploy a bicep template.
