@@ -13,7 +13,7 @@ NSD = "nsd"
 SCHEMA = "schema"
 
 
-class DeployableResourceTypes(Enum):
+class DeployableResourceTypes(str, Enum):
     VNF = VNF
     CNF = CNF
     NSD = NSD
