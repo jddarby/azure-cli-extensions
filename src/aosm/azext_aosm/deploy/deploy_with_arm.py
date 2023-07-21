@@ -10,11 +10,10 @@ import shutil
 import subprocess  # noqa
 import tempfile
 import time
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Dict, Optional
 
 from azure.mgmt.resource.resources.models import DeploymentExtended
 from knack.log import get_logger
-from knack.arguments import CLICommandArgument
 
 from azext_aosm._configuration import (
     CNFConfiguration,
@@ -79,8 +78,6 @@ class DeployerViaArm:
     def __post_init__(self):
         self.pre_deployer = PreDeployerViaSDK(self.api_clients, self.config)
 
-
-
     def deploy_nfd_from_bicep(self) -> None:
         """
         Deploy the bicep template defining the NFD.
@@ -105,9 +102,7 @@ class DeployerViaArm:
             # Create or check required resources
             deploy_manifest_template = not self.nfd_predeploy()
             if deploy_manifest_template:
-                self.deploy_manifest_template(
-                    self.manifest_parameters_json_file, self.manifest_bicep_path
-                )
+                self.deploy_manifest_template()
             else:
                 print(
                     f"Artifact manifests exist for NFD {self.config.nf_name} "
@@ -288,8 +283,6 @@ class DeployerViaArm:
     def construct_parameters(self) -> Dict[str, Any]:
         """
         Create the parmeters dictionary for vnfdefinitions.bicep. VNF specific.
-
-        :param config: The contents of the configuration file.
         """
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
@@ -369,13 +362,6 @@ class DeployerViaArm:
         Deploy the bicep template defining the VNFD.
 
         Also ensure that all required predeploy resources are deployed.
-
-        :param bicep_template_path: The path to the bicep template of the nfdv
-        :type bicep_template_path: str
-        :parameters_json_file: path to an override file of set parameters for the nfdv
-        :param manifest_bicep_path: The path to the bicep template of the manifest
-        :param manifest_parameters_json_file: path to an override file of set parameters for the manifest
-        :param skip: options to skip, either publish bicep or upload artifacts
         """
         assert isinstance(self.config, NSConfiguration)
         if not self.skip == BICEP_PUBLISH:
@@ -393,9 +379,7 @@ class DeployerViaArm:
             deploy_manifest_template = not self.nsd_predeploy()
 
             if deploy_manifest_template:
-                self.deploy_manifest_template(
-                    self.manifest_parameters_json_file, self.manifest_bicep_path
-                )
+                self.deploy_manifest_template()
             else:
                 print(
                     f"Artifact manifests {self.config.acr_manifest_name} already exists"
@@ -434,7 +418,6 @@ class DeployerViaArm:
             )
         )
 
-        # appease mypy
         assert (
             self.config.arm_template.file_path
         ), "Config missing ARM template file path"
@@ -445,20 +428,14 @@ class DeployerViaArm:
         arm_template_artifact.upload(self.config.arm_template)
         print("Done")
 
-    def deploy_manifest_template(
-        self, manifest_parameters_json_file, manifest_bicep_path
-    ) -> None:
+    def deploy_manifest_template(self) -> None:
         """
         Deploy the bicep template defining the manifest.
-
-        :param manifest_parameters_json_file: path to an override file of set parameters for the manifest
-        :param manifest_bicep_path: The path to the bicep template of the manifest
-        :param configuration_type: The type of configuration to deploy
         """
         print("Deploy bicep template for Artifact manifests")
         logger.debug("Deploy manifest bicep")
 
-        if not manifest_bicep_path:
+        if not self.manifest_bicep_path:
             file_name: str = ""
             if self.resource_type == NSD:
                 file_name = NSD_ARTIFACT_MANIFEST_BICEP_FILENAME
@@ -471,11 +448,11 @@ class DeployerViaArm:
                 str(self.config.output_directory_for_build),
                 file_name,
             )
-        if not manifest_parameters_json_file:
+        if not self.manifest_parameters_json_file:
             manifest_params = self.construct_manifest_parameters()
         else:
             logger.info("Use provided manifest parameters")
-            with open(manifest_parameters_json_file, "r", encoding="utf-8") as f:
+            with open(self.manifest_parameters_json_file, "r", encoding="utf-8") as f:
                 manifest_json = json.loads(f.read())
                 manifest_params = manifest_json["parameters"]
         self.deploy_bicep_template(manifest_bicep_path, manifest_params)
@@ -495,14 +472,14 @@ class DeployerViaArm:
         return self.pre_deployer.do_config_artifact_manifests_exist()
 
     def deploy_bicep_template(
-        self, bicep_template_path: str, parameters: Dict[Any, Any]
+        self, bicep_template_path: str, parameters: Dict[Any, Any]   # TODO: Need to check carefully whether these params are different from self.parameters
     ) -> Any:
         """
         Deploy a bicep template.
 
         :param bicep_template_path: Path to the bicep template
-        :param parameters: Parameters for the bicep template         :return Any output
-                that the template produces
+        :param parameters: Parameters for the bicep template
+        :return Any output that the template produces
         """
         logger.info("Deploy %s", bicep_template_path)
         arm_template_json = self.convert_bicep_to_arm(bicep_template_path)
