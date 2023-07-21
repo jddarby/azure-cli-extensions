@@ -128,8 +128,7 @@ class DeployerViaArm:
             print("Done")
             return
 
-        # if self.resource_type == VNF:
-        if isinstance(self.config, VNFConfiguration):
+        if self.resource_type == VNF:
             self._vnfd_artifact_upload()
         if self.resource_type == CNF:
             self._cnfd_artifact_upload()
