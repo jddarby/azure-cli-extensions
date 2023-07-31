@@ -39,7 +39,7 @@ TODO
 
 Make sure your VSCode is running in the same python virtual environment
 
-### Linting and Tests
+### Linting
 ```bash
 azdev style aosm
 azdev linter --include-whl-extensions aosm
@@ -54,8 +54,8 @@ pip3 install -U --index-url https://pkgs.dev.azure.com/msazuredev/AzureForOperat
 python-static-checks fmt
 ```
 
-### Unit tests
-To run unit tests run `azdev test aosm`.
+### Tests
+The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command.
 
 To get code coverage run:
 ```bash
@@ -65,6 +65,9 @@ coverage erase
 coverage run -m pytest .
 coverage report --include="*/src/aosm/*" --omit="*/src/aosm/azext_aosm/vendored_sdks/*","*/src/aosm/azext_aosm/tests/*" -m
 ```
+
+#### Integration tests
+The integration tests are tests which run real azure CLI commands such as `az aosm nsd publish`. When running for the first time in a repository these tests will create a real resource group and deploy real AOSM resources. These resources will be cleaned up after the tests have run. After the first "live" run these tests will be automatically recorded in the `tests/latest/recordings` folder. These recordings record all communication between the CLI and Azure which mean that the next time the test is run it will no longer be run live but instead will be will be run against the recorded responses. This means that the tests will run much faster and will not create any real resources. If you want to run the tests live (for example because the tested code has significantly changed) you can delete the recording of a specific test from the `tests/latest/recordings` folder and run the tests again. To find out more about integration tests see [here](https://github.com/Azure/azure-cli/blob/dev/doc/authoring_tests.md).
 
 ### Pipelines
 The pipelines for the Azure CLI run in ADO, not in github.
