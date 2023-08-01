@@ -1,3 +1,12 @@
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+#
+# This file contains recording processors which are used to modify the testing recordings
+# before they are saved to file. This is useful for removing sensitive information from
+# the recordings so that we can avoid checking in secrets to the repo.
+# --------------------------------------------------------------------------------------------
+
 from azure.cli.testsdk.scenario_tests import (
     RecordingProcessor
 )
