@@ -134,5 +134,5 @@ def load_arguments(self: AzCommandsLoader, _):
         c.argument(
             "clean",
             arg_type=get_three_state_flag(),
-            help="Also NSD Group. Use with care.",
+            help="Also delete NSD Group. Use with care.",
         )
