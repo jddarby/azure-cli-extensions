@@ -47,7 +47,10 @@ def num_tokens_from_messages(messages):
 
 while True:
     try:
-        user_input = input()      
+        user_input = input()
+        if user_input == "exit":
+            print("Exiting Chat.")
+            break    
         conversation.append({"role": "user", "content": user_input})
         conv_history_tokens = num_tokens_from_messages(conversation)
         while conv_history_tokens + max_response_tokens >= token_limit:
@@ -60,9 +63,6 @@ while True:
             )
         conversation.append({"role": "assistant", "content": response["choices"][0]["message"]["content"]})
         print("\n" + response['choices'][0]['message']['content'] + "\n")
-    except user_input == "exit":
-        print("Exiting Chat.")
-        break
     except KeyboardInterrupt:
         print("Exiting Chat.")
         break 
