@@ -139,7 +139,7 @@ python-static-checks fmt
 ```
 
 ### Tests
-The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command. All tests are expected to pass.
+The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command. All tests are expected to pass. All unit tests and Integration tests are run as part of the pipeline. 
 ### Unit tests
 To get code coverage run:
 ```bash
@@ -151,7 +151,7 @@ coverage report --include="*/src/aosm/*" --omit="*/src/aosm/azext_aosm/vendored_
 ```
 
 #### Integration tests
-The integration tests are tests which run real azure CLI commands such as `az aosm nsd publish`. When running for the first time in a repository these tests will create a real resource group in the subscription that is active on your account and deploy real AOSM resources. These resources will be cleaned up after the tests have run. After the first "live" run these tests will be automatically recorded in the `tests/latest/recordings` folder. These recordings record all communication between the CLI and Azure which mean that the next time the test is run it will no longer be run live but instead will be will be run against the recorded responses. This means that the tests will run much faster and will not create any real resources. The recording also does not rely on the knowledge of a subscription and the credentials will be removed from the recordings.
+The integration tests are tests which run real azure CLI commands such as `az aosm nsd publish`. When running for the first time in a repository these tests will create a real resource group (with a randomly generated name starting with "cli_test_") in the subscription that is active on your account and deploy real AOSM resources. These resources will be cleaned up after the tests have run. After the first "live" run these tests will be automatically recorded in the `tests/latest/recordings` folder. These recordings record all communication between the CLI and Azure which mean that the next time the test is run it will no longer be run live but instead will be will be run against the recorded responses. This means that the tests will run much faster and will not create any real resources. The recording also does not rely on the knowledge of a subscription and the credentials will be removed from the recordings.
 
 If one of the publish tests fails, then it might be because you have made small tweaks and the recording is now out of date.
 Delete the relevant file under tests/latest/recordings (the file names match the name of the tests), and re-run the test.

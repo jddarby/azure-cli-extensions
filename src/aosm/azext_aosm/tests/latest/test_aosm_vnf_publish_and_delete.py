@@ -1,6 +1,15 @@
 # --------------------------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
+#
+# This is an integration tests for the aosm extension. It tests the following commands for the
+# vnf definition type:
+#   aosm nfd build
+#   aosm nfd publish
+#   aosm nfd delete
+#   aosm nsd build
+#   aosm nsd publish
+#   aosm nsd delete
 # --------------------------------------------------------------------------------------------
 
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
@@ -22,6 +31,14 @@ ARM_TEMPLATE_RELATIVE_PATH = "scenario_test_mocks/vnf_mocks/ubuntu_template.json
 def update_resource_group_in_input_file(
     input_template_name: str, output_file_name: str, resource_group: str
 ) -> str:
+    """
+    This function updates the resource group name in the input template file and returns the
+    path to the updated file.
+
+    :param input_template_name: The name of the input template file.
+    :param output_file_name: The name of the output file.
+    :param resource_group: The name of the resource group to update the input template with.
+    :return: The path to the updated input template file."""
     code_dir = os.path.dirname(__file__)
     templates_dir = os.path.join(
         code_dir, "scenario_test_mocks", "mock_input_templates"
@@ -46,7 +63,18 @@ def update_resource_group_in_input_file(
 
 
 class VnfNsdTest(ScenarioTest):
+    """
+    This class contains the integration tests for the aosm extension for vnf definition type.
+    """
     def __init__(self, method_name):
+        """
+        This constructor initializes the class
+
+        :param method_name: The name of the test method.
+        :param recording_processors: The recording processors to use for the test.
+        These recording processors modify the recording of a test before it is saved,
+        helping to remove sensitive information from the recording.
+        """
         super(VnfNsdTest, self).__init__(
             method_name,
             recording_processors=[AcrTokenReplacer(), SasUriReplacer()]
@@ -54,6 +82,12 @@ class VnfNsdTest(ScenarioTest):
 
     @ResourceGroupPreparer(name_prefix="cli_test_vnf_nsd_", location="northeurope")
     def test_vnf_nsd_publish_and_delete(self, resource_group):
+        """
+        This test creates a vnf nfd and nsd, publishes them, and then deletes them.
+
+        :param resource_group: The name of the resource group to use for the test.
+        This is passed in by the ResourceGroupPreparer decorator.
+        """
         nfd_input_file_path = update_resource_group_in_input_file(
             NFD_INPUT_TEMPLATE_NAME, NFD_INPUT_FILE_NAME, resource_group
         )
