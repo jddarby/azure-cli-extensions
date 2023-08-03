@@ -1,0 +1,20 @@
+{
+    "publisher_name": "Name of the Publisher resource you want your definition published to. Will be created if it does not exist.",
+    "publisher_resource_group_name": "Resource group for the Publisher resource. Will be created if it does not exist.",
+    "acr_artifact_store_name": "Name of the ACR Artifact Store resource. Will be created if it does not exist.",
+    "location": "Azure location to use when creating resources.",
+    "nf_name": "Name of NF definition",
+    "version": "Version of the NF definition",
+    "blob_artifact_store_name": "Name of the storage account Artifact Store resource. Will be created if it does not exist.",
+    "image_name_parameter": "The parameter name in the VM ARM template which specifies the name of the image to use for the VM.",
+    "arm_template": {
+        "file_path": "Optional. File path of the artifact you wish to upload from your local disk. Delete if not required.",
+        "blob_sas_url": "Optional. SAS URL of the blob artifact you wish to copy to your Artifact Store. Delete if not required.",
+        "version": "Version of the artifact. For VHDs this must be in format A-B-C. For ARM templates this must be in format A.B.C"
+    },
+    "vhd": {
+        "file_path": "Optional. File path of the artifact you wish to upload from your local disk. Delete if not required.",
+        "blob_sas_url": "Optional. SAS URL of the blob artifact you wish to copy to your Artifact Store. Delete if not required.",
+        "version": "Version of the artifact. For VHDs this must be in format A-B-C. For ARM templates this must be in format A.B.C"
+    }
+}
