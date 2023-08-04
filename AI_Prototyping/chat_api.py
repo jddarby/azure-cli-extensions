@@ -18,7 +18,7 @@ file_path = "/home/developer/repos/copilot/chat_completion/system_message.txt"
 file = open(file_path, 'r')
 conversation=[{"role": "system", "content": file.read()}]
 
-max_response_tokens = 250
+max_response_tokens = 500
 token_limit = 4096
 
 def num_tokens_from_messages(messages):
@@ -44,7 +44,7 @@ def num_tokens_from_messages(messages):
 #This function can be found in the "Managing Conversations" section of the following link:
 #https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions#preventing-unsafe-user-inputs
 
-
+print("Welcome to the NSD Generation Copilot! Chat to the Copilot to tell it more about the NSD you want to build. Once you are happy with your design, enter 'build'.")
 while True:
     try:
         user_input = input()
@@ -59,7 +59,8 @@ while True:
         response = openai.ChatCompletion.create(
             engine="gpt35depl1", 
             messages = conversation,
-            max_tokens=max_response_tokens
+            max_tokens=max_response_tokens,
+            temperature=0
             )
         conversation.append({"role": "assistant", "content": response["choices"][0]["message"]["content"]})
         print("\n" + response['choices'][0]['message']['content'] + "\n")

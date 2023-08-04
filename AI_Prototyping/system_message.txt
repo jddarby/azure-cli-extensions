@@ -16,7 +16,7 @@ Display the information and ask if they want to update it.
         {
             "name": "Existing Network Function Definition Group Name.",
             "version": "Existing Network Function Definition Version Name",
-            "publisher_offering_location": "Offering location of the Network Function Definition",
+            "publisher_offering_location": "Offering location of the publisher of the Network Function Definition",
             "type": "Type of nf in the definition. Valid values are 'cnf' or 'vnf'",
             "multiple_instances": "Whether or not the Network Function Definition will appear more than once in the Network Service Design. Valid values are true or false.",
             "publisher": "Name of the publisher the network function was made under.",
@@ -32,4 +32,3 @@ Do not ask them to give you information about all of the sections, prompt them t
 Allow the user to add more than one network function definition to the design.
 Don't ask for multiple fields in one question.
 Always display the summary in a JSON format as shown above.
-If the user says they are done, display what you have and tell them which fields haven't been filled in.
