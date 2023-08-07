@@ -36,6 +36,8 @@ from azext_aosm.util.constants import CNF, NSD, VNF
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
+from azext_aosm.AI_Prototyping.chat_api import ai_assistance
+
 logger = get_logger(__name__)
 
 
@@ -276,6 +278,17 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
             "Empty %s configuration has been written to %s", prtName, output_file
         )
 
+def ai_design(cmd, client: HybridNetworkManagementClient):
+    api_clients = ApiClients(
+        aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
+    )
+    config = ai_assistance()
+    assert isinstance(config, NSConfiguration)
+    config.validate()
+    _generate_nsd(
+        config=config,
+        api_clients=api_clients,
+    )
 
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     """
