@@ -1,0 +1,20 @@
+{
+    "location": "uksouth",
+    "publisher_name": "ubuntuPublisher",
+    "publisher_resource_group_name": "{{publisher_resource_group_name}}",
+    "acr_artifact_store_name": "ubuntu-acr",
+    "network_functions": [
+        {
+            "name": "ubuntu-vm-nfdg",
+            "version": "1.0.0",
+            "publisher_offering_location": "uksouth",
+            "type": "vnf",
+            "multiple_instances": false,
+            "publisher": "ubuntuPublisher",
+            "publisher_resource_group": "{{publisher_resource_group_name}}"
+        }
+    ],
+    "nsdg_name": "ubuntu",
+    "nsd_version": "1.0.0",
+    "nsdv_description": "Plain ubuntu VM"
+}

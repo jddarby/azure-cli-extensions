@@ -1,0 +1,20 @@
+{
+    "location": "uksouth",
+    "publisher_name": "nginx-publisher",
+    "publisher_resource_group_name": "{{publisher_resource_group_name}}",
+    "acr_artifact_store_name": "nginx-nsd-acr",
+    "network_functions": [
+        {
+            "name": "nginx-nfdg",
+            "version": "1.0.0",
+            "publisher_offering_location": "uksouth",
+            "type": "cnf",
+            "multiple_instances": false,
+            "publisher": "nginx-publisher",
+            "publisher_resource_group": "{{publisher_resource_group_name}}"
+        }
+    ],
+    "nsdg_name": "nginx",
+    "nsd_version": "1.0.0",
+    "nsdv_description": "Deploys a basic NGINX CNF"
+}

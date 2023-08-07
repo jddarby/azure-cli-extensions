@@ -32,7 +32,7 @@ from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.generate_nfd.vnf_nfd_generator import VnfNfdGenerator
 from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
-from azext_aosm.util.constants import CNF, NSD, VNF
+from azext_aosm.util.constants import CNF, DeployableResourceTypes, NSD, SkipSteps, VNF
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
@@ -46,6 +46,7 @@ def build_definition(
     config_file: str,
     order_params: bool = False,
     interactive: bool = False,
+    force: bool = False,
 ):
     """
     Build a definition.
@@ -68,6 +69,7 @@ def build_definition(
         config=config,
         order_params=order_params,
         interactive=interactive,
+        force=force,
     )
 
 
@@ -102,7 +104,7 @@ def _get_config_from_file(config_file: str, configuration_type: str) -> Configur
 
 
 def _generate_nfd(
-    definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool
+    definition_type: str, config: NFConfiguration, order_params: bool, interactive: bool, force: bool = False
 ):
     """Generate a Network Function Definition for the given type and config."""
     nfd_generator: NFDGenerator
@@ -118,12 +120,13 @@ def _generate_nfd(
             " have been implemented."
         )
     if nfd_generator.nfd_bicep_path:
-        carry_on = input(
-            f"The {nfd_generator.nfd_bicep_path.parent} directory already exists -"
-            " delete it and continue? (y/n)"
-        )
-        if carry_on != "y":
-            raise UnclassifiedUserFault("User aborted!")
+        if not force:
+            carry_on = input(
+                f"The {nfd_generator.nfd_bicep_path.parent} directory already exists -"
+                " delete it and continue? (y/n)"
+            )
+            if carry_on != "y":
+                raise UnclassifiedUserFault("User aborted!")
 
         shutil.rmtree(nfd_generator.nfd_bicep_path.parent)
     nfd_generator.generate_nfd()
@@ -138,7 +141,7 @@ def publish_definition(
     parameters_json_file: Optional[str] = None,
     manifest_file: Optional[str] = None,
     manifest_parameters_json_file: Optional[str] = None,
-    skip: Optional[str] = None,
+    skip: Optional[SkipSteps] = None,
 ):
     """
     Publish a generated definition.
@@ -167,34 +170,28 @@ def publish_definition(
         container_registry_client=cf_acr_registries(cmd.cli_ctx),
     )
 
+    if definition_type not in (VNF, CNF):
+        raise ValueError(
+            "Definition type must be either 'vnf' or 'cnf'. Definition type"
+            f" '{definition_type}' is not valid for network function definitions."
+        )
+
     config = _get_config_from_file(
         config_file=config_file, configuration_type=definition_type
     )
 
-    if definition_type == VNF:
-        deployer = DeployerViaArm(api_clients, config=config)
-        deployer.deploy_vnfd_from_bicep(
-            bicep_path=definition_file,
-            parameters_json_file=parameters_json_file,
-            manifest_bicep_path=manifest_file,
-            manifest_parameters_json_file=manifest_parameters_json_file,
-            skip=skip,
-        )
-    elif definition_type == CNF:
-        deployer = DeployerViaArm(api_clients, config=config)
-        deployer.deploy_cnfd_from_bicep(
-            cli_ctx=cmd.cli_ctx,
-            bicep_path=definition_file,
-            parameters_json_file=parameters_json_file,
-            manifest_bicep_path=manifest_file,
-            manifest_parameters_json_file=manifest_parameters_json_file,
-            skip=skip,
-        )
-    else:
-        raise ValueError(
-            "Definition type must be either 'vnf' or 'cnf'. Definition type"
-            f" {definition_type} is not recognised."
-        )
+    deployer = DeployerViaArm(
+        api_clients,
+        resource_type=definition_type,
+        config=config,
+        bicep_path=definition_file,
+        parameters_json_file=parameters_json_file,
+        manifest_bicep_path=manifest_file,
+        manifest_parameters_json_file=manifest_parameters_json_file,
+        skip=skip,
+        cli_ctx=cmd.cli_ctx,
+    )
+    deployer.deploy_nfd_from_bicep()
 
 
 def delete_published_definition(
@@ -203,6 +200,7 @@ def delete_published_definition(
     definition_type,
     config_file,
     clean=False,
+    force=False
 ):
     """
     Delete a published definition.
@@ -223,9 +221,9 @@ def delete_published_definition(
 
     delly = ResourceDeleter(api_clients, config)
     if definition_type == VNF:
-        delly.delete_nfd(clean=clean)
+        delly.delete_nfd(clean=clean, force=force)
     elif definition_type == CNF:
-        delly.delete_nfd(clean=clean)
+        delly.delete_nfd(clean=clean, force=force)
     else:
         raise ValueError(
             "Definition type must be either 'vnf' or 'cnf'. Definition type"
@@ -290,7 +288,7 @@ def ai_design(cmd, client: HybridNetworkManagementClient):
         api_clients=api_clients,
     )
 
-def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
+def build_design(cmd, client: HybridNetworkManagementClient, config_file: str, force: bool = False):
     """
     Build a Network Service Design.
 
@@ -315,6 +313,7 @@ def build_design(cmd, client: HybridNetworkManagementClient, config_file: str):
     _generate_nsd(
         config=config,
         api_clients=api_clients,
+        force=force,
     )
 
 
@@ -322,6 +321,7 @@ def delete_published_design(
     cmd,
     client: HybridNetworkManagementClient,
     config_file,
+    force=False,
 ):
     """
     Delete a published NSD.
@@ -338,7 +338,7 @@ def delete_published_design(
     )
 
     destroyer = ResourceDeleter(api_clients, config)
-    destroyer.delete_nsd()
+    destroyer.delete_nsd(force=force)
 
 
 def publish_design(
@@ -349,7 +349,7 @@ def publish_design(
     parameters_json_file: Optional[str] = None,
     manifest_file: Optional[str] = None,
     manifest_parameters_json_file: Optional[str] = None,
-    skip: Optional[str] = None,
+    skip: Optional[SkipSteps] = None,
 ):
     """
     Publish a generated design.
@@ -379,9 +379,10 @@ def publish_design(
     assert isinstance(config, NSConfiguration)
     config.validate()
 
-    deployer = DeployerViaArm(api_clients, config=config)
-
-    deployer.deploy_nsd_from_bicep(
+    deployer = DeployerViaArm(
+        api_clients,
+        resource_type=DeployableResourceTypes.NSD,
+        config=config,
         bicep_path=design_file,
         parameters_json_file=parameters_json_file,
         manifest_bicep_path=manifest_file,
@@ -389,17 +390,30 @@ def publish_design(
         skip=skip,
     )
 
+    deployer.deploy_nsd_from_bicep()
 
-def _generate_nsd(config: NSConfiguration, api_clients: ApiClients):
+
+def _generate_nsd(config: NSConfiguration, api_clients: ApiClients, force: bool = False):
     """Generate a Network Service Design for the given config."""
+    if config:
+        nsd_generator = NSDGenerator(config=config, api_clients=api_clients)
+    else:
+        raise CLIInternalError("Generate NSD called without a config file")
+
     if os.path.exists(config.output_directory_for_build):
-        carry_on = input(
-            f"The folder {config.output_directory_for_build} already exists - delete it"
-            " and continue? (y/n)"
-        )
-        if carry_on != "y":
-            raise UnclassifiedUserFault("User aborted! ")
+        if not force:
+            carry_on = input(
+                f"The folder {config.output_directory_for_build} already exists - delete it"
+                " and continue? (y/n)"
+            )
+            if carry_on != "y":
+                raise UnclassifiedUserFault("User aborted! ")
 
         shutil.rmtree(config.output_directory_for_build)
+<<<<<<< HEAD
     nsd_generator = NSDGenerator(api_clients, config)
     nsd_generator.generate_nsd()
+=======
+
+    nsd_generator.generate_nsd()
+>>>>>>> upstream/add-aosm-extension
