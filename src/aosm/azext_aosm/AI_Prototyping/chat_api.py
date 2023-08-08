@@ -60,7 +60,10 @@ def ai_assistance():
                 end = text.rfind("}")
                 string = text[begin:end+1]
                 nsd = json.loads(string)
-                return nsd
+                file_path = "/home/developer/repos/GIT/azure-cli-extensions/src/aosm/azext_aosm/AI_Prototyping/input.json"
+                with open(file_path, "w", encoding="utf-8") as json_file:
+                    json.dump(nsd, json_file, indent=4, ensure_ascii=False)
+                return file_path
                 break
             conversation.append({"role": "user", "content": user_input})
             conv_history_tokens = num_tokens_from_messages(conversation)

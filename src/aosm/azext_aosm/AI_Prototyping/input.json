@@ -1,0 +1,20 @@
+{
+    "location": "uksouth",
+    "publisher_name": "test-publisher",
+    "publisher_resource_group_name": "test-rg",
+    "acr_artifact_store_name": "test-acr",
+    "network_functions": [
+        {
+            "name": "ubuntu-nfdg",
+            "version": "1.0.0",
+            "publisher_offering_location": "uksouth",
+            "type": "vnf",
+            "multiple_instances": false,
+            "publisher": "test-publisher",
+            "publisher_resource_group": "test-rg"
+        }
+    ],
+    "nsdg_name": "test-nsdg",
+    "nsd_version": "1.0.0",
+    "nsdv_description": "An AI assisted test NSD"
+}

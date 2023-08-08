@@ -276,16 +276,26 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
             "Empty %s configuration has been written to %s", prtName, output_file
         )
 
-def ai_design(cmd, client: HybridNetworkManagementClient):
+def ai_design(cmd, client: HybridNetworkManagementClient, force: bool = False):
+    """
+    Use a Trained Copilot to build a Network Service Design. 
+
+    :param cmd:
+    :type cmd: _type_
+    :param client:
+    :type client: HybridNetworkManagementClient
+    :param config_file: path to the file
+    """
     api_clients = ApiClients(
         aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
     )
-    config = ai_assistance()
+    config = _get_config_from_file(config_file=ai_assistance(), configuration_type=NSD)
     assert isinstance(config, NSConfiguration)
     config.validate()
     _generate_nsd(
         config=config,
         api_clients=api_clients,
+        force=force,
     )
 
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str, force: bool = False):
@@ -410,10 +420,5 @@ def _generate_nsd(config: NSConfiguration, api_clients: ApiClients, force: bool 
                 raise UnclassifiedUserFault("User aborted! ")
 
         shutil.rmtree(config.output_directory_for_build)
-<<<<<<< HEAD
-    nsd_generator = NSDGenerator(api_clients, config)
-    nsd_generator.generate_nsd()
-=======
 
     nsd_generator.generate_nsd()
->>>>>>> upstream/add-aosm-extension
