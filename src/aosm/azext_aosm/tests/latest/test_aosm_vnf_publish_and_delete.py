@@ -105,7 +105,7 @@ class VnfNsdTest(ScenarioTest):
                     f'az aosm nfd publish -f "{nfd_input_file_path}" --definition-type vnf'
                 )
                 break
-            except Exception as exception:
+            except Exception:
                 retry_attempts += 1
 
                 if retry_attempts == 2:
@@ -114,7 +114,7 @@ class VnfNsdTest(ScenarioTest):
                     self.cmd(
                         f'az aosm nfd delete --definition-type vnf -f "{nfd_input_file_path}" --clean --force'
                     )
-                    raise exception
+                    raise
 
         nsd_input_file_path = update_resource_group_in_input_file(
             NSD_INPUT_TEMPLATE_NAME, NSD_INPUT_FILE_NAME, resource_group
@@ -124,13 +124,10 @@ class VnfNsdTest(ScenarioTest):
 
         try:
             self.cmd(f'az aosm nsd publish -f "{nsd_input_file_path}"')
-        except Exception as exception:
+        finally:
             # If the command fails, then the test should fail.
             # We still need to clean up the resources, so we run the delete command.
             self.cmd(f'az aosm nsd delete -f "{nsd_input_file_path}" --clean --force')
-            raise exception
-
-        self.cmd(f'az aosm nsd delete -f "{nsd_input_file_path}" --clean --force')
-        self.cmd(
-            f'az aosm nfd delete --definition-type vnf -f "{nfd_input_file_path}" --clean --force'
-        )
+            self.cmd(
+                f'az aosm nfd delete --definition-type vnf -f "{nfd_input_file_path}" --clean --force'
+            )
