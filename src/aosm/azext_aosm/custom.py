@@ -298,6 +298,7 @@ def ai_design(cmd, client: HybridNetworkManagementClient, force: bool = False):
         force=force,
     )
 
+
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str, force: bool = False):
     """
     Build a Network Service Design.
