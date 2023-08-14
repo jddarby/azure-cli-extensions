@@ -4,6 +4,7 @@ import openai
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
+#TO DO: change the keyvault and endpoint to the new subscription AI instance once it's fixed.
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/",credential=credential)
 key = client.get_secret("AIKey1")
@@ -15,7 +16,7 @@ openai.api_key = key.value
 #The basic function to create a response using the Chat Completion API can be found under the "Creating a Basic Conversation Loop" section in the following link:
 #https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
 
-file_path = "/home/developer/repos/copilot/chat_completion/system_message.txt"
+file_path = "AI_Prototyping/system_message.txt"
 file = open(file_path, 'r')
 conversation=[{"role": "system", "content": file.read()}]
 
@@ -46,21 +47,18 @@ def num_tokens_from_messages(messages):
 #https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions#preventing-unsafe-user-inputs
 
 def ai_assistance():
-    print("Welcome to the NSD Generation Copilot! Chat to the Copilot to tell it more about the NSD you want to build. Once you are happy with your design, enter 'build'.")
+    print("Welcome to the NSD Generation Copilot! \n Please ensure you are connected to the appropriate VNET. \n Chat to the Copilot to tell it more about the NSD you want to build. \n Once you are happy with your design, enter 'build'.")
     while True:
         try:
             user_input = input("User: ")
-            if user_input == "exit":
-                print("Exiting Chat.")
-                break
-            elif user_input == "build":
+            if user_input == "build":
                 print("Thank you! I am now building the NSD based on the information you have given.")
                 text = response["choices"][0]["message"]["content"]
                 begin = text.find("{")
                 end = text.rfind("}")
                 string = text[begin:end+1]
                 nsd = json.loads(string)
-                file_path = "/home/developer/repos/GIT/azure-cli-extensions/src/aosm/azext_aosm/AI_Prototyping/input.json"
+                file_path = "AI_Prototyping/input.json"
                 with open(file_path, "w", encoding="utf-8") as json_file:
                     json.dump(nsd, json_file, indent=4, ensure_ascii=False)
                 return file_path
@@ -78,9 +76,7 @@ def ai_assistance():
                 )
             conversation.append({"role": "assistant", "content": response["choices"][0]["message"]["content"]})
             print("\n" + "ChatBot: " + response['choices'][0]['message']['content'] + "\n")
-        except KeyboardInterrupt:
-            print("Exiting Chat.")
-            break 
+        
         except openai.error.InvalidRequestError as e:
             if e.error.code == "content_filter" and e.error.innererror:
                 content_filter_result = e.error.innererror.content_filter_result

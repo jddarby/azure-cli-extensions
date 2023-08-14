@@ -1,20 +1,29 @@
 {
-    "location": "uksouth",
-    "publisher_name": "test-publisher",
-    "publisher_resource_group_name": "test-rg",
-    "acr_artifact_store_name": "test-acr",
+    "location": "eastus",
+    "publisher_name": "jamie-publisher",
+    "publisher_resource_group_name": "Jamie-multi-NF",
+    "acr_artifact_store_name": "acr",
     "network_functions": [
         {
-            "name": "ubuntu-nfdg",
+            "name": "nginx-nfdg",
+            "version": "1.0.0",
+            "publisher_offering_location": "uksouth",
+            "type": "cnf",
+            "multiple_instances": false,
+            "publisher": "ac4",
+            "publisher_resource_group": "ac4-est-rg"
+        },
+        {
+            "name": "ubuntu-vm-nfdg",
             "version": "1.0.0",
             "publisher_offering_location": "uksouth",
             "type": "vnf",
             "multiple_instances": false,
-            "publisher": "test-publisher",
-            "publisher_resource_group": "test-rg"
+            "publisher": "ac4",
+            "publisher_resource_group": "ac4-est-rg"
         }
     ],
     "nsdg_name": "test-nsdg",
     "nsd_version": "1.0.0",
-    "nsdv_description": "An AI assisted test NSD"
+    "nsdv_description": "an AI assisted test NSD"
 }
