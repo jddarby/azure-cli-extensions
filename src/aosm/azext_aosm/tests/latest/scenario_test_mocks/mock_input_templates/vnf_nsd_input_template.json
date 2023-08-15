@@ -1,16 +1,16 @@
 {
-    "location": "westcentralus",
-    "publisher_name": "ubuntuPublisher",
+    "location": "uksouth",
+    "publisher_name": "ubuntuPublisherTest",
     "publisher_resource_group_name": "{{publisher_resource_group_name}}",
-    "acr_artifact_store_name": "ubuntu-acr",
+    "acr_artifact_store_name": "ubuntu-acr-test",
     "network_functions": [
         {
             "name": "ubuntu-vm-nfdg",
             "version": "1.0.0",
-            "publisher_offering_location": "westcentralus",
+            "publisher_offering_location": "uksouth",
             "type": "vnf",
             "multiple_instances": false,
-            "publisher": "ubuntuPublisher",
+            "publisher": "ubuntuPublisherTest",
             "publisher_resource_group": "{{publisher_resource_group_name}}"
         }
     ],
