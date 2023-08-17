@@ -48,7 +48,8 @@ DESCRIPTION_MAP: Dict[str, str] = {
     "artifact_name": "Name of the artifact",
     "file_path": (
         "Optional. File path of the artifact you wish to upload from your local disk. "
-        "Delete if not required."
+        "Delete if not required. Relative paths are relative to the configuration file."
+        "On Windows escape any backslash with another backslash."
     ),
     "blob_sas_url": (
         "Optional. SAS URL of the blob artifact you wish to copy to your Artifact"
@@ -68,7 +69,8 @@ DESCRIPTION_MAP: Dict[str, str] = {
     ),
     "helm_package_name": "Name of the Helm package",
     "path_to_chart": (
-        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz"
+        "File path of Helm Chart on local disk. Accepts .tgz, .tar or .tar.gz."
+        " Use Linux slash (/) file separator even if running on Windows."
     ),
     "path_to_mappings": (
         "File path of value mappings on local disk where chosen values are replaced "
@@ -86,7 +88,7 @@ DESCRIPTION_MAP: Dict[str, str] = {
         "image to use for the VM."
     ),
     "source_registry_id": (
-        "Resource ID of the source acr registry from which to pull the image"
+        "Resource ID of the source acr registry from which to pull the image."
     ),
     "source_registry_namespace": (
         "Optional. Namespace of the repository of the source acr registry from which "
