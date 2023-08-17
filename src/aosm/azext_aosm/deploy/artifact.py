@@ -92,13 +92,13 @@ class Artifact:
         # Note that this uses the user running the CLI's AZ login credentials, not the
         # manifest credentials retrieved from the ACR. This isn't ideal, but using the
         # manifest credentials caused problems so we are doing this for now.
-        logger.debug(f"Logging into {registry_name}")
+        logger.debug("Logging into %s", registry_name)
         login_command = [
             str(shutil.which("az")),
             "acr",
             "login",
             "--name",
-            registry_name
+            registry_name,
         ]
         subprocess.run(login_command, check=True)
 
@@ -110,7 +110,7 @@ class Artifact:
                 str(shutil.which("helm")),
                 "push",
                 chart_path,
-                target_registry
+                target_registry,
             ]
             subprocess.run(push_command, check=True)
         finally:
