@@ -13,8 +13,8 @@ from azure.cli.testsdk.scenario_tests import (
 from azure.cli.testsdk.scenario_tests.utilities import is_text_payload
 import json
 
-MOCK_ACR_TOKEN = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-MOCK_SAS_URI = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+MOCK_ACR_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+MOCK_SAS_URI = "https://xxxxxxxxxxxxxxx.blob.core.windows.net/ubuntuvmvhd-1-0-0/ubuntuvm-1-0-0.vhd?sv=2021-08-06&si=StorageAccountAccessPolicy&sr=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 
 class AcrTokenReplacer(RecordingProcessor):
