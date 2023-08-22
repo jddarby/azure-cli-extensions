@@ -117,35 +117,36 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
             if self.resource_type == CNF:
                 self._cnfd_artifact_upload()
 
-        if not self.skip == BICEP_PUBLISH:
-            # 3) Deploy NFD bicep
-            if not self.bicep_path:
-                # User has not passed in a bicep template, so we are deploying the default
-                # one produced from building the NFDV using this CLI
-                if self.resource_type == VNF:
-                    file_name = VNF_DEFINITION_BICEP_TEMPLATE_FILENAME
-                if self.resource_type == CNF:
-                    file_name = CNF_DEFINITION_BICEP_TEMPLATE_FILENAME
-                bicep_path = os.path.join(
-                    self.config.output_directory_for_build, file_name
-                )
-            message = (
-                f"Deploy bicep template for NFD {self.config.nf_name} version"
-                f" {self.config.version} into"
-                f" {self.config.publisher_resource_group_name} under publisher"
-                f" {self.config.publisher_name}"
-            )
-            print(message)
-            logger.info(message)
-            logger.debug(
-                "Parameters used for NF definition bicep deployment: %s",
-                self.parameters,
-            )
-            self.deploy_bicep_template(bicep_path, self.parameters)
-            print(f"Deployed NFD {self.config.nf_name} version {self.config.version}.")
-        else:
+        if self.skip == BICEP_PUBLISH:
             print("Skipping bicep nfd publish")
             print("Done")
+            return
+
+        # 3) Deploy NFD bicep
+        if not self.bicep_path:
+            # User has not passed in a bicep template, so we are deploying the default
+            # one produced from building the NFDV using this CLI
+            if self.resource_type == VNF:
+                file_name = VNF_DEFINITION_BICEP_TEMPLATE_FILENAME
+            if self.resource_type == CNF:
+                file_name = CNF_DEFINITION_BICEP_TEMPLATE_FILENAME
+            bicep_path = os.path.join(
+                self.config.output_directory_for_build, file_name
+            )
+        message = (
+            f"Deploy bicep template for NFD {self.config.nf_name} version"
+            f" {self.config.version} into"
+            f" {self.config.publisher_resource_group_name} under publisher"
+            f" {self.config.publisher_name}"
+        )
+        print(message)
+        logger.info(message)
+        logger.debug(
+            "Parameters used for NF definition bicep deployment: %s",
+            self.parameters,
+        )
+        self.deploy_bicep_template(bicep_path, self.parameters)
+        print(f"Deployed NFD {self.config.nf_name} version {self.config.version}.")
 
     def _vnfd_artifact_upload(self) -> None:
         """Uploads the VHD and ARM template artifacts."""
@@ -403,7 +404,9 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
                 )
                 print("Artifact manifests already exist")
 
-        if not self.skip == ARTIFACT_UPLOAD:
+        if self.skip == ARTIFACT_UPLOAD:
+            print("Skipping artifact upload")
+        else:
             # 2) Upload artifacts - must be done before nsd deployment
             for manifest, nf in zip(
                 self.config.acr_manifest_names, self.config.network_functions
@@ -433,33 +436,32 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
 
                 print(f"Uploading ARM template artifact: {nf.arm_template.file_path}")
                 arm_template_artifact.upload(nf.arm_template)
-        else:
-            print("Skipping artifact upload")
 
-        if not self.skip == BICEP_PUBLISH:
-            # 3) Deploy NSD bicep
-            if not self.bicep_path:
-                # User has not passed in a bicep template, so we are deploying the default
-                # one produced from building the NSDV using this CLI
-                bicep_path = os.path.join(
-                    self.config.output_directory_for_build,
-                    NSD_BICEP_FILENAME,
-                )
-            message = (
-                f"Deploy bicep template for NSDV {self.config.nsd_version} "
-                f"into {self.config.publisher_resource_group_name} under publisher "
-                f"{self.config.publisher_name}"
-            )
-            print(message)
-            logger.info(message)
-            self.deploy_bicep_template(bicep_path, self.parameters)
-            print(
-                f"Deployed NSD {self.config.nsdg_name} "
-                f"version {self.config.nsd_version}."
-            )
-        else:
+        if self.skip == BICEP_PUBLISH:
             print("Skipping bicep nsd publish")
             print("Done")
+            return
+
+        # 3) Deploy NSD bicep
+        if not self.bicep_path:
+            # User has not passed in a bicep template, so we are deploying the default
+            # one produced from building the NSDV using this CLI
+            bicep_path = os.path.join(
+                self.config.output_directory_for_build,
+                NSD_BICEP_FILENAME,
+            )
+        message = (
+            f"Deploy bicep template for NSDV {self.config.nsd_version} "
+            f"into {self.config.publisher_resource_group_name} under publisher "
+            f"{self.config.publisher_name}"
+        )
+        print(message)
+        logger.info(message)
+        self.deploy_bicep_template(bicep_path, self.parameters)
+        print(
+            f"Deployed NSD {self.config.nsdg_name} "
+            f"version {self.config.nsd_version}."
+        )
 
     def deploy_manifest_template(self) -> None:
         """Deploy the bicep template defining the manifest."""
