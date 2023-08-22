@@ -12,9 +12,9 @@
 #   aosm nsd delete
 # --------------------------------------------------------------------------------------------
 
+import os
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from knack.log import get_logger
-import os
 from jinja2 import Template
 from .recording_processors import AcrTokenReplacer, SasUriReplacer
 
