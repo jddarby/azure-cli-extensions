@@ -223,7 +223,7 @@ def delete_published_definition(
         aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
     )
 
-    delly = ResourceDeleter(api_clients, config)
+    delly = ResourceDeleter(api_clients, config, cmd.cli_ctx)
     if definition_type == VNF:
         delly.delete_nfd(clean=clean, force=force)
     elif definition_type == CNF:
@@ -336,7 +336,7 @@ def delete_published_design(
         aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
     )
 
-    destroyer = ResourceDeleter(api_clients, config)
+    destroyer = ResourceDeleter(api_clients, config, cmd.cli_ctx)
     destroyer.delete_nsd(clean=clean, force=force)
 
 
