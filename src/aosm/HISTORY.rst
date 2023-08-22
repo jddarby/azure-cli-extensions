@@ -24,6 +24,7 @@ upcoming
 * Take Oras 0.1.19 to fix NSD Artifact upload on Windows
 * Support deploying multiple instances of the same NF in an SNS
 * Fix CNF publish on Windows by using Linux style paths in rendered NFD bicep templates (bicep always requires Linux style paths).
+* Add progress information for VHD upload
 
 0.2.0
 ++++++
