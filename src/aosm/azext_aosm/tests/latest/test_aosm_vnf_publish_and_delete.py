@@ -16,7 +16,7 @@ import os
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from knack.log import get_logger
 from jinja2 import Template
-from .recording_processors import AcrTokenReplacer, SasUriReplacer
+from .recording_processors import TokenReplacer, SasUriReplacer, BlobStoreUriReplacer
 
 
 logger = get_logger(__name__)
@@ -77,7 +77,7 @@ class VnfNsdTest(ScenarioTest):
         """
         super(VnfNsdTest, self).__init__(
             method_name,
-            recording_processors=[AcrTokenReplacer(), SasUriReplacer()]
+            recording_processors=[TokenReplacer(), SasUriReplacer(), BlobStoreUriReplacer()]
         )
 
     @ResourceGroupPreparer(name_prefix="cli_test_vnf_nsd_", location="uksouth")

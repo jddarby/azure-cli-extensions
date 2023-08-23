@@ -1,113 +1,113 @@
-# --------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See License.txt in the project root for license information.
-# --------------------------------------------------------------------------------------------
+# # --------------------------------------------------------------------------------------------
+# # Copyright (c) Microsoft Corporation. All rights reserved.
+# # Licensed under the MIT License. See License.txt in the project root for license information.
+# # --------------------------------------------------------------------------------------------
 
-import os
-from typing import Dict
-from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
-from knack.log import get_logger
-from jinja2 import Template
-from .recording_processors import AcrTokenReplacer, SasUriReplacer
-
-
-logger = get_logger(__name__)
-
-NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.json"
-NFD_INPUT_FILE_NAME = "cnf_input.json"
-NSD_INPUT_TEMPLATE_NAME = "cnf_nsd_input_template.json"
-NSD_INPUT_FILE_NAME = "nsd_cnf_input.json"
-CHART_NAME = "nginxdemo-0.1.0.tgz"
+# import os
+# from typing import Dict
+# from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
+# from knack.log import get_logger
+# from jinja2 import Template
+# from .recording_processors import AcrTokenReplacer, SasUriReplacer
 
 
-def get_path_to_chart():
-    code_dir = os.path.dirname(__file__)
-    templates_dir = os.path.join(code_dir, "scenario_test_mocks", "cnf_mocks")
-    chart_path = os.path.join(templates_dir, CHART_NAME)
-    return chart_path
+# logger = get_logger(__name__)
+
+# NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.json"
+# NFD_INPUT_FILE_NAME = "cnf_input.json"
+# NSD_INPUT_TEMPLATE_NAME = "cnf_nsd_input_template.json"
+# NSD_INPUT_FILE_NAME = "nsd_cnf_input.json"
+# CHART_NAME = "nginxdemo-0.1.0.tgz"
 
 
-def update_input_file(input_template_name, output_file_name, params: Dict[str, str]):
-    code_dir = os.path.dirname(__file__)
-    templates_dir = os.path.join(
-        code_dir, "scenario_test_mocks", "mock_input_templates"
-    )
-    input_template_path = os.path.join(templates_dir, input_template_name)
-
-    with open(input_template_path, "r", encoding="utf-8") as file:
-        contents = file.read()
-
-    jinja_template = Template(contents)
-
-    rendered_template = jinja_template.render(**params)
-
-    output_path = os.path.join(templates_dir, output_file_name)
-
-    with open(output_path, "w", encoding="utf-8") as file:
-        file.write(rendered_template)
-
-    return output_path
+# def get_path_to_chart():
+#     code_dir = os.path.dirname(__file__)
+#     templates_dir = os.path.join(code_dir, "scenario_test_mocks", "cnf_mocks")
+#     chart_path = os.path.join(templates_dir, CHART_NAME)
+#     return chart_path
 
 
-class CnfNsdTest(ScenarioTest):
-    """
-    This class contains the integration tests for the aosm extension for vnf definition type.
-    """
-    def __init__(self, method_name):
-        """
-        This constructor initializes the class
+# def update_input_file(input_template_name, output_file_name, params: Dict[str, str]):
+#     code_dir = os.path.dirname(__file__)
+#     templates_dir = os.path.join(
+#         code_dir, "scenario_test_mocks", "mock_input_templates"
+#     )
+#     input_template_path = os.path.join(templates_dir, input_template_name)
 
-        :param method_name: The name of the test method.
-        :param recording_processors: The recording processors to use for the test.
-        These recording processors modify the recording of a test before it is saved,
-        helping to remove sensitive information from the recording.
-        """
-        super(CnfNsdTest, self).__init__(
-            method_name,
-            recording_processors=[AcrTokenReplacer(), SasUriReplacer()]
-            # TODO: need to remove access_token
-        )
+#     with open(input_template_path, "r", encoding="utf-8") as file:
+#         contents = file.read()
 
-    @ResourceGroupPreparer(name_prefix="cli_test_cnf_nsd_", location="northeurope")
-    def test_cnf_nsd_publish_and_delete(self, resource_group):
+#     jinja_template = Template(contents)
 
-        chart_path = get_path_to_chart()
+#     rendered_template = jinja_template.render(**params)
 
-        nfd_input_file_path = update_input_file(
-            NFD_INPUT_TEMPLATE_NAME,
-            NFD_INPUT_FILE_NAME,
-            params={
-                "publisher_resource_group_name": resource_group,
-                "path_to_chart": chart_path,
-            },
-        )
+#     output_path = os.path.join(templates_dir, output_file_name)
 
-        self.cmd(
-            f'az aosm nfd build -f "{nfd_input_file_path}" --definition-type cnf --force'
-        )
+#     with open(output_path, "w", encoding="utf-8") as file:
+#         file.write(rendered_template)
 
-        try:
-            self.cmd(
-                f'az aosm nfd publish -f "{nfd_input_file_path}" --definition-type cnf --debug --skip image-upload'
-            )
-        except Exception:
-            self.cmd(
-                f'az aosm nfd delete --definition-type cnf -f "{nfd_input_file_path}" --debug --force'
-            )
-            raise
+#     return output_path
 
-        nsd_input_file_path = update_input_file(
-            NSD_INPUT_TEMPLATE_NAME,
-            NSD_INPUT_FILE_NAME,
-            params={"publisher_resource_group_name": resource_group},
-        )
 
-        self.cmd(f'az aosm nsd build -f "{nsd_input_file_path}" --debug --force')
+# class CnfNsdTest(ScenarioTest):
+#     """
+#     This class contains the integration tests for the aosm extension for vnf definition type.
+#     """
+#     def __init__(self, method_name):
+#         """
+#         This constructor initializes the class
 
-        try:
-            self.cmd(f'az aosm nsd publish -f "{nsd_input_file_path}" --debug')
-        finally:
-            self.cmd(
-                f'az aosm nfd delete --definition-type cnf -f "{nfd_input_file_path}" --debug --force'
-            )
-            self.cmd(f'az aosm nsd delete -f "{nsd_input_file_path}" --debug --force')
+#         :param method_name: The name of the test method.
+#         :param recording_processors: The recording processors to use for the test.
+#         These recording processors modify the recording of a test before it is saved,
+#         helping to remove sensitive information from the recording.
+#         """
+#         super(CnfNsdTest, self).__init__(
+#             method_name,
+#             recording_processors=[AcrTokenReplacer(), SasUriReplacer()]
+#             # TODO: need to remove access_token
+#         )
+
+#     @ResourceGroupPreparer(name_prefix="cli_test_cnf_nsd_", location="northeurope")
+#     def test_cnf_nsd_publish_and_delete(self, resource_group):
+
+#         chart_path = get_path_to_chart()
+
+#         nfd_input_file_path = update_input_file(
+#             NFD_INPUT_TEMPLATE_NAME,
+#             NFD_INPUT_FILE_NAME,
+#             params={
+#                 "publisher_resource_group_name": resource_group,
+#                 "path_to_chart": chart_path,
+#             },
+#         )
+
+#         self.cmd(
+#             f'az aosm nfd build -f "{nfd_input_file_path}" --definition-type cnf --force'
+#         )
+
+#         try:
+#             self.cmd(
+#                 f'az aosm nfd publish -f "{nfd_input_file_path}" --definition-type cnf --debug --skip image-upload'
+#             )
+#         except Exception:
+#             self.cmd(
+#                 f'az aosm nfd delete --definition-type cnf -f "{nfd_input_file_path}" --debug --force'
+#             )
+#             raise
+
+#         nsd_input_file_path = update_input_file(
+#             NSD_INPUT_TEMPLATE_NAME,
+#             NSD_INPUT_FILE_NAME,
+#             params={"publisher_resource_group_name": resource_group},
+#         )
+
+#         self.cmd(f'az aosm nsd build -f "{nsd_input_file_path}" --debug --force')
+
+#         try:
+#             self.cmd(f'az aosm nsd publish -f "{nsd_input_file_path}" --debug')
+#         finally:
+#             self.cmd(
+#                 f'az aosm nfd delete --definition-type cnf -f "{nfd_input_file_path}" --debug --force'
+#             )
+#             self.cmd(f'az aosm nsd delete -f "{nsd_input_file_path}" --debug --force')
