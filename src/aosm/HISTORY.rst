@@ -25,6 +25,7 @@ upcoming
 * Support deploying multiple instances of the same NF in an SNS
 * Fix CNF publish on Windows by using Linux style paths in rendered NFD bicep templates (bicep always requires Linux style paths).
 * Add progress information for VHD upload
+* Change optional argument from `manifest_parameters_json_file` to `manifest_params_file` to appease linter.
 
 0.2.0
 ++++++
