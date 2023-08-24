@@ -3,7 +3,7 @@
 Release History
 ===============
 
-unreleased
+upcoming
 ++++++++++
 * Added a `--clean` flag to the NSD `delete` command. This flag will delete the NSDG on top of the other resources deleted by the `delete` command.
 * Added integration tests for `publish` and `delete` commands.
@@ -25,6 +25,8 @@ unreleased
 * Support deploying multiple instances of the same NF in an SNS
 * Fix CNF publish on Windows by using Linux style paths in rendered NFD bicep templates (bicep always requires Linux style paths).
 * Re-order publish steps so that artifacts are uploaded before the NFD/NSD is published.
+* Add progress information for VHD upload
+* Change optional argument from `manifest_parameters_json_file` to `manifest_params_file` to appease linter.
 
 0.2.0
 ++++++
