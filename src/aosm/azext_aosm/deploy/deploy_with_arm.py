@@ -544,17 +544,29 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         # Add a timestamp to the deployment name to ensure it is unique
         deployment_name = f"AOSM_CLI_deployment_{current_time}"
 
-        validation = self.api_clients.resource_client.deployments.begin_validate(
-            resource_group_name=resource_group,
-            deployment_name=deployment_name,
-            parameters={
-                "properties": {
-                    "mode": "Incremental",
-                    "template": template,
-                    "parameters": parameters,
-                }
-            },
-        )
+        validation_attempts = 0
+
+        # Validation is automatically re-attempted in live runs, but not in test playback,
+        # causing them to fail. This explicitly re-attempts validation to ensure the tests pass.
+        while validation_attempts < 2:
+            try:
+                validation = self.api_clients.resource_client.deployments.begin_validate(
+                    resource_group_name=resource_group,
+                    deployment_name=deployment_name,
+                    parameters={
+                        "properties": {
+                            "mode": "Incremental",
+                            "template": template,
+                            "parameters": parameters,
+                        }
+                    },
+                )
+                break
+            except:
+                validation_attempts += 1
+
+                if validation_attempts == 2:
+                    raise
 
         validation_res = validation.result()
         logger.debug("Validation Result %s", validation_res)
