@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 #
-# This is an integration tests for the aosm extension. It tests the following commands for the
+# Integration tests for the aosm extension. They test the following commands for the
 # cnf definition type:
 #   aosm nfd build
 #   aosm nfd publish
