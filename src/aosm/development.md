@@ -142,7 +142,7 @@ python-static-checks fmt
 ```
 
 ### Tests
-The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command (you can optionally use the `--live` flag with this command as some integration tests are run only in live mode). All tests are expected to pass. All unit tests and Integration tests are run as part of the pipeline. 
+The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command (you can optionally use the `--live` flag with this command as some integration tests are run only in live mode, e.g. CNF tests). All tests are expected to pass. All unit tests and Integration tests are run as part of the pipeline. 
 ### Unit tests
 To get code coverage run:
 ```bash
