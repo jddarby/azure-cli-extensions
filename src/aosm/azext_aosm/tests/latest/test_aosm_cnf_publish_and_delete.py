@@ -61,7 +61,7 @@ def update_input_file(input_template_name, output_file_name, params: Dict[str, s
 
 class CnfNsdTest(LiveScenarioTest):
     """
-    This class contains the integration tests for the aosm extension for cnf definition type.
+    Integration tests for the aosm extension for cnf definition type.
 
     This test uses Live Scenario Test because it depends on using the `az login` command which
     does not work when playing back from the recording.
