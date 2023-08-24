@@ -387,6 +387,7 @@ def publish_design(
         manifest_bicep_path=manifest_file,
         manifest_parameters_json_file=manifest_parameters_json_file,
         skip=skip,
+        cli_ctx=cmd.cli_ctx,
     )
 
     deployer.deploy_nsd_from_bicep()

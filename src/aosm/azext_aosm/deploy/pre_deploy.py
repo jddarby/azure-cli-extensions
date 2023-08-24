@@ -118,12 +118,12 @@ class PreDeployerViaSDK:
                 f"Creating publisher {publisher_name} in resource group"
                 f" {resource_group_name}"
             )
-            pub = self.api_clients.aosm_client.publishers.begin_create_or_update(
+            poller = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
                 publisher_name=publisher_name,
                 parameters=Publisher(location=location, scope="Private"),
             )
-            LongRunningOperation(self.cli_ctx, "Creating publisher...")(pub)
+            LongRunningOperation(self.cli_ctx, "Creating publisher...")(poller)
 
     def ensure_config_publisher_exists(self) -> None:
         """
@@ -439,7 +439,10 @@ class PreDeployerViaSDK:
         :param location: The location of the network service design group.
         :type location: str
         """
-
+        print(
+            "Creating Network Service Design Group %s if it does not exist",
+            nsdg_name,
+        )
         logger.info(
             "Creating Network Service Design Group %s if it does not exist",
             nsdg_name,

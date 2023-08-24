@@ -632,7 +632,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         Convert a bicep template into an ARM template.
 
         :param bicep_template_path: The path to the bicep template to be converted
-                :raise RuntimeError if az CLI is not installed.
+
         :return: Output dictionary from the bicep template.
         """
         logger.debug("Converting %s to ARM template", bicep_template_path)
