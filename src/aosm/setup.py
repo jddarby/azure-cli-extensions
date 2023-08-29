@@ -33,7 +33,7 @@ CLASSIFIERS = [
 ]
 
 # TODO: Add any additional SDK dependencies here
-DEPENDENCIES = ["oras~=0.1.19", "azure-storage-blob>=12.15.0", "jinja2>=3.1.2", "tiktoken>=0.4.0", "openai>=0.27.8", "azure-identity>=1.13.0", "setuptools==67.7.2"]
+DEPENDENCIES = ["oras~=0.1.19", "azure-storage-blob>=12.15.0", "jinja2>=3.1.2", "tiktoken>=0.4.0", "openai>=0.27.8", "azure-identity>=1.13.0", "setuptools==67.7.2", "semantic-kernel>=0.3.10.dev0"]
 
 with open("README.md", "r", encoding="utf-8") as f:
     README = f.read()
