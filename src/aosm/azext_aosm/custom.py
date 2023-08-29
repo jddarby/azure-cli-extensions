@@ -10,6 +10,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
+from azure.core import exceptions as azure_exceptions
 from azure.cli.core.azclierror import (
     CLIInternalError,
     InvalidArgumentValueError,
@@ -17,7 +18,7 @@ from azure.cli.core.azclierror import (
 )
 from knack.log import get_logger
 
-from azext_aosm._client_factory import cf_acr_registries, cf_resources
+from azext_aosm._client_factory import cf_acr_registries, cf_resources, cf_features
 from azext_aosm._configuration import (
     CNFConfiguration,
     Configuration,
@@ -32,7 +33,15 @@ from azext_aosm.generate_nfd.cnf_nfd_generator import CnfNfdGenerator
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.generate_nfd.vnf_nfd_generator import VnfNfdGenerator
 from azext_aosm.generate_nsd.nsd_generator import NSDGenerator
-from azext_aosm.util.constants import CNF, DeployableResourceTypes, NSD, SkipSteps, VNF
+from azext_aosm.util.constants import (
+    AOSM_FEATURE_NAMESPACE,
+    AOSM_REQUIRED_FEATURES,
+    CNF,
+    DeployableResourceTypes,
+    NSD,
+    SkipSteps,
+    VNF,
+    )
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
@@ -135,6 +144,40 @@ def _generate_nfd(
     nfd_generator.generate_nfd()
 
 
+def _check_features_enabled(cmd):
+    """Check that the required Azure features are enabled on the subscription."""
+    features_client = cf_features(cmd.cli_ctx)
+    # Check that the required features are enabled on the subscription
+    for feature in AOSM_REQUIRED_FEATURES:
+        try:
+            feature_result = features_client.features.get(
+                resource_provider_namespace=AOSM_FEATURE_NAMESPACE,
+                feature_name=feature,
+            )
+            if not feature_result or not feature_result.properties.state == "Registered":
+                # We don't want to log the name of the feature to the user as it is
+                # a hidden feature.  We do want to log it to the debug log though.
+                logger.debug(
+                    "Feature %s is not registered on the subscription.",
+                    feature
+                )
+                raise CLIInternalError(
+                    "Your Azure subscription has not been fully onboarded to AOSM. "
+                    "Please see the AOSM onboarding documentation for more information."
+                )
+        except azure_exceptions.ResourceNotFoundError as rerr:
+            # If the feature is not found, it is not regiestered, but also something has
+            # gone wrong with the CLI code and onboarding instructions. 
+            logger.debug(
+                "Feature not found error - Azure doesn't recognise the feature %s."
+                "This indicates a coding error or error with the AOSM onboarding "
+                "instructions.", feature)
+            logger.debug(rerr)
+            raise CLIInternalError(
+                "CLI encountered an error checking that your "
+                "subscription has been onboarded to AOSM. Please raise an issue against"
+                " the CLI.") from rerr
+
 def publish_definition(
     cmd,
     client: HybridNetworkManagementClient,
@@ -166,6 +209,9 @@ def publish_definition(
         file for manifest parameters
     :param skip: options to skip, either publish bicep or upload artifacts
     """
+    # Check that the required features are enabled on the subscription
+    _check_features_enabled(cmd)
+
     print("Publishing definition.")
     api_clients = ApiClients(
         aosm_client=client,
@@ -215,6 +261,9 @@ def delete_published_definition(
         with care.
     :param force: if True, will not prompt for confirmation before deleting the resources.
     """
+    # Check that the required features are enabled on the subscription
+    _check_features_enabled(cmd)
+
     config = _get_config_from_file(
         config_file=config_file, configuration_type=definition_type
     )
@@ -330,6 +379,9 @@ def delete_published_design(
     :param clean: if True, will delete the NSDG on top of the other resources.
     :param force: if True, will not prompt for confirmation before deleting the resources.
     """
+    # Check that the required features are enabled on the subscription
+    _check_features_enabled(cmd)
+
     config = _get_config_from_file(config_file=config_file, configuration_type=NSD)
 
     api_clients = ApiClients(
@@ -368,6 +420,8 @@ def publish_design(
                         file for manifest parameters
     :param skip: options to skip, either publish bicep or upload artifacts
     """
+    # Check that the required features are enabled on the subscription
+    _check_features_enabled(cmd)
 
     print("Publishing design.")
     api_clients = ApiClients(

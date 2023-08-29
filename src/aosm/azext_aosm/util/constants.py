@@ -98,3 +98,12 @@ SOURCE_ACR_REGEX = (
     r".*\/resourceGroups\/(?P<resource_group>[^\/]*)\/providers\/Microsoft."
     r"ContainerRegistry\/registries\/(?P<registry_name>[^\/]*)"
 )
+
+# Required features for AOSM publish aka deploy
+AOSM_FEATURE_NAMESPACE = "Microsoft.HybridNetwork"
+AOSM_REQUIRED_FEATURES = [
+    "Allow-2023-09-01",  # TODO - CONFIRM THIS IS THE RIGHT FEATURE
+    "AllowPreReleaseFeatures",  # DELETE THIS BEFORE GA
+    "Allow-2023-04-01-preview",  # DELETE THIS BEFORE GA
+    "MsiForResourceEnabled",  # DELETE THIS BEFORE GA ????
+]
