@@ -102,8 +102,5 @@ SOURCE_ACR_REGEX = (
 # Required features for AOSM publish aka deploy
 AOSM_FEATURE_NAMESPACE = "Microsoft.HybridNetwork"
 AOSM_REQUIRED_FEATURES = [
-    "Allow-2023-09-01",  # TODO - CONFIRM THIS IS THE RIGHT FEATURE
-    "AllowPreReleaseFeatures",  # DELETE THIS BEFORE GA
-    "Allow-2023-04-01-preview",  # DELETE THIS BEFORE GA
-    "MsiForResourceEnabled",  # DELETE THIS BEFORE GA ????
+    "Allow-2023-09-01",
 ]
