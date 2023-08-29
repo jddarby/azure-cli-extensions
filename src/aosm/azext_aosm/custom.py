@@ -10,15 +10,15 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
-from azure.core import exceptions as azure_exceptions
 from azure.cli.core.azclierror import (
     CLIInternalError,
     InvalidArgumentValueError,
     UnclassifiedUserFault,
 )
+from azure.core import exceptions as azure_exceptions
 from knack.log import get_logger
 
-from azext_aosm._client_factory import cf_acr_registries, cf_resources, cf_features
+from azext_aosm._client_factory import cf_acr_registries, cf_features, cf_resources
 from azext_aosm._configuration import (
     CNFConfiguration,
     Configuration,
@@ -37,11 +37,11 @@ from azext_aosm.util.constants import (
     AOSM_FEATURE_NAMESPACE,
     AOSM_REQUIRED_FEATURES,
     CNF,
-    DeployableResourceTypes,
     NSD,
-    SkipSteps,
     VNF,
-    )
+    DeployableResourceTypes,
+    SkipSteps,
+)
 from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
@@ -154,12 +154,14 @@ def _check_features_enabled(cmd):
                 resource_provider_namespace=AOSM_FEATURE_NAMESPACE,
                 feature_name=feature,
             )
-            if not feature_result or not feature_result.properties.state == "Registered":
+            if (
+                not feature_result
+                or not feature_result.properties.state == "Registered"
+            ):
                 # We don't want to log the name of the feature to the user as it is
                 # a hidden feature.  We do want to log it to the debug log though.
                 logger.debug(
-                    "Feature %s is not registered on the subscription.",
-                    feature
+                    "Feature %s is not registered on the subscription.", feature
                 )
                 raise CLIInternalError(
                     "Your Azure subscription has not been fully onboarded to AOSM. "
@@ -167,16 +169,20 @@ def _check_features_enabled(cmd):
                 )
         except azure_exceptions.ResourceNotFoundError as rerr:
             # If the feature is not found, it is not regiestered, but also something has
-            # gone wrong with the CLI code and onboarding instructions. 
+            # gone wrong with the CLI code and onboarding instructions.
             logger.debug(
                 "Feature not found error - Azure doesn't recognise the feature %s."
                 "This indicates a coding error or error with the AOSM onboarding "
-                "instructions.", feature)
+                "instructions.",
+                feature,
+            )
             logger.debug(rerr)
             raise CLIInternalError(
                 "CLI encountered an error checking that your "
                 "subscription has been onboarded to AOSM. Please raise an issue against"
-                " the CLI.") from rerr
+                " the CLI."
+            ) from rerr
+
 
 def publish_definition(
     cmd,
