@@ -73,10 +73,10 @@ Generic expression parser
 Real-time status views
 FTP support (by a separate module)
 """)
-    await kernel.memory.save_information_async("fake-repo", id="nf3", text="nf3 is not a real network function and couldn't be used in a network service design.")
-    await kernel.memory.save_information_async("fake-repo", id="nf4", text="nf4 is a retired network function.")
-    await kernel.memory.save_information_async("fake-repo", id="nf5", text="nf5 is a highly unrealiable network function that is being retired next Monday.")
-    await kernel.memory.save_information_async("fake-repo", id="nf6", text="nf6 is not a network function.")
+    await kernel.memory.save_information_async("fake-repo", id="nf3", text="nf3 is the best network function for load balancing.")
+    await kernel.memory.save_information_async("fake-repo", id="nf4", text="nf4 is the best network functions for security.")
+    await kernel.memory.save_information_async("fake-repo", id="nf5", text="nf5 is the best network function for hosting any proxy server.")
+    await kernel.memory.save_information_async("fake-repo", id="nf6", text="nf6 is the best network function for fault tolerance and recovery.")
 
 async def examples(kernel) -> None:
     questions = [
@@ -97,7 +97,8 @@ async def completion_api(
     sk_prompt = """
     The system can suggest the most appropriate network service design based on its memories of network functions is has access to.
     Do not suggest network functions outside of the ones stored in your volatile memory store.
-    If more than one network function matches the needs of the user, the most appropriate one's name and description.
+    If more than one network function matches the needs of the user, suggest all compatible options and let the user choose which one they prefer.
+    A network service design can consist of multiple network functions based on the needs of the user.
     It can say 'I don't know' if it doesn't have enough information to give an appropriate network function.
     
     Examples of network functions the system can recommend:
