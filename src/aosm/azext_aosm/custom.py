@@ -168,7 +168,7 @@ def _check_features_enabled(cmd):
                     "Please see the AOSM onboarding documentation for more information."
                 )
         except azure_exceptions.ResourceNotFoundError as rerr:
-            # If the feature is not found, it is not regiestered, but also something has
+            # If the feature is not found, it is not registered, but also something has
             # gone wrong with the CLI code and onboarding instructions.
             logger.debug(
                 "Feature not found error - Azure doesn't recognise the feature %s."
