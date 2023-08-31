@@ -15,6 +15,7 @@ from azure.cli.core.azclierror import (
     InvalidArgumentValueError,
     UnclassifiedUserFault,
 )
+from azure.cli.core.commands import AzCliCommand
 from azure.core import exceptions as azure_exceptions
 from knack.log import get_logger
 
@@ -58,10 +59,11 @@ def build_definition(
     """
     Build a definition.
 
-    :param cmd:
-    :type cmd: _type_
+    :param definition_type: VNF or CNF
     :param config_file: path to the file
     :param definition_type: VNF, CNF
+    :param interactive - whether to prompt for input when creating deploy parameters
+                         mapping files
     :param force: force the build even if the design has already been built
     """
 
@@ -144,8 +146,14 @@ def _generate_nfd(
     nfd_generator.generate_nfd()
 
 
-def _check_features_enabled(cmd):
-    """Check that the required Azure features are enabled on the subscription."""
+def _check_features_enabled(cmd: AzCliCommand):
+    """
+    Check that the required Azure features are enabled on the subscription.
+
+    :param cmd: The AzCLICommand object for the original command that was run, we use
+        this to retrieve the CLI context in order to get the features client for access
+        to the features API.
+    """
     features_client = cf_features(cmd.cli_ctx)
     # Check that the required features are enabled on the subscription
     for feature in AOSM_REQUIRED_FEATURES:
@@ -185,7 +193,7 @@ def _check_features_enabled(cmd):
 
 
 def publish_definition(
-    cmd,
+    cmd: AzCliCommand,
     client: HybridNetworkManagementClient,
     definition_type,
     config_file,
@@ -198,8 +206,13 @@ def publish_definition(
     """
     Publish a generated definition.
 
-    :param cmd:
-    :param client:
+    :param cmd: The AzCLICommand object for the command that was run, we use this to
+                find the CLI context (from which, for example, subscription id and
+                credentials can be found, and other clients can be generated.)
+    :param client: The AOSM client. This is created in _client_factory.py and passed
+                   in by commands.py - we could alternatively just use cf_aosm as
+                   we use cf_resources, but other extensions seem to pass a client
+                   around like this.
     :type client: HybridNetworkManagementClient
     :param definition_type: VNF or CNF
     :param config_file: Path to the config file for the NFDV
@@ -250,7 +263,7 @@ def publish_definition(
 
 
 def delete_published_definition(
-    cmd,
+    cmd: AzCliCommand,
     client: HybridNetworkManagementClient,
     definition_type,
     config_file,
@@ -260,6 +273,13 @@ def delete_published_definition(
     """
     Delete a published definition.
 
+    :param cmd: The AzCLICommand object for the command that was run, we use this to
+                find the CLI context (from which, for example, subscription id and
+                credentials can be found, and other clients can be generated.)
+    :param client: The AOSM client. This is created in _client_factory.py and passed
+                   in by commands.py - we could alternatively just use cf_aosm as
+                   we use cf_resources, but other extensions seem to pass a client
+                   around like this.
     :param definition_type: CNF or VNF
     :param config_file: Path to the config file
     :param clean: if True, will delete the NFDG, artifact stores and publisher too.
@@ -337,14 +357,21 @@ def _generate_config(configuration_type: str, output_file: str = "input.json"):
 
 
 def build_design(
-    cmd, client: HybridNetworkManagementClient, config_file: str, force: bool = False
+    cmd: AzCliCommand,
+    client: HybridNetworkManagementClient,
+    config_file: str,
+    force: bool = False,
 ):
     """
     Build a Network Service Design.
 
-    :param cmd:
-    :type cmd: _type_
-    :param client:
+    :param cmd: The AzCLICommand object for the command that was run, we use this to
+                find the CLI context (from which, for example, subscription id and
+                credentials can be found, and other clients can be generated.)
+    :param client: The AOSM client. This is created in _client_factory.py and passed
+                   in by commands.py - we could alternatively just use cf_aosm as
+                   we use cf_resources, but other extensions seem to pass a client
+                   around like this.
     :type client: HybridNetworkManagementClient
     :param config_file: path to the file
     :param force: force the build, even if the design has already been built
@@ -369,7 +396,7 @@ def build_design(
 
 
 def delete_published_design(
-    cmd,
+    cmd: AzCliCommand,
     client: HybridNetworkManagementClient,
     config_file,
     clean=False,
@@ -378,6 +405,13 @@ def delete_published_design(
     """
     Delete a published NSD.
 
+    :param cmd: The AzCLICommand object for the command that was run, we use this to
+                find the CLI context (from which, for example, subscription id and
+                credentials can be found, and other clients can be generated.)
+    :param client: The AOSM client. This is created in _client_factory.py and passed
+                   in by commands.py - we could alternatively just use cf_aosm as
+                   we use cf_resources, but other extensions seem to pass a client
+                   around like this.
     :param config_file: Path to the config file
     :param clean: if True, will delete the NSDG, artifact stores and publisher too.
                   Defaults to False. Only works if no resources have those as a parent.
@@ -399,7 +433,7 @@ def delete_published_design(
 
 
 def publish_design(
-    cmd,
+    cmd: AzCliCommand,
     client: HybridNetworkManagementClient,
     config_file,
     design_file: Optional[str] = None,
@@ -411,8 +445,13 @@ def publish_design(
     """
     Publish a generated design.
 
-    :param cmd:
-    :param client:
+    :param cmd: The AzCLICommand object for the command that was run, we use this to
+                find the CLI context (from which, for example, subscription id and
+                credentials can be found, and other clients can be generated.)
+    :param client: The AOSM client. This is created in _client_factory.py and passed
+                   in by commands.py - we could alternatively just use cf_aosm as
+                   we use cf_resources, but other extensions seem to pass a client
+                   around like this.
     :type client: HybridNetworkManagementClient
     :param config_file: Path to the config file for the NSDV
     :param design_file: Optional path to an override bicep template to deploy the NSDV.
