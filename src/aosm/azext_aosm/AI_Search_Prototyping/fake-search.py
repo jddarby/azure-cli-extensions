@@ -31,7 +31,8 @@ TLS/SSL support
 STARTTLS support
 SMTP, POP3, and IMAP proxy
 Requires authentication using an external HTTP server or by an authentication script
-Other features include upgrading executable and configuration without client connections loss, and a module-based architecture with both core and third-party module support.""")
+Other features include upgrading executable and configuration without client connections loss, and a module-based architecture with both core and third-party module support.
+""")
     await kernel.memory.save_information_async("fake-repo", id="nf2", text="""
 nf2 is a powerful network function that supports a variety of features, many implemented as compiled modules which extend the core functionality. These can range from authentication schemes to supporting server-side programming languages such as Perl, Python, Tcl and PHP. Popular authentication modules include mod_access, mod_auth, mod_digest, and mod_auth_digest, the successor to mod_digest. A sample of other features include Secure Sockets Layer and Transport Layer Security support (mod_ssl), a proxy module (mod_proxy), a URL rewriting module (mod_rewrite), custom log files (mod_log_config), and filtering support (mod_include and mod_ext_filter).
 Popular compression methods on nf2 include the external extension module, mod_gzip, implemented to help with reduction of the size (weight) of web pages served over HTTP. ModSecurity is an open source intrusion detection and prevention engine for Web applications. nf2 logs can be analyzed through a Web browser using free scripts, such as AWStats/W3Perl or Visitors.
@@ -73,10 +74,11 @@ Generic expression parser
 Real-time status views
 FTP support (by a separate module)
 """)
-    await kernel.memory.save_information_async("fake-repo", id="nf3", text="nf3 is the best network function for load balancing.")
-    await kernel.memory.save_information_async("fake-repo", id="nf4", text="nf4 is the best network functions for security.")
-    await kernel.memory.save_information_async("fake-repo", id="nf5", text="nf5 is the best network function for hosting any proxy server.")
-    await kernel.memory.save_information_async("fake-repo", id="nf6", text="nf6 is the best network function for fault tolerance and recovery.")
+    await kernel.memory.save_information_async("fake-repo", id="nf3", text="nf3 is great for load balancing and security.")
+    await kernel.memory.save_information_async("fake-repo", id="nf4", text="nf4 is great for security and hosting any proxy server.")
+    await kernel.memory.save_information_async("fake-repo", id="nf5", text="nf5 is great for hosting any proxy server and fault tolerance and recovery.")
+    #await kernel.memory.save_information_async("fake-repo", id="nf6", text="nf6 is great for fault tolerance and recovery and load balancing.")
+    await kernel.memory.save_information_async("fake-repo", id="nf6", text="nf6 is a great network function for configuring a resource bundle, AKS cluster, data retention, persistent storage, DNS zone, Azure Key Vault, managed identity, and encryption settings. It also includes properties for configuring the nf6 Search service and inter-nf6 Search interface encryption.")
 
 async def examples(kernel) -> None:
     questions = [
@@ -89,7 +91,9 @@ async def examples(kernel) -> None:
     ]
 
     for question in questions:
+        print(f"\nQuestion: {question}")
         result = await kernel.memory.search_async("fake-repo", question)
+        print(f"Answer: {result[0].text}")
 
 async def completion_api(
         kernel: sk.Kernel,
@@ -97,7 +101,9 @@ async def completion_api(
     sk_prompt = """
     The system can suggest the most appropriate network service design based on its memories of network functions is has access to.
     Do not suggest network functions outside of the ones stored in your volatile memory store.
-    If more than one network function matches the needs of the user, suggest all compatible options and let the user choose which one they prefer.
+    If more than one network function matches the needs of the user, suggest all compatible options in the following format:
+    Network Function - reason for choosing network function.
+    Let the user choose which one they prefer.
     A network service design can consist of multiple network functions based on the needs of the user.
     It can say 'I don't know' if it doesn't have enough information to give an appropriate network function.
     
