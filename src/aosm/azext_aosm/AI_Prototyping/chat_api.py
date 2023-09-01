@@ -9,12 +9,11 @@ credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/",credential=credential)
 key = client.get_secret("AIKey1")
 
+#Preview API can display content filter messages
 openai.api_type = "azure"
 openai.api_version = "2023-06-01-preview" 
 openai.api_base = "https://azopenai-aiops.openai.azure.com/"
 openai.api_key = key.value
-#The basic function to create a response using the Chat Completion API can be found under the "Creating a Basic Conversation Loop" section in the following link:
-#https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
 
 message = """
 Engage in a conversation with the user to obtain relevant information to form a summary of the properties of a network service design.
@@ -52,14 +51,14 @@ Don't ask for multiple fields in one question.
 Always display the summary in a JSON format as shown above.
 Don't ask for information again if you can already fill in a field from a user input.
 """
-
+#System message specifies how the LLM should behave
 conversation=[{"role": "system", "content": message}]
-
 max_response_tokens = 500
 token_limit = 4096
 
 def num_tokens_from_messages(messages):
     """Count the number of tokens being processed by the model using the BPE tokeniser for gpt-3.5-turbo.
+    https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions#preventing-unsafe-user-inputs
 
     Args:
         messages (dictionary): Chat transcript including previous user inputs and system responses.
@@ -67,8 +66,8 @@ def num_tokens_from_messages(messages):
     Returns:
         num_tokens (integer): Number of tokens in the chat transcript.
     """
-    encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
     #https://github.com/openai/tiktoken/blob/main/README.md
+    encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
     num_tokens = 0
     for message in messages:
         num_tokens += 4 #All messages have <im_start>{role/name}\n{content}<im_end>\n
@@ -78,45 +77,52 @@ def num_tokens_from_messages(messages):
                 num_tokens += -1
             num_tokens += 2 #All reponses by the system have <im_start>assistant
             return num_tokens
-#This function can be found in the "Managing Conversations" section of the following link:
-#https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions#preventing-unsafe-user-inputs
 
 def ai_assistance():
     print("Welcome to the NSD Generation Copilot! \n Please ensure you are connected to the appropriate VNET. \n Chat to the Copilot to tell it more about the NSD you want to build. \n Once you are happy with your design, enter 'build'.")
     while True:
         try:
+            #Process user input
             user_input = input("User: ")
             if user_input == "build":
+                #Read last assistant message
                 print("Thank you! I am now building the NSD based on the information you have given.")
                 text = response["choices"][0]["message"]["content"]
+                #Identify JSON section
                 begin = text.find("{")
                 end = text.rfind("}")
                 string = text[begin:end+1]
+                #Write to a separate file
                 nsd = json.loads(string)
                 file_path = "AI_Prototyping/input.json"
                 with open(file_path, "w", encoding="utf-8") as json_file:
                     json.dump(nsd, json_file, indent=4, ensure_ascii=False)
                 return file_path
                 break
+            #Add the user message to chat transcript
             conversation.append({"role": "user", "content": user_input})
+            #Find the number of tokens up till the user's last messaeg
             conv_history_tokens = num_tokens_from_messages(conversation)
+            #Assume the LLM responds with the maximum number of tokens and delete the oldest message in the transcript (after the system message) if it exceeds the limit
             while conv_history_tokens + max_response_tokens >= token_limit:
                 del conversation[1]
                 conv_history_tokens = num_tokens_from_messages(conversation)
+            #Call the chat completion service with the gpt-3.5-turbo model to generate a response
             response = openai.ChatCompletion.create(
                 engine="gpt35depl1", 
                 messages = conversation,
                 max_tokens=max_response_tokens,
                 temperature=0.5
                 )
+            #Low temperature is less creative, high temperature is more creative
             conversation.append({"role": "assistant", "content": response["choices"][0]["message"]["content"]})
+            #Add assistant's response to the chat transcript and print it out
             print("\n" + "ChatBot: " + response['choices'][0]['message']['content'] + "\n")
-        
+        #Display filter categories and severity if triggered
         except openai.error.InvalidRequestError as e:
             if e.error.code == "content_filter" and e.error.innererror:
                 content_filter_result = e.error.innererror.content_filter_result
                 for category, details in content_filter_result.items():
                     print(f"{category}:\n filtered={details['filtered']}\n severity={details['severity']}")
-                    print("Your prompt was filtered, please try to phrase your request more appropriately.")
-        #This code can be found under the "Annotations Preview" section in the following document:
+                print("Your prompt was filtered, please try to phrase your request more appropriately.")
         #https://learn.microsoft.com/en-gb/azure/ai-services/openai/concepts/content-filter
