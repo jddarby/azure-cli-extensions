@@ -274,7 +274,7 @@ class TestNSDGenerator:
 
             try:
                 generate_design_config()
-                assert os.path.exists("input.json")
+                assert os.path.exists("input-nsd.json")
             finally:
                 os.chdir(starting_directory)
 

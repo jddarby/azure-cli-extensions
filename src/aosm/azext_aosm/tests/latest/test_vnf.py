@@ -22,7 +22,7 @@ class TestVNF(unittest.TestCase):
 
             try:
                 generate_definition_config("vnf")
-                assert os.path.exists("input.json")
+                assert os.path.exists("input-nfd.json")
             finally:
                 os.chdir(starting_directory)
 

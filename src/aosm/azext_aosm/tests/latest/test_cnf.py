@@ -15,14 +15,14 @@ mock_cnf_folder = ((Path(__file__).parent) / "mock_cnf").resolve()
 
 class TestCNF(unittest.TestCase):
     def test_generate_config(self):
-        """Test generating a config file for a VNF."""
+        """Test generating a config file for a CNF."""
         starting_directory = os.getcwd()
         with TemporaryDirectory() as test_dir:
             os.chdir(test_dir)
 
             try:
                 generate_definition_config("cnf")
-                assert os.path.exists("input.json")
+                assert os.path.exists("input-nfd.json")
             finally:
                 os.chdir(starting_directory)
 
