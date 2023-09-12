@@ -15,6 +15,7 @@ openai.api_version = "2023-06-01-preview"
 openai.api_base = "https://azopenai-aiops.openai.azure.com/"
 openai.api_key = key.value
 
+#System message specifies how the LLM should behave
 message = """
 Engage in a conversation with the user to obtain relevant information to form a summary of the properties of a network service design.
 ----
@@ -51,13 +52,13 @@ Don't ask for multiple fields in one question.
 Always display the summary in a JSON format as shown above.
 Don't ask for information again if you can already fill in a field from a user input.
 """
-#System message specifies how the LLM should behave
 conversation=[{"role": "system", "content": message}]
 max_response_tokens = 500
 token_limit = 4096
 
 def num_tokens_from_messages(messages):
-    """Count the number of tokens being processed by the model using the BPE tokeniser for gpt-3.5-turbo.
+    """
+    Count the number of tokens being processed by the model using the BPE tokeniser for gpt-3.5-turbo.
     https://learn.microsoft.com/en-gb/azure/ai-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions#preventing-unsafe-user-inputs
 
     Args:
@@ -79,6 +80,12 @@ def num_tokens_from_messages(messages):
             return num_tokens
 
 def ai_assistance():
+    """
+    Outputs an NSD configuration based on user inputs using a chat completion service and gpt-3.5-turbo.
+
+    Returns:
+        config (file): A configuration for an NSD.
+    """
     print("Welcome to the NSD Generation Copilot! \n Please ensure you are connected to the appropriate VNET. \n Chat to the Copilot to tell it more about the NSD you want to build. \n Once you are happy with your design, enter 'build'.")
     while True:
         try:
@@ -103,7 +110,7 @@ def ai_assistance():
             conversation.append({"role": "user", "content": user_input})
             #Find the number of tokens up till the user's last messaeg
             conv_history_tokens = num_tokens_from_messages(conversation)
-            #Assume the LLM responds with the maximum number of tokens and delete the oldest message in the transcript (after the system message) if it exceeds the limit
+            #Assume the LLM responds with the maximum number of tokens and delete the oldest message in the transcript if it exceeds the limit
             while conv_history_tokens + max_response_tokens >= token_limit:
                 del conversation[1]
                 conv_history_tokens = num_tokens_from_messages(conversation)
@@ -114,9 +121,8 @@ def ai_assistance():
                 max_tokens=max_response_tokens,
                 temperature=0.5
                 )
-            #Low temperature is less creative, high temperature is more creative
-            conversation.append({"role": "assistant", "content": response["choices"][0]["message"]["content"]})
             #Add assistant's response to the chat transcript and print it out
+            conversation.append({"role": "assistant", "content": response["choices"][0]["message"]["content"]})
             print("\n" + "ChatBot: " + response['choices'][0]['message']['content'] + "\n")
         #Display filter categories and severity if triggered
         except openai.error.InvalidRequestError as e:
