@@ -83,12 +83,12 @@ def build_definition(
     )
 
 
-def generate_definition_config(definition_type: str, output_file: str = "input.json"):
+def generate_definition_config(definition_type: str, output_file: str = "input-nfd.json"):
     """
     Generate an example config file for building a definition.
 
     :param definition_type: CNF, VNF
-    :param output_file: path to output config file, defaults to "input.json"
+    :param output_file: path to output config file, defaults to "input-nfd.json"
     :type output_file: str, optional
     """
     _generate_config(configuration_type=definition_type, output_file=output_file)
@@ -317,11 +317,11 @@ def delete_published_definition(
         )
 
 
-def generate_design_config(output_file: str = "input.json"):
+def generate_design_config(output_file: str = "input-nsd.json"):
     """
     Generate an example config file for building a NSD.
 
-    :param output_file: path to output config file, defaults to "input.json"
+    :param output_file: path to output config file, defaults to "input-nsd.json"
     :type output_file: str, optional
     """
     _generate_config(NSD, output_file)
