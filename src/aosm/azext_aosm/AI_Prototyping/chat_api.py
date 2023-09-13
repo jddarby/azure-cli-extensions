@@ -4,6 +4,8 @@ import openai
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
+#This NSD copilot is run using a chat completion service, gpt-3.5-turbo and no orchestrator.
+
 #TO DO: change the keyvault and endpoint to the new subscription AI instance once it's fixed.
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/",credential=credential)

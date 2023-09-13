@@ -2,9 +2,11 @@ import asyncio
 from typing import Tuple
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, AzureTextCompletion, AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, AzureChatCompletion
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
+
+#Search program to demonstrate the ability of AI to semantically compare descriptions of network functions to a user's needs
 
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/", credential=credential)
@@ -116,7 +118,7 @@ async def completion_api(
         chat_func: Specifications of the semantic function being written.
         context: Context necessary for the LLM to make a decision.
     """
-    #Semantic function prompt
+    #The semantic function prompt is simple enough to be run with a chat completion service
     sk_prompt = """
     The system can suggest the most appropriate network service design based on its memories of network functions is has access to.
     Do not suggest network functions outside of the ones stored in your volatile memory store.
@@ -200,10 +202,6 @@ async def main() -> None:
     """
     kernel = sk.Kernel()
     #Either the text completion or chat completion service can be used because the prompt is simple enough
-    #kernel.add_text_completion_service(
-    #    "completion", AzureTextCompletion("text-davinci-003-aiops", "https://azopenai-aiops.openai.azure.com/", ai_key.value)
-    #)
-
     kernel.add_chat_service(
         "chat", AzureChatCompletion("gpt35depl1", "https://azopenai-aiops.openai.azure.com/", ai_key.value)
     )
