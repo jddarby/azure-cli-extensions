@@ -1,4 +1,5 @@
 import json
+import os
 import tiktoken
 import openai
 from azure.keyvault.secrets import SecretClient
@@ -103,7 +104,8 @@ def ai_assistance():
                 string = text[begin:end+1]
                 #Write to a separate file
                 nsd = json.loads(string)
-                file_path = "AI_Prototyping/input.json"
+                current_directory = os.getcwd()
+                file_path = os.path.join(current_directory, "input.json")
                 with open(file_path, "w", encoding="utf-8") as json_file:
                     json.dump(nsd, json_file, indent=4, ensure_ascii=False)
                 return file_path
