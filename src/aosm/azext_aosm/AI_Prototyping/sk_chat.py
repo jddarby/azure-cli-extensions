@@ -3,11 +3,15 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 import asyncio
-#NSD Copilot successfully implemented with the chat completion API
+
+#NSD copilot on semantic kernel with the chat completion API
+
+#TO DO: change the keyvault and endpoint to the new subscription's AI instance
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/",credential=credential)
 ai_key = client.get_secret("AIKey1")
 
+#Specify the system message
 system_message = """
     Engage in a conversation with the user to obtain relevant information to form a summary of the properties of a network service design.
     ----
@@ -44,31 +48,38 @@ system_message = """
     Always display the summary in a JSON format as shown above.
     Don't ask for information again if you can already fill in a field from a user input.
     """
-
+#Instantiate the kernel
 kernel = sk.Kernel()
-
+#Add the chat completion service with either gpt-3.5-turbo or gpt-4.
 kernel.add_chat_service(
     "chat-gpt",
     AzureChatCompletion("gpt35depl1", "https://azopenai-aiops.openai.azure.com/", ai_key.value)
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=400, temperature=0.5
+    max_tokens=500, temperature=0.5
 )
-
+#Create a prompt with the user input as the prompt content
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
-
+#Add a system message to the prompt
 prompt_template.add_system_message(system_message)
-
+#Register an inline chat function with the custom set-up supporting a system message
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("Chatbot", "Chat", function_config)
 
 async def chat() -> bool:
-    context_vars = sk.ContextVariables()
+    """
+    Run semantic function to activate a copilot run using the chat completion service to help a user build an NSD.
 
+    Returns:
+        bool: If False, the conversation ends.
+    """
+    #Set context variables for user input
+    context_vars = sk.ContextVariables()
     try:
+        #Process user input and store as context variable to feed to semantic function
         user_input = input("User: ")
         context_vars["user_input"] = user_input
     except KeyboardInterrupt:
@@ -78,14 +89,21 @@ async def chat() -> bool:
         print("\nExiting Chat...")
         return False
     
+    if user_input == "exit":
+        print("\n\nExiting Chat...")
+        return False
+    #Invoke response using the chat completion service
     response = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Chatbot: {response}")
     return True
 
 async def main() -> None:
+    """
+    Run the conversation loop with the user. 
+    """
     chatting = True
     while chatting:
         chatting = await chat()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(chat())

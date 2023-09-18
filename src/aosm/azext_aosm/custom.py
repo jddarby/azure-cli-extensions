@@ -37,6 +37,8 @@ from azext_aosm.util.management_clients import ApiClients
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
 from azext_aosm.AI_Prototyping.chat_api import ai_assistance
+from azext_aosm.AI_Search_Prototyping.fake_search import searching
+import asyncio
 
 logger = get_logger(__name__)
 
@@ -284,7 +286,6 @@ def ai_design(cmd, client: HybridNetworkManagementClient, force: bool = False):
     :type cmd: _type_
     :param client:
     :type client: HybridNetworkManagementClient
-    :param config_file: path to the file
     """
     api_clients = ApiClients(
         aosm_client=client, resource_client=cf_resources(cmd.cli_ctx)
@@ -297,7 +298,7 @@ def ai_design(cmd, client: HybridNetworkManagementClient, force: bool = False):
         api_clients=api_clients,
         force=force,
     )
-
+    
 
 def build_design(cmd, client: HybridNetworkManagementClient, config_file: str, force: bool = False):
     """

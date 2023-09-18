@@ -4,9 +4,9 @@ import openai
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
-#This NSD copilot is run using a chat completion service, gpt-3.5-turbo and no orchestrator.
+#NSD Copilot - open API call to the chat completion service
 
-#TO DO: change the keyvault and endpoint to the new subscription AI instance once it's fixed.
+#TO DO: change the keyvault and endpoint to the new subscription's AI instance
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/",credential=credential)
 key = client.get_secret("AIKey1")
@@ -76,7 +76,7 @@ def num_tokens_from_messages(messages):
         num_tokens += 4 #All messages have <im_start>{role/name}\n{content}<im_end>\n
         for key, value in message.items():
             num_tokens += len(encoding.encode(value))
-            if key == "name": #The role assignment shouldn't be counted as a token.
+            if key == "name": #The role assignment shouldn't be counted as a token
                 num_tokens += -1
             num_tokens += 2 #All reponses by the system have <im_start>assistant
             return num_tokens
@@ -88,7 +88,7 @@ def ai_assistance():
     Returns:
         config (file): A configuration for an NSD.
     """
-    print("Welcome to the NSD Generation Copilot! \n Please ensure you are connected to the appropriate VNET. \n Chat to the Copilot to tell it more about the NSD you want to build. \n Once you are happy with your design, enter 'build'.")
+    print("Welcome to the NSD Generation Copilot!\n Chat to the Copilot to tell it more about the NSD you want to build. \n Once you are happy with your design, ask the copilot to display the information it has and then enter 'build'.")
     while True:
         try:
             #Process user input
@@ -110,7 +110,7 @@ def ai_assistance():
                 break
             #Add the user message to chat transcript
             conversation.append({"role": "user", "content": user_input})
-            #Find the number of tokens up till the user's last messaeg
+            #Find the number of tokens to be fed into the next request to the LLM
             conv_history_tokens = num_tokens_from_messages(conversation)
             #Assume the LLM responds with the maximum number of tokens and delete the oldest message in the transcript if it exceeds the limit
             while conv_history_tokens + max_response_tokens >= token_limit:

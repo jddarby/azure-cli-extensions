@@ -6,11 +6,12 @@ from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
+#NSD copilot on semantic kernel with the completion API
+
+#TO DO: change the keyvault and endpoint to the new subscription's AI instance
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/", credential=credential)
 ai_key = client.get_secret("AIKey1")
-
-#NSD Copilot has similar functionality being run with the completion API on semantic kernel.
 
 async def completion_api(
         kernel: sk.Kernel,
@@ -21,7 +22,7 @@ async def completion_api(
     Args:
         kernel: The instance of the semantic kernel.
     """
-    #The prompt is an adapted version of the system message in a chat completion API.
+    #The prompt indicates how the LLM should behave with the user
     sk_prompt = """
     The system summarises the key properties of an NSD in the following format:
     {
@@ -65,7 +66,7 @@ async def completion_api(
     chat_func = kernel.create_semantic_function(
         sk_prompt, max_tokens=500, temperature=0.5
     )
-    #Create the new context
+    #Create the new context for the completion API to use
     context = kernel.create_new_context()
     context["chat_history"] = ""
     return chat_func, context
@@ -74,7 +75,7 @@ async def chat(
         kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext
 ) -> bool:
     """
-    Interact with the user and call the semantic function to generate a response.
+    Call the semantic function to interact with the user and generate a response.
 
     Args:
         kernel: The instance of the semantic kernel with the completion service and semantic function loaded.
@@ -85,7 +86,7 @@ async def chat(
         bool: If False, the conversation ends.
     """
     try:
-        #Process user input and add to chat history context
+        #Process user input and store as context variable to feed to semantic function
         user_input = input("User: ")
         context["chat_history"] += f"\nUser: {user_input}"
     except KeyboardInterrupt:
@@ -98,7 +99,7 @@ async def chat(
     if user_input == "exit":
         print("\n\nExiting Chat...")
         return False
-    #Run the semantic function with the chat history as context
+    #Invoke response using the completion service
     answer = await kernel.run_async(chat_func, input_vars=context.variables)
     #Add the system's response to the chat history and print it
     context["chat_history"] += f"\nChatBot: {answer}"

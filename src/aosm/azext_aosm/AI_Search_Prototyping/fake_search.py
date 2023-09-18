@@ -6,8 +6,9 @@ from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, AzureChatC
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
-#Search program to demonstrate the ability of AI to semantically compare descriptions of network functions to a user's needs
+#Search program to semantically compare descriptions of network functions to a user's needs
 
+#TO DO: change the keyvault and endpoint to the new subscription's AI instance
 credential = DefaultAzureCredential()
 client = SecretClient(vault_url="https://azopenai-dev-kv.vault.azure.net/", credential=credential)
 ai_key = client.get_secret("AIKey1")
@@ -112,13 +113,14 @@ async def completion_api(
 ) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
     """
     Create a semantic function and context for the LLM to search through when talking to the user.
+    
     Args:
         kernel: The instance of the semantic kernel with necessary features to write a semantic function and add context.
     Returns:
         chat_func: Specifications of the semantic function being written.
         context: Context necessary for the LLM to make a decision.
     """
-    #The semantic function prompt is simple enough to be run with a chat completion service
+    #Load examples from memories into the semantic prompt using semantic function's TextMemorySkill
     sk_prompt = """
     The system can suggest the most appropriate network service design based on its memories of network functions is has access to.
     Do not suggest network functions outside of the ones stored in your volatile memory store.
@@ -140,7 +142,7 @@ async def completion_api(
     {{$chat_history}}
     User: {{$user_input}}
     ChatBot: """.strip()
-    #Create the semantic function using the prompt and certain parameters
+    #Create the semantic function
     chat_func = kernel.create_semantic_function(
         sk_prompt, max_tokens=400, temperature=0.8
     )
@@ -152,8 +154,7 @@ async def completion_api(
     context["fact4"] = "What is nf4?"
     context["fact5"] = "What is nf5?"
     context["fact6"] = "What is nf6?"
-    #Accessing one of semantic kernel's core skills to search through a memory store
-    #There is also a LIMIT_PARAM that controls the maximum number of memories the system can call at any given time
+    #Accessing contents of the volatile memory store using semantic kernel's TextMemorySkill
     context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "fake-repo"
     context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.4
     #Chat history is added as context
@@ -172,12 +173,11 @@ async def chat(
         context: Supporting information for the LLM including the network functions definitions from the memories, the core skills for searching through a memory store and chat history.
 
     Returns:
-        bool: End of conversation if false.
+        bool: If False, the conversation ends.
     """
     try:
-        #Process the user input
+        #Process user input and store as context variable to feed to semantic function
         user_input = input("User: ")
-        #This is added as a context variable to be compatible with the format of the semantic function prompt
         context["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
@@ -189,9 +189,9 @@ async def chat(
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-    #Calling the semantic function to generate a response from the LLM
+    #Invoke response using the chat completion service
     answer = await kernel.run_async(chat_func, input_vars=context.variables)
-    #Adding the user input and chat history as context variables
+    #Add the system's response to the chat history and print it
     context["chat_history"] += f"\nUser: {user_input}\nChatBot: {answer}"
     print(f"ChatBot: {answer}")
     return True
@@ -200,8 +200,8 @@ async def main() -> None:
     """
     Instantiating the kernel, loading it with a chat and embedding service, loading the memories and running the chat function.
     """
-    kernel = sk.Kernel()
-    #Either the text completion or chat completion service can be used because the prompt is simple enough
+    kernel = sk.Kernel()  
+    #The semantic function prompt is simple enough to be run with a chat completion service without changing the system message
     kernel.add_chat_service(
         "chat", AzureChatCompletion("gpt35depl1", "https://azopenai-aiops.openai.azure.com/", ai_key.value)
     )
@@ -209,9 +209,9 @@ async def main() -> None:
     kernel.add_text_embedding_generation_service(
         "embedding", AzureTextEmbedding("text-embedding-ada-002", "https://azopenai-aiops.openai.azure.com/", ai_key.value)
     )
-    #Creating a volatile memory store
+    #Instantiating a volatile memory store
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-    #Importing the core skill responsible for reading a memory store
+    #Importing one of semantic kernel's core skill responsible for reading a memory store
     kernel.import_skill(sk.core_skills.TextMemorySkill())
     #Loading the network function definitions to the volatile memory store
     await fake_repo(kernel)
