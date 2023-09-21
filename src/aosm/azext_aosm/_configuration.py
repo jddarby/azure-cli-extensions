@@ -289,9 +289,9 @@ class HelmPackageConfig:
 class CNFImageConfig:
     """CNF Image config settings."""
 
-    source_registry: str = DESCRIPTION_MAP["source_registry"]
-    source_registry_namespace: str = DESCRIPTION_MAP["source_registry_namespace"]
-    source_local_docker_image: str = DESCRIPTION_MAP["source_local_docker_image"]
+    source_registry: str = ""
+    source_registry_namespace: str = ""
+    source_local_docker_image: str = ""
 
 
 @dataclass
@@ -329,20 +329,10 @@ class CNFConfiguration(NFConfiguration):
 
         :raises ValidationError: If source registry ID doesn't match the regex
         """
-        source_reg_set = (
-            self.images.source_registry
-            and self.images.source_registry != DESCRIPTION_MAP["source_registry"]
-        )
-        source_local_set = (
-            self.images.source_local_docker_image
-            and self.images.source_local_docker_image
-            != DESCRIPTION_MAP["source_local_docker_image"]
-        )
-        source_reg_namespace_set = (
-            self.images.source_registry_namespace
-            and self.images.source_registry_namespace
-            != DESCRIPTION_MAP["source_registry_namespace"]
-        )
+
+        source_reg_set = self.images.source_registry != ""
+        source_local_set = self.images.source_local_docker_image != ""
+        source_reg_namespace_set = self.images.source_registry_namespace != ""
 
         # If these are the same, either neither is set or both are, both of which are errors
         if source_reg_set == source_local_set:
@@ -423,9 +413,7 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
 
         # Temporary validation while only private publishers exist
         if self.publisher_scope not in ["private", "Private"]:
-            raise ValidationError(
-                "Only private publishers are currently supported"
-            )
+            raise ValidationError("Only private publishers are currently supported")
 
         if self.type not in [CNF, VNF]:
             raise ValueError(
