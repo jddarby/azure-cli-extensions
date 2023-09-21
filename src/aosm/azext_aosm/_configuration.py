@@ -357,7 +357,7 @@ NFD_VERSION = (
 NFD_LOCATION = "The region that the NFDV is published to."
 PUBLISHER_RESOURCE_GROUP = "The resource group that the publisher is hosted in."
 PUBLISHER_NAME = "The name of the publisher that this NFDV is published under."
-PUBLISHER_SCOPE = "The scope that the publisher is published under. Currently, only 'private' is supported."
+PUBLISHER_SCOPE = "The scope that the publisher is published under. Only 'private' is supported."
 NFD_TYPE = "Type of Network Function. Valid values are 'cnf' or 'vnf'"
 MULTIPLE_INSTANCES = (
     "Set to true or false.  Whether the NSD should allow arbitrary numbers of this "
@@ -491,7 +491,11 @@ class NSConfiguration(Configuration):
             self.network_functions = nf_ret_list
 
     def validate(self):
-        # validate that all of the configuration parameters are set
+        """
+        Validate the configuration passed in.
+
+        :raises ValueError for any invalid config
+        """
 
         if self.location in (DESCRIPTION_MAP["location"], ""):
             raise ValueError("Location must be set")
