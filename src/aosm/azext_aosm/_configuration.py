@@ -293,6 +293,14 @@ class CNFImageConfig:
     source_registry_namespace: str = ""
     source_local_docker_image: str = ""
 
+    def __post_init__(self):
+        if self.source_registry == DESCRIPTION_MAP["source_registry"]:
+            self.source_registry = ""
+        if self.source_registry_namespace == DESCRIPTION_MAP["source_registry_namespace"]:
+            self.source_registry_namespace = ""
+        if self.source_local_docker_image == DESCRIPTION_MAP["source_local_docker_image"]:
+            self.source_local_docker_image = ""
+
 
 @dataclass
 class CNFConfiguration(NFConfiguration):
@@ -334,17 +342,16 @@ class CNFConfiguration(NFConfiguration):
         source_local_set = self.images.source_local_docker_image != ""
         source_reg_namespace_set = self.images.source_registry_namespace != ""
 
+        if source_reg_namespace_set and not source_reg_set:
+            raise ValidationError(
+                "Config validation error. The image source registry namespace should "
+                "only be configured if a source registry is configured."
+            )
         # If these are the same, either neither is set or both are, both of which are errors
         if source_reg_set == source_local_set:
             raise ValidationError(
                 "Config validation error. Images config must have either a local docker image"
                 " or a source registry, but not both."
-            )
-
-        if source_reg_namespace_set and not source_reg_set:
-            raise ValidationError(
-                "Config validation error. The image source registry namespace should "
-                "only be configured if a source registry is configured."
             )
 
 
