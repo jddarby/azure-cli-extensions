@@ -25,7 +25,8 @@ from azext_aosm.vendored_sdks.models import (
     NetworkServiceDesignGroup,
     ProvisioningState,
     Publisher,
-    PublisherPropertiesFormat
+    PublisherPropertiesFormat,
+    ManagedServiceIdentity
 )
 
 logger = get_logger(__name__)
@@ -111,17 +112,18 @@ class PreDeployerViaSDK:
                 f" {resource_group_name}"
             )
         except azure_exceptions.ResourceNotFoundError:
-            # Create the publisher
+            # Create the publisher with default SAMI and private scope
             logger.info("Creating publisher %s if it does not exist", publisher_name)
             print(
                 f"Creating publisher {publisher_name} in resource group"
                 f" {resource_group_name}"
             )
             publisher_properties = PublisherPropertiesFormat(scope="Private")
+            publisher_sami = ManagedServiceIdentity(type="SystemAssigned")
             poller = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
                 publisher_name=publisher_name,
-                parameters=Publisher(location=location, properties=publisher_properties),
+                parameters=Publisher(location=location, properties=publisher_properties, identity=publisher_sami),
             )
             LongRunningOperation(self.cli_ctx, "Creating publisher...")(poller)
 
