@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Highly Confidential Material
 //
-// The template that the NSD invokes to create the Network Function from a published NFDV. 
+// The template that the NSD invokes to create the Network Function from a published NFDV.
 
 @description('Publisher where the NFD is published')
 param publisherName string = 'reference-publisher'
@@ -35,7 +35,7 @@ var identityObject = (managedIdentity == '')  ? {
   }
 }
 
-resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-04-01-preview' = [for (values, i) in deploymentParameters: {
+resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-09-01' = [for (values, i) in deploymentParameters: {
   name: 'ubuntu-nfdg${i}'
   location: location
   identity: identityObject
