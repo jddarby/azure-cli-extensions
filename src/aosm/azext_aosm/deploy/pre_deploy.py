@@ -123,7 +123,7 @@ class PreDeployerViaSDK:
             poller = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
                 publisher_name=publisher_name,
-                parameters=Publisher(identity=publisher_sami, location=location, properties=publisher_properties),
+                parameters=Publisher(location=location, properties=publisher_properties, identity=publisher_sami),
             )
             LongRunningOperation(self.cli_ctx, "Creating publisher...")(poller)
 
