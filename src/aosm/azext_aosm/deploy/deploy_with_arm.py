@@ -1,7 +1,7 @@
-# --------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT
-# License. See License.txt in the project root for license information.
-# --------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
 """Contains class for deploying generated definitions using ARM."""
 import json
 import os
@@ -18,9 +18,11 @@ from knack.log import get_logger
 from knack.util import CLIError
 
 from azext_aosm._configuration import (
+    ArtifactConfig,
     CNFConfiguration,
     Configuration,
     NFConfiguration,
+    NFDRETConfiguration,
     NSConfiguration,
     VNFConfiguration,
 )
@@ -179,14 +181,20 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         vhd_artifact = storage_account_manifest.artifacts[0]
         arm_template_artifact = acr_manifest.artifacts[0]
 
+        vhd_config = self.config.vhd
+        arm_template_config = self.config.arm_template
+
+        assert isinstance(vhd_config, ArtifactConfig)
+        assert isinstance(arm_template_config, ArtifactConfig)
+
         if self.skip == IMAGE_UPLOAD:
             print("Skipping VHD artifact upload")
         else:
             print("Uploading VHD artifact")
-            vhd_artifact.upload(self.config.vhd)
+            vhd_artifact.upload(vhd_config)
 
         print("Uploading ARM template artifact")
-        arm_template_artifact.upload(self.config.arm_template)
+        arm_template_artifact.upload(arm_template_config)
 
     def _cnfd_artifact_upload(self) -> None:
         """Uploads the Helm chart and any additional images."""
@@ -302,6 +310,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         """
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
+            assert isinstance(self.config.vhd, ArtifactConfig)
+            assert isinstance(self.config.arm_template, ArtifactConfig)
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
@@ -328,7 +338,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "nsDesignGroup": {"value": self.config.nsdg_name},
+                "nsDesignGroup": {"value": self.config.nsd_name},
                 "nsDesignVersion": {"value": self.config.nsd_version},
                 "nfviSiteName": {"value": self.config.nfvi_site_name},
             }
@@ -341,6 +351,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         """Create the parmeters dictionary for VNF, CNF or NSD."""
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
+            assert isinstance(self.config.vhd, ArtifactConfig)
+            assert isinstance(self.config.arm_template, ArtifactConfig)
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
@@ -363,9 +375,11 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         if self.resource_type == NSD:
             assert isinstance(self.config, NSConfiguration)
 
-            arm_template_names = [
-                nf.arm_template.artifact_name for nf in self.config.network_functions
-            ]
+            arm_template_names = []
+
+            for nf in self.config.network_functions:
+                assert isinstance(nf, NFDRETConfiguration)
+                arm_template_names.append(nf.arm_template.artifact_name)
 
             # Set the artifact version to be the same as the NSD version, so that they
             # don't get over written when a new NSD is published.
@@ -417,6 +431,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
             for manifest, nf in zip(
                 self.config.acr_manifest_names, self.config.network_functions
             ):
+                assert isinstance(nf, NFDRETConfiguration)
                 acr_manifest = ArtifactManifestOperator(
                     self.config,
                     self.api_clients,
@@ -465,7 +480,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         logger.info(message)
         self.deploy_bicep_template(bicep_path, self.parameters)
         print(
-            f"Deployed NSD {self.config.nsdg_name} "
+            f"Deployed NSD {self.config.nsd_name} "
             f"version {self.config.nsd_version}."
         )
 
@@ -498,7 +513,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
 
     def nsd_predeploy(self) -> bool:
         """
-        All the predeploy steps for a NSD. Check if the RG, publisher, ACR, NSDG and
+        All the predeploy steps for a NSD. Check if the RG, publisher, ACR, NSD and
         artifact manifest exist.
 
         Return True if artifact manifest already exists, False otherwise
@@ -507,7 +522,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         self.pre_deployer.ensure_config_resource_group_exists()
         self.pre_deployer.ensure_config_publisher_exists()
         self.pre_deployer.ensure_acr_artifact_store_exists()
-        self.pre_deployer.ensure_config_nsdg_exists()
+        self.pre_deployer.ensure_config_nsd_exists()
         return self.pre_deployer.do_config_artifact_manifests_exist()
 
     def deploy_bicep_template(

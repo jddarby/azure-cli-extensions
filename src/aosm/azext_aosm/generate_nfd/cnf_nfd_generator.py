@@ -1,7 +1,7 @@
-# --------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT
-# License. See License.txt in the project root for license information.
-# --------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
 """Contains a class for generating CNF NFDs and associated resources."""
 import json
 import re
@@ -117,6 +117,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             try:
                 for helm_package in self.config.helm_packages:
                     # Unpack the chart into the tmp directory
+                    assert isinstance(helm_package, HelmPackageConfig)
+
                     self._extract_chart(Path(helm_package.path_to_chart))
 
                     # TODO: Validate charts
