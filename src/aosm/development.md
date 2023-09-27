@@ -36,7 +36,44 @@ python3 -m pip install types-PyYAML
 azdev extension add aosm
 ```
 ### Generating the AOSM Python SDK
-TODO
+**Note:**, these instructions may become unnecessary if we can simply consume the public SDK. Right now it's not clear that will be easy, so I'm recording these steps "just in case".
+
+We use AutoRest to generate the SDK from the API.  Docs are here: https://github.com/Azure/autorest/blob/main/docs/readme.md . You're most likely to need:
+
+ - [Installing AutoRest](https://github.com/Azure/autorest/blob/main/docs/install/readme.md)
+ - [Generating clients](https://github.com/Azure/autorest/blob/main/docs/generate/readme.md)
+ - If you need to update the AOSM CLI code due to changes in the SDK, ["How do I use my client"](https://github.com/Azure/autorest/blob/main/docs/client/readme.md) might be useful, though just reading the AOSM CLI code will probably get you most of the way.
+
+The following set up and commands were used to generate the SDK for the 2023-09-01 GA release. They are for AutoRest running on Linux. They should be simple enough to adapt if you're running on Windows.
+
+- API repo checked out locally (in this case to /home/developer/code/azure-rest-api-specs-pr/ )
+- In the API repo, the files interesting for SDK generation are the readme*.md files at /home/developer/code/azure-rest-api-specs-pr/specification/hybridnetwork/resource-manager/ :
+    - Hopefully you won't need to change the main readme.md file, but it's worth checking that the default version is set to the version you're generating for. Look at the `tag` value in the `yaml` section under "Basic information", like this:
+        ```yaml
+        openapi-type: arm
+        openapi-subtype: rpaas
+        tag: package-2023-09-01
+        ```
+    - For 2023-09-01, the readme.python.md file looked like this:
+      ```yaml $(python)
+        python:
+          azure-arm: true
+          license-header: MICROSOFT_MIT_NO_VERSION
+          namespace: Microsoft.HybridNetwork
+          package-name: hybridnetwork
+          clear-output-folder: true
+          models-mode: msrest
+          no-namespace-folders: true
+          output-folder: $(python-sdks-folder)
+        ```
+        The most important changes made from the original file were:
+         - Add `models-mode: msrest`. Without this, you don't get models. However, 'msrest' is apparently deprecated, so we should likely do some investigation into whether there's an alternative. (In Sept 2023, the information was that you need to have a TypeSpec API to get models by default - I don't know the rationale!)
+         - The orginal path for `output-folder:` was `$(python-sdks-folder)/azure-mgmt/hybridnetwork`. I cut this down so I could simply provide `--python-sdks-folder=./src/aosm/azext_aosm/vendored_sdks` in the autorest command (see below), and the generated code ends up in the right place. If you'd rather move the code yourself, you can of course do so.
+- `cd` into the azure-cli-extension 'root' directory (so that the python `--python-sdks-folder` used below points to the right place)
+- Run the command `autorest --python --python-sdks-folder=./src/aosm/azext_aosm/vendored_sdks /home/developer/code/azure-rest-api-specs-pr/specification/hybridnetwork/resource-manager/readme.md`
+- Test and fix up AOSM CLI code as necessary
+
+
 
 ### VSCode environment setup.
 
@@ -124,11 +161,11 @@ python-static-checks fmt
 ```
 
 ### Tests
-The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command (you can optionally use the `--live` flag with this command as some integration tests are run only in live mode, e.g. CNF tests). All tests are expected to pass. All unit tests and Integration tests are run as part of the pipeline. 
+The tests in this repository are split into unit tests and integration tests. Both tests live in the `tests/latest` folder and can be run using the `azdev test aosm` command (you can optionally use the `--live` flag with this command as some integration tests are run only in live mode, e.g. CNF tests). All tests are expected to pass. All unit tests and Integration tests are run as part of the pipeline.
 ### Unit tests
 To get code coverage run:
 ```bash
-pip install coverage 
+pip install coverage
 cd src/aosm
 coverage erase
 coverage run -m pytest .
