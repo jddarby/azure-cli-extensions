@@ -1,0 +1,116 @@
+global:
+  #dafault rbac clusterrole and serviceaccount configuration
+  defaultRbacEnabled: true
+  defaultClusterRole: permissive-full-cr
+  defaultServiceAccountName: fed-opa-serviceaccount
+  podPriorityEnabled: true
+  # If constraintTemplates are to be deployed as part of opa-gatekeeper chart, set deployPolicies to true.
+  deployPolicies: false
+  # Fluentd Configurations
+  logging:
+    enabled: false
+    fluentd:
+      buffer:
+        bufferLimit: 512m  # Total buffer size. Maximum amount of buffer space each fluentd thread would use to keep logs. After this is exhaused, fluentd would start deleting oldest logs to make room for new logs.
+        retryWait: 180s    # Interval(seconds) at which the buffer flush is retried in case of failure.
+        maxRetries: 10     # Max number of retries to flush a buffer chunk. After this is exhausted, fluentd would delete the chunk.
+    elastic:
+      IP: "{deployParameters.elasticsearch-host}"
+      Port: 9200
+    enableAddlTargets: false
+    addlTargets:
+    - forward:
+        name: fluentd
+        host: ""
+        port: 24224
+
+  overrides:
+    postUpgradeEnabled: true
+
+  # node affinity deployment
+  deployment:
+    nodeDataplaneAffinity: "false"
+    
+  # Definition of pod topology spread constraints
+  # to uniformly spread all the pods across all the
+  # K8s worker nodes.
+  topologySpreadConstraints:
+    enabled: true
+    constraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+
+  grafana:
+    enabled: true
+    # If Grafana is enabled, please add a valid Grafana server URL as per the following guidelines.
+    # If Grafana is deployed WITHOUT TLS: "http://[grafana-ip]:[grafana-port]" OR "http://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    # If Grafana is deployed WITH TLS: "https://[grafana-ip]:[grafana-port]" OR "https://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    url: "{deployParameters.grafana-url}"
+    prometheusinfo:
+      url: "http://prometheus.fed-prometheus:9090" # DevSkim: ignore DS137138
+
+  # PaaS Monitoring Selector 
+  monitoring:
+    prometheus:
+      enabled: true
+
+  # PaaS Registry Selector
+  registry:
+    docker:
+      repoPath: "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+
+  # Environment variables
+  envVars:
+    fedType:        "paas"
+    fedUniqueName:  "{deployParameters.opa-unique-name}"
+
+pod-opa:
+  replicas: 3
+
+  kube_mgmt:
+    livenessProbe:
+       enabled: true
+
+  readinessProbe:
+    failureThreshold: 10
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 30
+
+  livenessProbe:
+    failureThreshold: 10
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 30
+
+  tolerations:
+    enabled: true
+    tolerationSecondsUnreachable: 0
+    tolerationsSecondsNotReady: 0
+  
+  podPriority:
+    enabled: true
+    priorityClassName: uc-priority-1
+
+  podDisruptionBudget:
+    enabled: true
+
+  streamserver:
+    url: "capture-stream-server-svc.fed-paas-helpers.svc.cluster.local:9890" 
+
+pod-opa_gatekeeper:
+  # If opa-gatekeeper is to be deployed, set deployOpaGatekeeper to true.
+  deployOpaGatekeeper: false
+  podPriority:
+    enabled: true
+    priorityClassName: uc-priority-1
+# Include all the namespaces that are to be excluded from admission control of opa-gatekeeper, the release namespace where gatekeeper runs is already exluded.
+  exemptedNamespaces: 
+    - kube-system
+    - fed-rbac
+    - fed-rook-ceph
+    - fed-kafka
+    

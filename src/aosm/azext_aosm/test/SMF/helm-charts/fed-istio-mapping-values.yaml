@@ -1,0 +1,236 @@
+global:
+  # If running on OCP cluster, please set "enableSCC" to "true"
+  enableSCC: false
+
+  # If the deployment is going to use multus, then this flag should be set to true
+  multusDeployed: "{deployParameters.multusDeployed}"
+
+  #RBAC dafault configuration per namespace: These configuration is used to create the clusterrolebinding and serviceaccount
+  #Configuring defaultRbacEnabled to true will create clusterrolebinding. Configuring defaultRbacEnabled to false, clusterrolebinding will not be created. 
+  #defaultClusterRole configuration is to configure the clusterrole in clusterrolebinding.
+  defaultRbacEnabled: true
+  defaultClusterRole: permissive-network-cr
+  #serviceaccount will be created by default. #defaultServiceAccountName configuration is used to create default serviceaccount per namespace.
+  defaultServiceAccountName: "unity-cloud-serviceaccount"
+
+    # If running on OCP cluster, please set "enableSCC" to "true"
+  enableSCC: false
+
+  podPriorityEnabled: true
+  
+  ingressNetworkPolicy:
+    # Whether network policy is applicable for ingress traffic or not
+    enabled: true
+
+    # Namespaces that are allowed for ingress traffic
+    ingressTrafficNamespaces:
+    - fed-service-reg
+    - fed-db-etcd
+    - fed-db-mongo-ram
+    - fed-metallb
+    - fed-prometheus
+    - fed-amf-mme
+    - fed-smf
+    - fed-upf
+    - fed-nrf
+    - fed-nssf
+    - fed-n3iwf
+    - fed-grafana
+    - fed-kibana
+    - fed-paas-helpers
+    - fed-jaeger
+    - fed-kube-prom
+    - vnfmgr
+    - fed-agf
+    - fed-elastalert
+    - fed-amf-mme
+    - fed-timer
+
+  # PaaS Registry Selector 
+  registry:
+    docker:
+      repoPath: "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+
+  # Environment variables
+  envVars:
+    fedType:        "paas-istio"
+    fedUniqueName:  "{deployParameters.istio-unique-name}"
+
+  # PaaS Monitoring Selector
+  monitoring_prometheus_ns: "fed-prometheus"
+
+  # Prometheus metrics scrape intrval. Default value set to 1m.
+  metricsScrapeInterval: 1m
+
+  logging:
+    enabled: false
+    fluentd:
+      buffer:
+        bufferLimit: 512m  # Total buffer size. Maximum amount of buffer space each fluentd thread would use to keep logs. After this is exhaused, fluentd would start deleting oldest logs to make room for new logs.
+        retryWait: 180s    # Interval(seconds) at which the buffer flush is retried in case of failure.
+        maxRetries: 10     # Max number of retries to flush a buffer chunk. After this is exhausted, fluentd would delete the chunk.
+    elastic:
+      IP: "{deployParameters.elasticsearch-host}"
+      Port: 9200
+    enableAddlTargets: false
+    addlTargets:
+    - forward:
+        name: fluentd
+        host: ""
+        port: 24224
+
+  grafana:
+    enabled: true
+    # If Grafana is enabled, please add a valid Grafana server URL as per the following guidelines.
+    # If Grafana is deployed WITHOUT TLS: "http://[grafana-ip]:[grafana-port]" OR "http://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    # If Grafana is deployed WITH TLS: "https://[grafana-ip]:[grafana-port]" OR "https://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    url: "{deployParameters.grafana-url}"
+    prometheusinfo:
+      url: "http://prometheus.fed-prometheus:9090" #Devskim: ignore DS137138
+
+  monitoring:
+    prometheus:
+      enabled: true
+
+  # CN-27669 set policy checks default to true (i.e. disabled)
+  disablePolicyChecks: true
+
+  # CN-18990 provide federation level support to disable telemetry
+  # CN-27668 provide cpu request
+  # CN-40399 Add helm values to disable telemetry metrics for istio 1.11
+  telemetry:
+    telemetryEnabled: "false"
+    enabled: false    # Istio 1.8.x, this is a boolean.  Default telemetry to false.  Looses Kiali data.
+    v2:
+      enabled: false
+    prometheus:
+      enabled: false
+    cpuRequest: 1000m
+    cpuLimit: 4800m   
+
+  # CN-23526 - Enable TLS for Kiali
+  # PaaS Service Mesh Selector
+  mesh:
+    istio:
+      # set this value only if load balancer sharing key is configured
+      ingressGwIP: "{deployParameters.kiali-lb-ip}"
+      ingressGwFQDN: "kiali.com"
+
+      # If specified this port will be used irresepective of TLS mode
+      # If not specified, port 80 will be used if TLS is enabled, else port 443 will be used
+      ingressGwPort: 20001
+
+      # This controls use of TLS in GWs
+      ingressGwTLS:
+          enabled: true
+          # Set the tls mode
+            # SIMPLE --> to enable only TLS
+            # MUTUAL --> to enable mTLS (default)
+          mode: SIMPLE
+          certManager:
+            enabled: true
+            certDuration: 10h
+            renewBefore: 1h
+            organization: affirmednetworks
+            issuerName: affirmed-clusterissuer
+          userProvided:
+            enabled: false
+            #Please refer to userguide documentation
+            cacert: |-
+
+            tlscrt: |-
+
+            tlskey: |- 
+
+      loadBalancerSharingKey: "paas"
+      serviceAnnotations:
+        service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "{deployParameters.oam-lb-subnet}"
+
+  loadBalancerSourceRanges: []
+
+  overrides:
+    # The Istio preDelete.tpl script MUST execute.
+    # The preDelete script will delete the istio-operator-cro, and thus cause the dynamic objects to be deleted.
+    # This MUST occur prior to deleting the operator and then attempting to delete the namespace.  MRG 07-Dec-2020 
+    preDeleteEnabled: true
+
+  # Pod topology spread constraints
+  topologySpreadConstraints:
+    enabled: true
+    constraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+  
+  # CN-40059 - This is a string value. Not a boolean.
+  deployment:
+    nodeDataplaneAffinity: "false"
+
+# end globals section
+#####################################
+
+pod-istio_gw:
+  egressGateway:
+    enabled: false
+
+pod-istio:
+  ## Install RBAC roles and bindings
+  rbacEnabled: true
+  istioSecurityServiceAccountName: istio-security-post-install-account
+  istioSecurityClusterRole: istio-security-post-install
+  
+  istioGalleyServiceAccountName: istio-galley-service-account
+  istioGalleyClusterRole: istio-galley
+  
+  kialiServiceAccountName: kiali-service-account
+  kialiClusterRole: kiali
+  
+  istioMixerServiceAccountName: istio-mixer-service-account
+  istioMixerClusterRole: istio-mixer
+  
+  istioPilotServiceAccountName: istio-pilot-service-account
+  istioPilotClusterRole: istio-pilot
+  
+  istioCitadelServiceAccountName: istio-citadel-service-account
+  istioCitadelClusterRole: istio-citadel
+  
+  istioSidecarServiceAccountName: istio-sidecar-injector-service-account
+  istioSidecarClusterRole: istio-sidecar-injector
+  
+  istioMultiServiceAccountName: istio-multi
+  istioReaderClusterRole: istio-reader
+
+  istioRevision: "1-8-2"
+  istioNspace: "fed-istio"
+
+  istioinit:
+    # CN-14578 / CN-14597 - testing support for RHEL8.2 vmImage.  Support for nftables in RHEL8.2
+    useMaistraUbi8Image: true
+
+  istioproxy:
+    accessLogFile: ""
+    accessLogEncoding: TEXT
+    includeIPRanges: "{deployParameters.istio-proxy-include-ip-ranges}"
+    excludeIPRanges: "127.0.0.1/24" # We exclude the localhost traffic from istio-proxy path
+    excludeOutboundPorts: ""  # Add comma separated ports to exclude from being intercepted by istio-proxy
+    enableTracing: false      # CN-27921
+    enablePrometheusMerge: false     # CN-43099
+    
+  istiopilot:
+    istiodReplicas: 3
+    discovery:
+      requestCpu: 1500m
+      traceSampling: "0.01"
+
+  paasSelector:
+    jaegerHostName: "{deployParameters.jaeger-host}"
+    grafanaHostName: 10.15.10.161
+
+  istioOperator:
+    # This defines the timeout for the leader election of istio operator
+    # This value may need to be adjusted for slow K8s clusters to avoid
+    # timeouts for leader election 
+    renewDeadline: "{deployParameters.leader-election-renew-deadline}"
+pod-redis:
+  enabled: false

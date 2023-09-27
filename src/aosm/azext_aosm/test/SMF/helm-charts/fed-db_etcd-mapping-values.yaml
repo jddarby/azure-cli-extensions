@@ -1,0 +1,168 @@
+global:
+  defaultRbacEnabled: true
+  defaultClusterRole: permissive-network-cr
+  defaultServiceAccountName: fed-db-etcd-serviceaccount
+  # PaaS Registry Selector 
+  registry:
+    docker:
+      repoPath: "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+  
+  # NetworkPolicy Configuration
+  ingressNetworkPolicy:
+    # enabled: true -> enables networkpolicy in federation, false -> disables networkpolicy in federation
+    enabled: true
+    # Namespaces which are required to be allowed for ingress traffic
+    ingressTrafficNamespaces:
+    - fed-service-reg
+    - fed-paas-helpers
+    - fed-db-mongo-ram
+    - fed-istio
+    - fed-metallb
+    - fed-prometheus
+    - fed-amf-mme
+    - fed-smf
+    - fed-upf
+    - fed-nrf
+    - fed-nssf
+    - fed-n3iwf
+    - fed-agf
+
+  # If running on OCP cluster, please set "enableSCC" to "true"
+  enableSCC: false
+
+  podPriorityEnabled: true
+
+  # node affinity deployment
+  deployment:
+    nodeDataplaneAffinity: "false"
+
+  envVars_ServiceRegistryNamespace: "fed-service-reg"
+
+  # This enables collection of etcd data by kargo 
+  kargoProfileTag: "etcd"
+    
+  # Fluentd Configurations
+  logging:
+    enabled: false
+    fluentd:
+      buffer:
+        bufferLimit: 512m  # Total buffer size. Maximum amount of buffer space each fluentd thread would use to keep logs. After this is exhaused, fluentd would start deleting oldest logs to make room for new logs.
+        retryWait: 180s    # Interval(seconds) at which the buffer flush is retried in case of failure.
+        maxRetries: 10     # Max number of retries to flush a buffer chunk. After this is exhausted, fluentd would delete the chunk.
+    elastic:
+      IP: "{deployParameters.elasticsearch-host}"
+      Port: 9200
+    enableAddlTargets: false
+    addlTargets:
+    - forward:
+        name: fluentd
+        host: ""
+        port: 24224
+    alerts:
+      enabled: false
+      host: ""
+      port: 3030
+      realert:
+        minutes: 1
+      # Multiple receivers can be configured under the below receivers section. For example: if another slack reciever is to be configured,
+      # then add another list item for slack by following the syntax as shown below. Currently 3 types of receivers are supported i.e slack, email and HTTP POST.
+      receivers:
+        - slack:
+            webhookurl: ""
+        - post:
+            http_post_url: ""
+        - email:
+            to_address: ""
+            smtp_host: ""
+            smtp_port: ""
+            smtp_ssl: false
+            from_addr: ""
+
+  grafana:
+    enabled: true
+    # If Grafana is enabled, please add a valid Grafana server URL as per the following guidelines.
+    # If Grafana is deployed WITHOUT TLS: "http://[grafana-ip]:[grafana-port]" OR "http://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    # If Grafana is deployed WITH TLS: "https://[grafana-ip]:[grafana-port]" OR "https://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    url: "{deployParameters.grafana-url}"
+    prometheusinfo:
+      url: "http://prometheus.fed-prometheus:9090" #Devskim: ignore DS137138
+
+  monitoring:
+    prometheus:
+      enabled: true
+
+  # Environment variables 
+  envVars:
+    fedType: "paas"
+    fedUniqueName: "{deployParameters.db-etcd-unique-name}"
+
+  overrides:
+    preDeleteEnabled: false
+
+pod-etcd_operator:
+    ## Install Default RBAC roles and bindings
+    rbacEnabled: true
+
+    ## Service account names and whether to create them
+    serviceAccount:
+      etcdOperatorServiceAccount:
+        create: true
+        name: etcdoperator-sa
+      backupOperatorServiceAccount:
+        create: false
+        name:  backupoperator-sa
+      restoreOperatorServiceAccount:
+        create: false
+        name:  restoreoperator-sa
+        
+    loadBalancerService:
+      enabled: false
+      loadBalancerIP: "{deployParameters.db-etcd-lb-ip}"
+      loadBalancerFQDN: ""
+      loadBalancerSharingKey: ""
+      port: 31379       # -- The range of valid ports is 30000-32767
+      serviceAnnotations:
+        service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "{deployParameters.oam-lb-subnet}"
+    etcdOperator:
+      image:
+        ramMode: true
+      commandArgs: {
+        "disaster-recovery":"true"
+      }
+    etcdCluster:
+       size: 3
+       # To enable Pod Disruption Budget
+       podDisruptionBudget:
+         enabled: true
+       pod: 
+         resources:
+           requests:
+             cpu: 500m
+             memory: 256Mi
+           limits:
+             cpu: "2"
+             memory: 8Gi
+         affinity: {}
+         #The commented section given below is the default pod affinity. In case of any modifications, uncomment the below section and modify the fields.
+         #affinity:
+         # podAntiAffinity:
+         #   preferredDuringSchedulingIgnoredDuringExecution:
+         #   - weight: 100
+         #     podAffinityTerm:
+         #       labelSelector:
+         #         matchExpressions:
+         #         - key: app 
+         #           operator: In
+         #           values:
+         #           - etcd 
+         #       topologyKey: "kubernetes.io/hostname"    
+         cluster:
+           ClusterDomain: ".cluster.local"
+    singlenodecluster:
+       enabled: false 
+
+    etcdDefrag:
+       enabled: true
+       schedule: "*/30 * * * *"
+       jobHistory: 1

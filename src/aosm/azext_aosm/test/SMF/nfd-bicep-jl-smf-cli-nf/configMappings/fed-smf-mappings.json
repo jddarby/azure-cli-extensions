@@ -1,0 +1,944 @@
+{
+    "global": {
+        "defaultRbacEnabled": true,
+        "defaultClusterRole": "permissive-network-cr",
+        "defaultServiceAccountName": "fed-smf-serviceaccount",
+        "enableSCC": false,
+        "podPriorityEnabled": true,
+        "kargoProfileTag": "smf",
+        "ingressNetworkPolicy": {
+            "enabled": true,
+            "ingressTrafficNamespaces": [
+                "fed-service-reg",
+                "fed-db-etcd",
+                "fed-paas-helpers",
+                "fed-istio",
+                "fed-prometheus",
+                "fed-smf-test",
+                "fed-upf-sim",
+                "fed-upf-sim2",
+                "fed-upf-sim3",
+                "fed-timer"
+            ]
+        },
+        "topologySpreadConstraints": {
+            "enabled": true,
+            "constraints": [
+                {
+                    "maxSkew": 1,
+                    "topologyKey": "kubernetes.io/hostname",
+                    "whenUnsatisfiable": "ScheduleAnyway"
+                }
+            ]
+        },
+        "udsf": {
+            "monitoringEnabled": true,
+            "server": {
+                "host": "redis-cluster.fed-redis-cluster.svc.cluster.local",
+                "port": "6379"
+            }
+        },
+        "timerGR": {
+            "monitoringEnabled": false
+        },
+        "tabdb": {
+            "etcd": {
+                "name": "etcd-server",
+                "svc": "etcd-cluster-client.fed-db-etcd.svc.cluster.local",
+                "port": "2379",
+                "targetPort": "31869"
+            }
+        },
+        "enablePdbs": true,
+        "fileserver": {
+            "ui": {
+                "loadBalancerIP": "",
+                "loadBalancerPort": "85",
+                "serviceAnnotations": {
+                    "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.oam-lb-subnet}"
+                }
+            },
+            "nfs": {
+                "remoteHost": "{deployParameters.nfs-server}",
+                "remotePath": "{deployParameters.nfs-filepath}",
+                "remotePort": "85"
+            },
+            "cephfs": {
+                "enabled": false
+            }
+        },
+        "mesh": {
+            "istio": {
+                "ingressGw": "ingress-gateway",
+                "ingressGwIP": "{deployParameters.smf-ingress-gw-lb-ip}",
+                "ingressGwFQDN": "smf.com",
+                "ingressGwMaxConcurrentStreams": 1536,
+                "ingressGwInitialStreamWindowSize": 262144,
+                "mtlsEnabled": false,
+                "serviceAnnotations": {
+                    "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.gn-lb-subnet}"
+                },
+                "ingressGwLi": {
+                    "ingressGw": "ingress-gateway-li",
+                    "ingressGwIP": "{deployParameters.smf-ingress-gw-li-lb-ip}",
+                    "ingressGwFQDN": "smfli.com",
+                    "ingressGwHttpPort": "",
+                    "ingressGwHttpsPort": "",
+                    "mtlsEnabled": false,
+                    "ingressGwLiMaxConcurrentStreams": 1536,
+                    "ingressGwInitialStreamWindowSize": 262144,
+                    "ingressInitialProtocol": "https",
+                    "serviceAnnotations": {
+                        "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                        "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.li-lb-subnet}"
+                    },
+                    "ingressMultiSNI": {
+                        "enabled": false,
+                        "host": [
+                            {
+                                "name": "smf.litest.com"
+                            }
+                        ]
+                    }
+                },
+                "ingressGwTLSLi": {
+                    "enabled": false,
+                    "mode": "MUTUAL",
+                    "userProvided": {
+                        "enabled": false,
+                        "cacert": "",
+                        "tlscrt": "",
+                        "tlskey": ""
+                    }
+                },
+                "egressGwTLSLi": {
+                    "enabled": false,
+                    "mode": "MUTUAL",
+                    "userProvided": {
+                        "enabled": false,
+                        "cacert": "",
+                        "tlscrt": "",
+                        "tlskey": ""
+                    }
+                }
+            },
+            "filter": {
+                "enabled": true,
+                "name": "smfcc-filter-plugin",
+                "mountPath": "/etc/filters"
+            }
+        },
+        "monitoring": {
+            "prometheus": {
+                "enabled": true,
+                "namespace": "fed-prometheus"
+            }
+        },
+        "metricsScrapeInterval": "30s",
+        "grafana": {
+            "enabled": true,
+            "url": "{deployParameters.grafana-url}",
+            "prometheusinfo": {
+                "url": "http://prometheus.fed-prometheus:9090"
+            }
+        },
+        "logging": {
+            "enabled": false,
+            "fluentd": {
+                "buffer": {
+                    "bufferLimit": "32m",
+                    "retryWait": "10s",
+                    "maxRetries": 1
+                }
+            },
+            "elastic": {
+                "IP": "{deployParameters.elasticsearch-host}",
+                "Port": 9200
+            },
+            "enableAddlTargets": false,
+            "addlTargets": [
+                {
+                    "forward": {
+                        "name": "fluentd",
+                        "host": "{deployParameters.fluentd-targets-host}",
+                        "port": 24224
+                    }
+                }
+            ],
+            "alerts": {
+                "enabled": false,
+                "host": "",
+                "port": 3030,
+                "realert": {
+                    "minutes": 1
+                },
+                "receivers": [
+                    {
+                        "slack": {
+                            "webhookurl": ""
+                        }
+                    },
+                    {
+                        "post": {
+                            "http_post_url": ""
+                        }
+                    },
+                    {
+                        "email": {
+                            "to_address": "",
+                            "smtp_host": "",
+                            "smtp_port": "",
+                            "smtp_ssl": false,
+                            "from_addr": ""
+                        }
+                    }
+                ]
+            }
+        },
+        "registry": {
+            "docker": {
+                "repoPath": "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+            }
+        },
+        "license": {
+            "flexera": {
+                "remoteHost": "{deployParameters.license-host}",
+                "remotePort": "{deployParameters.license-port}",
+                "enabled": false
+            }
+        },
+        "envVars": {
+            "fedType": "smf",
+            "fedUniqueName": "{deployParameters.smf-unique-name}",
+            "serviceRegistryNamespace": "fed-service-reg",
+            "encryptPaasDataForLI": true,
+            "configDataEncryptionEnable": false
+        },
+        "encryptDecyptKey": {
+            "enabled": true,
+            "key": "afct89Ibno"
+        },
+        "encryptConfigKey": {
+            "enabled": true,
+            "key": "qrdi86Lghm"
+        },
+        "loadBalancerSourceRanges": "[]",
+        "enableExternalChfInterface": true,
+        "enableLocalCdrsInterface": false,
+        "enableGtpcAgent": true,
+        "externalLBSvc": {
+            "enabled": true,
+            "configs": {
+                "worker-connections": "20000",
+                "worker-processes": "16",
+                "gtpc_port": "5000 6000",
+                "pfcp_port": "7000 10000"
+            }
+        },
+        "externalLB": {
+            "pfcp_udp_svc": {
+                "enabled": false,
+                "transportConfig": {
+                    "udpRequests": 1,
+                    "udpResponses": 1,
+                    "nextUpstream": true,
+                    "nextUpstreamTimeout": "20s",
+                    "nextUpstreamTries": 1
+                },
+                "loadBalancingMethod": "hash ${pfcp} consistent",
+                "configs": {
+                    "timeout": "60s"
+                }
+            },
+            "gtpc_udp_svc": {
+                "enabled": true,
+                "transportConfig": {
+                    "udpRequests": 10,
+                    "udpResponses": 1,
+                    "nextUpstream": true,
+                    "nextUpstreamTimeout": "20s",
+                    "nextUpstreamTries": 1
+                },
+                "loadBalancingMethod": "",
+                "configs": {
+                    "timeout": "60s"
+                }
+            }
+        },
+        "externalGtpcSvc": [
+            {
+                "enabled": true,
+                "name": "{deployParameters.gtpc-agent-ext-svc-name}",
+                "loadBalancerIP": "{deployParameters.gtpc-agent-lb-ip}",
+                "loadBalancerFQDN": "s5-s8-s2a-s2b-pgw.com",
+                "serviceAnnotations": {
+                    "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.gn-lb-subnet}"
+                },
+                "type": [
+                    "{deployParameters.gtpc-agent-ext-svc-type}"
+                ]
+            }
+        ],
+        "externalPfcpSvc": [
+            {
+                "enabled": true,
+                "name": "{deployParameters.pfcp-ext-svc-name}",
+                "loadBalancerIP": "{deployParameters.pfcp-lb-ip}",
+                "loadBalancerFQDN": "",
+                "serviceAnnotations": {
+                    "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-enable-high-availability-ports": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.n4-lb-subnet}"
+                },
+                "type": [
+                    "{deployParameters.pfcp-ext-svc-type}"
+                ]
+            }
+        ],
+        "enableLIX1": true,
+        "enableLIX2": true,
+        "enableNchfUsageReplay": true,
+        "enableLivenessProbe": true,
+        "resource": {
+            "defaultlimit": {
+                "cpu": 8,
+                "memory": "3Gi"
+            },
+            "defaultrequest": {
+                "cpu": "10m",
+                "memory": "10Mi"
+            }
+        }
+    },
+    "pod-fileserver": {
+        "enabled": true,
+        "deployment": {
+            "replicas": 1
+        },
+        "pvc": {
+            "web": {
+                "requestsStorage": "5Gi",
+                "storageClassName": "web"
+            },
+            "cfg": {
+                "requestsStorage": "5Gi",
+                "storageClassName": "cfg"
+            }
+        }
+    },
+    "pod-cfgmgr": {
+        "enabled": true,
+        "confd": {
+            "aes256cfb128Key": ""
+        },
+        "rbacEnabled": true,
+        "clusterRole": "permissive-full-cr",
+        "serviceAccountName": "cfgmgr-serviceaccount",
+        "deployment": {
+            "replicas": 1
+        },
+        "service": {
+            "loadBalancerIP": "{deployParameters.smf-cfgmgr-lb-ip}",
+            "loadBalancerFQDN": "",
+            "serviceAnnotations": {
+                "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.oam-lb-subnet}"
+            }
+        },
+        "cfgmgrFQDN": "cfgmgr.com",
+        "certManager": {
+            "enabled": true,
+            "certDuration": "10h",
+            "renewBefore": "1h",
+            "organization": "affirmednetworks",
+            "issuerName": "affirmed-clusterissuer"
+        },
+        "userProvided": {
+            "enabled": false,
+            "cacert": "",
+            "tlscrt": "",
+            "tlskey": ""
+        },
+        "security": {
+            "tacacs_protocol": "",
+            "tacacs_service": "",
+            "enable_tacacs_accounting": "",
+            "tacacs_servers": [
+                {
+                    "auth_timeout": "",
+                    "auth_type": "",
+                    "ip_address": "",
+                    "key": "",
+                    "port": ""
+                }
+            ]
+        },
+        "tlscipherSuite": {
+            "enabled": true,
+            "cipherString": "DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA"
+        },
+        "sshdcipherSuite": {
+            "enabled": true,
+            "cipherString": "aes256-ctr,aes192-ctr,aes128-ctr"
+        }
+    },
+    "pod-istio_gw": {
+        "enabled": true,
+        "rbacEnabled": true,
+        "istioNspace": "fed-istio",
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "ingressGateway": {
+            "enabled": true,
+            "ingressGatewayServiceAccountName": "istio-ingressgateway-service-account",
+            "podPriority": {
+                "enabled": false
+            }
+        },
+        "egressGateway": {
+            "enabled": true,
+            "egressGatewayServiceAccountName": "istio-egressgateway-service-account"
+        },
+        "paasSelector": {
+            "jaegerHostName": "fqdn.com"
+        }
+    },
+    "pod-istio_gw_li": {
+        "enabled": true,
+        "rbacEnabled": true,
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "istioNspace": "fed-istio",
+        "ingressGateway": {
+            "enabled": true,
+            "ingressGatewayLiServiceAccountName": "istio-ingressgateway-li-service-account"
+        },
+        "egressGateway": {
+            "enabled": true,
+            "egressGatewayLiServiceAccountName": "istio-egressgateway-li-service-account",
+            "hpa": {
+                "enabled": true,
+                "workerCpuRequests": "200m",
+                "minReplicas": 1,
+                "maxReplicas": 5,
+                "averageUtilization": 80
+            }
+        },
+        "paasSelector": {
+            "jaegerHostName": "fqdn.com"
+        }
+    },
+    "pod-nrf_agent": {
+        "enabled": true,
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "deployment": {
+            "replicas": 1,
+            "apiServiceHost": "",
+            "apiServicePort": "80"
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "380m",
+            "workerCpuRequests": "600m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 3,
+            "minReplicas": 2,
+            "averageUtilization": 80
+        },
+        "log": {
+            "throttlerEnable": true,
+            "throttlerMax": 10,
+            "throttlerInterval": 60,
+            "throttlerSwerr": 1,
+            "startupDelay": 30
+        }
+    },
+    "pod-nginx": {
+        "rbacEnabled": true,
+        "serviceAccountName": "nginx-serviceaccount",
+        "controller": {
+            "ingressClass": "smf.nginx"
+        }
+    },
+    "pod-sub_analyzer": {
+        "enabled": true,
+        "deployment": {
+            "replicas": 1,
+            "apiServiceHost": "analyzer.com"
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "200m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 5,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "log": {
+            "throttlerEnable": true,
+            "throttlerMax": 10,
+            "throttlerInterval": 60,
+            "throttlerSwerr": 1,
+            "startupDelay": 30
+        }
+    },
+    "pod-timer": {
+        "enabled": true,
+        "cnaInfraThreadPoolSizeDbClient": "1000",
+        "deployment": {
+            "replicas": 3
+        },
+        "rbacEnabled": true,
+        "role": "chronos-operator-role",
+        "serviceAccountName": "chronos-operator-serviceaccount",
+        "mesh": {
+            "filter": {
+                "enabled": true,
+                "mountPath": "/etc/filters"
+            }
+        }
+    },
+    "pod-pfcp_c": {
+        "enabled": true,
+        "deployment": {
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "service": {
+            "loadBalancerIP": "{deployParameters.pfcp-c-loadbalancer-ip}",
+            "externalFqdn": "",
+            "serviceAnnotations": {
+                "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                "service.beta.kubernetes.io/azure-load-balancer-enable-high-availability-ports": "true",
+                "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.gn-lb-subnet}"
+            }
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "390m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 6,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": true,
+            "samplerType": "probabilistic",
+            "samplerParam": "1.0",
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-event_exposure": {
+        "enabled": true,
+        "cnaInfraThreadPoolSizeDbClient": "1000",
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "deployment": {
+            "dynamicPccEnabled": "true",
+            "enableSmfccDebugLogs": false,
+            "replicas": 1
+        },
+        "tracing": {
+            "enabled": true,
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "kafkaCpuRequests": "10m",
+            "workerCpuRequests": "390m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 6,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-smfcc": {
+        "enabled": true,
+        "cnaInfraThreadPoolSizeDbClient": "1000",
+        "consistentHashRingSize": "1048576",
+        "semLoadBalMinRingSize": "10240",
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "deployment": {
+            "dynamicPccEnabled": "true",
+            "enableSmfccDebugLogs": false,
+            "replicas": 1
+        },
+        "alert": {
+            "minPduSesionCreateSuccessRate": 90
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "kafkaCpuRequests": "10m",
+            "workerCpuRequests": "390m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 6,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": true,
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        },
+        "log": {
+            "throttlerEnable": true,
+            "throttlerMax": 10,
+            "throttlerInterval": 60,
+            "throttlerSwerr": 1,
+            "throttlerStartupDelay": 30
+        },
+        "tagCount": {
+            "type": "estimate",
+            "bucketSize": 18
+        }
+    },
+    "pod-urm": {
+        "enabled": true,
+        "deployment": {
+            "enableUrmLogs": false,
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "390m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 6,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": true,
+            "samplerType": "probabilistic",
+            "samplerParam": "1.0",
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-smf_monitor": {
+        "enabled": true,
+        "gaugeUpdateInterval": 300,
+        "deployment": {
+            "replicas": 1
+        }
+    },
+    "pod-inband_data_agt": {
+        "enabled": true,
+        "deployment": {
+            "enableIdaLogs": false,
+            "replicas": 1
+        },
+        "service": {
+            "loadBalancerIP": "{deployParameters.inband-data-agent-lb-ip}",
+            "serviceAnnotations": {
+                "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.gn-lb-subnet}"
+            }
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "390m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 3,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": true,
+            "samplerType": "probabilistic",
+            "samplerParam": "1.0",
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-chf_agent": {
+        "cnaInfraThreadPoolSizeDbClient": "1000",
+        "deployment": {
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "hpa": {
+            "enabled": true,
+            "minReplicas": 1,
+            "maxReplicas": 5,
+            "infraCpuRequests": "100m",
+            "kafkaCpuRequests": "100m",
+            "workerCpuRequests": "800m",
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": true,
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "log": {
+            "throttlerEnable": true,
+            "throttlerMax": 10,
+            "throttlerInterval": 60,
+            "throttlerSwerr": 1,
+            "throttlerStartupDelay": 30
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-cdr_agent": {
+        "deployment": {
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "nfs": {
+            "storage": "5Gi",
+            "storageClass": "cdr-nfs",
+            "lcdrPath": "{deployParameters.lcdr-filepath}",
+            "pvName": "cdr-nfs-pv",
+            "pvcName": "cdr-nfs-pvc",
+            "directory": "/user/accounting/lcdr"
+        },
+        "storage": {
+            "type": "local",
+            "storageClassName": "rook-cephfs",
+            "cdrStorageSize": "5Gi",
+            "directory": "/user/accounting/lcdr",
+            "pvcName": "cdr-cephfs-pvc"
+        },
+        "hpa": {
+            "enabled": true,
+            "minReplicas": 1,
+            "maxReplicas": 5,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "460m",
+            "averageUtilization": 50
+        },
+        "tracing": {
+            "enabled": false,
+            "samplerType": "probabilistic",
+            "samplerParam": "1.0",
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-gtpc_agent": {
+        "legacyLB": false,
+        "deployment": {
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "460m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 3,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": false,
+            "samplerType": "probabilistic",
+            "samplerParam": "1.0",
+            "agentPort": "6831",
+            "logEnabled": "false"
+        }
+    },
+    "pod-li_x1": {
+        "rbacEnabled": true,
+        "clusterRole": "permissive-network-cr",
+        "serviceAccountName": "li-x1-serviceaccount",
+        "cnaInfraThreadPoolSizeDbClient": "1000",
+        "deployment": {
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "460m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 5,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-li_x2": {
+        "rbacEnabled": true,
+        "clusterRole": "permissive-network-cr",
+        "serviceAccountName": "li-x2-serviceaccount",
+        "cnaInfraThreadPoolSizeDbClient": "1000",
+        "deployment": {
+            "replicas": 1
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "hpa": {
+            "enabled": true,
+            "infraCpuRequests": "10m",
+            "workerCpuRequests": "460m",
+            "workerCpuLimits": "1000m",
+            "maxReplicas": 5,
+            "minReplicas": 1,
+            "averageUtilization": 80
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        }
+    },
+    "pod-kafka_rplay_agt": {
+        "deployment": {
+            "replicas": 1
+        },
+        "hpa": {
+            "enabled": true,
+            "minReplicas": 1,
+            "maxReplicas": 5,
+            "infraCpuRequests": "50m",
+            "kafkaCpuRequests": "200m",
+            "workerCpuRequests": "700m",
+            "averageUtilization": 80
+        },
+        "tracing": {
+            "enabled": true,
+            "samplerType": "probabilistic",
+            "samplerParam": "1.0",
+            "agentPort": "6831",
+            "logEnabled": "false"
+        },
+        "log": {
+            "throttlerEnable": true,
+            "throttlerMax": 10,
+            "throttlerInterval": 60,
+            "throttlerSwerr": 1,
+            "throttlerStartupDelay": 30
+        },
+        "podDisruptionBudget": {
+            "minAvailable": "10%"
+        },
+        "upgrade": {
+            "canary": false,
+            "canaryVersWeight": 0,
+            "stableVersWeight": 0,
+            "stableVersion": "0.0.0",
+            "stableInfraImage": "",
+            "stableWorkerImage": ""
+        },
+        "commitServerRspCodeList": {
+            "causecode": ""
+        }
+    }
+}

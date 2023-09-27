@@ -18,6 +18,7 @@ from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
 from azext_aosm._configuration import CNFConfiguration, HelmPackageConfig
+from azext_aosm.deploy.artifact import Artifact as dummyArtifact
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
     CNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
@@ -130,9 +131,39 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     # Get schema for each chart
                     # (extract mappings and relevant parts of the schema)
                     # + Add that schema to the big schema.
-                    self.deployment_parameter_schema["properties"].update(
-                        self._get_chart_mapping_schema(helm_package)
-                    )
+                    try:
+                        self.deployment_parameter_schema["properties"].update(
+                            self._get_chart_mapping_schema(helm_package)
+                        )
+                    except InvalidTemplateError:
+                        # TEMPORARY workaround to fix up schema
+                        print("Values schema is missing or wrong, create a new one")
+                        values_yaml = self._tmp_dir / helm_package.name / "values.yaml"
+                        values_schema = self._tmp_dir / helm_package.name / CNF_VALUES_SCHEMA_FILENAME
+                        # Run helm plugin install https://github.com/holgerjh/helm-schema
+                        create_schema_cmd = [
+                            str(shutil.which("helm")),
+                            "schema",
+                            "create",
+                            f"{values_yaml}",
+                            "-o",
+                            f"{values_schema}",
+                        ]
+                        print(f"Create schema by running {create_schema_cmd}")
+                        dummy = dummyArtifact(
+                            "dummy",
+                            "dummy",
+                            "dummy",
+                            "dummy",
+                            "dummy",
+                        )
+                        dummy._call_subprocess_raise_output(create_schema_cmd)
+                        self.deployment_parameter_schema["properties"].update(
+                            self._get_chart_mapping_schema(helm_package)
+                        )
+                        #helm schema create values.yaml -o values.schema.json
+                        
+                        
 
                     # Get all image line matches for files in the chart.
                     # Do this here so we don't have to do it multiple times.
@@ -709,12 +740,12 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                         final_values_mapping_dict[k].append(
                             self._replace_values_with_deploy_params(item, param_name)
                         )
-                    elif isinstance(v, (str, int, bool)) or not v:
+                    elif isinstance(item, (str, int, bool)) or not item:
                         replacement_value = f"{{deployParameters.{param_name}}}"
                         final_values_mapping_dict[k].append(replacement_value)
                     else:
                         raise ValueError(
-                            f"Found an unexpected type {type(v)} of key {k} in "
+                            f"Found an unexpected type {type(item)} of key {k} in "
                             "values.yaml, cannot generate values mapping file."
                         )
             elif not v:

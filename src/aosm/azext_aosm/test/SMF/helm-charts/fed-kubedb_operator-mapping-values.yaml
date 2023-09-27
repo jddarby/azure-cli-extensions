@@ -1,0 +1,227 @@
+global:
+  # RBAC dafault configuration per namespace: These configuration is used to create the clusterrolebinding and serviceaccount
+  # Configuring defaultRbacEnabled to true will create clusterrolebinding. Configuring defaultRbacEnabled to false, clusterrolebinding will not be created. 
+  # defaultClusterRole configuration is to configure the clusterrole in clusterrolebinding.
+  defaultRbacEnabled: true
+  defaultClusterRole: permissive-full-cr
+  defaultServiceAccountName: fed-kubedb-operator-serviceaccount
+
+  # If running on OCP cluster, please set "enableSCC" to "true"
+  enableSCC: false
+ 
+  #Flag to enable/disable pod priority.
+  podPriorityEnabled: true
+  
+  logging:
+    enabled: false
+    fluentd:
+      buffer:
+        bufferLimit: 512m  # Total buffer size. Maximum amount of buffer space each fluentd thread would use to keep logs. After this is exhaused, fluentd would start deleting oldest logs to make room for new logs.
+        retryWait: 180s    # Interval(seconds) at which the buffer flush is retried in case of failure.
+        maxRetries: 10     # Max number of retries to flush a buffer chunk. After this is exhausted, fluentd would delete the chunk.
+    elastic:
+      IP: ""
+      Port: 9200
+    enableAddlTargets: false
+    addlTargets:
+    - forward:
+        name: fluentd
+        host: ""
+        port: 24224
+
+  grafana:
+    enabled: true
+    # If Grafana is enabled, please add a valid Grafana server URL as per the following guidelines.
+    # If Grafana is deployed WITHOUT TLS: "http://[grafana-ip]:[grafana-port]" OR "http://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    # If Grafana is deployed WITH TLS: "https://[grafana-ip]:[grafana-port]" OR "https://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    url: ""
+    prometheusinfo:
+      url: "http://prometheus.fed-prometheus:9090"
+
+  monitoring:
+    prometheus:
+      enabled: true
+
+  # Prometheus metrics scrape interval. Default value set to 1m.
+  metricsScrapeInterval: 1m
+
+  # PaaS Registry Selector
+  registry:
+    docker:
+      repoPath: "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+
+  # Environment variables
+  envVars:
+    fedType:        "paas"
+    fedUniqueName:  "kubedb-default"
+
+  overrides:
+    preInstallEnabled: true
+    postInstallEnabled: true
+    preUpgradeEnabled: false
+    postUpgradeEnabled: false
+    preDeleteEnabled: true
+    postDeleteEnabled: true
+
+pod-kubedb_catalog:
+  # Enable performance related sysctl commands
+  enablePerf: false
+
+pod-kubedb_operator:
+  # Compute Resources required by the operator container
+  operator:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+  # Image Pull secret
+  imagePullSecrets: []
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
+
+  # Installs KubeDB operator as critical addon
+  criticalAddon: false
+  
+  # Log level for operator
+  logLevel: 5
+  
+  # Annotations passed to operator pod(s).
+  annotations: {}
+
+  # Annotations passed to operator pod(s)
+  podAnnotations: {}
+  # Tolerations for pod assignment
+  tolerations: []
+  # Affinity for pod assignment
+  affinity: {}
+
+  # Enable/Disable RBAC
+  rbacEnabled: true
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: "kubedb-operator-sa"
+
+  monitoring:
+    # specify whether to monitor KubeDB operator
+    enabled: false
+    # specify monitoring agent (either "prometheus.io/builtin" or "prometheus.io/coreos-operator")
+    agent: "none"
+    serviceMonitor:
+      # Specify the labels for ServiceMonitor
+      labels: {}
+  # Additional psp names passed to operator
+  additionalPodSecurityPolicies: []
+
+pod-kubedb_autosc:
+  # Interval between each autoscaler loop
+  updateInterval: 1m
+  # Storage Autoscaling configurations
+  storageAutoscaler:
+    prometheus:
+      # Prometheus address for storage metrics
+      address: "http://prometheus.fed-prometheus:9090"
+      # Bearer token for prometheus server
+      bearerToken: ""
+      # CA cert for prometheus server TLS connections
+      caCert: ""
+  # Compute Resources required by the operator container
+  operator:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+  # Image Pull secret
+  imagePullSecrets: []
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
+  # Installs KubeDB operator as critical addon
+  criticalAddon: false
+  # Log level for operator
+  logLevel: 5
+  # Annotations passed to operator deployment
+  annotations: {}
+  # Annotations passed to operator pod(s)
+  podAnnotations: {}
+  # Tolerations for pod assignment
+  tolerations: []
+  # Affinity for pod assignment
+  affinity: {}
+  # Enable/Disable RBAC
+  rbacEnabled: true
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: "kubedb-autosc-sa"
+  monitoring:
+    # specify whether to monitor KubeDB operator
+    enabled: false
+    # specify monitoring agent (either "prometheus.io/builtin" or "prometheus.io/coreos-operator")
+    agent: "none"
+    serviceMonitor:
+      # Specify the labels for ServiceMonitor
+      labels: {}
+  # Additional psp names passed to operator
+  additionalPodSecurityPolicies: []
+
+pod-kubedb_enterp:
+  # Compute Resources required by the operator container
+  operator:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+  # Image Pull secret
+  imagePullSecrets: []
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
+  # Installs KubeDB operator as critical addon
+  criticalAddon: false
+  # Log level for operator
+  logLevel: 5
+  # Annotations passed to operator deployment
+  annotations: {}
+  # Annotations passed to operator pod(s)
+  podAnnotations: {}
+  # Tolerations for pod assignment
+  tolerations: []
+  # Affinity for pod assignment
+  affinity: {}
+  # Enable/Disable RBAC
+  rbacEnabled: true
+  serviceAccount:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: "kubedb-enterp-sa"
+  monitoring:
+    # specify whether to monitor KubeDB operator
+    enabled: false
+    # specify monitoring agent (either "prometheus.io/builtin" or "prometheus.io/coreos-operator")
+    agent: "none"
+    serviceMonitor:
+      # Specify the labels for ServiceMonitor
+      labels: {}
+  # Additional psp names passed to operator
+  additionalPodSecurityPolicies: []
+

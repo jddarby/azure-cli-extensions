@@ -1,0 +1,389 @@
+# Default values for kafka-operator.
+# This is a YAML-formatted file.
+
+# Declare variables to be passed into your templates.
+
+
+enabled: true
+global:
+  
+  #dafault rbac clusterrole and serviceaccount configuration
+  defaultRbacEnabled: true
+  defaultClusterRole: permissive-network-cr
+  defaultServiceAccountName: fed-kafka-serviceaccount
+  podPriorityEnabled: true
+
+  # PaaS Registry Selector
+  registry:
+    docker:
+      repoPath: "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+
+  logging:
+    enabled: false
+    fluentd:
+      buffer:
+        bufferLimit: 512m  # Total buffer size. Maximum amount of buffer space each fluentd thread would use to keep logs. After this is exhaused, fluentd would start deleting oldest logs to make room for new logs.
+        retryWait: 180s    # Interval(seconds) at which the buffer flush is retried in case of failure.
+        maxRetries: 10     # Max number of retries to flush a buffer chunk. After this is exhausted, fluentd would delete the chunk.
+    elastic:
+      IP: ""
+      Port: 9200
+    enableAddlTargets: false
+    addlTargets:
+    - forward:
+        name: fluentd
+        host: ""
+        port: 24224
+    alerts:
+      enabled: false
+      host: ""
+      port: 3030
+      realert:
+        minutes: 1
+      # Multiple receivers can be configured under the below receivers section. For example: if another slack reciever is to be configured,
+      # then add another list item for slack by following the syntax as shown below. Currently 3 types of receivers are supported i.e slack, email and HTTP POST.
+      receivers:
+        - slack:
+            webhookurl: ""
+        - post:
+            http_post_url: ""
+        - email:
+            to_address: ""
+            smtp_host: ""
+            smtp_port: ""
+            smtp_ssl: false
+            from_addr: ""
+
+  grafana:
+    enabled: true 
+    # If Grafana is enabled, please add a valid Grafana server URL as per the following guidelines.
+    # If Grafana is deployed WITHOUT TLS: "http://[grafana-ip]:[grafana-port]" OR "http://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    # If Grafana is deployed WITH TLS: "https://[grafana-ip]:[grafana-port]" OR "https://[paas-lb-ip]:[grafana-port]" (by-default grafana-port is 3000)
+    url: ""
+    prometheusinfo:
+      url: "http://prometheus.fed-prometheus:9090"
+
+  # PaaS Monitoring Selector
+  monitoring:
+    prometheus:
+      enabled: true
+
+  # Prometheus metric scrape interval. Default value set to 1m.
+  metricsScrapeInterval: 1m
+
+  envVars:
+    fedType: "paas"
+    fedUniqueName: "kafka-default"
+  
+  # node affinity deployment
+  deployment:
+    nodeDataplaneAffinity: "false"
+
+  overrides:
+    postInstallEnabled:  true
+    postUpgradeEnabled:  true
+    preUpgradeEnabled:  true
+    preRollbackEnabled:  true    
+    postRollbackEnabled: true    
+
+pod-kafka:
+  rbacEnabled: true
+  serviceAccountNameAutoProxy: auto-proxy-sa
+  serviceAccountNameKafkaOperator: kafka-operator-sa
+  serviceAccountNameEnvoy: envoy-sa
+  # ns: {{ .Release.Namespace }}
+  replicaCount: 1
+  operator: 
+    leaderElection: false
+    upgradeStrategy: Recreate
+    resources:
+      limits:
+        cpu: 500m
+        memory: 2Gi
+      requests:
+        cpu: 10m
+        memory: 256Mi 
+  broker:
+    # provision to configure connections.max.idle.ms, setting it to default which is 600000
+    connectionsIdleTimeout: 600000 
+    # this count determines how many kafka brokers are brought up in the cluster
+    count: 3
+    #partition count of internal topic __consumer_offsets. Has to be high for production setup as it cannot be changed after deployment
+    internalTopicsPartition: 50
+    # DownScaleLimit the limit for auto-downscaling the Kafka cluster
+    downScaleLimit: 3
+    # UpScaleLimit the limit for auto-upscaling the Kafka cluster
+    upScaleLimit: 6    
+    
+    JVMOpts: "-Xms2G -Xmx2G"
+    resources:
+      limits:
+        memory: "5Gi"
+        cpu: "1500m"
+      requests:
+        memory: "4Gi"
+        cpu: "1000m"
+  cruisecontrol:
+    # partitions for internal CC topics __KafkaCruiseControlPartitionMetricSamples, __KafkaCruiseControlModelTrainingSamples. 
+    internalTopicsPartition: 32
+    resources:
+      limits:
+        memory: "1Gi"
+        cpu: "100m"
+      requests:
+        memory: "512Mi"
+        cpu: "10m"
+    brokerDefaultCapacity:    
+      cpuCores: "3"
+      nwIn: "9000000"
+      nwOut: "9000000"   
+      brokerLimit: 10000
+    # The list of supported hard goals
+    #com.linkedin.kafka.cruisecontrol.analyzer.goals.DiskCapacityGoal
+    #com.linkedin.kafka.cruisecontrol.analyzer.goals.CpuCapacityGoal
+    #com.linkedin.kafka.cruisecontrol.analyzer.goals.ReplicaCapacityGoal
+    # add comma separated from above list
+    hardGoals: "com.linkedin.kafka.cruisecontrol.analyzer.goals.ReplicaCapacityGoal,com.linkedin.kafka.cruisecontrol.analyzer.goals.DiskCapacityGoal"
+    selfHealing:
+      enabled: false    
+      # enable self healing for broker failure
+      brokerFailure: false    
+      # enable self healing for goal violation
+      goalViolation: false    
+      # enable self healing for metric anomaly
+      metricAnomaly: false           
+  envoy:
+    #loadBlancerIP can be set to a fixed value to instruct metalLB to assign envoy with this specific IP
+    loadBalancerIP: ""
+    loadBalancerSharingKey: "paas"
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "100m"
+      requests:
+        memory: "256Mi"
+        cpu: "10m"
+    serviceAnnotations:
+      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "none"    
+    adminPort: 39901
+    anyCastPort: 39092
+  kafka_prometheus:
+    resources:
+      limits:
+        memory: "4Gi"
+        cpu: "500m"
+      requests:
+        memory: "128Mi"
+        cpu: "10m"    
+
+  alertManager:
+     enable: true
+
+  prometheusMetrics:
+     enabled: true
+     authProxy:
+       enabled: true
+
+
+  encryption:
+    enable: false 
+
+  storage:
+    # type can be local, remote or rook
+    type: local
+
+    # To use storage class of fed-rook-ceph, Configure storageclass field with the storage class name that gets deployed with fed-rook-ceph.
+    # default value is "rook-cephbp". To use any other storage provisioner provide name of your convienence.   
+    storageclass: kfsc
+    # if storage.type is set as rook, Configure storageclass and do not configure the below mentioned fields. When type is rook, provisioner and all the other 
+    # configuration parameters will be taken from storage class of fed-rook-ceph. 
+    # set provisioner as:
+    # kubernetes.io/cinder for cinder storage
+    # rancher.io/local-path for local storage
+    # kubernetes.io/azure-disk for azureDisk
+
+    #To provide any other custom storage, configure provisioner field and add related parameters under customParameters
+    provisioner: rancher.io/local-path
+    reclaimPolicy: Delete
+    volumeBindingMode: WaitForFirstConsumer
+    # parameters will be picked up based on the configured provisioner.
+    parameters:
+      cinder:
+        type: ceph
+        availability: nova
+        fsType: ext4
+      azureDisk:
+        storageaccounttype: ""
+        kind: ""
+      #configure below customParameters to provide parameters for custom storage option, if the provisioner is none of the above. 
+      customParameters: {}
+    size: 4768Mi
+   ## partitions cannot be reduced
+   #  replication factor should definitely be <= count declared above (broker->count)
+   #  partitions is set to to be <= broker->count . will have to increase later depending on throughput required
+   # Retentionms (in milliseconds): This configuration (which is given in milliseconds) controls the maximum time log is retained before kafka will discard old log segments to free up space. This represents an SLA on how soon consumers must read their data. Default is 259200000 ms which is 3 days
+   # retentionBytes: This configuration (which is given in bytes) controls the maximum size a partition (which consists of log segments) can grow to before kafka will discard old log segments to free up space. Default is 950000000bytes which is 950MB per partition
+   # segmentBytes: This configuration  (which is given in bytes) controls the segment file size for the log. Retention and cleaning is always done a file at a time.This size needs to be less than retentionBytes. Default is 900000000bytes which is 900MB
+  topics:
+    - name: pgw-events
+      partitions: 3 
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"      
+    - name: smf-events
+      partitions: 3
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"     
+    - name: amf-events
+      partitions: 3
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"    
+    - name: mme-events
+      partitions: 3
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"    
+    - name: tdef-events
+      partitions: 3
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"    
+    - name: ppe-events
+      partitions: 3
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"    
+    - name: tdef-summary-events
+      partitions: 3
+      replicationFactor: 3
+      retentionms: "259200000"
+      retentionBytes: "950000000"
+      segmentBytes: "900000000"
+  alertRules:
+    enabled: false
+   # config for kafkalerts 
+    brokerOverLoaded:
+      enable: false 
+      # average number of requests across brokers after which broker scale out action will be triggered
+      threshold: "3000"
+      # sampling rate
+      range: "3m"
+      # duration to watch for
+      duration: "10m"    
+    partitionCountHigh:
+      enable: false
+      # maximum number of partitions across brokers after which broker scale out will be triggered
+      threshold: "800"
+      # duration to watch for 
+      duration: "15m"
+    partitionCountLow:
+      enable: false
+      # minimum number of partitions across brokers after which broker scale in will be triggered
+      threshold: "30"
+      duration: "25m"
+    brokerNotOverLoaded:
+      enable: false
+      threshold: "3000"
+      range: "30m"
+      duration: "24h"
+    remainingDiskSpaceLow:
+      # RemainingDiskSpaceLow alert only works if storage->type is not local
+      # percentage (in decimal) of available disk space below which will disk resize action will be triggered      
+      enable: false 
+      duration: "25m"
+      # percentage of disk space available below which will trigger disk resize
+      threshold: "0.15"
+      # disk resize when RemainingDiskSpaceLow alert is triggered
+      diskIncreaseBy: "1G"          
+pod-local_path_prov:
+  rbacEnabled: true
+  serviceAccountName: local-path-storage-sa
+  storage:
+    type: local 
+    localPath: /var/kf-data
+  serviceAccount:
+    create: false
+  upgradeStrategy: Recreate
+  resources:
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+
+pod-zookeeper:
+  rbacEnabled: true
+  serviceAccountName: zookeeper-sa
+  zk:
+    resources:
+      limits:
+        memory: "1536Mi"
+        cpu: "100m"
+      requests:
+        memory: "1024Mi"
+        cpu: "10m"
+
+  zk_operator:
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "100m"
+      requests:
+        memory: "128Mi"
+        cpu: "10m"
+    probes:
+      readiness:
+        initialDelaySeconds: 30
+        periodSeconds: 40
+        failureThreshold: 3
+        successThreshold: 1
+        timeoutSeconds: 30
+      liveness:
+        initialDelaySeconds: 30
+        periodSeconds: 40
+        failureThreshold: 3
+        timeoutSeconds: 30
+    config:
+      tickTime: 6000
+      syncLimit: 10      
+      minSessionTimeout: 60000
+      maxSessionTimeout: 80000     
+  storage:
+    # type can be local, remote or rook
+    type: local
+    # if storage.type is set as rook, Configure pod-zookeeper.storage.storageClassName field with the storage class name that gets deployed with fed-rook-ceph.
+    # default value is "rook-cephbp" and do not configure the below mentioned fields. When type is rook, provisioner and all the other 
+    # configuration parameters will be taken from storage class of fed-rook-ceph. 
+    size: 1430Mi
+    storageClassName: zksc
+    # set provisioner as:
+    # kubernetes.io/cinder for cinder storage
+    # rancher.io/local-path for local storage
+    # kubernetes.io/azure-disk for azureDisk
+    
+    #To provide any other custom storage, configure provisioner field and add related parameters under customParameters
+    provisioner: rancher.io/local-path
+    reclaimPolicy: Delete
+    volumeBindingMode: WaitForFirstConsumer
+    parameters:
+      cinder:
+        type: ceph
+        availability: nova
+        fsType: ext4
+      azureDisk:
+        storageaccounttype: ""
+        kind: ""
+      #configure below customParameters to provide parameters for custom storage option, if the provisioner is none of the above. 
+      customParameters: {}
+
+

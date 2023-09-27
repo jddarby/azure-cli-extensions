@@ -1,0 +1,358 @@
+{
+    "global": {
+        "defaultRbacEnabled": true,
+        "defaultClusterRole": "permissive-network-cr",
+        "defaultServiceAccountName": "fed-prometheus-serviceaccount",
+        "podPriorityEnabled": true,
+        "enableSCC": false,
+        "kargoProfileTag": "prometheus",
+        "ingressNetworkPolicy": {
+            "enabled": true,
+            "ingressTrafficNamespaces": [
+                "fed-service-reg",
+                "fed-db-etcd",
+                "fed-istio",
+                "fed-elastic",
+                "fed-grafana"
+            ]
+        },
+        "metricsScrapeInterval": "1m",
+        "deployment": {
+            "nodeDataplaneAffinity": "false"
+        },
+        "logging": {
+            "enabled": false,
+            "fluentd": {
+                "buffer": {
+                    "bufferLimit": "512m",
+                    "retryWait": "180s",
+                    "maxRetries": 10
+                }
+            },
+            "elastic": {
+                "IP": "{deployParameters.elasticsearch-host}",
+                "Port": 9200
+            },
+            "enableAddlTargets": false,
+            "addlTargets": [
+                {
+                    "forward": {
+                        "name": "fluentd",
+                        "host": "",
+                        "port": 24224
+                    }
+                }
+            ],
+            "alerts": {
+                "enabled": false,
+                "host": "",
+                "port": 3030,
+                "realert": {
+                    "minutes": 1
+                },
+                "receivers": [
+                    {
+                        "slack": {
+                            "webhookurl": ""
+                        }
+                    },
+                    {
+                        "post": {
+                            "http_post_url": ""
+                        }
+                    },
+                    {
+                        "email": {
+                            "to_address": "",
+                            "smtp_host": "",
+                            "smtp_port": "",
+                            "smtp_ssl": false,
+                            "from_addr": ""
+                        }
+                    }
+                ]
+            }
+        },
+        "mesh": {
+            "istio": {
+                "ingressGwIP": "{deployParameters.prometheus-lb-ip}",
+                "ingressGwFQDN": "prometheus.com",
+                "ingressSvcLabel": "prometheus",
+                "ingressGwPort": 9098,
+                "mtlsEnabled": false,
+                "ingressGwTLS": {
+                    "enabled": true,
+                    "mode": "SIMPLE",
+                    "certManager": {
+                        "enabled": true,
+                        "certDuration": "10h",
+                        "renewBefore": "1h",
+                        "organization": "affirmednetworks",
+                        "issuerName": "affirmed-clusterissuer"
+                    },
+                    "userProvided": {
+                        "enabled": false,
+                        "cacert": "",
+                        "tlscrt": "",
+                        "tlskey": ""
+                    }
+                },
+                "ingressGwAdditionalServices": [
+                    {
+                        "ingressGwIP": "",
+                        "ingressGwFQDN": "alertmanager.com",
+                        "ingressGw": "alertmanager-ingress",
+                        "ingressSvcLabel": "alertmanager",
+                        "ingressGwPort": 9091,
+                        "mtlsEnabled": false,
+                        "ingressGwTLS": {
+                            "enabled": true,
+                            "mode": "SIMPLE"
+                        },
+                        "serviceAnnotations": {
+                            "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                            "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.oam-lb-subnet}"
+                        }
+                    },
+                    {
+                        "ingressGwIP": "",
+                        "ingressGwFQDN": "thanos.com",
+                        "ingressGw": "thanos-ingress",
+                        "ingressSvcLabel": "thanos",
+                        "ingressGwPort": 9090,
+                        "mtlsEnabled": false,
+                        "ingressGwTLS": {
+                            "enabled": true,
+                            "mode": "SIMPLE"
+                        },
+                        "serviceAnnotations": {
+                            "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                            "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.oam-lb-subnet}"
+                        }
+                    }
+                ],
+                "loadBalancerSharingKey": "paas",
+                "serviceAnnotations": {
+                    "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "none"
+                }
+            }
+        },
+        "grafana": {
+            "enabled": true,
+            "url": "{deployParameters.grafana-url}",
+            "prometheusinfo": {
+                "url": "http://prometheus.fed-prometheus:9090"
+            }
+        },
+        "monitoring": {
+            "prometheus": {
+                "enabled": true
+            }
+        },
+        "registry": {
+            "docker": {
+                "repoPath": "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+            }
+        },
+        "envVars": {
+            "fedType": "paas",
+            "fedUniqueName": "{deployParameters.prometheus-unique-name}"
+        },
+        "loadBalancerSourceRanges": "",
+        "overrides": {
+            "preDeleteEnabled": false,
+            "postInstallEnabled": false
+        }
+    },
+    "pod-istio_gw": {
+        "enabled": true,
+        "rbacEnabled": true,
+        "istioNspace": "fed-istio",
+        "ingressGateway": {
+            "enabled": true,
+            "ingressGatewayServiceAccountName": "istio-ingressgateway-service-account"
+        },
+        "egressGateway": {
+            "enabled": false,
+            "egressGatewayServiceAccountName": "istio-egressgateway-service-account"
+        },
+        "paasSelector": {
+            "jaegerHostName": "{deployParameters.istio-gw-jaeger-hostname}"
+        }
+    },
+    "pod-prometheus": {
+        "rbacEnabled": true,
+        "serviceAccountNameOperator": "prometheus-operator-serviceaccount",
+        "serviceAccountNamePrometheus": "prometheus-serviceaccount",
+        "serviceAccountNameAlertmanager": "alertmanager-serviceaccount",
+        "serviceAccountNameThanos": "thanos-serviceaccount",
+        "config": {
+            "global": {
+                "resolve_timeout": "5m"
+            },
+            "route": {
+                "group_wait": "30s",
+                "group_interval": "2m",
+                "repeat_interval": "2m",
+                "receiver": "null"
+            },
+            "receivers": [
+                {
+                    "name": "null"
+                },
+                {
+                    "name": "postreceiver",
+                    "webhook_configs": [
+                        {
+                            "url": "http://XXXX",
+                            "http_config": {
+                                "tls_config": {
+                                    "insecure_skip_verify": true
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "emailreceiver",
+                    "email_configs": [
+                        {
+                            "to": "user1@example.com",
+                            "from": "user2@example.com",
+                            "smarthost": "XXXX:80",
+                            "auth_username": "user@example.com",
+                            "auth_password": "password",
+                            "require_tls": false,
+                            "headers": {
+                                "Subject": "Alert from: {{ .CommonLabels.alertname }} "
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "slackreceiver",
+                    "slack_configs": [
+                        {
+                            "channel": "#channel_name",
+                            "api_url": "http://XXXX",
+                            "text": "summary: {{ .CommonAnnotations.summary }}\ndescription: {{ .CommonAnnotations.description }}",
+                            "title": "Alert from: {{ .CommonLabels.alertname }}"
+                        }
+                    ]
+                }
+            ]
+        },
+        "promInstanceSelector": false,
+        "name": "prometheus",
+        "alertmanagerName": "prometheus-alerts",
+        "serviceMonitor": {
+            "istioNamespace": "fed-istio"
+        },
+        "prometheus": {
+            "storage": {
+                "type": "{deployParameters.storage-type}",
+                "storageClassName": "rook-cephbp",
+                "provisioner": "kubernetes.io/cinder",
+                "parameters": {
+                    "cinder": {
+                        "type": "sannimbf300",
+                        "availability": "nova",
+                        "fsType": "ext4"
+                    },
+                    "azureDisk": {
+                        "storageaccounttype": "",
+                        "kind": ""
+                    },
+                    "customParameters": {}
+                },
+                "reclaimPolicy": "Delete",
+                "allowVolumeExpansion": true,
+                "resource": {
+                    "request": "100Gi"
+                }
+            },
+            "retention": "3d",
+            "remoteStorage": {
+                "enabled": false,
+                "remoteWriteUrl": "",
+                "remoteWriteTimeout": "30s",
+                "remoteReadUrl": ""
+            },
+            "enableAdminAPI": false,
+            "resources": {
+                "limits": {
+                    "cpu": "10",
+                    "memory": "24Gi"
+                },
+                "requests": {
+                    "cpu": "1",
+                    "memory": "4Gi"
+                }
+            }
+        },
+        "thanosQuery": {
+            "name": "thanos-query",
+            "deploy": {
+                "logLevel": "info",
+                "resources": {
+                    "requests": {
+                        "cpu": "1",
+                        "memory": "4Gi"
+                    },
+                    "limits": {
+                        "cpu": "4",
+                        "memory": "4Gi"
+                    }
+                }
+            },
+            "service": {
+                "externalIpAddress": "1.1.1.1"
+            },
+            "hpa": {
+                "enabled": true,
+                "minReplicas": 3,
+                "maxReplicas": 6
+            }
+        },
+        "thanos": {
+            "enabled": true,
+            "longTermStorage": {
+                "enabled": false,
+                "type": "AZURE",
+                "config": {
+                    "storage_account": "",
+                    "storage_account_key": "",
+                    "container": ""
+                }
+            }
+        },
+        "probesCheck": {
+            "liveliness": {
+                "failureThreshold": 120,
+                "initialDelaySeconds": 30,
+                "periodSeconds": 60,
+                "successThreshold": 1,
+                "timeoutSeconds": 5
+            },
+            "readiness": {
+                "failureThreshold": 120,
+                "initialDelaySeconds": 30,
+                "periodSeconds": 60,
+                "successThreshold": 1,
+                "timeoutSeconds": 5
+            }
+        },
+        "httpAlertsThreshold": {
+            "istio5xxErrorPercentage": 25,
+            "istio4xxErrorPercentage": 25,
+            "istioReqLatencySeconds": 5,
+            "httpSrvr5xxErrorPercentage": 25,
+            "httpSrvr4xxErrorPercentage": 50,
+            "httpClientRespRcvd5xxErrorPercentage": 25,
+            "httpClientRespRcvd460N499ErrorPercentage": 25,
+            "httpSrvrReqRate": 500,
+            "firingActiveAlertInterval": "2m"
+        }
+    }
+}

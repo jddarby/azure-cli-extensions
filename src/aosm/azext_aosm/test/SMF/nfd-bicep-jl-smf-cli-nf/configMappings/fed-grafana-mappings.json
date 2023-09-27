@@ -1,0 +1,139 @@
+{
+    "global": {
+        "defaultRbacEnabled": true,
+        "defaultClusterRole": "permissive-network-cr",
+        "defaultServiceAccountName": "fed-grafana-serviceaccount",
+        "podPriorityEnabled": true,
+        "enableSCC": false,
+        "enableUserProvidedSCC": false,
+        "kargoProfileTag": "grafana",
+        "ingressNetworkPolicy": {
+            "enabled": true,
+            "ingressTrafficNamespaces": [
+                "fed-service-reg",
+                "fed-db-etcd",
+                "fed-paas-helpers",
+                "fed-istio",
+                "fed-prometheus"
+            ]
+        },
+        "vault": {
+            "enabled": false,
+            "hashicorpVault": {
+                "enabled": true,
+                "service": "http://fed-vault-svc-internal.fed-vault:8200"
+            },
+            "azureKeyVault": {
+                "enabled": false
+            }
+        },
+        "logging": {
+            "enabled": false,
+            "fluentd": {
+                "buffer": {
+                    "bufferLimit": "512m",
+                    "retryWait": "180s",
+                    "maxRetries": 10
+                }
+            },
+            "elastic": {
+                "IP": "{deployParameters.elasticsearch-host}",
+                "Port": 9200
+            },
+            "enableAddlTargets": false,
+            "addlTargets": [
+                {
+                    "forward": {
+                        "name": "fluentd",
+                        "host": "",
+                        "port": 24224
+                    }
+                }
+            ]
+        },
+        "grafana": {
+            "enabled": true,
+            "url": "{deployParameters.grafana-url}",
+            "prometheusinfo": {
+                "url": "http://prometheus.fed-prometheus:9090"
+            }
+        },
+        "adminPassword": "",
+        "monitoring": {
+            "prometheus": {
+                "enabled": true
+            }
+        },
+        "registry": {
+            "docker": {
+                "repoPath": "a4oprodaf.a4opacketcore.microsoft.com/rel_build_docker"
+            }
+        },
+        "envVars": {
+            "fedType": "paas",
+            "fedUniqueName": "grafana-default"
+        },
+        "metricsScrapeInterval": "1m",
+        "mesh": {
+            "istio": {
+                "ingressGwIP": "{deployParameters.grafana-lb-ip}",
+                "ingressGwFQDN": "grafana.com",
+                "serviceAnnotations": {
+                    "service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+                    "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "{deployParameters.oam-lb-subnet}"
+                },
+                "ingressGwPort": 3000,
+                "ingressGwTLS": {
+                    "enabled": false,
+                    "mode": "SIMPLE",
+                    "certManager": {
+                        "enabled": true,
+                        "certDuration": "10h",
+                        "renewBefore": "1h",
+                        "organization": "affirmednetworks",
+                        "issuerName": "affirmed-clusterissuer"
+                    },
+                    "userProvided": {
+                        "enabled": false,
+                        "cacert": "",
+                        "tlscrt": "",
+                        "tlskey": ""
+                    }
+                },
+                "loadBalancerSharingKey": "paas"
+            }
+        },
+        "loadBalancerSourceRanges": "",
+        "overrides": {
+            "preDeleteEnabled": false,
+            "postInstallEnabled": false
+        }
+    },
+    "pod-istio_gw": {
+        "istioNspace": "fed-istio",
+        "istioRevision": "1-8-2",
+        "egressGateway": {
+            "enabled": false
+        }
+    },
+    "pod-grafana": {
+        "debug": false,
+        "enabled": true,
+        "rbacEnabled": true,
+        "serviceAccountName": "grafana-serviceaccount",
+        "readinessProbe": {
+            "failureThreshold": 10,
+            "initialDelaySeconds": 60,
+            "periodSeconds": 5,
+            "successThreshold": 1,
+            "timeoutSeconds": 30
+        },
+        "livenessProbe": {
+            "failureThreshold": 10,
+            "initialDelaySeconds": 60,
+            "periodSeconds": 5,
+            "successThreshold": 1,
+            "timeoutSeconds": 30
+        }
+    }
+}
