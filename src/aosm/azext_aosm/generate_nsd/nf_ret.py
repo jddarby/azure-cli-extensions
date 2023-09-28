@@ -50,10 +50,9 @@ class NFRETGenerator:
             f"Reading existing NFDV resource object {config.version} from group {config.name}"
         )
         nfdv_object = (
-            api_clients.aosm_client.proxy_network_function_definition_versions.get(
-                publisher_scope_name=config.publisher_scope,
-                publisher_location_name=config.publisher_offering_location,
-                proxy_publisher_name=config.publisher,
+            api_clients.aosm_client.network_function_definition_versions.get(
+                resource_group_name=config.publisher_resource_group,
+                publisher_name=config.publisher,
                 network_function_definition_group_name=config.name,
                 network_function_definition_version_name=config.version,
             )
