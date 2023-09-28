@@ -114,6 +114,7 @@ class Artifact:
             )
             logger.debug("All the output %s", all_output)
 
+            # Raise the error without the original exception, which may contain secrets.
             raise CLIError(all_output) from None
 
     def _upload_helm_to_acr(
