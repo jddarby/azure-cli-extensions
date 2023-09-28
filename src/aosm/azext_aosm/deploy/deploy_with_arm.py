@@ -226,7 +226,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
 
         for helm_package in self.config.helm_packages:
             # Go through the helm packages in the config that the user has provided
-            helm_package_name = helm_package.name
+            helm_package_name = helm_package.name  # type: ignore
 
             if helm_package_name not in artifact_dictionary:
                 # Helm package in the config file but not in the artifact manifest
@@ -267,7 +267,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
             )
         for artifact in artifact_dictionary.values():
             assert isinstance(artifact, Artifact)
-            artifact.upload(self.config.images, self.use_manifest_permissions)
+            artifact.upload(self.config.images, self.use_manifest_permissions)  # type: ignore
 
     def nfd_predeploy(self) -> bool:
         """

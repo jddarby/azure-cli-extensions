@@ -6,6 +6,7 @@
 # pylint: disable=unidiomatic-typecheck
 """A module to handle interacting with artifacts."""
 import math
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -17,6 +18,7 @@ from knack.util import CLIError
 from oras.client import OrasClient
 
 from azext_aosm._configuration import ArtifactConfig, HelmPackageConfig, CNFImageConfig
+from azext_aosm.util.constants import SOURCE_ACR_REGEX
 
 logger = get_logger(__name__)
 
@@ -33,7 +35,7 @@ class Artifact:
 
     def upload(
         self,
-        artifact_config: Union[ArtifactConfig, HelmPackageConfig],
+        artifact_config: Union[ArtifactConfig, HelmPackageConfig, CNFImageConfig],
         use_manifest_permissions: bool = False,
     ) -> None:
         """
@@ -295,9 +297,9 @@ class Artifact:
 
     def _get_acr(self) -> str:
         """
-        Get the name of the ACR
+        Get the name of the target artifact store ACR
 
-        :return: The name of the ACR
+        :return: The name of the target artifact store ACR
         """
         assert hasattr(self.artifact_client, "remote")
         if not self.artifact_client.remote.hostname:
@@ -350,15 +352,16 @@ class Artifact:
             print(
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
+            source_acr_name = self._acr_id_to_acr_login_server(
+                artifact_config.source_registry_id
+            )
             image_name = (
-                f"{self._clean_name(artifact_config.source_registry)}/"
+                f"{source_acr_name}/"
                 f"{source_registry_namespace}{self.artifact_name}"
                 f":{self.artifact_version}"
             )
             self._pull_image_to_local_registry(
-                source_registry_login_server=self._clean_name(
-                    artifact_config.source_registry
-                ),
+                source_acr_name,
                 source_image=image_name,
             )
             self._push_image_from_local_registry(
@@ -369,7 +372,7 @@ class Artifact:
         else:
             print(f"Using az acr import to copy image artifact: {self.artifact_name}")
             self._copy_image(
-                source_registry_login_server=artifact_config.source_registry,
+                source_registry_resource_id=artifact_config.source_registry_id,
                 source_image=(
                     f"{source_registry_namespace}{self.artifact_name}"
                     f":{self.artifact_version}"
@@ -508,10 +511,31 @@ class Artifact:
     def _clean_name(self, registry_name: str) -> str:
         """Remove https:// from the registry name."""
         return registry_name.replace("https://", "")
+    
+    def _acr_id_to_acr_login_server(self, acr_id: str) -> str:
+        """
+        Return the acr login server from the ACR resource id.
+        
+        This is the lower-case name of the ACR with azurecr.io suffix
+        
+        :param acr_id: Full resource id of the ACR
+        """
+        # Match the source registry format
+        source_registry_match = re.search(
+            SOURCE_ACR_REGEX, acr_id
+        )
+        # Config validation has already checked and raised an error if the regex doesn't
+        # match
+        if source_registry_match and len(source_registry_match.groups()) > 1:
+            source_registry_name = source_registry_match.group("registry_name").lower()
+            return f"{source_registry_name}.azurecr.io"
+
+        raise CLIError("Cannot parse source registry name from source registry "
+                       f"resource id {acr_id}. Please check your config file.")
 
     def _copy_image(
         self,
-        source_registry_login_server: str,
+        source_registry_resource_id: str,
         source_image: str,
     ):
         """
@@ -528,14 +552,17 @@ class Artifact:
         Artifact Store registry, which requires either Contributor role or a
         custom role that allows the importImage action over the whole subscription.
 
-        :param source_registry: source registry login server e.g. https://uploadacr.azurecr.io
+        :param source_registry_resource_id: source registry resource id e.g. 
+          /subscriptions/4a0479c0-b795-4d0f-96fd-c7edd2a2928f/resourcegroups/xyBicep
+            ArtifactStore4-HostedResources-31AD03B1/providers/
+          Microsoft.ContainerRegistry/registries/Xybiceppub
+            lisher4Xybicepartifactstore4d907d600ba35
         :param source_image: source image including namespace and tags e.g.
                              samples/nginx:stable
         """
         target_acr = self._get_acr()
         try:
             print("Copying artifact from source registry")
-            source = f"{self._clean_name(source_registry_login_server)}/{source_image}"
             acr_import_image_cmd = [
                 str(shutil.which("az")),
                 "acr",
@@ -543,9 +570,11 @@ class Artifact:
                 "--name",
                 target_acr,
                 "--source",
-                source,
+                source_image,
                 "--image",
                 self._get_acr_target_image(include_hostname=False),
+                "--registry",
+                source_registry_resource_id,
             ]
             self._call_subprocess_raise_output(acr_import_image_cmd)
         except CLIError as error:
@@ -558,7 +587,7 @@ class Artifact:
                     " in your config file does not exist or the image doesn't exist or"
                     " you do not have"
                     " permissions to import images. You need to have Reader/AcrPull"
-                    f" from {source_registry_login_server}, and Contributor role +"
+                    f" from {source_registry_resource_id}, and Contributor role +"
                     " AcrPush role, or a custom"
                     " role that allows the importImage action and AcrPush over the"
                     " whole subscription in order to be able to import to the new"

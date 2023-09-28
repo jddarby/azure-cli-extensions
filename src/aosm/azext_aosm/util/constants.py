@@ -95,7 +95,7 @@ DEPLOYMENT_PARAMETER_MAPPING_REGEX = r"\{deployParameters.(.+?)\}"
 #   Microsoft.ContainerRegistry/registries/<registry_name>
 # This returns groups for the resource group name and registry name
 SOURCE_ACR_REGEX = (
-    r".*\/resourceGroups\/(?P<resource_group>[^\/]*)\/providers\/Microsoft."
+    r".*\/resource[G|g]roups\/(?P<resource_group>[^\/]*)\/providers\/Microsoft."
     r"ContainerRegistry\/registries\/(?P<registry_name>[^\/]*)"
 )
 

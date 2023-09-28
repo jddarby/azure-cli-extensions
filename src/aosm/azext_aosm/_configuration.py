@@ -7,6 +7,7 @@ import abc
 import logging
 import json
 import os
+import re
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -18,6 +19,7 @@ from azext_aosm.util.constants import (
     NF_DEFINITION_JSON_FILENAME,
     NSD,
     NSD_OUTPUT_BICEP_PREFIX,
+    SOURCE_ACR_REGEX,
     VNF,
 )
 
@@ -319,7 +321,7 @@ class HelmPackageConfig:
 class CNFImageConfig:
     """CNF Image config settings."""
 
-    source_registry: str = ""
+    source_registry_id: str = ""
     source_registry_namespace: str = ""
     source_local_docker_image: str = ""
 
@@ -329,10 +331,11 @@ class CNFImageConfig:
         Build an object where each value is helptext for that field.
         """
         return CNFImageConfig(
-            source_registry=(
-                "Optional. Login server of the source acr registry from which to pull the "
-                "image(s). For example sourceacr.azurecr.io. Leave blank if you have set "
-                "source_local_docker_image."
+            source_registry_id=(
+                "Optional. Resource ID of the source acr registry from which to pull "
+                "the image. For example "
+                "/subscriptions/0000000-0000-0000-0000-00000000000/resourcegroups/myrg/providers/Microsoft.ContainerRegistry/registries/myacr"  # noqa: E501
+                ". Leave blank if you have set source_local_docker_image."
             ),
             source_registry_namespace=(
                 "Optional. Namespace of the repository of the source acr registry from which "
@@ -353,21 +356,32 @@ class CNFImageConfig:
         """
         Validate the configuration.
         """
-        if self.source_registry_namespace and not self.source_registry:
+        if self.source_registry_namespace and not self.source_registry_id:
             raise ValidationError(
                 "Config validation error. The image source registry namespace should "
                 "only be configured if a source registry is configured."
             )
 
-        if self.source_registry and self.source_local_docker_image:
+        if self.source_registry_id and self.source_local_docker_image:
             raise ValidationError(
-                "Only one of source_registry and source_local_docker_image can be set."
+                "Only one of source_registry_id and source_local_docker_image "
+                "can be set."
             )
 
-        if not (self.source_registry or self.source_local_docker_image):
+        if not (self.source_registry_id or self.source_local_docker_image):
             raise ValidationError(
-                "One of source_registry or source_local_docker_image must be set."
+                "One of source_registry_id or source_local_docker_image must be set."
             )
+        
+        if self.source_registry_id:
+            source_registry_match = re.search(SOURCE_ACR_REGEX, self.source_registry_id)
+            if not source_registry_match or len(source_registry_match.groups()) < 2:
+                raise ValidationError(
+                    "CNF config has an invalid source registry ID. This must be the "
+                    "full resource ID of the source registry."
+                    "For example "
+                    "/subscriptions/0000000-0000-0000-0000-00000000000/resourcegroups/myrg/providers/Microsoft.ContainerRegistry/registries/myacr"  # noqa: E501
+                )
 
 
 @dataclass
