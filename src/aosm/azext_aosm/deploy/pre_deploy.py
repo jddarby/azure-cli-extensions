@@ -58,13 +58,10 @@ class PreDeployerViaSDK:
 
     def ensure_resource_group_exists(self, resource_group_name: str) -> None:
         """
-        Checks whether a particular resource group exists on the subscription.
-        Copied from virtutils.
+        Checks whether a particular resource group exists on the subscription, and
+        attempts to create it if not.
 
-        :param resource_group_name: The name of the resource group          Raises a
-                NotFoundError exception if the resource group does not exist. Raises a
-                PermissionsError exception if we don't have permissions to check
-                resource group existence.
+        :param resource_group_name: The name of the resource group
         """
         if not self.api_clients.resource_client.resource_groups.check_existence(
             resource_group_name
