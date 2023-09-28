@@ -121,10 +121,10 @@ class Artifact:
         Requires helm to be installed.
 
         :param artifact_config: configuration for the artifact being uploaded
-        :param use_manifest_permissions: whether to use the manifest credentials
-               for the upload. If False, the CLI user credentials will be used, which
-               does not require Docker to be installed. If True, the manifest creds will
-               be used, which requires Docker.
+        :param use_manifest_permissions: whether to use the manifest credentials for the
+            upload. If False, the CLI user credentials will be used, which does not
+            require Docker to be installed. If True, the manifest creds will be used,
+            which requires Docker.
         """
         self._check_tool_installed("helm")
         assert isinstance(self.artifact_client, OrasClient)
@@ -296,7 +296,7 @@ class Artifact:
 
     def _get_acr(self) -> str:
         """
-        Get the name of the ACR
+        Get the name of the ACR.
 
         :return: The name of the ACR
         """
@@ -387,7 +387,7 @@ class Artifact:
         Push image to target registry using docker push. Requires docker.
 
         :param local_docker_image: name and tag of the source image on local registry
-                                    e.g. uploadacr.azurecr.io/samples/nginx:stable
+            e.g. uploadacr.azurecr.io/samples/nginx:stable
         :type local_docker_image: str
         :param target_username: The username to use for the az acr login attempt
         :type target_username: str
@@ -461,8 +461,8 @@ class Artifact:
         Uses the CLI user's context to log in to the source registry.
 
         :param: source_registry_login_server: e.g. uploadacr.azurecr.io
-        :param: source_image: source docker image name
-                              e.g. uploadacr.azurecr.io/samples/nginx:stable
+        :param: source_image: source docker image name e.g.
+            uploadacr.azurecr.io/samples/nginx:stable
         """
         try:
             # Login to the source registry with the CLI user credentials. This requires
@@ -543,15 +543,15 @@ class Artifact:
             # least for public ACRs).  It probably won't work cross-tenant as the token
             # is retrieved from the CLI user's context which will be in the target
             # tenant.
-            get_token_cmd = [
-                str(shutil.which("az")),
-                "account",
-                "get-access-token"
-            ]
+            get_token_cmd = [str(shutil.which("az")), "account", "get-access-token"]
             # Dont use _call_subprocess_raise_output here as we don't want to log the
             # output
             called_process = subprocess.run(
-                get_token_cmd, encoding="utf-8", capture_output=True, text=True, check=True
+                get_token_cmd,
+                encoding="utf-8",
+                capture_output=True,
+                text=True,
+                check=True,
             )
             access_token_json = json.loads(called_process.stdout)
             access_token = access_token_json["accessToken"]
@@ -568,7 +568,7 @@ class Artifact:
                 "--image",
                 self._get_acr_target_image(include_hostname=False),
                 "--password",
-                access_token
+                access_token,
             ]
             self._call_subprocess_raise_output(acr_import_image_cmd)
         except CLIError as error:
