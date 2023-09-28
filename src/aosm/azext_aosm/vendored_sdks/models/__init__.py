@@ -8,7 +8,6 @@
 
 from ._models import ArmResourceDefinitionResourceElementTemplate
 from ._models import ArmResourceDefinitionResourceElementTemplateDetails
-from ._models import ArmTemplateApplicationOverview
 from ._models import ArmTemplateArtifactProfile
 from ._models import ArmTemplateMappingRuleProfile
 from ._models import ArtifactAccessCredential
@@ -51,24 +50,29 @@ from ._models import AzureStorageAccountCredential
 from ._models import Component
 from ._models import ComponentProperties
 from ._models import ConfigurationGroupSchema
-from ._models import ConfigurationGroupSchemaOverviewPropertiesFormat
 from ._models import ConfigurationGroupSchemaPropertiesFormat
-from ._models import ConfigurationGroupSchemaReferences
 from ._models import ConfigurationGroupSchemaVersionUpdateState
 from ._models import ConfigurationGroupValue
 from ._models import ConfigurationGroupValuePropertiesFormat
+from ._models import ConfigurationValueWithSecrets
+from ._models import ConfigurationValueWithoutSecrets
+from ._models import ContainerizedNetworkFunctionDefinitionVersion
+from ._models import ContainerizedNetworkFunctionTemplate
 from ._models import CustomLocationResourceId
 from ._models import DaemonSet
 from ._models import DependsOnProfile
 from ._models import Deployment
+from ._models import DeploymentResourceIdReference
 from ._models import DeploymentStatusProperties
 from ._models import ErrorAdditionalInfo
 from ._models import ErrorDetail
 from ._models import ErrorResponse
 from ._models import ExecuteRequestParameters
 from ._models import HelmArtifactProfile
+from ._models import HelmInstallOptions
 from ._models import HelmMappingRuleProfile
-from ._models import HelmPackageApplicationOverview
+from ._models import HelmMappingRuleProfileOptions
+from ._models import HelmUpgradeOptions
 from ._models import ImageArtifactProfile
 from ._models import ImageMappingRuleProfile
 from ._models import ManagedResourceGroupConfiguration
@@ -79,41 +83,31 @@ from ._models import NFVIs
 from ._models import NSDArtifactProfile
 from ._models import NetworkFunction
 from ._models import NetworkFunctionApplication
-from ._models import NetworkFunctionDefinitionApplicationOverview
 from ._models import NetworkFunctionDefinitionGroup
-from ._models import NetworkFunctionDefinitionGroupOverview
-from ._models import NetworkFunctionDefinitionGroupOverviewPropertiesFormat
 from ._models import NetworkFunctionDefinitionGroupPropertiesFormat
 from ._models import NetworkFunctionDefinitionResourceElementTemplateDetails
 from ._models import NetworkFunctionDefinitionVersion
-from ._models import NetworkFunctionDefinitionVersionOverview
-from ._models import NetworkFunctionDefinitionVersionOverviewPropertiesFormat
 from ._models import NetworkFunctionDefinitionVersionPropertiesFormat
 from ._models import NetworkFunctionDefinitionVersionUpdateState
 from ._models import NetworkFunctionPropertiesFormat
-from ._models import NetworkFunctionTemplate
+from ._models import NetworkFunctionValueWithSecrets
+from ._models import NetworkFunctionValueWithoutSecrets
 from ._models import NetworkServiceDesignGroup
-from ._models import NetworkServiceDesignGroupOverview
-from ._models import NetworkServiceDesignGroupOverviewPropertiesFormat
 from ._models import NetworkServiceDesignGroupPropertiesFormat
 from ._models import NetworkServiceDesignVersion
-from ._models import NetworkServiceDesignVersionOverview
-from ._models import NetworkServiceDesignVersionOverviewPropertiesFormat
 from ._models import NetworkServiceDesignVersionPropertiesFormat
 from ._models import NetworkServiceDesignVersionUpdateState
 from ._models import NfviDetails
+from ._models import OpenDeploymentResourceReference
 from ._models import Operation
 from ._models import OperationDisplay
 from ._models import Pod
 from ._models import PodEvent
-from ._models import PreviewSubscription
-from ._models import PreviewSubscriptionPropertiesFormat
 from ._models import ProxyArtifactListOverview
 from ._models import ProxyArtifactOverview
 from ._models import ProxyArtifactOverviewPropertiesFormat
 from ._models import ProxyArtifactOverviewPropertiesValue
 from ._models import ProxyArtifactVersionsListOverview
-from ._models import ProxyPublisherOverview
 from ._models import ProxyResource
 from ._models import Publisher
 from ._models import PublisherPropertiesFormat
@@ -123,6 +117,7 @@ from ._models import RequestMetadata
 from ._models import Resource
 from ._models import ResourceElementTemplate
 from ._models import Resources
+from ._models import SecretDeploymentResourceReference
 from ._models import Site
 from ._models import SiteNetworkService
 from ._models import SiteNetworkServicePropertiesFormat
@@ -134,8 +129,9 @@ from ._models import TagsObject
 from ._models import TrackedResource
 from ._models import UserAssignedIdentity
 from ._models import VhdImageArtifactProfile
-from ._models import VhdImageFileApplicationOverview
 from ._models import VhdImageMappingRuleProfile
+from ._models import VirtualNetworkFunctionDefinitionVersion
+from ._models import VirtualNetworkFunctionTemplate
 
 from ._enums import ActionType
 from ._enums import ApplicationEnablement
@@ -148,12 +144,15 @@ from ._enums import AzureArcKubernetesArtifactType
 from ._enums import AzureCoreArtifactType
 from ._enums import AzureOperatorNexusArtifactType
 from ._enums import ConfigurationGenerationType
+from ._enums import ConfigurationGroupValueConfigurationType
+from ._enums import ContainerizedNetworkFunctionNFVIType
 from ._enums import CreatedByType
 from ._enums import CredentialType
 from ._enums import HttpMethod
+from ._enums import IdType
 from ._enums import ManagedServiceIdentityType
 from ._enums import NFVIType
-from ._enums import NetworkFunctionPublisherArtifactType
+from ._enums import NetworkFunctionConfigurationType
 from ._enums import NetworkFunctionType
 from ._enums import Origin
 from ._enums import PodEventType
@@ -166,6 +165,7 @@ from ._enums import Status
 from ._enums import TemplateType
 from ._enums import Type
 from ._enums import VersionState
+from ._enums import VirtualNetworkFunctionNFVIType
 from ._patch import __all__ as _patch_all
 from ._patch import *  # pylint: disable=unused-wildcard-import
 from ._patch import patch_sdk as _patch_sdk
@@ -173,7 +173,6 @@ from ._patch import patch_sdk as _patch_sdk
 __all__ = [
     "ArmResourceDefinitionResourceElementTemplate",
     "ArmResourceDefinitionResourceElementTemplateDetails",
-    "ArmTemplateApplicationOverview",
     "ArmTemplateArtifactProfile",
     "ArmTemplateMappingRuleProfile",
     "ArtifactAccessCredential",
@@ -216,24 +215,29 @@ __all__ = [
     "Component",
     "ComponentProperties",
     "ConfigurationGroupSchema",
-    "ConfigurationGroupSchemaOverviewPropertiesFormat",
     "ConfigurationGroupSchemaPropertiesFormat",
-    "ConfigurationGroupSchemaReferences",
     "ConfigurationGroupSchemaVersionUpdateState",
     "ConfigurationGroupValue",
     "ConfigurationGroupValuePropertiesFormat",
+    "ConfigurationValueWithSecrets",
+    "ConfigurationValueWithoutSecrets",
+    "ContainerizedNetworkFunctionDefinitionVersion",
+    "ContainerizedNetworkFunctionTemplate",
     "CustomLocationResourceId",
     "DaemonSet",
     "DependsOnProfile",
     "Deployment",
+    "DeploymentResourceIdReference",
     "DeploymentStatusProperties",
     "ErrorAdditionalInfo",
     "ErrorDetail",
     "ErrorResponse",
     "ExecuteRequestParameters",
     "HelmArtifactProfile",
+    "HelmInstallOptions",
     "HelmMappingRuleProfile",
-    "HelmPackageApplicationOverview",
+    "HelmMappingRuleProfileOptions",
+    "HelmUpgradeOptions",
     "ImageArtifactProfile",
     "ImageMappingRuleProfile",
     "ManagedResourceGroupConfiguration",
@@ -244,41 +248,31 @@ __all__ = [
     "NSDArtifactProfile",
     "NetworkFunction",
     "NetworkFunctionApplication",
-    "NetworkFunctionDefinitionApplicationOverview",
     "NetworkFunctionDefinitionGroup",
-    "NetworkFunctionDefinitionGroupOverview",
-    "NetworkFunctionDefinitionGroupOverviewPropertiesFormat",
     "NetworkFunctionDefinitionGroupPropertiesFormat",
     "NetworkFunctionDefinitionResourceElementTemplateDetails",
     "NetworkFunctionDefinitionVersion",
-    "NetworkFunctionDefinitionVersionOverview",
-    "NetworkFunctionDefinitionVersionOverviewPropertiesFormat",
     "NetworkFunctionDefinitionVersionPropertiesFormat",
     "NetworkFunctionDefinitionVersionUpdateState",
     "NetworkFunctionPropertiesFormat",
-    "NetworkFunctionTemplate",
+    "NetworkFunctionValueWithSecrets",
+    "NetworkFunctionValueWithoutSecrets",
     "NetworkServiceDesignGroup",
-    "NetworkServiceDesignGroupOverview",
-    "NetworkServiceDesignGroupOverviewPropertiesFormat",
     "NetworkServiceDesignGroupPropertiesFormat",
     "NetworkServiceDesignVersion",
-    "NetworkServiceDesignVersionOverview",
-    "NetworkServiceDesignVersionOverviewPropertiesFormat",
     "NetworkServiceDesignVersionPropertiesFormat",
     "NetworkServiceDesignVersionUpdateState",
     "NfviDetails",
+    "OpenDeploymentResourceReference",
     "Operation",
     "OperationDisplay",
     "Pod",
     "PodEvent",
-    "PreviewSubscription",
-    "PreviewSubscriptionPropertiesFormat",
     "ProxyArtifactListOverview",
     "ProxyArtifactOverview",
     "ProxyArtifactOverviewPropertiesFormat",
     "ProxyArtifactOverviewPropertiesValue",
     "ProxyArtifactVersionsListOverview",
-    "ProxyPublisherOverview",
     "ProxyResource",
     "Publisher",
     "PublisherPropertiesFormat",
@@ -288,6 +282,7 @@ __all__ = [
     "Resource",
     "ResourceElementTemplate",
     "Resources",
+    "SecretDeploymentResourceReference",
     "Site",
     "SiteNetworkService",
     "SiteNetworkServicePropertiesFormat",
@@ -299,8 +294,9 @@ __all__ = [
     "TrackedResource",
     "UserAssignedIdentity",
     "VhdImageArtifactProfile",
-    "VhdImageFileApplicationOverview",
     "VhdImageMappingRuleProfile",
+    "VirtualNetworkFunctionDefinitionVersion",
+    "VirtualNetworkFunctionTemplate",
     "ActionType",
     "ApplicationEnablement",
     "ArtifactManifestState",
@@ -312,12 +308,15 @@ __all__ = [
     "AzureCoreArtifactType",
     "AzureOperatorNexusArtifactType",
     "ConfigurationGenerationType",
+    "ConfigurationGroupValueConfigurationType",
+    "ContainerizedNetworkFunctionNFVIType",
     "CreatedByType",
     "CredentialType",
     "HttpMethod",
+    "IdType",
     "ManagedServiceIdentityType",
     "NFVIType",
-    "NetworkFunctionPublisherArtifactType",
+    "NetworkFunctionConfigurationType",
     "NetworkFunctionType",
     "Origin",
     "PodEventType",
@@ -330,6 +329,7 @@ __all__ = [
     "TemplateType",
     "Type",
     "VersionState",
+    "VirtualNetworkFunctionNFVIType",
 ]
 __all__.extend([p for p in _patch_all if p not in __all__])
 _patch_sdk()

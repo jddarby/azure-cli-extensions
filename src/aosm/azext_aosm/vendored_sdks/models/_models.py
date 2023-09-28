@@ -69,25 +69,25 @@ class ResourceElementTemplate(_serialization.Model):
 
     :ivar name: Name of the resource element template.
     :vartype name: str
-    :ivar resource_element_template_type: The resource element template type. Required. Known
-     values are: "Unknown", "ArmResourceDefinition", and "NetworkFunctionDefinition".
-    :vartype resource_element_template_type: str or ~Microsoft.HybridNetwork.models.Type
+    :ivar resource_element_type: The resource element template type. Required. Known values are:
+     "Unknown", "ArmResourceDefinition", and "NetworkFunctionDefinition".
+    :vartype resource_element_type: str or ~Microsoft.HybridNetwork.models.Type
     :ivar depends_on_profile: The depends on profile.
     :vartype depends_on_profile: ~Microsoft.HybridNetwork.models.DependsOnProfile
     """
 
     _validation = {
-        "resource_element_template_type": {"required": True},
+        "resource_element_type": {"required": True},
     }
 
     _attribute_map = {
         "name": {"key": "name", "type": "str"},
-        "resource_element_template_type": {"key": "type", "type": "str"},
+        "resource_element_type": {"key": "type", "type": "str"},
         "depends_on_profile": {"key": "dependsOnProfile", "type": "DependsOnProfile"},
     }
 
     _subtype_map = {
-        "resource_element_template_type": {
+        "resource_element_type": {
             "ArmResourceDefinition": "ArmResourceDefinitionResourceElementTemplateDetails",
             "NetworkFunctionDefinition": "NetworkFunctionDefinitionResourceElementTemplateDetails",
         }
@@ -108,7 +108,7 @@ class ResourceElementTemplate(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.name = name
-        self.resource_element_template_type: Optional[str] = None
+        self.resource_element_type: Optional[str] = None
         self.depends_on_profile = depends_on_profile
 
 
@@ -119,9 +119,9 @@ class ArmResourceDefinitionResourceElementTemplateDetails(ResourceElementTemplat
 
     :ivar name: Name of the resource element template.
     :vartype name: str
-    :ivar resource_element_template_type: The resource element template type. Required. Known
-     values are: "Unknown", "ArmResourceDefinition", and "NetworkFunctionDefinition".
-    :vartype resource_element_template_type: str or ~Microsoft.HybridNetwork.models.Type
+    :ivar resource_element_type: The resource element template type. Required. Known values are:
+     "Unknown", "ArmResourceDefinition", and "NetworkFunctionDefinition".
+    :vartype resource_element_type: str or ~Microsoft.HybridNetwork.models.Type
     :ivar depends_on_profile: The depends on profile.
     :vartype depends_on_profile: ~Microsoft.HybridNetwork.models.DependsOnProfile
     :ivar configuration: The resource element template type.
@@ -130,12 +130,12 @@ class ArmResourceDefinitionResourceElementTemplateDetails(ResourceElementTemplat
     """
 
     _validation = {
-        "resource_element_template_type": {"required": True},
+        "resource_element_type": {"required": True},
     }
 
     _attribute_map = {
         "name": {"key": "name", "type": "str"},
-        "resource_element_template_type": {"key": "type", "type": "str"},
+        "resource_element_type": {"key": "type", "type": "str"},
         "depends_on_profile": {"key": "dependsOnProfile", "type": "DependsOnProfile"},
         "configuration": {"key": "configuration", "type": "ArmResourceDefinitionResourceElementTemplate"},
     }
@@ -158,91 +158,8 @@ class ArmResourceDefinitionResourceElementTemplateDetails(ResourceElementTemplat
          ~Microsoft.HybridNetwork.models.ArmResourceDefinitionResourceElementTemplate
         """
         super().__init__(name=name, depends_on_profile=depends_on_profile, **kwargs)
-        self.resource_element_template_type: str = "ArmResourceDefinition"
+        self.resource_element_type: str = "ArmResourceDefinition"
         self.configuration = configuration
-
-
-class NetworkFunctionDefinitionApplicationOverview(_serialization.Model):
-    """The network function definition application overview.
-
-    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
-    ArmTemplateApplicationOverview, HelmPackageApplicationOverview, VhdImageFileApplicationOverview
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar name: The name of the application.
-    :vartype name: str
-    :ivar artifact_type: The application overview artifact type. Required. Known values are:
-     "Unknown", "HelmPackage", "VhdImageFile", "ArmTemplate", and "ImageFile".
-    :vartype artifact_type: str or
-     ~Microsoft.HybridNetwork.models.NetworkFunctionPublisherArtifactType
-    """
-
-    _validation = {
-        "name": {"readonly": True},
-        "artifact_type": {"required": True},
-    }
-
-    _attribute_map = {
-        "name": {"key": "name", "type": "str"},
-        "artifact_type": {"key": "artifactType", "type": "str"},
-    }
-
-    _subtype_map = {
-        "artifact_type": {
-            "ArmTemplate": "ArmTemplateApplicationOverview",
-            "HelmPackage": "HelmPackageApplicationOverview",
-            "VhdImageFile": "VhdImageFileApplicationOverview",
-        }
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.name = None
-        self.artifact_type: Optional[str] = None
-
-
-class ArmTemplateApplicationOverview(NetworkFunctionDefinitionApplicationOverview):
-    """Arm template Application overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar name: The name of the application.
-    :vartype name: str
-    :ivar artifact_type: The application overview artifact type. Required. Known values are:
-     "Unknown", "HelmPackage", "VhdImageFile", "ArmTemplate", and "ImageFile".
-    :vartype artifact_type: str or
-     ~Microsoft.HybridNetwork.models.NetworkFunctionPublisherArtifactType
-    :ivar deploy_parameters_mapping_rule_profile: The deployment parameters mapping rule profile.
-    :vartype deploy_parameters_mapping_rule_profile:
-     ~Microsoft.HybridNetwork.models.AzureCoreArmTemplateDeployMappingRuleProfile
-    """
-
-    _validation = {
-        "name": {"readonly": True},
-        "artifact_type": {"required": True},
-        "deploy_parameters_mapping_rule_profile": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "name": {"key": "name", "type": "str"},
-        "artifact_type": {"key": "artifactType", "type": "str"},
-        "deploy_parameters_mapping_rule_profile": {
-            "key": "deployParametersMappingRuleProfile",
-            "type": "AzureCoreArmTemplateDeployMappingRuleProfile",
-        },
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.artifact_type: str = "ArmTemplate"
-        self.deploy_parameters_mapping_rule_profile = None
 
 
 class ArmTemplateArtifactProfile(_serialization.Model):
@@ -1141,18 +1058,17 @@ class AzureArcKubernetesHelmApplication(AzureArcKubernetesNetworkFunctionApplica
         self.deploy_parameters_mapping_rule_profile = deploy_parameters_mapping_rule_profile
 
 
-class NetworkFunctionTemplate(_serialization.Model):
-    """Network function template.
+class ContainerizedNetworkFunctionTemplate(_serialization.Model):
+    """Containerized network function template.
 
     You probably want to use the sub-classes and not this class directly. Known sub-classes are:
-    AzureArcKubernetesNetworkFunctionTemplate, AzureCoreNetworkFunctionTemplate,
-    AzureOperatorNexusNetworkFunctionTemplate
+    AzureArcKubernetesNetworkFunctionTemplate
 
     All required parameters must be populated in order to send to Azure.
 
-    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown",
-     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
-    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown" and
+     "AzureArcKubernetes".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.ContainerizedNetworkFunctionNFVIType
     """
 
     _validation = {
@@ -1163,13 +1079,7 @@ class NetworkFunctionTemplate(_serialization.Model):
         "nfvi_type": {"key": "nfviType", "type": "str"},
     }
 
-    _subtype_map = {
-        "nfvi_type": {
-            "AzureArcKubernetes": "AzureArcKubernetesNetworkFunctionTemplate",
-            "AzureCore": "AzureCoreNetworkFunctionTemplate",
-            "AzureOperatorNexus": "AzureOperatorNexusNetworkFunctionTemplate",
-        }
-    }
+    _subtype_map = {"nfvi_type": {"AzureArcKubernetes": "AzureArcKubernetesNetworkFunctionTemplate"}}
 
     def __init__(self, **kwargs: Any) -> None:
         """ """
@@ -1177,14 +1087,14 @@ class NetworkFunctionTemplate(_serialization.Model):
         self.nfvi_type: Optional[str] = None
 
 
-class AzureArcKubernetesNetworkFunctionTemplate(NetworkFunctionTemplate):
+class AzureArcKubernetesNetworkFunctionTemplate(ContainerizedNetworkFunctionTemplate):
     """Azure Arc kubernetes network function template.
 
     All required parameters must be populated in order to send to Azure.
 
-    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown",
-     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
-    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown" and
+     "AzureArcKubernetes".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.ContainerizedNetworkFunctionNFVIType
     :ivar network_function_applications: Network function applications.
     :vartype network_function_applications:
      list[~Microsoft.HybridNetwork.models.AzureArcKubernetesNetworkFunctionApplication]
@@ -1461,14 +1371,48 @@ class AzureCoreNetworkFunctionArmTemplateApplication(AzureCoreNetworkFunctionApp
         self.deploy_parameters_mapping_rule_profile = deploy_parameters_mapping_rule_profile
 
 
-class AzureCoreNetworkFunctionTemplate(NetworkFunctionTemplate):
+class VirtualNetworkFunctionTemplate(_serialization.Model):
+    """Virtual network function template.
+
+    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
+    AzureCoreNetworkFunctionTemplate, AzureOperatorNexusNetworkFunctionTemplate
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown", "AzureCore",
+     and "AzureOperatorNexus".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.VirtualNetworkFunctionNFVIType
+    """
+
+    _validation = {
+        "nfvi_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "nfvi_type": {"key": "nfviType", "type": "str"},
+    }
+
+    _subtype_map = {
+        "nfvi_type": {
+            "AzureCore": "AzureCoreNetworkFunctionTemplate",
+            "AzureOperatorNexus": "AzureOperatorNexusNetworkFunctionTemplate",
+        }
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.nfvi_type: Optional[str] = None
+
+
+class AzureCoreNetworkFunctionTemplate(VirtualNetworkFunctionTemplate):
     """Azure virtual network function template.
 
     All required parameters must be populated in order to send to Azure.
 
-    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown",
-     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
-    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown", "AzureCore",
+     and "AzureOperatorNexus".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.VirtualNetworkFunctionNFVIType
     :ivar network_function_applications: Network function applications.
     :vartype network_function_applications:
      list[~Microsoft.HybridNetwork.models.AzureCoreNetworkFunctionApplication]
@@ -2017,14 +1961,14 @@ class AzureOperatorNexusNetworkFunctionImageApplication(AzureOperatorNexusNetwor
         self.deploy_parameters_mapping_rule_profile = deploy_parameters_mapping_rule_profile
 
 
-class AzureOperatorNexusNetworkFunctionTemplate(NetworkFunctionTemplate):
+class AzureOperatorNexusNetworkFunctionTemplate(VirtualNetworkFunctionTemplate):
     """Azure Operator Distributed Services network function template.
 
     All required parameters must be populated in order to send to Azure.
 
-    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown",
-     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
-    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+    :ivar nfvi_type: The network function type. Required. Known values are: "Unknown", "AzureCore",
+     and "AzureOperatorNexus".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.VirtualNetworkFunctionNFVIType
     :ivar network_function_applications: Network function applications.
     :vartype network_function_applications:
      list[~Microsoft.HybridNetwork.models.AzureOperatorNexusNetworkFunctionApplication]
@@ -2363,48 +2307,10 @@ class ConfigurationGroupSchemaListResult(_serialization.Model):
         self.next_link = None
 
 
-class ConfigurationGroupSchemaOverviewPropertiesFormat(_serialization.Model):
-    """Configuration group schema properties.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar version_state: The configuration group schema version state. Known values are: "Unknown",
-     "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
-    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
-    :ivar schema_definition: Name and value pairs that define the configuration value. It can be a
-     well formed escaped JSON string. Required.
-    :vartype schema_definition: str
-    """
-
-    _validation = {
-        "version_state": {"readonly": True},
-        "schema_definition": {"required": True},
-    }
-
-    _attribute_map = {
-        "version_state": {"key": "versionState", "type": "str"},
-        "schema_definition": {"key": "schemaDefinition", "type": "str"},
-    }
-
-    def __init__(self, *, schema_definition: str, **kwargs: Any) -> None:
-        """
-        :keyword schema_definition: Name and value pairs that define the configuration value. It can be
-         a well formed escaped JSON string. Required.
-        :paramtype schema_definition: str
-        """
-        super().__init__(**kwargs)
-        self.version_state = None
-        self.schema_definition = schema_definition
-
-
 class ConfigurationGroupSchemaPropertiesFormat(_serialization.Model):
     """Configuration group schema properties.
 
     Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
 
     :ivar provisioning_state: The provisioning state of the Configuration group schema resource.
      Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled",
@@ -2413,86 +2319,40 @@ class ConfigurationGroupSchemaPropertiesFormat(_serialization.Model):
     :ivar version_state: The configuration group schema version state. Known values are: "Unknown",
      "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
     :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
+    :ivar description: Description of what schema can contain.
+    :vartype description: str
     :ivar schema_definition: Name and value pairs that define the configuration value. It can be a
-     well formed escaped JSON string. Required.
+     well formed escaped JSON string.
     :vartype schema_definition: str
     """
 
     _validation = {
         "provisioning_state": {"readonly": True},
         "version_state": {"readonly": True},
-        "schema_definition": {"required": True},
     }
 
     _attribute_map = {
         "provisioning_state": {"key": "provisioningState", "type": "str"},
         "version_state": {"key": "versionState", "type": "str"},
+        "description": {"key": "description", "type": "str"},
         "schema_definition": {"key": "schemaDefinition", "type": "str"},
     }
 
-    def __init__(self, *, schema_definition: str, **kwargs: Any) -> None:
+    def __init__(
+        self, *, description: Optional[str] = None, schema_definition: Optional[str] = None, **kwargs: Any
+    ) -> None:
         """
+        :keyword description: Description of what schema can contain.
+        :paramtype description: str
         :keyword schema_definition: Name and value pairs that define the configuration value. It can be
-         a well formed escaped JSON string. Required.
+         a well formed escaped JSON string.
         :paramtype schema_definition: str
         """
         super().__init__(**kwargs)
         self.provisioning_state = None
         self.version_state = None
+        self.description = description
         self.schema_definition = schema_definition
-
-
-class ConfigurationGroupSchemaReferences(_serialization.Model):
-    """The configuration schemas to used to define the values.
-
-    :ivar publisher_name: The publisher name for the configuration group schema.
-    :vartype publisher_name: str
-    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown", "Public", and
-     "Private".
-    :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
-    :ivar configuration_group_schema_name: The configuration group schema name.
-    :vartype configuration_group_schema_name: str
-    :ivar configuration_group_schema_offering_location: The location of the configuration group
-     schema offering.
-    :vartype configuration_group_schema_offering_location: str
-    """
-
-    _attribute_map = {
-        "publisher_name": {"key": "publisherName", "type": "str"},
-        "publisher_scope": {"key": "publisherScope", "type": "str"},
-        "configuration_group_schema_name": {"key": "configurationGroupSchemaName", "type": "str"},
-        "configuration_group_schema_offering_location": {
-            "key": "configurationGroupSchemaOfferingLocation",
-            "type": "str",
-        },
-    }
-
-    def __init__(
-        self,
-        *,
-        publisher_name: Optional[str] = None,
-        publisher_scope: Optional[Union[str, "_models.PublisherScope"]] = None,
-        configuration_group_schema_name: Optional[str] = None,
-        configuration_group_schema_offering_location: Optional[str] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword publisher_name: The publisher name for the configuration group schema.
-        :paramtype publisher_name: str
-        :keyword publisher_scope: The scope of the publisher. Known values are: "Unknown", "Public",
-         and "Private".
-        :paramtype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
-        :keyword configuration_group_schema_name: The configuration group schema name.
-        :paramtype configuration_group_schema_name: str
-        :keyword configuration_group_schema_offering_location: The location of the configuration group
-         schema offering.
-        :paramtype configuration_group_schema_offering_location: str
-        """
-        super().__init__(**kwargs)
-        self.publisher_name = publisher_name
-        self.publisher_scope = publisher_scope
-        self.configuration_group_schema_name = configuration_group_schema_name
-        self.configuration_group_schema_offering_location = configuration_group_schema_offering_location
 
 
 class ConfigurationGroupSchemaVersionUpdateState(_serialization.Model):
@@ -2614,6 +2474,9 @@ class ConfigurationGroupValueListResult(_serialization.Model):
 class ConfigurationGroupValuePropertiesFormat(_serialization.Model):
     """Hybrid configuration group value properties.
 
+    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
+    ConfigurationValueWithoutSecrets, ConfigurationValueWithSecrets
+
     Variables are only populated by the server, and will be ignored when sending a request.
 
     All required parameters must be populated in order to send to Azure.
@@ -2622,28 +2485,32 @@ class ConfigurationGroupValuePropertiesFormat(_serialization.Model):
      "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
      "Converging".
     :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
-    :ivar publisher_name: The publisher name for the configuration group schema. Required.
+    :ivar publisher_name: The publisher name for the configuration group schema.
     :vartype publisher_name: str
-    :ivar publisher_scope: The scope of the publisher. Required. Known values are: "Unknown",
-     "Public", and "Private".
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
     :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
-    :ivar configuration_group_schema_name: The configuration group schema name. Required.
+    :ivar configuration_group_schema_name: The configuration group schema name.
     :vartype configuration_group_schema_name: str
     :ivar configuration_group_schema_offering_location: The location of the configuration group
-     schema offering. Required.
+     schema offering.
     :vartype configuration_group_schema_offering_location: str
-    :ivar configuration_value: Name and value pairs that define the configuration value. It can be
-     a well formed escaped JSON string. Required.
-    :vartype configuration_value: str
+    :ivar configuration_group_schema_resource_reference: The configuration group schema resource
+     reference.
+    :vartype configuration_group_schema_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+    :ivar configuration_type: The value which indicates if configuration values are secrets.
+     Required. Known values are: "Unknown", "Secret", and "Open".
+    :vartype configuration_type: str or
+     ~Microsoft.HybridNetwork.models.ConfigurationGroupValueConfigurationType
     """
 
     _validation = {
         "provisioning_state": {"readonly": True},
-        "publisher_name": {"required": True},
-        "publisher_scope": {"required": True},
-        "configuration_group_schema_name": {"required": True},
-        "configuration_group_schema_offering_location": {"required": True},
-        "configuration_value": {"required": True},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "configuration_group_schema_name": {"readonly": True},
+        "configuration_group_schema_offering_location": {"readonly": True},
+        "configuration_type": {"required": True},
     }
 
     _attribute_map = {
@@ -2655,41 +2522,330 @@ class ConfigurationGroupValuePropertiesFormat(_serialization.Model):
             "key": "configurationGroupSchemaOfferingLocation",
             "type": "str",
         },
+        "configuration_group_schema_resource_reference": {
+            "key": "configurationGroupSchemaResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
+        "configuration_type": {"key": "configurationType", "type": "str"},
+    }
+
+    _subtype_map = {
+        "configuration_type": {"Open": "ConfigurationValueWithoutSecrets", "Secret": "ConfigurationValueWithSecrets"}
+    }
+
+    def __init__(
+        self,
+        *,
+        configuration_group_schema_resource_reference: Optional["_models.DeploymentResourceIdReference"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword configuration_group_schema_resource_reference: The configuration group schema resource
+         reference.
+        :paramtype configuration_group_schema_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+        """
+        super().__init__(**kwargs)
+        self.provisioning_state = None
+        self.publisher_name = None
+        self.publisher_scope = None
+        self.configuration_group_schema_name = None
+        self.configuration_group_schema_offering_location = None
+        self.configuration_group_schema_resource_reference = configuration_group_schema_resource_reference
+        self.configuration_type: Optional[str] = None
+
+
+class ConfigurationValueWithoutSecrets(ConfigurationGroupValuePropertiesFormat):
+    """The ConfigurationValue with no secrets.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the site resource. Known values are:
+     "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
+     "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar publisher_name: The publisher name for the configuration group schema.
+    :vartype publisher_name: str
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
+    :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
+    :ivar configuration_group_schema_name: The configuration group schema name.
+    :vartype configuration_group_schema_name: str
+    :ivar configuration_group_schema_offering_location: The location of the configuration group
+     schema offering.
+    :vartype configuration_group_schema_offering_location: str
+    :ivar configuration_group_schema_resource_reference: The configuration group schema resource
+     reference.
+    :vartype configuration_group_schema_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+    :ivar configuration_type: The value which indicates if configuration values are secrets.
+     Required. Known values are: "Unknown", "Secret", and "Open".
+    :vartype configuration_type: str or
+     ~Microsoft.HybridNetwork.models.ConfigurationGroupValueConfigurationType
+    :ivar configuration_value: Name and value pairs that define the configuration value. It can be
+     a well formed escaped JSON string.
+    :vartype configuration_value: str
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "configuration_group_schema_name": {"readonly": True},
+        "configuration_group_schema_offering_location": {"readonly": True},
+        "configuration_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "publisher_name": {"key": "publisherName", "type": "str"},
+        "publisher_scope": {"key": "publisherScope", "type": "str"},
+        "configuration_group_schema_name": {"key": "configurationGroupSchemaName", "type": "str"},
+        "configuration_group_schema_offering_location": {
+            "key": "configurationGroupSchemaOfferingLocation",
+            "type": "str",
+        },
+        "configuration_group_schema_resource_reference": {
+            "key": "configurationGroupSchemaResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
+        "configuration_type": {"key": "configurationType", "type": "str"},
         "configuration_value": {"key": "configurationValue", "type": "str"},
     }
 
     def __init__(
         self,
         *,
-        publisher_name: str,
-        publisher_scope: Union[str, "_models.PublisherScope"],
-        configuration_group_schema_name: str,
-        configuration_group_schema_offering_location: str,
-        configuration_value: str,
+        configuration_group_schema_resource_reference: Optional["_models.DeploymentResourceIdReference"] = None,
+        configuration_value: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """
-        :keyword publisher_name: The publisher name for the configuration group schema. Required.
-        :paramtype publisher_name: str
-        :keyword publisher_scope: The scope of the publisher. Required. Known values are: "Unknown",
-         "Public", and "Private".
-        :paramtype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
-        :keyword configuration_group_schema_name: The configuration group schema name. Required.
-        :paramtype configuration_group_schema_name: str
-        :keyword configuration_group_schema_offering_location: The location of the configuration group
-         schema offering. Required.
-        :paramtype configuration_group_schema_offering_location: str
+        :keyword configuration_group_schema_resource_reference: The configuration group schema resource
+         reference.
+        :paramtype configuration_group_schema_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
         :keyword configuration_value: Name and value pairs that define the configuration value. It can
-         be a well formed escaped JSON string. Required.
+         be a well formed escaped JSON string.
         :paramtype configuration_value: str
+        """
+        super().__init__(
+            configuration_group_schema_resource_reference=configuration_group_schema_resource_reference, **kwargs
+        )
+        self.configuration_type: str = "Open"
+        self.configuration_value = configuration_value
+
+
+class ConfigurationValueWithSecrets(ConfigurationGroupValuePropertiesFormat):
+    """The ConfigurationValue with secrets.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the site resource. Known values are:
+     "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
+     "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar publisher_name: The publisher name for the configuration group schema.
+    :vartype publisher_name: str
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
+    :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
+    :ivar configuration_group_schema_name: The configuration group schema name.
+    :vartype configuration_group_schema_name: str
+    :ivar configuration_group_schema_offering_location: The location of the configuration group
+     schema offering.
+    :vartype configuration_group_schema_offering_location: str
+    :ivar configuration_group_schema_resource_reference: The configuration group schema resource
+     reference.
+    :vartype configuration_group_schema_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+    :ivar configuration_type: The value which indicates if configuration values are secrets.
+     Required. Known values are: "Unknown", "Secret", and "Open".
+    :vartype configuration_type: str or
+     ~Microsoft.HybridNetwork.models.ConfigurationGroupValueConfigurationType
+    :ivar secret_configuration_value: Name and value pairs that define the configuration value
+     secrets. It can be a well formed escaped JSON string.
+    :vartype secret_configuration_value: str
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "configuration_group_schema_name": {"readonly": True},
+        "configuration_group_schema_offering_location": {"readonly": True},
+        "configuration_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "publisher_name": {"key": "publisherName", "type": "str"},
+        "publisher_scope": {"key": "publisherScope", "type": "str"},
+        "configuration_group_schema_name": {"key": "configurationGroupSchemaName", "type": "str"},
+        "configuration_group_schema_offering_location": {
+            "key": "configurationGroupSchemaOfferingLocation",
+            "type": "str",
+        },
+        "configuration_group_schema_resource_reference": {
+            "key": "configurationGroupSchemaResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
+        "configuration_type": {"key": "configurationType", "type": "str"},
+        "secret_configuration_value": {"key": "secretConfigurationValue", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        configuration_group_schema_resource_reference: Optional["_models.DeploymentResourceIdReference"] = None,
+        secret_configuration_value: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword configuration_group_schema_resource_reference: The configuration group schema resource
+         reference.
+        :paramtype configuration_group_schema_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+        :keyword secret_configuration_value: Name and value pairs that define the configuration value
+         secrets. It can be a well formed escaped JSON string.
+        :paramtype secret_configuration_value: str
+        """
+        super().__init__(
+            configuration_group_schema_resource_reference=configuration_group_schema_resource_reference, **kwargs
+        )
+        self.configuration_type: str = "Secret"
+        self.secret_configuration_value = secret_configuration_value
+
+
+class NetworkFunctionDefinitionVersionPropertiesFormat(_serialization.Model):
+    """Network function definition version properties.
+
+    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
+    ContainerizedNetworkFunctionDefinitionVersion, VirtualNetworkFunctionDefinitionVersion
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the network function definition version
+     resource. Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed",
+     "Canceled", "Deleted", and "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar version_state: The network function definition version state. Known values are:
+     "Unknown", "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
+    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
+    :ivar description: The network function definition version description.
+    :vartype description: str
+    :ivar deploy_parameters: The deployment parameters of the network function definition version.
+    :vartype deploy_parameters: str
+    :ivar network_function_type: The network function type. Required. Known values are: "Unknown",
+     "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
+    :vartype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "version_state": {"readonly": True},
+        "network_function_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "version_state": {"key": "versionState", "type": "str"},
+        "description": {"key": "description", "type": "str"},
+        "deploy_parameters": {"key": "deployParameters", "type": "str"},
+        "network_function_type": {"key": "networkFunctionType", "type": "str"},
+    }
+
+    _subtype_map = {
+        "network_function_type": {
+            "ContainerizedNetworkFunction": "ContainerizedNetworkFunctionDefinitionVersion",
+            "VirtualNetworkFunction": "VirtualNetworkFunctionDefinitionVersion",
+        }
+    }
+
+    def __init__(
+        self, *, description: Optional[str] = None, deploy_parameters: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword description: The network function definition version description.
+        :paramtype description: str
+        :keyword deploy_parameters: The deployment parameters of the network function definition
+         version.
+        :paramtype deploy_parameters: str
         """
         super().__init__(**kwargs)
         self.provisioning_state = None
-        self.publisher_name = publisher_name
-        self.publisher_scope = publisher_scope
-        self.configuration_group_schema_name = configuration_group_schema_name
-        self.configuration_group_schema_offering_location = configuration_group_schema_offering_location
-        self.configuration_value = configuration_value
+        self.version_state = None
+        self.description = description
+        self.deploy_parameters = deploy_parameters
+        self.network_function_type: Optional[str] = None
+
+
+class ContainerizedNetworkFunctionDefinitionVersion(NetworkFunctionDefinitionVersionPropertiesFormat):
+    """Containerized network function network function definition version properties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the network function definition version
+     resource. Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed",
+     "Canceled", "Deleted", and "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar version_state: The network function definition version state. Known values are:
+     "Unknown", "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
+    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
+    :ivar description: The network function definition version description.
+    :vartype description: str
+    :ivar deploy_parameters: The deployment parameters of the network function definition version.
+    :vartype deploy_parameters: str
+    :ivar network_function_type: The network function type. Required. Known values are: "Unknown",
+     "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
+    :vartype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
+    :ivar network_function_template: Containerized network function template.
+    :vartype network_function_template:
+     ~Microsoft.HybridNetwork.models.ContainerizedNetworkFunctionTemplate
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "version_state": {"readonly": True},
+        "network_function_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "version_state": {"key": "versionState", "type": "str"},
+        "description": {"key": "description", "type": "str"},
+        "deploy_parameters": {"key": "deployParameters", "type": "str"},
+        "network_function_type": {"key": "networkFunctionType", "type": "str"},
+        "network_function_template": {"key": "networkFunctionTemplate", "type": "ContainerizedNetworkFunctionTemplate"},
+    }
+
+    def __init__(
+        self,
+        *,
+        description: Optional[str] = None,
+        deploy_parameters: Optional[str] = None,
+        network_function_template: Optional["_models.ContainerizedNetworkFunctionTemplate"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword description: The network function definition version description.
+        :paramtype description: str
+        :keyword deploy_parameters: The deployment parameters of the network function definition
+         version.
+        :paramtype deploy_parameters: str
+        :keyword network_function_template: Containerized network function template.
+        :paramtype network_function_template:
+         ~Microsoft.HybridNetwork.models.ContainerizedNetworkFunctionTemplate
+        """
+        super().__init__(description=description, deploy_parameters=deploy_parameters, **kwargs)
+        self.network_function_type: str = "ContainerizedNetworkFunction"
+        self.network_function_template = network_function_template
 
 
 class CustomLocationResourceId(_serialization.Model):
@@ -2896,6 +3052,37 @@ class Deployment(_serialization.Model):
         self.up_to_date = up_to_date
         self.available = available
         self.creation_time = creation_time
+
+
+class DeploymentResourceIdReference(_serialization.Model):
+    """The azure resource reference which is used for deployment.
+
+    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
+    OpenDeploymentResourceReference, SecretDeploymentResourceReference
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id_type: The resource reference arm id type. Known values are: "Unknown", "Open", and
+     "Secret".
+    :vartype id_type: str or ~Microsoft.HybridNetwork.models.IdType
+    """
+
+    _validation = {
+        "id_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "id_type": {"key": "idType", "type": "str"},
+    }
+
+    _subtype_map = {
+        "id_type": {"Open": "OpenDeploymentResourceReference", "Secret": "SecretDeploymentResourceReference"}
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        """ """
+        super().__init__(**kwargs)
+        self.id_type: Optional[str] = None
 
 
 class DeploymentStatusProperties(_serialization.Model):
@@ -3114,6 +3301,40 @@ class HelmArtifactProfile(_serialization.Model):
         self.image_pull_secrets_values_paths = image_pull_secrets_values_paths
 
 
+class HelmInstallOptions(_serialization.Model):
+    """The helm deployment install options.
+
+    :ivar atomic: The helm deployment atomic options.
+    :vartype atomic: str
+    :ivar wait: The helm deployment wait options.
+    :vartype wait: str
+    :ivar timeout: The helm deployment timeout options.
+    :vartype timeout: str
+    """
+
+    _attribute_map = {
+        "atomic": {"key": "atomic", "type": "str"},
+        "wait": {"key": "wait", "type": "str"},
+        "timeout": {"key": "timeout", "type": "str"},
+    }
+
+    def __init__(
+        self, *, atomic: Optional[str] = None, wait: Optional[str] = None, timeout: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword atomic: The helm deployment atomic options.
+        :paramtype atomic: str
+        :keyword wait: The helm deployment wait options.
+        :paramtype wait: str
+        :keyword timeout: The helm deployment timeout options.
+        :paramtype timeout: str
+        """
+        super().__init__(**kwargs)
+        self.atomic = atomic
+        self.wait = wait
+        self.timeout = timeout
+
+
 class HelmMappingRuleProfile(_serialization.Model):
     """Helm mapping rule profile.
 
@@ -3125,6 +3346,8 @@ class HelmMappingRuleProfile(_serialization.Model):
     :vartype helm_package_version: str
     :ivar values: Helm release values.
     :vartype values: str
+    :ivar options: The helm deployment options.
+    :vartype options: ~Microsoft.HybridNetwork.models.HelmMappingRuleProfileOptions
     """
 
     _attribute_map = {
@@ -3132,6 +3355,7 @@ class HelmMappingRuleProfile(_serialization.Model):
         "release_name": {"key": "releaseName", "type": "str"},
         "helm_package_version": {"key": "helmPackageVersion", "type": "str"},
         "values": {"key": "values", "type": "str"},
+        "options": {"key": "options", "type": "HelmMappingRuleProfileOptions"},
     }
 
     def __init__(
@@ -3141,6 +3365,7 @@ class HelmMappingRuleProfile(_serialization.Model):
         release_name: Optional[str] = None,
         helm_package_version: Optional[str] = None,
         values: Optional[str] = None,
+        options: Optional["_models.HelmMappingRuleProfileOptions"] = None,
         **kwargs: Any
     ) -> None:
         """
@@ -3152,52 +3377,81 @@ class HelmMappingRuleProfile(_serialization.Model):
         :paramtype helm_package_version: str
         :keyword values: Helm release values.
         :paramtype values: str
+        :keyword options: The helm deployment options.
+        :paramtype options: ~Microsoft.HybridNetwork.models.HelmMappingRuleProfileOptions
         """
         super().__init__(**kwargs)
         self.release_namespace = release_namespace
         self.release_name = release_name
         self.helm_package_version = helm_package_version
         self.values = values
+        self.options = options
 
 
-class HelmPackageApplicationOverview(NetworkFunctionDefinitionApplicationOverview):
-    """Helm Package Application overview.
+class HelmMappingRuleProfileOptions(_serialization.Model):
+    """The helm deployment options.
 
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar name: The name of the application.
-    :vartype name: str
-    :ivar artifact_type: The application overview artifact type. Required. Known values are:
-     "Unknown", "HelmPackage", "VhdImageFile", "ArmTemplate", and "ImageFile".
-    :vartype artifact_type: str or
-     ~Microsoft.HybridNetwork.models.NetworkFunctionPublisherArtifactType
-    :ivar deploy_parameters_mapping_rule_profile: The deployment parameters mapping rule profile.
-    :vartype deploy_parameters_mapping_rule_profile:
-     ~Microsoft.HybridNetwork.models.AzureArcKubernetesDeployMappingRuleProfile
+    :ivar install_options: The helm deployment install options.
+    :vartype install_options: ~Microsoft.HybridNetwork.models.HelmInstallOptions
+    :ivar upgrade_options: The helm deployment upgrade options.
+    :vartype upgrade_options: ~Microsoft.HybridNetwork.models.HelmUpgradeOptions
     """
 
-    _validation = {
-        "name": {"readonly": True},
-        "artifact_type": {"required": True},
-        "deploy_parameters_mapping_rule_profile": {"readonly": True},
+    _attribute_map = {
+        "install_options": {"key": "installOptions", "type": "HelmInstallOptions"},
+        "upgrade_options": {"key": "upgradeOptions", "type": "HelmUpgradeOptions"},
     }
+
+    def __init__(
+        self,
+        *,
+        install_options: Optional["_models.HelmInstallOptions"] = None,
+        upgrade_options: Optional["_models.HelmUpgradeOptions"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword install_options: The helm deployment install options.
+        :paramtype install_options: ~Microsoft.HybridNetwork.models.HelmInstallOptions
+        :keyword upgrade_options: The helm deployment upgrade options.
+        :paramtype upgrade_options: ~Microsoft.HybridNetwork.models.HelmUpgradeOptions
+        """
+        super().__init__(**kwargs)
+        self.install_options = install_options
+        self.upgrade_options = upgrade_options
+
+
+class HelmUpgradeOptions(_serialization.Model):
+    """The helm deployment install options.
+
+    :ivar atomic: The helm deployment atomic options.
+    :vartype atomic: str
+    :ivar wait: The helm deployment wait options.
+    :vartype wait: str
+    :ivar timeout: The helm deployment timeout options.
+    :vartype timeout: str
+    """
 
     _attribute_map = {
-        "name": {"key": "name", "type": "str"},
-        "artifact_type": {"key": "artifactType", "type": "str"},
-        "deploy_parameters_mapping_rule_profile": {
-            "key": "deployParametersMappingRuleProfile",
-            "type": "AzureArcKubernetesDeployMappingRuleProfile",
-        },
+        "atomic": {"key": "atomic", "type": "str"},
+        "wait": {"key": "wait", "type": "str"},
+        "timeout": {"key": "timeout", "type": "str"},
     }
 
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
+    def __init__(
+        self, *, atomic: Optional[str] = None, wait: Optional[str] = None, timeout: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """
+        :keyword atomic: The helm deployment atomic options.
+        :paramtype atomic: str
+        :keyword wait: The helm deployment wait options.
+        :paramtype wait: str
+        :keyword timeout: The helm deployment timeout options.
+        :paramtype timeout: str
+        """
         super().__init__(**kwargs)
-        self.artifact_type: str = "HelmPackage"
-        self.deploy_parameters_mapping_rule_profile = None
+        self.atomic = atomic
+        self.wait = wait
+        self.timeout = timeout
 
 
 class ImageArtifactProfile(_serialization.Model):
@@ -3553,104 +3807,6 @@ class NetworkFunctionDefinitionGroupListResult(_serialization.Model):
         self.next_link = None
 
 
-class NetworkFunctionDefinitionGroupOverview(ProxyResource):
-    """Network function definition group overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.  # pylint: disable=line-too-long
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
-     information.
-    :vartype system_data: ~Microsoft.HybridNetwork.models.SystemData
-    :ivar properties: Network function definition group overview.
-    :vartype properties:
-     ~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionGroupOverviewPropertiesFormat
-    """
-
-    _validation = {
-        "id": {"readonly": True},
-        "name": {"readonly": True},
-        "type": {"readonly": True},
-        "system_data": {"readonly": True},
-        "properties": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "type": {"key": "type", "type": "str"},
-        "system_data": {"key": "systemData", "type": "SystemData"},
-        "properties": {"key": "properties", "type": "NetworkFunctionDefinitionGroupOverviewPropertiesFormat"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.properties = None
-
-
-class NetworkFunctionDefinitionGroupOverviewListResult(_serialization.Model):
-    """A list of available network function definition groups.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar value: The network function group list properties.
-    :vartype value: list[~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionGroupOverview]
-    :ivar next_link: The URL to get the next set of results.
-    :vartype next_link: str
-    """
-
-    _validation = {
-        "next_link": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "value": {"key": "value", "type": "[NetworkFunctionDefinitionGroupOverview]"},
-        "next_link": {"key": "nextLink", "type": "str"},
-    }
-
-    def __init__(
-        self, *, value: Optional[List["_models.NetworkFunctionDefinitionGroupOverview"]] = None, **kwargs: Any
-    ) -> None:
-        """
-        :keyword value: The network function group list properties.
-        :paramtype value: list[~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionGroupOverview]
-        """
-        super().__init__(**kwargs)
-        self.value = value
-        self.next_link = None
-
-
-class NetworkFunctionDefinitionGroupOverviewPropertiesFormat(_serialization.Model):
-    """Network function definition group overview properties.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar description: Network function definition group description.
-    :vartype description: str
-    """
-
-    _validation = {
-        "description": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "description": {"key": "description", "type": "str"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.description = None
-
-
 class NetworkFunctionDefinitionGroupPropertiesFormat(_serialization.Model):
     """Network function definition group properties.
 
@@ -3690,9 +3846,9 @@ class NetworkFunctionDefinitionResourceElementTemplateDetails(ResourceElementTem
 
     :ivar name: Name of the resource element template.
     :vartype name: str
-    :ivar resource_element_template_type: The resource element template type. Required. Known
-     values are: "Unknown", "ArmResourceDefinition", and "NetworkFunctionDefinition".
-    :vartype resource_element_template_type: str or ~Microsoft.HybridNetwork.models.Type
+    :ivar resource_element_type: The resource element template type. Required. Known values are:
+     "Unknown", "ArmResourceDefinition", and "NetworkFunctionDefinition".
+    :vartype resource_element_type: str or ~Microsoft.HybridNetwork.models.Type
     :ivar depends_on_profile: The depends on profile.
     :vartype depends_on_profile: ~Microsoft.HybridNetwork.models.DependsOnProfile
     :ivar configuration: The resource element template type.
@@ -3701,12 +3857,12 @@ class NetworkFunctionDefinitionResourceElementTemplateDetails(ResourceElementTem
     """
 
     _validation = {
-        "resource_element_template_type": {"required": True},
+        "resource_element_type": {"required": True},
     }
 
     _attribute_map = {
         "name": {"key": "name", "type": "str"},
-        "resource_element_template_type": {"key": "type", "type": "str"},
+        "resource_element_type": {"key": "type", "type": "str"},
         "depends_on_profile": {"key": "dependsOnProfile", "type": "DependsOnProfile"},
         "configuration": {"key": "configuration", "type": "ArmResourceDefinitionResourceElementTemplate"},
     }
@@ -3729,7 +3885,7 @@ class NetworkFunctionDefinitionResourceElementTemplateDetails(ResourceElementTem
          ~Microsoft.HybridNetwork.models.ArmResourceDefinitionResourceElementTemplate
         """
         super().__init__(name=name, depends_on_profile=depends_on_profile, **kwargs)
-        self.resource_element_template_type: str = "NetworkFunctionDefinition"
+        self.resource_element_type: str = "NetworkFunctionDefinition"
         self.configuration = configuration
 
 
@@ -3831,232 +3987,6 @@ class NetworkFunctionDefinitionVersionListResult(_serialization.Model):
         self.next_link = None
 
 
-class NetworkFunctionDefinitionVersionOverview(ProxyResource):
-    """Network function definition version overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.  # pylint: disable=line-too-long
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
-     information.
-    :vartype system_data: ~Microsoft.HybridNetwork.models.SystemData
-    :ivar properties: Network function definition version overview properties.
-    :vartype properties:
-     ~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionVersionOverviewPropertiesFormat
-    """
-
-    _validation = {
-        "id": {"readonly": True},
-        "name": {"readonly": True},
-        "type": {"readonly": True},
-        "system_data": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "type": {"key": "type", "type": "str"},
-        "system_data": {"key": "systemData", "type": "SystemData"},
-        "properties": {"key": "properties", "type": "NetworkFunctionDefinitionVersionOverviewPropertiesFormat"},
-    }
-
-    def __init__(
-        self,
-        *,
-        properties: Optional["_models.NetworkFunctionDefinitionVersionOverviewPropertiesFormat"] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword properties: Network function definition version overview properties.
-        :paramtype properties:
-         ~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionVersionOverviewPropertiesFormat
-        """
-        super().__init__(**kwargs)
-        self.properties = properties
-
-
-class NetworkFunctionDefinitionVersionOverviewListResult(_serialization.Model):
-    """A list of available network function definition groups.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar value: The network function definition overview properties.
-    :vartype value: list[~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionVersionOverview]
-    :ivar next_link: The URL to get the next set of results.
-    :vartype next_link: str
-    """
-
-    _validation = {
-        "next_link": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "value": {"key": "value", "type": "[NetworkFunctionDefinitionVersionOverview]"},
-        "next_link": {"key": "nextLink", "type": "str"},
-    }
-
-    def __init__(
-        self, *, value: Optional[List["_models.NetworkFunctionDefinitionVersionOverview"]] = None, **kwargs: Any
-    ) -> None:
-        """
-        :keyword value: The network function definition overview properties.
-        :paramtype value:
-         list[~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionVersionOverview]
-        """
-        super().__init__(**kwargs)
-        self.value = value
-        self.next_link = None
-
-
-class NetworkFunctionDefinitionVersionOverviewPropertiesFormat(_serialization.Model):
-    """The network function network function definition overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar description: The network function definition version description properties.
-    :vartype description: str
-    :ivar version_state: The network function definition version state. Known values are:
-     "Unknown", "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
-    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
-    :ivar network_function_type: The network function type. Known values are: "Unknown",
-     "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
-    :vartype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
-    :ivar nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
-     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
-    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
-    :ivar deploy_parameters: The deployment parameters.
-    :vartype deploy_parameters: str
-    :ivar network_function_applications: The network function definition application overview.
-    :vartype network_function_applications:
-     list[~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionApplicationOverview]
-    """
-
-    _validation = {
-        "description": {"readonly": True},
-        "deploy_parameters": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "description": {"key": "description", "type": "str"},
-        "version_state": {"key": "versionState", "type": "str"},
-        "network_function_type": {"key": "networkFunctionType", "type": "str"},
-        "nfvi_type": {"key": "nfviType", "type": "str"},
-        "deploy_parameters": {"key": "deployParameters", "type": "str"},
-        "network_function_applications": {
-            "key": "networkFunctionApplications",
-            "type": "[NetworkFunctionDefinitionApplicationOverview]",
-        },
-    }
-
-    def __init__(
-        self,
-        *,
-        version_state: Optional[Union[str, "_models.VersionState"]] = None,
-        network_function_type: Optional[Union[str, "_models.NetworkFunctionType"]] = None,
-        nfvi_type: Optional[Union[str, "_models.NFVIType"]] = None,
-        network_function_applications: Optional[List["_models.NetworkFunctionDefinitionApplicationOverview"]] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword version_state: The network function definition version state. Known values are:
-         "Unknown", "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
-        :paramtype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
-        :keyword network_function_type: The network function type. Known values are: "Unknown",
-         "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
-        :paramtype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
-        :keyword nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
-         "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
-        :paramtype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
-        :keyword network_function_applications: The network function definition application overview.
-        :paramtype network_function_applications:
-         list[~Microsoft.HybridNetwork.models.NetworkFunctionDefinitionApplicationOverview]
-        """
-        super().__init__(**kwargs)
-        self.description = None
-        self.version_state = version_state
-        self.network_function_type = network_function_type
-        self.nfvi_type = nfvi_type
-        self.deploy_parameters = None
-        self.network_function_applications = network_function_applications
-
-
-class NetworkFunctionDefinitionVersionPropertiesFormat(_serialization.Model):
-    """Network function definition version properties.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar provisioning_state: The provisioning state of the network function definition version
-     resource. Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed",
-     "Canceled", "Deleted", and "Converging".
-    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
-    :ivar version_state: The network function definition version state. Known values are:
-     "Unknown", "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
-    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
-    :ivar description: The network function definition version description.
-    :vartype description: str
-    :ivar deploy_parameters: The deployment parameters of the network function definition version.
-    :vartype deploy_parameters: str
-    :ivar network_function_type: The network function type. Required. Known values are: "Unknown",
-     "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
-    :vartype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
-    :ivar network_function_template: Containerized network function template.
-    :vartype network_function_template: ~Microsoft.HybridNetwork.models.NetworkFunctionTemplate
-    """
-
-    _validation = {
-        "provisioning_state": {"readonly": True},
-        "version_state": {"readonly": True},
-        "network_function_type": {"required": True},
-    }
-
-    _attribute_map = {
-        "provisioning_state": {"key": "provisioningState", "type": "str"},
-        "version_state": {"key": "versionState", "type": "str"},
-        "description": {"key": "description", "type": "str"},
-        "deploy_parameters": {"key": "deployParameters", "type": "str"},
-        "network_function_type": {"key": "networkFunctionType", "type": "str"},
-        "network_function_template": {"key": "networkFunctionTemplate", "type": "NetworkFunctionTemplate"},
-    }
-
-    def __init__(
-        self,
-        *,
-        network_function_type: Union[str, "_models.NetworkFunctionType"],
-        description: Optional[str] = None,
-        deploy_parameters: Optional[str] = None,
-        network_function_template: Optional["_models.NetworkFunctionTemplate"] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword description: The network function definition version description.
-        :paramtype description: str
-        :keyword deploy_parameters: The deployment parameters of the network function definition
-         version.
-        :paramtype deploy_parameters: str
-        :keyword network_function_type: The network function type. Required. Known values are:
-         "Unknown", "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
-        :paramtype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
-        :keyword network_function_template: Containerized network function template.
-        :paramtype network_function_template: ~Microsoft.HybridNetwork.models.NetworkFunctionTemplate
-        """
-        super().__init__(**kwargs)
-        self.provisioning_state = None
-        self.version_state = None
-        self.description = description
-        self.deploy_parameters = deploy_parameters
-        self.network_function_type = network_function_type
-        self.network_function_template = network_function_template
-
-
 class NetworkFunctionDefinitionVersionUpdateState(_serialization.Model):
     """Publisher network function definition version update request definition.
 
@@ -4116,7 +4046,12 @@ class NetworkFunctionListResult(_serialization.Model):
 class NetworkFunctionPropertiesFormat(_serialization.Model):  # pylint: disable=too-many-instance-attributes
     """Network function properties.
 
+    You probably want to use the sub-classes and not this class directly. Known sub-classes are:
+    NetworkFunctionValueWithoutSecrets, NetworkFunctionValueWithSecrets
+
     Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
 
     :ivar provisioning_state: The provisioning state of the network function resource. Known values
      are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
@@ -4124,8 +4059,7 @@ class NetworkFunctionPropertiesFormat(_serialization.Model):  # pylint: disable=
     :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
     :ivar publisher_name: The publisher name for the network function.
     :vartype publisher_name: str
-    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown", "Public", and
-     "Private".
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
     :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
     :ivar network_function_definition_group_name: The network function definition group name for
      the network function.
@@ -4136,6 +4070,10 @@ class NetworkFunctionPropertiesFormat(_serialization.Model):  # pylint: disable=
     :ivar network_function_definition_offering_location: The location of the network function
      definition offering.
     :vartype network_function_definition_offering_location: str
+    :ivar network_function_definition_version_resource_reference: The network function definition
+     version resource reference.
+    :vartype network_function_definition_version_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
     :ivar nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
      "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
     :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
@@ -4143,14 +4081,22 @@ class NetworkFunctionPropertiesFormat(_serialization.Model):  # pylint: disable=
     :vartype nfvi_id: str
     :ivar allow_software_update: Indicates if software updates are allowed during deployment.
     :vartype allow_software_update: bool
-    :ivar deployment_values: The JSON-serialized deployment values from the user.
-    :vartype deployment_values: str
+    :ivar configuration_type: The value which indicates if NF  values are secrets. Required. Known
+     values are: "Unknown", "Secret", and "Open".
+    :vartype configuration_type: str or
+     ~Microsoft.HybridNetwork.models.NetworkFunctionConfigurationType
     :ivar role_override_values: The role configuration override values from the user.
     :vartype role_override_values: list[str]
     """
 
     _validation = {
         "provisioning_state": {"readonly": True},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "network_function_definition_group_name": {"readonly": True},
+        "network_function_definition_version": {"readonly": True},
+        "network_function_definition_offering_location": {"readonly": True},
+        "configuration_type": {"required": True},
     }
 
     _attribute_map = {
@@ -4163,43 +4109,41 @@ class NetworkFunctionPropertiesFormat(_serialization.Model):  # pylint: disable=
             "key": "networkFunctionDefinitionOfferingLocation",
             "type": "str",
         },
+        "network_function_definition_version_resource_reference": {
+            "key": "networkFunctionDefinitionVersionResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
         "nfvi_type": {"key": "nfviType", "type": "str"},
         "nfvi_id": {"key": "nfviId", "type": "str"},
         "allow_software_update": {"key": "allowSoftwareUpdate", "type": "bool"},
-        "deployment_values": {"key": "deploymentValues", "type": "str"},
+        "configuration_type": {"key": "configurationType", "type": "str"},
         "role_override_values": {"key": "roleOverrideValues", "type": "[str]"},
+    }
+
+    _subtype_map = {
+        "configuration_type": {
+            "Open": "NetworkFunctionValueWithoutSecrets",
+            "Secret": "NetworkFunctionValueWithSecrets",
+        }
     }
 
     def __init__(
         self,
         *,
-        publisher_name: Optional[str] = None,
-        publisher_scope: Optional[Union[str, "_models.PublisherScope"]] = None,
-        network_function_definition_group_name: Optional[str] = None,
-        network_function_definition_version: Optional[str] = None,
-        network_function_definition_offering_location: Optional[str] = None,
+        network_function_definition_version_resource_reference: Optional[
+            "_models.DeploymentResourceIdReference"
+        ] = None,
         nfvi_type: Optional[Union[str, "_models.NFVIType"]] = None,
         nfvi_id: Optional[str] = None,
         allow_software_update: Optional[bool] = None,
-        deployment_values: Optional[str] = None,
         role_override_values: Optional[List[str]] = None,
         **kwargs: Any
     ) -> None:
         """
-        :keyword publisher_name: The publisher name for the network function.
-        :paramtype publisher_name: str
-        :keyword publisher_scope: The scope of the publisher. Known values are: "Unknown", "Public",
-         and "Private".
-        :paramtype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
-        :keyword network_function_definition_group_name: The network function definition group name for
-         the network function.
-        :paramtype network_function_definition_group_name: str
-        :keyword network_function_definition_version: The network function definition version for the
-         network function.
-        :paramtype network_function_definition_version: str
-        :keyword network_function_definition_offering_location: The location of the network function
-         definition offering.
-        :paramtype network_function_definition_offering_location: str
+        :keyword network_function_definition_version_resource_reference: The network function
+         definition version resource reference.
+        :paramtype network_function_definition_version_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
         :keyword nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
          "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
         :paramtype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
@@ -4207,23 +4151,266 @@ class NetworkFunctionPropertiesFormat(_serialization.Model):  # pylint: disable=
         :paramtype nfvi_id: str
         :keyword allow_software_update: Indicates if software updates are allowed during deployment.
         :paramtype allow_software_update: bool
-        :keyword deployment_values: The JSON-serialized deployment values from the user.
-        :paramtype deployment_values: str
         :keyword role_override_values: The role configuration override values from the user.
         :paramtype role_override_values: list[str]
         """
         super().__init__(**kwargs)
         self.provisioning_state = None
-        self.publisher_name = publisher_name
-        self.publisher_scope = publisher_scope
-        self.network_function_definition_group_name = network_function_definition_group_name
-        self.network_function_definition_version = network_function_definition_version
-        self.network_function_definition_offering_location = network_function_definition_offering_location
+        self.publisher_name = None
+        self.publisher_scope = None
+        self.network_function_definition_group_name = None
+        self.network_function_definition_version = None
+        self.network_function_definition_offering_location = None
+        self.network_function_definition_version_resource_reference = (
+            network_function_definition_version_resource_reference
+        )
         self.nfvi_type = nfvi_type
         self.nfvi_id = nfvi_id
         self.allow_software_update = allow_software_update
-        self.deployment_values = deployment_values
+        self.configuration_type: Optional[str] = None
         self.role_override_values = role_override_values
+
+
+class NetworkFunctionValueWithoutSecrets(
+    NetworkFunctionPropertiesFormat
+):  # pylint: disable=too-many-instance-attributes
+    """NetworkFunction with no secrets.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the network function resource. Known values
+     are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
+     "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar publisher_name: The publisher name for the network function.
+    :vartype publisher_name: str
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
+    :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
+    :ivar network_function_definition_group_name: The network function definition group name for
+     the network function.
+    :vartype network_function_definition_group_name: str
+    :ivar network_function_definition_version: The network function definition version for the
+     network function.
+    :vartype network_function_definition_version: str
+    :ivar network_function_definition_offering_location: The location of the network function
+     definition offering.
+    :vartype network_function_definition_offering_location: str
+    :ivar network_function_definition_version_resource_reference: The network function definition
+     version resource reference.
+    :vartype network_function_definition_version_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+    :ivar nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
+     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+    :ivar nfvi_id: The nfviId for the network function.
+    :vartype nfvi_id: str
+    :ivar allow_software_update: Indicates if software updates are allowed during deployment.
+    :vartype allow_software_update: bool
+    :ivar configuration_type: The value which indicates if NF  values are secrets. Required. Known
+     values are: "Unknown", "Secret", and "Open".
+    :vartype configuration_type: str or
+     ~Microsoft.HybridNetwork.models.NetworkFunctionConfigurationType
+    :ivar role_override_values: The role configuration override values from the user.
+    :vartype role_override_values: list[str]
+    :ivar deployment_values: The JSON-serialized deployment values from the user.
+    :vartype deployment_values: str
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "network_function_definition_group_name": {"readonly": True},
+        "network_function_definition_version": {"readonly": True},
+        "network_function_definition_offering_location": {"readonly": True},
+        "configuration_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "publisher_name": {"key": "publisherName", "type": "str"},
+        "publisher_scope": {"key": "publisherScope", "type": "str"},
+        "network_function_definition_group_name": {"key": "networkFunctionDefinitionGroupName", "type": "str"},
+        "network_function_definition_version": {"key": "networkFunctionDefinitionVersion", "type": "str"},
+        "network_function_definition_offering_location": {
+            "key": "networkFunctionDefinitionOfferingLocation",
+            "type": "str",
+        },
+        "network_function_definition_version_resource_reference": {
+            "key": "networkFunctionDefinitionVersionResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
+        "nfvi_type": {"key": "nfviType", "type": "str"},
+        "nfvi_id": {"key": "nfviId", "type": "str"},
+        "allow_software_update": {"key": "allowSoftwareUpdate", "type": "bool"},
+        "configuration_type": {"key": "configurationType", "type": "str"},
+        "role_override_values": {"key": "roleOverrideValues", "type": "[str]"},
+        "deployment_values": {"key": "deploymentValues", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        network_function_definition_version_resource_reference: Optional[
+            "_models.DeploymentResourceIdReference"
+        ] = None,
+        nfvi_type: Optional[Union[str, "_models.NFVIType"]] = None,
+        nfvi_id: Optional[str] = None,
+        allow_software_update: Optional[bool] = None,
+        role_override_values: Optional[List[str]] = None,
+        deployment_values: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword network_function_definition_version_resource_reference: The network function
+         definition version resource reference.
+        :paramtype network_function_definition_version_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+        :keyword nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
+         "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
+        :paramtype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+        :keyword nfvi_id: The nfviId for the network function.
+        :paramtype nfvi_id: str
+        :keyword allow_software_update: Indicates if software updates are allowed during deployment.
+        :paramtype allow_software_update: bool
+        :keyword role_override_values: The role configuration override values from the user.
+        :paramtype role_override_values: list[str]
+        :keyword deployment_values: The JSON-serialized deployment values from the user.
+        :paramtype deployment_values: str
+        """
+        super().__init__(
+            network_function_definition_version_resource_reference=network_function_definition_version_resource_reference,
+            nfvi_type=nfvi_type,
+            nfvi_id=nfvi_id,
+            allow_software_update=allow_software_update,
+            role_override_values=role_override_values,
+            **kwargs
+        )
+        self.configuration_type: str = "Open"
+        self.deployment_values = deployment_values
+
+
+class NetworkFunctionValueWithSecrets(NetworkFunctionPropertiesFormat):  # pylint: disable=too-many-instance-attributes
+    """NetworkFunction with secrets.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the network function resource. Known values
+     are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
+     "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar publisher_name: The publisher name for the network function.
+    :vartype publisher_name: str
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
+    :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
+    :ivar network_function_definition_group_name: The network function definition group name for
+     the network function.
+    :vartype network_function_definition_group_name: str
+    :ivar network_function_definition_version: The network function definition version for the
+     network function.
+    :vartype network_function_definition_version: str
+    :ivar network_function_definition_offering_location: The location of the network function
+     definition offering.
+    :vartype network_function_definition_offering_location: str
+    :ivar network_function_definition_version_resource_reference: The network function definition
+     version resource reference.
+    :vartype network_function_definition_version_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+    :ivar nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
+     "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
+    :vartype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+    :ivar nfvi_id: The nfviId for the network function.
+    :vartype nfvi_id: str
+    :ivar allow_software_update: Indicates if software updates are allowed during deployment.
+    :vartype allow_software_update: bool
+    :ivar configuration_type: The value which indicates if NF  values are secrets. Required. Known
+     values are: "Unknown", "Secret", and "Open".
+    :vartype configuration_type: str or
+     ~Microsoft.HybridNetwork.models.NetworkFunctionConfigurationType
+    :ivar role_override_values: The role configuration override values from the user.
+    :vartype role_override_values: list[str]
+    :ivar secret_deployment_values: The JSON-serialized secret deployment values from the user.
+     This contains secrets like passwords,keys etc.
+    :vartype secret_deployment_values: str
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "network_function_definition_group_name": {"readonly": True},
+        "network_function_definition_version": {"readonly": True},
+        "network_function_definition_offering_location": {"readonly": True},
+        "configuration_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "publisher_name": {"key": "publisherName", "type": "str"},
+        "publisher_scope": {"key": "publisherScope", "type": "str"},
+        "network_function_definition_group_name": {"key": "networkFunctionDefinitionGroupName", "type": "str"},
+        "network_function_definition_version": {"key": "networkFunctionDefinitionVersion", "type": "str"},
+        "network_function_definition_offering_location": {
+            "key": "networkFunctionDefinitionOfferingLocation",
+            "type": "str",
+        },
+        "network_function_definition_version_resource_reference": {
+            "key": "networkFunctionDefinitionVersionResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
+        "nfvi_type": {"key": "nfviType", "type": "str"},
+        "nfvi_id": {"key": "nfviId", "type": "str"},
+        "allow_software_update": {"key": "allowSoftwareUpdate", "type": "bool"},
+        "configuration_type": {"key": "configurationType", "type": "str"},
+        "role_override_values": {"key": "roleOverrideValues", "type": "[str]"},
+        "secret_deployment_values": {"key": "secretDeploymentValues", "type": "str"},
+    }
+
+    def __init__(
+        self,
+        *,
+        network_function_definition_version_resource_reference: Optional[
+            "_models.DeploymentResourceIdReference"
+        ] = None,
+        nfvi_type: Optional[Union[str, "_models.NFVIType"]] = None,
+        nfvi_id: Optional[str] = None,
+        allow_software_update: Optional[bool] = None,
+        role_override_values: Optional[List[str]] = None,
+        secret_deployment_values: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword network_function_definition_version_resource_reference: The network function
+         definition version resource reference.
+        :paramtype network_function_definition_version_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
+        :keyword nfvi_type: The nfvi type for the network function. Known values are: "Unknown",
+         "AzureArcKubernetes", "AzureCore", and "AzureOperatorNexus".
+        :paramtype nfvi_type: str or ~Microsoft.HybridNetwork.models.NFVIType
+        :keyword nfvi_id: The nfviId for the network function.
+        :paramtype nfvi_id: str
+        :keyword allow_software_update: Indicates if software updates are allowed during deployment.
+        :paramtype allow_software_update: bool
+        :keyword role_override_values: The role configuration override values from the user.
+        :paramtype role_override_values: list[str]
+        :keyword secret_deployment_values: The JSON-serialized secret deployment values from the user.
+         This contains secrets like passwords,keys etc.
+        :paramtype secret_deployment_values: str
+        """
+        super().__init__(
+            network_function_definition_version_resource_reference=network_function_definition_version_resource_reference,
+            nfvi_type=nfvi_type,
+            nfvi_id=nfvi_id,
+            allow_software_update=allow_software_update,
+            role_override_values=role_override_values,
+            **kwargs
+        )
+        self.configuration_type: str = "Secret"
+        self.secret_deployment_values = secret_deployment_values
 
 
 class NetworkServiceDesignGroup(TrackedResource):
@@ -4319,104 +4506,6 @@ class NetworkServiceDesignGroupListResult(_serialization.Model):
         super().__init__(**kwargs)
         self.value = value
         self.next_link = None
-
-
-class NetworkServiceDesignGroupOverview(ProxyResource):
-    """Network service design group overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.  # pylint: disable=line-too-long
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
-     information.
-    :vartype system_data: ~Microsoft.HybridNetwork.models.SystemData
-    :ivar properties: Network service design group overview.
-    :vartype properties:
-     ~Microsoft.HybridNetwork.models.NetworkServiceDesignGroupOverviewPropertiesFormat
-    """
-
-    _validation = {
-        "id": {"readonly": True},
-        "name": {"readonly": True},
-        "type": {"readonly": True},
-        "system_data": {"readonly": True},
-        "properties": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "type": {"key": "type", "type": "str"},
-        "system_data": {"key": "systemData", "type": "SystemData"},
-        "properties": {"key": "properties", "type": "NetworkServiceDesignGroupOverviewPropertiesFormat"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.properties = None
-
-
-class NetworkServiceDesignGroupOverviewListResult(_serialization.Model):
-    """A list of available network service design groups.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar value: The network service design group list properties.
-    :vartype value: list[~Microsoft.HybridNetwork.models.NetworkServiceDesignGroupOverview]
-    :ivar next_link: The URL to get the next set of results.
-    :vartype next_link: str
-    """
-
-    _validation = {
-        "next_link": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "value": {"key": "value", "type": "[NetworkServiceDesignGroupOverview]"},
-        "next_link": {"key": "nextLink", "type": "str"},
-    }
-
-    def __init__(
-        self, *, value: Optional[List["_models.NetworkServiceDesignGroupOverview"]] = None, **kwargs: Any
-    ) -> None:
-        """
-        :keyword value: The network service design group list properties.
-        :paramtype value: list[~Microsoft.HybridNetwork.models.NetworkServiceDesignGroupOverview]
-        """
-        super().__init__(**kwargs)
-        self.value = value
-        self.next_link = None
-
-
-class NetworkServiceDesignGroupOverviewPropertiesFormat(_serialization.Model):
-    """Network service design group overview properties.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar description: Network service design group properties.
-    :vartype description: str
-    """
-
-    _validation = {
-        "description": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "description": {"key": "description", "type": "str"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.description = None
 
 
 class NetworkServiceDesignGroupPropertiesFormat(_serialization.Model):
@@ -4547,151 +4636,10 @@ class NetworkServiceDesignVersionListResult(_serialization.Model):
         self.next_link = None
 
 
-class NetworkServiceDesignVersionOverview(ProxyResource):
-    """Network service design version overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.  # pylint: disable=line-too-long
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
-     information.
-    :vartype system_data: ~Microsoft.HybridNetwork.models.SystemData
-    :ivar properties: Network service design version overview properties.
-    :vartype properties:
-     ~Microsoft.HybridNetwork.models.NetworkServiceDesignVersionOverviewPropertiesFormat
-    """
-
-    _validation = {
-        "id": {"readonly": True},
-        "name": {"readonly": True},
-        "type": {"readonly": True},
-        "system_data": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "type": {"key": "type", "type": "str"},
-        "system_data": {"key": "systemData", "type": "SystemData"},
-        "properties": {"key": "properties", "type": "NetworkServiceDesignVersionOverviewPropertiesFormat"},
-    }
-
-    def __init__(
-        self,
-        *,
-        properties: Optional["_models.NetworkServiceDesignVersionOverviewPropertiesFormat"] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword properties: Network service design version overview properties.
-        :paramtype properties:
-         ~Microsoft.HybridNetwork.models.NetworkServiceDesignVersionOverviewPropertiesFormat
-        """
-        super().__init__(**kwargs)
-        self.properties = properties
-
-
-class NetworkServiceDesignVersionOverviewListResult(_serialization.Model):
-    """A list of available network service design version.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar value: The network service design version list properties.
-    :vartype value: list[~Microsoft.HybridNetwork.models.NetworkServiceDesignVersionOverview]
-    :ivar next_link: The URL to get the next set of results.
-    :vartype next_link: str
-    """
-
-    _validation = {
-        "next_link": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "value": {"key": "value", "type": "[NetworkServiceDesignVersionOverview]"},
-        "next_link": {"key": "nextLink", "type": "str"},
-    }
-
-    def __init__(
-        self, *, value: Optional[List["_models.NetworkServiceDesignVersionOverview"]] = None, **kwargs: Any
-    ) -> None:
-        """
-        :keyword value: The network service design version list properties.
-        :paramtype value: list[~Microsoft.HybridNetwork.models.NetworkServiceDesignVersionOverview]
-        """
-        super().__init__(**kwargs)
-        self.value = value
-        self.next_link = None
-
-
-class NetworkServiceDesignVersionOverviewPropertiesFormat(_serialization.Model):
-    """The network service design overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar description: The network service design version description properties.
-    :vartype description: str
-    :ivar version_state: The network service design version state. Known values are: "Unknown",
-     "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
-    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
-    :ivar configuration_group_schema_references: Configuration Group Schema References.
-    :vartype configuration_group_schema_references: dict[str,
-     ~Microsoft.HybridNetwork.models.ConfigurationGroupSchemaReferences]
-    :ivar nfvis_from_site: The nfvis from the site.
-    :vartype nfvis_from_site: dict[str, ~Microsoft.HybridNetwork.models.NfviDetails]
-    """
-
-    _validation = {
-        "description": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "description": {"key": "description", "type": "str"},
-        "version_state": {"key": "versionState", "type": "str"},
-        "configuration_group_schema_references": {
-            "key": "configurationGroupSchemaReferences",
-            "type": "{ConfigurationGroupSchemaReferences}",
-        },
-        "nfvis_from_site": {"key": "nfvisFromSite", "type": "{NfviDetails}"},
-    }
-
-    def __init__(
-        self,
-        *,
-        version_state: Optional[Union[str, "_models.VersionState"]] = None,
-        configuration_group_schema_references: Optional[Dict[str, "_models.ConfigurationGroupSchemaReferences"]] = None,
-        nfvis_from_site: Optional[Dict[str, "_models.NfviDetails"]] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword version_state: The network service design version state. Known values are: "Unknown",
-         "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
-        :paramtype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
-        :keyword configuration_group_schema_references: Configuration Group Schema References.
-        :paramtype configuration_group_schema_references: dict[str,
-         ~Microsoft.HybridNetwork.models.ConfigurationGroupSchemaReferences]
-        :keyword nfvis_from_site: The nfvis from the site.
-        :paramtype nfvis_from_site: dict[str, ~Microsoft.HybridNetwork.models.NfviDetails]
-        """
-        super().__init__(**kwargs)
-        self.description = None
-        self.version_state = version_state
-        self.configuration_group_schema_references = configuration_group_schema_references
-        self.nfvis_from_site = nfvis_from_site
-
-
 class NetworkServiceDesignVersionPropertiesFormat(_serialization.Model):
     """network service design version properties.
 
     Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
 
     :ivar provisioning_state: The provisioning state of the network service design version
      resource. Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed",
@@ -4703,12 +4651,12 @@ class NetworkServiceDesignVersionPropertiesFormat(_serialization.Model):
     :ivar description: The network service design version description.
     :vartype description: str
     :ivar configuration_group_schema_references: The configuration schemas to used to define the
-     values. Required.
+     values.
     :vartype configuration_group_schema_references: dict[str,
      ~Microsoft.HybridNetwork.models.ReferencedResource]
     :ivar nfvis_from_site: The nfvis from the site.
     :vartype nfvis_from_site: dict[str, ~Microsoft.HybridNetwork.models.NfviDetails]
-    :ivar resource_element_templates: List of resource element template. Required.
+    :ivar resource_element_templates: List of resource element template.
     :vartype resource_element_templates:
      list[~Microsoft.HybridNetwork.models.ResourceElementTemplate]
     """
@@ -4716,8 +4664,6 @@ class NetworkServiceDesignVersionPropertiesFormat(_serialization.Model):
     _validation = {
         "provisioning_state": {"readonly": True},
         "version_state": {"readonly": True},
-        "configuration_group_schema_references": {"required": True},
-        "resource_element_templates": {"required": True},
     }
 
     _attribute_map = {
@@ -4735,22 +4681,22 @@ class NetworkServiceDesignVersionPropertiesFormat(_serialization.Model):
     def __init__(
         self,
         *,
-        configuration_group_schema_references: Dict[str, "_models.ReferencedResource"],
-        resource_element_templates: List["_models.ResourceElementTemplate"],
         description: Optional[str] = None,
+        configuration_group_schema_references: Optional[Dict[str, "_models.ReferencedResource"]] = None,
         nfvis_from_site: Optional[Dict[str, "_models.NfviDetails"]] = None,
+        resource_element_templates: Optional[List["_models.ResourceElementTemplate"]] = None,
         **kwargs: Any
     ) -> None:
         """
         :keyword description: The network service design version description.
         :paramtype description: str
         :keyword configuration_group_schema_references: The configuration schemas to used to define the
-         values. Required.
+         values.
         :paramtype configuration_group_schema_references: dict[str,
          ~Microsoft.HybridNetwork.models.ReferencedResource]
         :keyword nfvis_from_site: The nfvis from the site.
         :paramtype nfvis_from_site: dict[str, ~Microsoft.HybridNetwork.models.NfviDetails]
-        :keyword resource_element_templates: List of resource element template. Required.
+        :keyword resource_element_templates: List of resource element template.
         :paramtype resource_element_templates:
          list[~Microsoft.HybridNetwork.models.ResourceElementTemplate]
         """
@@ -4848,6 +4794,37 @@ class NSDArtifactProfile(_serialization.Model):
         self.artifact_store_reference = artifact_store_reference
         self.artifact_name = artifact_name
         self.artifact_version = artifact_version
+
+
+class OpenDeploymentResourceReference(DeploymentResourceIdReference):
+    """Non secret deployment resource id reference.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id_type: The resource reference arm id type. Known values are: "Unknown", "Open", and
+     "Secret".
+    :vartype id_type: str or ~Microsoft.HybridNetwork.models.IdType
+    :ivar id: Resource ID.
+    :vartype id: str
+    """
+
+    _validation = {
+        "id_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "id_type": {"key": "idType", "type": "str"},
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Resource ID.
+        :paramtype id: str
+        """
+        super().__init__(**kwargs)
+        self.id_type: str = "Open"
+        self.id = id
 
 
 class Operation(_serialization.Model):
@@ -5086,95 +5063,6 @@ class PodEvent(_serialization.Model):
         self.last_seen_time = last_seen_time
 
 
-class PreviewSubscription(TrackedResource):
-    """Customer subscription which can use a preview network function definition version.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.  # pylint: disable=line-too-long
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
-     information.
-    :vartype system_data: ~Microsoft.HybridNetwork.models.SystemData
-    :ivar tags: Resource tags.
-    :vartype tags: dict[str, str]
-    :ivar location: The geo-location where the resource lives. Required.
-    :vartype location: str
-    :ivar properties: PreviewSubscription properties.
-    :vartype properties: ~Microsoft.HybridNetwork.models.PreviewSubscriptionPropertiesFormat
-    """
-
-    _validation = {
-        "id": {"readonly": True},
-        "name": {"readonly": True},
-        "type": {"readonly": True},
-        "system_data": {"readonly": True},
-        "location": {"required": True},
-    }
-
-    _attribute_map = {
-        "id": {"key": "id", "type": "str"},
-        "name": {"key": "name", "type": "str"},
-        "type": {"key": "type", "type": "str"},
-        "system_data": {"key": "systemData", "type": "SystemData"},
-        "tags": {"key": "tags", "type": "{str}"},
-        "location": {"key": "location", "type": "str"},
-        "properties": {"key": "properties", "type": "PreviewSubscriptionPropertiesFormat"},
-    }
-
-    def __init__(
-        self,
-        *,
-        location: str,
-        tags: Optional[Dict[str, str]] = None,
-        properties: Optional["_models.PreviewSubscriptionPropertiesFormat"] = None,
-        **kwargs: Any
-    ) -> None:
-        """
-        :keyword tags: Resource tags.
-        :paramtype tags: dict[str, str]
-        :keyword location: The geo-location where the resource lives. Required.
-        :paramtype location: str
-        :keyword properties: PreviewSubscription properties.
-        :paramtype properties: ~Microsoft.HybridNetwork.models.PreviewSubscriptionPropertiesFormat
-        """
-        super().__init__(tags=tags, location=location, **kwargs)
-        self.properties = properties
-
-
-class PreviewSubscriptionPropertiesFormat(_serialization.Model):
-    """PreviewSubscription properties.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar provisioning_state: The provisioning state of the preview subscription resource. Known
-     values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted",
-     and "Converging".
-    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
-    """
-
-    _validation = {
-        "provisioning_state": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "provisioning_state": {"key": "provisioningState", "type": "str"},
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.provisioning_state = None
-
-
 class ProxyArtifactListOverview(ProxyResource):
     """The proxy artifact overview.
 
@@ -5407,55 +5295,6 @@ class ProxyArtifactVersionsOverviewListResult(_serialization.Model):
         self.next_link = None
 
 
-class ProxyPublisherOverview(ProxyResource):
-    """The proxy publisher overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar id: Fully qualified resource ID for the resource. Ex -
-     /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.  # pylint: disable=line-too-long
-    :vartype id: str
-    :ivar name: The name of the resource.
-    :vartype name: str
-    :ivar type: The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or
-     "Microsoft.Storage/storageAccounts".
-    :vartype type: str
-    :ivar system_data: Azure Resource Manager metadata containing createdBy and modifiedBy
-     information.
-    :vartype system_data: ~Microsoft.HybridNetwork.models.SystemData
-    """
-
-
-class ProxyPublisherOverviewListResult(_serialization.Model):
-    """The proxy publisher list result.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    :ivar value: A list of available proxy publishers.
-    :vartype value: list[~Microsoft.HybridNetwork.models.ProxyPublisherOverview]
-    :ivar next_link: The URL to get the next set of results.
-    :vartype next_link: str
-    """
-
-    _validation = {
-        "next_link": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "value": {"key": "value", "type": "[ProxyPublisherOverview]"},
-        "next_link": {"key": "nextLink", "type": "str"},
-    }
-
-    def __init__(self, *, value: Optional[List["_models.ProxyPublisherOverview"]] = None, **kwargs: Any) -> None:
-        """
-        :keyword value: A list of available proxy publishers.
-        :paramtype value: list[~Microsoft.HybridNetwork.models.ProxyPublisherOverview]
-        """
-        super().__init__(**kwargs)
-        self.value = value
-        self.next_link = None
-
-
 class Publisher(TrackedResource):
     """publisher resource.
 
@@ -5566,7 +5405,7 @@ class PublisherPropertiesFormat(_serialization.Model):
      "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted", and
      "Converging".
     :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
-    :ivar scope: The publisher scope. Known values are: "Unknown", "Public", and "Private".
+    :ivar scope: The publisher scope. Known values are: "Unknown" and "Private".
     :vartype scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
     """
 
@@ -5581,7 +5420,7 @@ class PublisherPropertiesFormat(_serialization.Model):
 
     def __init__(self, *, scope: Optional[Union[str, "_models.PublisherScope"]] = None, **kwargs: Any) -> None:
         """
-        :keyword scope: The publisher scope. Known values are: "Unknown", "Public", and "Private".
+        :keyword scope: The publisher scope. Known values are: "Unknown" and "Private".
         :paramtype scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
         """
         super().__init__(**kwargs)
@@ -5776,6 +5615,37 @@ class Resources(_serialization.Model):
         self.replica_sets = replica_sets
         self.stateful_sets = stateful_sets
         self.daemon_sets = daemon_sets
+
+
+class SecretDeploymentResourceReference(DeploymentResourceIdReference):
+    """Secret deployment resource id reference.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar id_type: The resource reference arm id type. Known values are: "Unknown", "Open", and
+     "Secret".
+    :vartype id_type: str or ~Microsoft.HybridNetwork.models.IdType
+    :ivar id: Resource ID.
+    :vartype id: str
+    """
+
+    _validation = {
+        "id_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "id_type": {"key": "idType", "type": "str"},
+        "id": {"key": "id", "type": "str"},
+    }
+
+    def __init__(self, *, id: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
+        """
+        :keyword id: Resource ID.
+        :paramtype id: str
+        """
+        super().__init__(**kwargs)
+        self.id_type: str = "Secret"
+        self.id = id
 
 
 class Site(TrackedResource):
@@ -5985,8 +5855,6 @@ class SiteNetworkServicePropertiesFormat(_serialization.Model):  # pylint: disab
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
-
     :ivar provisioning_state: The provisioning state of the site network service resource. Known
      values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed", "Canceled", "Deleted",
      and "Converging".
@@ -5994,25 +5862,28 @@ class SiteNetworkServicePropertiesFormat(_serialization.Model):  # pylint: disab
     :ivar managed_resource_group_configuration: Managed resource group configuration.
     :vartype managed_resource_group_configuration:
      ~Microsoft.HybridNetwork.models.ManagedResourceGroupConfiguration
-    :ivar site_reference: The site details. Required.
+    :ivar site_reference: The site details.
     :vartype site_reference: ~Microsoft.HybridNetwork.models.ReferencedResource
-    :ivar publisher_name: The publisher name for the site network service. Required.
+    :ivar publisher_name: The publisher name for the site network service.
     :vartype publisher_name: str
-    :ivar publisher_scope: The scope of the publisher. Required. Known values are: "Unknown",
-     "Public", and "Private".
+    :ivar publisher_scope: The scope of the publisher. Known values are: "Unknown" and "Private".
     :vartype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
     :ivar network_service_design_group_name: The network service design group name for the site
-     network service. Required.
+     network service.
     :vartype network_service_design_group_name: str
     :ivar network_service_design_version_name: The network service design version for the site
-     network service. Required.
+     network service.
     :vartype network_service_design_version_name: str
     :ivar network_service_design_version_offering_location: The location of the network service
-     design offering. Required.
+     design offering.
     :vartype network_service_design_version_offering_location: str
+    :ivar network_service_design_version_resource_reference: The network service design version
+     resource reference.
+    :vartype network_service_design_version_resource_reference:
+     ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
     :ivar desired_state_configuration_group_value_references: The goal state of the site network
      service resource. This has references to the configuration group value objects that describe
-     the desired state of the site network service. Required.
+     the desired state of the site network service.
     :vartype desired_state_configuration_group_value_references: dict[str,
      ~Microsoft.HybridNetwork.models.ReferencedResource]
     :ivar last_state_network_service_design_version_name: The network service design version for
@@ -6026,14 +5897,12 @@ class SiteNetworkServicePropertiesFormat(_serialization.Model):  # pylint: disab
 
     _validation = {
         "provisioning_state": {"readonly": True},
-        "site_reference": {"required": True},
-        "publisher_name": {"required": True},
-        "publisher_scope": {"required": True},
-        "network_service_design_group_name": {"required": True},
-        "network_service_design_version_name": {"required": True, "pattern": r"^[0-9]+\.[0-9]+\.[0-9]+$"},
-        "network_service_design_version_offering_location": {"required": True},
-        "desired_state_configuration_group_value_references": {"required": True},
-        "last_state_network_service_design_version_name": {"readonly": True, "pattern": r"^[0-9]+\.[0-9]+\.[0-9]+$"},
+        "publisher_name": {"readonly": True},
+        "publisher_scope": {"readonly": True},
+        "network_service_design_group_name": {"readonly": True},
+        "network_service_design_version_name": {"readonly": True},
+        "network_service_design_version_offering_location": {"readonly": True},
+        "last_state_network_service_design_version_name": {"readonly": True},
         "last_state_configuration_group_value_references": {"readonly": True},
     }
 
@@ -6052,6 +5921,10 @@ class SiteNetworkServicePropertiesFormat(_serialization.Model):  # pylint: disab
             "key": "networkServiceDesignVersionOfferingLocation",
             "type": "str",
         },
+        "network_service_design_version_resource_reference": {
+            "key": "networkServiceDesignVersionResourceReference",
+            "type": "DeploymentResourceIdReference",
+        },
         "desired_state_configuration_group_value_references": {
             "key": "desiredStateConfigurationGroupValueReferences",
             "type": "{ReferencedResource}",
@@ -6069,39 +5942,25 @@ class SiteNetworkServicePropertiesFormat(_serialization.Model):  # pylint: disab
     def __init__(
         self,
         *,
-        site_reference: "_models.ReferencedResource",
-        publisher_name: str,
-        publisher_scope: Union[str, "_models.PublisherScope"],
-        network_service_design_group_name: str,
-        network_service_design_version_name: str,
-        network_service_design_version_offering_location: str,
-        desired_state_configuration_group_value_references: Dict[str, "_models.ReferencedResource"],
         managed_resource_group_configuration: Optional["_models.ManagedResourceGroupConfiguration"] = None,
+        site_reference: Optional["_models.ReferencedResource"] = None,
+        network_service_design_version_resource_reference: Optional["_models.DeploymentResourceIdReference"] = None,
+        desired_state_configuration_group_value_references: Optional[Dict[str, "_models.ReferencedResource"]] = None,
         **kwargs: Any
     ) -> None:
         """
         :keyword managed_resource_group_configuration: Managed resource group configuration.
         :paramtype managed_resource_group_configuration:
          ~Microsoft.HybridNetwork.models.ManagedResourceGroupConfiguration
-        :keyword site_reference: The site details. Required.
+        :keyword site_reference: The site details.
         :paramtype site_reference: ~Microsoft.HybridNetwork.models.ReferencedResource
-        :keyword publisher_name: The publisher name for the site network service. Required.
-        :paramtype publisher_name: str
-        :keyword publisher_scope: The scope of the publisher. Required. Known values are: "Unknown",
-         "Public", and "Private".
-        :paramtype publisher_scope: str or ~Microsoft.HybridNetwork.models.PublisherScope
-        :keyword network_service_design_group_name: The network service design group name for the site
-         network service. Required.
-        :paramtype network_service_design_group_name: str
-        :keyword network_service_design_version_name: The network service design version for the site
-         network service. Required.
-        :paramtype network_service_design_version_name: str
-        :keyword network_service_design_version_offering_location: The location of the network service
-         design offering. Required.
-        :paramtype network_service_design_version_offering_location: str
+        :keyword network_service_design_version_resource_reference: The network service design version
+         resource reference.
+        :paramtype network_service_design_version_resource_reference:
+         ~Microsoft.HybridNetwork.models.DeploymentResourceIdReference
         :keyword desired_state_configuration_group_value_references: The goal state of the site network
          service resource. This has references to the configuration group value objects that describe
-         the desired state of the site network service. Required.
+         the desired state of the site network service.
         :paramtype desired_state_configuration_group_value_references: dict[str,
          ~Microsoft.HybridNetwork.models.ReferencedResource]
         """
@@ -6109,11 +5968,12 @@ class SiteNetworkServicePropertiesFormat(_serialization.Model):  # pylint: disab
         self.provisioning_state = None
         self.managed_resource_group_configuration = managed_resource_group_configuration
         self.site_reference = site_reference
-        self.publisher_name = publisher_name
-        self.publisher_scope = publisher_scope
-        self.network_service_design_group_name = network_service_design_group_name
-        self.network_service_design_version_name = network_service_design_version_name
-        self.network_service_design_version_offering_location = network_service_design_version_offering_location
+        self.publisher_name = None
+        self.publisher_scope = None
+        self.network_service_design_group_name = None
+        self.network_service_design_version_name = None
+        self.network_service_design_version_offering_location = None
+        self.network_service_design_version_resource_reference = network_service_design_version_resource_reference
         self.desired_state_configuration_group_value_references = desired_state_configuration_group_value_references
         self.last_state_network_service_design_version_name = None
         self.last_state_configuration_group_value_references = None
@@ -6124,13 +5984,11 @@ class SitePropertiesFormat(_serialization.Model):
 
     Variables are only populated by the server, and will be ignored when sending a request.
 
-    All required parameters must be populated in order to send to Azure.
-
     :ivar provisioning_state: The provisioning state of the site resource. **TODO**\ : Confirm if
      this is needed. Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed",
      "Canceled", "Deleted", and "Converging".
     :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
-    :ivar nfvis: List of NFVIs. Required.
+    :ivar nfvis: List of NFVIs.
     :vartype nfvis: list[~Microsoft.HybridNetwork.models.NFVIs]
     :ivar site_network_service_references: The list of site network services on the site.
     :vartype site_network_service_references:
@@ -6139,7 +5997,6 @@ class SitePropertiesFormat(_serialization.Model):
 
     _validation = {
         "provisioning_state": {"readonly": True},
-        "nfvis": {"required": True},
         "site_network_service_references": {"readonly": True},
     }
 
@@ -6149,9 +6006,9 @@ class SitePropertiesFormat(_serialization.Model):
         "site_network_service_references": {"key": "siteNetworkServiceReferences", "type": "[ReferencedResource]"},
     }
 
-    def __init__(self, *, nfvis: List["_models.NFVIs"], **kwargs: Any) -> None:
+    def __init__(self, *, nfvis: Optional[List["_models.NFVIs"]] = None, **kwargs: Any) -> None:
         """
-        :keyword nfvis: List of NFVIs. Required.
+        :keyword nfvis: List of NFVIs.
         :paramtype nfvis: list[~Microsoft.HybridNetwork.models.NFVIs]
         """
         super().__init__(**kwargs)
@@ -6384,46 +6241,6 @@ class VhdImageArtifactProfile(_serialization.Model):
         self.vhd_version = vhd_version
 
 
-class VhdImageFileApplicationOverview(NetworkFunctionDefinitionApplicationOverview):
-    """Vhd image file Application overview.
-
-    Variables are only populated by the server, and will be ignored when sending a request.
-
-    All required parameters must be populated in order to send to Azure.
-
-    :ivar name: The name of the application.
-    :vartype name: str
-    :ivar artifact_type: The application overview artifact type. Required. Known values are:
-     "Unknown", "HelmPackage", "VhdImageFile", "ArmTemplate", and "ImageFile".
-    :vartype artifact_type: str or
-     ~Microsoft.HybridNetwork.models.NetworkFunctionPublisherArtifactType
-    :ivar deploy_parameters_mapping_rule_profile: The deployment parameters mapping rule profile.
-    :vartype deploy_parameters_mapping_rule_profile:
-     ~Microsoft.HybridNetwork.models.AzureCoreVhdImageDeployMappingRuleProfile
-    """
-
-    _validation = {
-        "name": {"readonly": True},
-        "artifact_type": {"required": True},
-        "deploy_parameters_mapping_rule_profile": {"readonly": True},
-    }
-
-    _attribute_map = {
-        "name": {"key": "name", "type": "str"},
-        "artifact_type": {"key": "artifactType", "type": "str"},
-        "deploy_parameters_mapping_rule_profile": {
-            "key": "deployParametersMappingRuleProfile",
-            "type": "AzureCoreVhdImageDeployMappingRuleProfile",
-        },
-    }
-
-    def __init__(self, **kwargs: Any) -> None:
-        """ """
-        super().__init__(**kwargs)
-        self.artifact_type: str = "VhdImageFile"
-        self.deploy_parameters_mapping_rule_profile = None
-
-
 class VhdImageMappingRuleProfile(_serialization.Model):
     """Vhd mapping rule profile.
 
@@ -6442,3 +6259,67 @@ class VhdImageMappingRuleProfile(_serialization.Model):
         """
         super().__init__(**kwargs)
         self.user_configuration = user_configuration
+
+
+class VirtualNetworkFunctionDefinitionVersion(NetworkFunctionDefinitionVersionPropertiesFormat):
+    """Virtual network function network function definition version properties.
+
+    Variables are only populated by the server, and will be ignored when sending a request.
+
+    All required parameters must be populated in order to send to Azure.
+
+    :ivar provisioning_state: The provisioning state of the network function definition version
+     resource. Known values are: "Unknown", "Succeeded", "Accepted", "Deleting", "Failed",
+     "Canceled", "Deleted", and "Converging".
+    :vartype provisioning_state: str or ~Microsoft.HybridNetwork.models.ProvisioningState
+    :ivar version_state: The network function definition version state. Known values are:
+     "Unknown", "Preview", "Active", "Deprecated", "Validating", and "ValidationFailed".
+    :vartype version_state: str or ~Microsoft.HybridNetwork.models.VersionState
+    :ivar description: The network function definition version description.
+    :vartype description: str
+    :ivar deploy_parameters: The deployment parameters of the network function definition version.
+    :vartype deploy_parameters: str
+    :ivar network_function_type: The network function type. Required. Known values are: "Unknown",
+     "VirtualNetworkFunction", and "ContainerizedNetworkFunction".
+    :vartype network_function_type: str or ~Microsoft.HybridNetwork.models.NetworkFunctionType
+    :ivar network_function_template: Virtual network function template.
+    :vartype network_function_template:
+     ~Microsoft.HybridNetwork.models.VirtualNetworkFunctionTemplate
+    """
+
+    _validation = {
+        "provisioning_state": {"readonly": True},
+        "version_state": {"readonly": True},
+        "network_function_type": {"required": True},
+    }
+
+    _attribute_map = {
+        "provisioning_state": {"key": "provisioningState", "type": "str"},
+        "version_state": {"key": "versionState", "type": "str"},
+        "description": {"key": "description", "type": "str"},
+        "deploy_parameters": {"key": "deployParameters", "type": "str"},
+        "network_function_type": {"key": "networkFunctionType", "type": "str"},
+        "network_function_template": {"key": "networkFunctionTemplate", "type": "VirtualNetworkFunctionTemplate"},
+    }
+
+    def __init__(
+        self,
+        *,
+        description: Optional[str] = None,
+        deploy_parameters: Optional[str] = None,
+        network_function_template: Optional["_models.VirtualNetworkFunctionTemplate"] = None,
+        **kwargs: Any
+    ) -> None:
+        """
+        :keyword description: The network function definition version description.
+        :paramtype description: str
+        :keyword deploy_parameters: The deployment parameters of the network function definition
+         version.
+        :paramtype deploy_parameters: str
+        :keyword network_function_template: Virtual network function template.
+        :paramtype network_function_template:
+         ~Microsoft.HybridNetwork.models.VirtualNetworkFunctionTemplate
+        """
+        super().__init__(description=description, deploy_parameters=deploy_parameters, **kwargs)
+        self.network_function_type: str = "VirtualNetworkFunction"
+        self.network_function_template = network_function_template

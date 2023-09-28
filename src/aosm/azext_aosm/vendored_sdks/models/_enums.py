@@ -99,6 +99,21 @@ class ConfigurationGenerationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     HANDLEBAR_TEMPLATE = "HandlebarTemplate"
 
 
+class ConfigurationGroupValueConfigurationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The secret type which indicates if secret or not."""
+
+    UNKNOWN = "Unknown"
+    SECRET = "Secret"
+    OPEN = "Open"
+
+
+class ContainerizedNetworkFunctionNFVIType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The network function type."""
+
+    UNKNOWN = "Unknown"
+    AZURE_ARC_KUBERNETES = "AzureArcKubernetes"
+
+
 class CreatedByType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """The type of identity that created the resource."""
 
@@ -127,6 +142,14 @@ class HttpMethod(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     DELETE = "Delete"
 
 
+class IdType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The resource reference arm id type."""
+
+    UNKNOWN = "Unknown"
+    OPEN = "Open"
+    SECRET = "Secret"
+
+
 class ManagedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Type of managed service identity (where both SystemAssigned and UserAssigned types are
     allowed).
@@ -138,14 +161,12 @@ class ManagedServiceIdentityType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     SYSTEM_ASSIGNED_USER_ASSIGNED = "SystemAssigned,UserAssigned"
 
 
-class NetworkFunctionPublisherArtifactType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
-    """Network Function publisher artifact type."""
+class NetworkFunctionConfigurationType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The secret type which indicates if secret or not."""
 
     UNKNOWN = "Unknown"
-    HELM_PACKAGE = "HelmPackage"
-    VHD_IMAGE_FILE = "VhdImageFile"
-    ARM_TEMPLATE = "ArmTemplate"
-    IMAGE_FILE = "ImageFile"
+    SECRET = "Secret"
+    OPEN = "Open"
 
 
 class NetworkFunctionType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
@@ -211,7 +232,6 @@ class PublisherScope(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     """Publisher Scope."""
 
     UNKNOWN = "Unknown"
-    PUBLIC = "Public"
     PRIVATE = "Private"
 
 
@@ -272,3 +292,11 @@ class VersionState(str, Enum, metaclass=CaseInsensitiveEnumMeta):
     DEPRECATED = "Deprecated"
     VALIDATING = "Validating"
     VALIDATION_FAILED = "ValidationFailed"
+
+
+class VirtualNetworkFunctionNFVIType(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """The network function type."""
+
+    UNKNOWN = "Unknown"
+    AZURE_CORE = "AzureCore"
+    AZURE_OPERATOR_NEXUS = "AzureOperatorNexus"

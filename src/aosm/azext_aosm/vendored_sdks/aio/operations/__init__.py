@@ -15,16 +15,10 @@ from ._operations import NetworkFunctionDefinitionVersionsOperations
 from ._operations import NetworkServiceDesignGroupsOperations
 from ._operations import NetworkServiceDesignVersionsOperations
 from ._operations import Operations
-from ._operations import ProxyPublisherOperations
-from ._operations import ProxyNetworkFunctionDefinitionGroupsOperations
-from ._operations import ProxyNetworkFunctionDefinitionVersionsOperations
-from ._operations import ProxyNetworkServiceDesignGroupsOperations
-from ._operations import ProxyNetworkServiceDesignVersionsOperations
 from ._operations import PublishersOperations
 from ._operations import ArtifactStoresOperations
 from ._operations import ArtifactManifestsOperations
 from ._operations import ProxyArtifactOperations
-from ._operations import HybridNetworkManagementClientOperationsMixin
 from ._operations import SitesOperations
 from ._operations import SiteNetworkServicesOperations
 
@@ -42,16 +36,10 @@ __all__ = [
     "NetworkServiceDesignGroupsOperations",
     "NetworkServiceDesignVersionsOperations",
     "Operations",
-    "ProxyPublisherOperations",
-    "ProxyNetworkFunctionDefinitionGroupsOperations",
-    "ProxyNetworkFunctionDefinitionVersionsOperations",
-    "ProxyNetworkServiceDesignGroupsOperations",
-    "ProxyNetworkServiceDesignVersionsOperations",
     "PublishersOperations",
     "ArtifactStoresOperations",
     "ArtifactManifestsOperations",
     "ProxyArtifactOperations",
-    "HybridNetworkManagementClientOperationsMixin",
     "SitesOperations",
     "SiteNetworkServicesOperations",
 ]
