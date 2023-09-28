@@ -5,6 +5,7 @@
 
 # pylint: disable=unidiomatic-typecheck
 """A module to handle interacting with artifacts."""
+import json
 import math
 import shutil
 import subprocess
@@ -535,11 +536,13 @@ class Artifact:
         target_acr = self._get_acr()
         try:
             print("Copying artifact from source registry")
-            # In order to use az acr import cross subscription or cross tenant, we need
-            # to use a token to authenticate to the source registry. This is not
+            # In order to use az acr import cross subscription(or cross tenant?), we
+            # need to use a token to authenticate to the source registry. This is not
             # exactly as docced, but seems to work (it is documented to work cross
             # tenant, but not cross subscription, but it works cross susbscription, at
-            # least for public ACRs).
+            # least for public ACRs).  It probably won't work cross-tenant as the token
+            # is retrieved from the CLI user's context which will be in the target
+            # tenant.
             get_token_cmd = [
                 str(shutil.which("az")),
                 "account",
@@ -550,8 +553,8 @@ class Artifact:
             called_process = subprocess.run(
                 get_token_cmd, encoding="utf-8", capture_output=True, text=True, check=True
             )
-            access_token = called_process.stdout
-            # TODO - check if this works! And document.
+            access_token_json = json.loads(called_process.stdout)
+            access_token = access_token_json["accessToken"]
 
             source = f"{self._clean_name(source_registry_login_server)}/{source_image}"
             acr_import_image_cmd = [
