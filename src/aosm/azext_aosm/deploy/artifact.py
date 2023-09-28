@@ -101,6 +101,11 @@ class Artifact:
         except subprocess.CalledProcessError as error:
             logger.debug("Failed to run %s with %s", cmd, error)
 
+            if "--password" in cmd:
+                # Do not log out passwords.
+                log_cmd = cmd.copy()
+                log_cmd[log_cmd.index("--password") + 1] = "[REDACTED]"
+
             all_output: str = (
                 f"Command: {'' ''.join(cmd)}\n"
                 f"Output: {error.stdout}\n"
