@@ -535,6 +535,24 @@ class Artifact:
         target_acr = self._get_acr()
         try:
             print("Copying artifact from source registry")
+            # In order to use az acr import cross subscription or cross tenant, we need
+            # to use a token to authenticate to the source registry. This is not
+            # exactly as docced, but seems to work (it is documented to work cross
+            # tenant, but not cross subscription, but it works cross susbscription, at
+            # least for public ACRs).
+            get_token_cmd = [
+                str(shutil.which("az")),
+                "account",
+                "get-access-token"
+            ]
+            # Dont use _call_subprocess_raise_output here as we don't want to log the
+            # output
+            called_process = subprocess.run(
+                get_token_cmd, encoding="utf-8", capture_output=True, text=True, check=True
+            )
+            access_token = called_process.stdout
+            # TODO - check if this works! And document.
+
             source = f"{self._clean_name(source_registry_login_server)}/{source_image}"
             acr_import_image_cmd = [
                 str(shutil.which("az")),
@@ -546,6 +564,8 @@ class Artifact:
                 source,
                 "--image",
                 self._get_acr_target_image(include_hostname=False),
+                "--password",
+                access_token
             ]
             self._call_subprocess_raise_output(acr_import_image_cmd)
         except CLIError as error:
