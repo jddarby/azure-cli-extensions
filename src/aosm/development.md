@@ -180,7 +180,10 @@ Delete the relevant file under tests/latest/recordings (the file names match the
 If that passes it will create a new recording for you. Running the tests using the `--live` flag will also run all tests
 in "live" mode which will create a new recording for the integration tests.
 
-To find out more about integration tests see [here](https://github.com/Azure/azure-cli/blob/dev/doc/authoring_tests.md).
+To find out more about integration tests:
+
+- For running tests `azdev test --help` explains the options
+- For writing tests, see [here](https://github.com/Azure/azure-cli/blob/dev/doc/authoring_tests.md).
 
 ### Pipelines
 The pipelines for the Azure CLI run in ADO, not in github.
