@@ -4,7 +4,7 @@
     "nf_name": "nginx",
     "version": "1.0.0",
     "acr_artifact_store_name": "nginx-acr",
-    "location": "westcentralus",
+    "location": "uaenorth",
     "images":{
         "source_registry": "not-used-in-test-but-cannot-be-blank",
         "source_registry_namespace": ""

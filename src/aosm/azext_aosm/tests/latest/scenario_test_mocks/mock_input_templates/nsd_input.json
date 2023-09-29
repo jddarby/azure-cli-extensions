@@ -1,17 +1,17 @@
 {
-    "location": "uaenorth",
+    "location": "westcentralus",
     "publisher_name": "automated-tests-ubuntuPublisher",
-    "publisher_resource_group_name": "{{publisher_resource_group_name}}",
+    "publisher_resource_group_name": "cli_test_vnf_nsd_000001",
     "acr_artifact_store_name": "ubuntu-acr",
     "network_functions": [
         {
             "name": "ubuntu-vm-nfdg",
             "version": "1.0.0",
-            "publisher_offering_location": "uaenorth",
+            "publisher_offering_location": "westcentralus",
             "type": "vnf",
             "multiple_instances": false,
             "publisher": "automated-tests-ubuntuPublisher",
-            "publisher_resource_group": "{{publisher_resource_group_name}}"
+            "publisher_resource_group": "cli_test_vnf_nsd_000001"
         }
     ],
     "nsd_name": "ubuntu",
