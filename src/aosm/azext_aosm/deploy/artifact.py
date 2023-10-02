@@ -598,6 +598,20 @@ class Artifact:
                     " only to the store. This requires Docker to be installed"
                     " locally."
                 ) from error
+        except subprocess.CalledProcessError as get_token_err:
+            # This error is thrown from the az account get-access-token command
+            # If it errored we can log the output as it doesn't contain the token
+            logger.debug(get_token_err, exc_info=True)
+            raise CLIError(  # pylint: disable=raise-missing-from
+                "Failed to import image: could not get an access token from your"
+                " Azure account. Try logging in again with `az login` and then re-run"
+                " the command. If it fails again, please raise an issue and try"
+                " repeating the command using the --no-subscription-permissions"
+                " flag to pull the image to your local machine and then"
+                " push it to the Artifact Store using manifest credentials scoped"
+                " only to the store. This requires Docker to be installed"
+                " locally."
+            )
 
             # The most likely failure is that the image already exists in the artifact
             # store, so don't fail at this stage, log the error.
