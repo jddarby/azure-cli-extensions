@@ -598,6 +598,19 @@ class Artifact:
                     " only to the store. This requires Docker to be installed"
                     " locally."
                 ) from error
+
+            # The most likely failure is that the image already exists in the artifact
+            # store, so don't fail at this stage, log the error.
+            logger.error(
+                (
+                    "Failed to import %s to %s. Check if this image exists in the"
+                    " source registry or is already present in the target registry.\n"
+                    "%s"
+                ),
+                source_image,
+                target_acr,
+                error,
+            )
         except subprocess.CalledProcessError as get_token_err:
             # This error is thrown from the az account get-access-token command
             # If it errored we can log the output as it doesn't contain the token
@@ -611,17 +624,4 @@ class Artifact:
                 " push it to the Artifact Store using manifest credentials scoped"
                 " only to the store. This requires Docker to be installed"
                 " locally."
-            )
-
-            # The most likely failure is that the image already exists in the artifact
-            # store, so don't fail at this stage, log the error.
-            logger.error(
-                (
-                    "Failed to import %s to %s. Check if this image exists in the"
-                    " source registry or is already present in the target registry.\n"
-                    "%s"
-                ),
-                source_image,
-                target_acr,
-                error,
             )
