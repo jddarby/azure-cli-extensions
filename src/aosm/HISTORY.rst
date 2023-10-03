@@ -36,6 +36,7 @@ upcoming
   - Change from using ContainerRegistryManagementClient to `az acr import` subprocess call, so that we don't need to know the Resource Group.
 * NB CHANGE TO PREVIOUS CONFIG FILE FORMAT FOR NSDs
   - Added publisher scope and removed publisher resource group from network function object, as now using proxy references
+* Fix CNF image import from cross-subscription ACR
 0.2.0
 ++++++
 Breaking change to commands - now use `nfd` instead of `definition`. Publish option removed from build.
