@@ -542,17 +542,17 @@ class Artifact:
         target_acr = self._get_acr()
         try:
             print("Copying artifact from source registry")
-            # In order to use az acr import cross subscription(or cross tenant?), we
-            # need to use a token to authenticate to the source registry. This is not
-            # exactly as docced, but seems to work (it is documented to work cross
-            # tenant, but not cross subscription, but it works cross susbscription, at
-            # least for public ACRs).  It probably won't work cross-tenant as the token
-            # is retrieved from the CLI user's context which will be in the target
-            # tenant.
+            # In order to use az acr import cross subscription, we need to use a token
+            # to authenticate to the source registry. This is documented as the way to
+            # us az acr import cross-tenant, not cross-sub, but it also works
+            # cross-subscription, and meant we didn't have to make a breaking change to
+            # the format of input.json. Our usage here won't work cross-tenant since
+            # we're attempting to get the token (source) with the same context as that
+            # in which we are creating the ACR (i.e. the target tenant)
             get_token_cmd = [str(shutil.which("az")), "account", "get-access-token"]
             # Dont use _call_subprocess_raise_output here as we don't want to log the
             # output
-            called_process = subprocess.run(
+            called_process = subprocess.run(  # noqa: S603
                 get_token_cmd,
                 encoding="utf-8",
                 capture_output=True,
@@ -561,7 +561,22 @@ class Artifact:
             )
             access_token_json = json.loads(called_process.stdout)
             access_token = access_token_json["accessToken"]
+        except subprocess.CalledProcessError as get_token_err:
+            # This error is thrown from the az account get-access-token command
+            # If it errored we can log the output as it doesn't contain the token
+            logger.debug(get_token_err, exc_info=True)
+            raise CLIError(  # pylint: disable=raise-missing-from
+                "Failed to import image: could not get an access token from your"
+                " Azure account. Try logging in again with `az login` and then re-run"
+                " the command. If it fails again, please raise an issue and try"
+                " repeating the command using the --no-subscription-permissions"
+                " flag to pull the image to your local machine and then"
+                " push it to the Artifact Store using manifest credentials scoped"
+                " only to the store. This requires Docker to be installed"
+                " locally."
+            )
 
+        try:
             source = f"{self._clean_name(source_registry_login_server)}/{source_image}"
             acr_import_image_cmd = [
                 str(shutil.which("az")),
@@ -610,18 +625,4 @@ class Artifact:
                 source_image,
                 target_acr,
                 error,
-            )
-        except subprocess.CalledProcessError as get_token_err:
-            # This error is thrown from the az account get-access-token command
-            # If it errored we can log the output as it doesn't contain the token
-            logger.debug(get_token_err, exc_info=True)
-            raise CLIError(  # pylint: disable=raise-missing-from
-                "Failed to import image: could not get an access token from your"
-                " Azure account. Try logging in again with `az login` and then re-run"
-                " the command. If it fails again, please raise an issue and try"
-                " repeating the command using the --no-subscription-permissions"
-                " flag to pull the image to your local machine and then"
-                " push it to the Artifact Store using manifest credentials scoped"
-                " only to the store. This requires Docker to be installed"
-                " locally."
             )
