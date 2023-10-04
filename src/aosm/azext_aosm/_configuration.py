@@ -57,7 +57,7 @@ class ArtifactConfig:
         Validate the configuration.
         """
         if not self.version:
-            raise ValidationError("Version must be set.")
+            raise ValidationError("version must be set.")
         if self.blob_sas_url and self.file_path:
             raise ValidationError("Only one of file_path or blob_sas_url may be set.")
         if not (self.blob_sas_url or self.file_path):
