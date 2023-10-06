@@ -69,25 +69,24 @@ class NFApplicationConfiguration:
         """
         Format the name field.
 
-        The name should start with a alphabetic character, have alphanumeric
-        characters or '-' in-between and end with alphanumerc character, and be less
-        than 64 characters long.
-        See NfdVersionValidationHelper.cs in pez codebase
+        The name should start with a alphabetic character, have alphanumeric characters
+        or '-' in-between and end with alphanumerc character, and be less than 64
+        characters long. See NfdVersionValidationHelper.cs in pez codebase
         """
-        self.name = re.sub('[^0-9a-zA-Z-]+', '-', self.name)
+        self.name = re.sub("[^0-9a-zA-Z-]+", "-", self.name)
         self.name = self.name[:64]
 
     def _format_release_name(self):
         """
         Format release name.
 
-        It must consist of lower case alphanumeric characters, '-'
-        or '.', and must start and end with an alphanumeric character See
+        It must consist of lower case alphanumeric characters, '-' or '.', and must
+        start and end with an alphanumeric character See
         AzureArcKubernetesRuleBuilderExtensions.cs  and
         AzureArcKubernetesNfValidationMessage.cs in pez codebase
         """
         self.releaseName = self.releaseName.lower()
-        self.releaseName = re.sub('[^0-9a-z-.]+', '-', self.releaseName)
+        self.releaseName = re.sub("[^0-9a-z-.]+", "-", self.releaseName)
 
 
 @dataclass
