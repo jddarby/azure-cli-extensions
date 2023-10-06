@@ -54,10 +54,40 @@ class NFApplicationConfiguration:
     name: str
     chartName: str
     chartVersion: str
+    releaseName: str
     dependsOnProfile: List[str]
     registryValuesPaths: List[str]
     imagePullSecretsValuesPaths: List[str]
     valueMappingsFile: str
+
+    def __post_init__(self):
+        """Format the fields based on the NFDV validation rules."""
+        self._format_name()
+        self._format_release_name()
+
+    def _format_name(self):
+        """
+        Format the name field.
+
+        The name should start with a alphabetic character, have alphanumeric
+        characters or '-' in-between and end with alphanumerc character, and be less
+        than 64 characters long.
+        See NfdVersionValidationHelper.cs in pez codebase
+        """
+        self.name = re.sub('[^0-9a-zA-Z-]+', '-', self.name)
+        self.name = self.name[:64]
+
+    def _format_release_name(self):
+        """
+        Format release name.
+
+        It must consist of lower case alphanumeric characters, '-'
+        or '.', and must start and end with an alphanumeric character See
+        AzureArcKubernetesRuleBuilderExtensions.cs  and
+        AzureArcKubernetesNfValidationMessage.cs in pez codebase
+        """
+        self.releaseName = self.releaseName.lower()
+        self.releaseName = re.sub('[^0-9a-z-.]+', '-', self.releaseName)
 
 
 @dataclass
@@ -378,6 +408,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             name=helm_package.name,
             chartName=name,
             chartVersion=version,
+            releaseName=name,
             dependsOnProfile=helm_package.depends_on,
             registryValuesPaths=list(registry_values_paths),
             imagePullSecretsValuesPaths=list(image_pull_secrets_values_paths),
