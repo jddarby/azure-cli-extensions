@@ -50,7 +50,7 @@ class Artifact:
 
 
 @dataclass
-class NFApplicationConfiguration:
+class NFApplicationConfiguration:  # pylint: disable=too-many-instance-attributes
     name: str
     chartName: str
     chartVersion: str
