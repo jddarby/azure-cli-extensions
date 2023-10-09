@@ -39,6 +39,8 @@ upcoming
 * Fix CNF image import from cross-subscription ACR
 * Fix unexpected bracket symbol added to list deployParameters during list parsing
 * Format helm names according to RP validation rules
+* Always force ACR names to be lower-case
+* Fix interactive mode for lists of deployParameters
 
 0.2.0
 ++++++
