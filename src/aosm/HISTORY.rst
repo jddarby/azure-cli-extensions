@@ -38,6 +38,7 @@ upcoming
   - Added publisher scope and removed publisher resource group from network function object, as now using proxy references
 * Fix CNF image import from cross-subscription ACR
 * Fix unexpected bracket symbol added to list deployParameters during list parsing
+* Format helm names according to RP validation rules
 
 0.2.0
 ++++++
