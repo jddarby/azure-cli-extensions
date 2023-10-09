@@ -764,7 +764,15 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                         final_values_mapping_dict[k].append(
                             self._replace_values_with_deploy_params(item, param_name)
                         )
-                    elif isinstance(item, (str, int, bool)) or not v:
+                    elif isinstance(item, (str, int, bool)) or not item:
+                        if self.interactive:
+                            if not input_ack(
+                                "y",
+                                f"Expose parameter {param_name}? y/n "
+                            ):
+                                logger.debug("Excluding parameter %s", param_name)
+                                final_values_mapping_dict[k].append(item)
+                                continue
                         replacement_value = f"{{deployParameters.{param_name}}}"
                         final_values_mapping_dict[k].append(replacement_value)
                     else:
