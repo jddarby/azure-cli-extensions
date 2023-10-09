@@ -731,7 +731,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         logger.debug("Replacing values with deploy parameters")
         final_values_mapping_dict: Dict[Any, Any] = {}
-        for k, v in values_yaml_dict.items():
+        for k, v in values_yaml_dict.items():  # pylint: disable=too-many-nested-blocks
             # if value is a string and contains deployParameters.
             logger.debug("Processing key %s", k)
             param_name = k if param_prefix is None else f"{param_prefix}_{k}"
@@ -767,8 +767,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     elif isinstance(item, (str, int, bool)) or not item:
                         if self.interactive:
                             if not input_ack(
-                                "y",
-                                f"Expose parameter {param_name}? y/n "
+                                "y", f"Expose parameter {param_name}? y/n "
                             ):
                                 logger.debug("Excluding parameter %s", param_name)
                                 final_values_mapping_dict[k].append(item)

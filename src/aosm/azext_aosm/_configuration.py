@@ -337,11 +337,11 @@ class CNFImageConfig:
     source_registry: str = ""
     source_registry_namespace: str = ""
     source_local_docker_image: str = ""
-    
+
     def __post_init__(self):
         """
         Ensure that all config is lower case.
-        
+
         ACR names can be uppercase but the login server is always lower case and docker
         and az acr import commands require lower case. Might as well do the namespace
         and docker image too although much less likely that the user has accidentally
