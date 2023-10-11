@@ -1,7 +1,7 @@
-# --------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT
-# License. See License.txt in the project root for license information.
-# --------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
 """Handles the creation of a resource element template for a network function."""
 
 import json
@@ -49,12 +49,14 @@ class NFRETGenerator:
         print(
             f"Reading existing NFDV resource object {config.version} from group {config.name}"
         )
-        nfdv_object = api_clients.aosm_client.proxy_network_function_definition_versions.get(
-            publisher_scope_name=config.publisher_scope,
-            publisher_location_name=config.publisher_offering_location,
-            proxy_publisher_name=config.publisher,
-            network_function_definition_group_name=config.name,
-            network_function_definition_version_name=config.version,
+        nfdv_object = (
+            api_clients.aosm_client.proxy_network_function_definition_versions.get(
+                publisher_scope_name=config.publisher_scope,
+                publisher_location_name=config.publisher_offering_location,
+                proxy_publisher_name=config.publisher,
+                network_function_definition_group_name=config.name,
+                network_function_definition_version_name=config.version,
+            )
         )
         return nfdv_object
 

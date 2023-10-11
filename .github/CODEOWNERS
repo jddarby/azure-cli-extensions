@@ -16,8 +16,6 @@
 
 /src/alias/ @Juliehzl
 
-/src/aosm/ @sunnycarter
-
 /src/managementpartner/ @jeffrey-ace
 
 /src/eventgrid/ @kalyanaj
@@ -152,7 +150,7 @@
 
 /src/kusto/ @ilayr @orhasban @astauben
 
-/src/appservice-kube/ @ebencarek @calcha @StrawnSC
+/src/appservice-kube/ @ebencarek @howang-ms @Juliehzl @LaylaLiu-gmail 
 
 /src/custom-providers/ @jsntcy
 
@@ -294,7 +292,7 @@
 
 /src/alb/ @jaishals
 
-/src/azext_aosm/ @jddarby
+/src/aosm/ @sunnycarter
 
 /src/managedccfs/ @msftsettiy
 
@@ -311,3 +309,5 @@
 /src/command-change/ @allyw
 
 /src/graphservices/ @amatukmolina
+
+/src/site-recovery/ @calvinhzy
