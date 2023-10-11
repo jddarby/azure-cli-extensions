@@ -12,9 +12,6 @@ param networkFunctionDefinitionGroupName string = '{{network_function_definition
 @description('NFD version')
 param {{network_function_definition_version_parameter}} string
 
-@description('Offering location for the Network Function')
-param networkFunctionDefinitionOfferingLocation string = '{{network_function_definition_offering_location}}'
-
 @description('The managed identity that should be used to create the NF.')
 param managedIdentity string
 
@@ -27,8 +24,6 @@ param location string = '{{location}}'
 
 param nfviType string = '{{nfvi_type}}'
 
-param resourceGroupId string = resourceGroup().id
-
 param deploymentParameters array
 
 var identityObject = (managedIdentity == '')  ? {
@@ -40,16 +35,31 @@ var identityObject = (managedIdentity == '')  ? {
   }
 }
 
+resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
+  name: publisherName
+  scope: resourceGroup()
+}
+
+resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' existing = {
+  parent: publisher
+  name: networkFunctionDefinitionGroupName
+}
+
+resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups/networkfunctiondefinitionversions@2023-09-01' existing = {
+  parent: nfdg
+  name: {{network_function_definition_version_parameter}}
+
+}
+
 resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-09-01' = [for (values, i) in deploymentParameters: {
   name: '{{network_function_name}}${i}'
   location: location
   identity: identityObject
   properties: {
-    publisherName: publisherName
-    publisherScope: 'Private'
-    networkFunctionDefinitionGroupName: networkFunctionDefinitionGroupName
-    networkFunctionDefinitionVersion: {{network_function_definition_version_parameter}}
-    networkFunctionDefinitionOfferingLocation: networkFunctionDefinitionOfferingLocation
+    networkFunctionDefinitionVersionResourceReference: {
+      id: nfdv.id
+      idType: 'Open'
+    }
     nfviType: nfviType
 {%- if CNF %}
     nfviId: customLocationId
