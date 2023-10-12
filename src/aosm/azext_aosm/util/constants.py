@@ -82,11 +82,19 @@ SCHEMA_PREFIX = {
 # For CNF NFD Generator
 # To match the image path if image: is present in the yaml file
 IMAGE_START_STRING = "image:"
+# Match all .Values.<something> not containing the characters within []
 IMAGE_PATH_REGEX = r".Values\.([^\s})]*)"
 
 # To match the image name and version if 'imagePullSecrets:' is present in the yaml file
 IMAGE_PULL_SECRETS_START_STRING = "imagePullSecrets:"
-IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<version>[^\s)\"}]*)"
+# Matches <anything>/name:version where name and version cannot contain any of the 
+# characters within []
+# e.g. image: {{ .Values.registryPath }}/sprout:1.0.0 will return sprout as the name
+# group and 1.0.0 as the version group.
+IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s{}]*):(?P<version>[^\s)\"{}]*)"
+# Matches <anything>/name:version where version contains {{}}. Double brackets in the
+# version indicates the value has been templated which we don't support. 
+IMAGE_VERSION_WITH_VALUE_TEMPLATING = r"\/(?P<name>[^\s{}]*):(?P<version>{{.*}})"
 
 DEPLOYMENT_PARAMETER_MAPPING_REGEX = r"\{deployParameters.(.+?)\}"
 

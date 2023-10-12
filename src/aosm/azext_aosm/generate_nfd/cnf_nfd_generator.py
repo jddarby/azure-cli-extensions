@@ -33,6 +33,7 @@ from azext_aosm.util.constants import (
     IMAGE_PATH_REGEX,
     IMAGE_PULL_SECRETS_START_STRING,
     IMAGE_START_STRING,
+    IMAGE_VERSION_WITH_VALUE_TEMPLATING,
     SCHEMA_PREFIX,
     SCHEMAS_DIR_NAME,
 )
@@ -471,6 +472,33 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                 logger.debug("Searching for %s in %s", IMAGE_START_STRING, file)
                 for line in f:
                     if IMAGE_START_STRING in line:
+                        if line.strip() == IMAGE_START_STRING:
+                            logger.debug(
+                                "image section found in %s, "
+                                "ignoring for further parsing",
+                                file)
+                            continue
+                        # First check that the value doesn't have any .Values templating
+                        # in it. We don't support this and should warn the user. (The
+                        # CLI doesn't support it as we put the version in the manifest
+                        # bicep, then upload that image version. AOSM technically would
+                        # support it but it is best practice to have static image
+                        # versions in an NFDV and increment the NFDversion when the
+                        # image versions change.)
+                        version_is_templated = re.search(
+                            IMAGE_VERSION_WITH_VALUE_TEMPLATING, line
+                        )
+                        if version_is_templated:
+                            raise InvalidTemplateError(
+                                "The template file "
+                                f"{str(file).replace(str(self._tmp_dir), '')} within "
+                                f"helm chart {helm_package_config.name} does not have a"
+                                " static version. AOSM best-practice is for each NFDV "
+                                "to have images with static versions. Please change "
+                                "your helm chart."
+                                f" The invalid line is:\n{line}\n with invalid version"
+                                f"{version_is_templated.group('version')}"
+                            )
                         logger.debug("Found %s in %s", IMAGE_START_STRING, line)
                         path = re.findall(IMAGE_PATH_REGEX, line)
 
@@ -481,7 +509,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             name_and_version,
                         )
 
-                        if name_and_version and len(name_and_version.groups()) == 2:
+                        if name_and_version and len(name_and_version.groups()) == 3:
                             logger.debug(
                                 "Found image name and version %s %s",
                                 name_and_version.group("name"),
@@ -495,7 +523,23 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                                 )
                             )
                         else:
-                            logger.debug("No image name and version found")
+                            logger.warning(
+                                "WARNING. "
+                                "When parsing helm chart %s file %s for image path, "
+                                "name and version, the following line has been found "
+                                "which looks like an image line but could not be "
+                                "parsed.\n%s\nThe information is used to populate the "
+                                "registryValuesPaths for the helmArtifactProfile within"
+                                " %s, and the list of artifacts within %s. Please check"
+                                " the output and fix up the helm chart if required. "
+                                " The regex used to match is %s",
+                                helm_package_config.name,
+                                str(file).replace(str(self._tmp_dir), ''),
+                                line,
+                                CNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
+                                CNF_MANIFEST_BICEP_TEMPLATE_FILENAME,
+                                IMAGE_NAME_AND_VERSION_REGEX
+                            )
         return matches
 
     def _find_image_pull_secrets_parameter_from_chart(
