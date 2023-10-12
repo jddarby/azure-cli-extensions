@@ -476,7 +476,8 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             logger.debug(
                                 "image section found in %s, "
                                 "ignoring for further parsing",
-                                file)
+                                file,
+                            )
                             continue
                         # First check that the value doesn't have any .Values templating
                         # in it. We don't support this and should warn the user. (The
@@ -534,11 +535,11 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                                 " the output and fix up the helm chart if required. "
                                 " The regex used to match is %s",
                                 helm_package_config.name,
-                                str(file).replace(str(self._tmp_dir), ''),
+                                str(file).replace(str(self._tmp_dir), ""),
                                 line,
                                 CNF_DEFINITION_BICEP_TEMPLATE_FILENAME,
                                 CNF_MANIFEST_BICEP_TEMPLATE_FILENAME,
-                                IMAGE_NAME_AND_VERSION_REGEX
+                                IMAGE_NAME_AND_VERSION_REGEX,
                             )
         return matches
 
