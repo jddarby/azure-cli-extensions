@@ -67,6 +67,7 @@ resource nf_resource 'Microsoft.HybridNetwork/networkFunctions@2023-09-01' = [fo
     nfviId: resourceGroupId
 {%- endif %}
     allowSoftwareUpdate: true
+    configurationType: 'Secret'
     deploymentValues: string(values)
   }
 }]
