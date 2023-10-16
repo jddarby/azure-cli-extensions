@@ -37,7 +37,7 @@ var identityObject = (managedIdentity == '')  ? {
 
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
   name: publisherName
-  scope: resourceGroup()
+  scope: subscription()
 }
 
 resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' existing = {
