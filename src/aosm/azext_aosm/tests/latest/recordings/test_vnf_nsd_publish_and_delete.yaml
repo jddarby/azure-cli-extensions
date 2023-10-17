@@ -4904,7 +4904,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedtestsubuntupublisherubuntuacr7b825b7e04.azurecr.io/v2/ubuntu-vm-nfdg_nf_artifact/blobs/uploads/c206d2e2-76f9-4b9c-8ab4-18b21ec36736?_nouploadcache=false&_state=aQ4izGUi1UBLBhQPPpnj9UWKlfXbLAV65YjblEpohD97Ik5hbWUiOiJ1YnVudHUtdm0tbmZkZ19uZl9hcnRpZmFjdCIsIlVVSUQiOiJjMjA2ZDJlMi03NmY5LTRiOWMtOGFiNC0xOGIyMWVjMzY3MzYiLCJPZmZzZXQiOjAsIlN0YXJ0ZWRBdCI6IjIwMjMtMDktMjlUMTU6NDA6MTEuODgwNDEzNjU4WiJ9&digest=sha256%3A3a8b274f4b9cc7c373a96b50fbdc7dc3cb76d7a2eccb4c604cdf5b6da3f47ec1
+    uri: https://automatedtestsubuntupublisherubuntuacrcbe53f2770.azurecr.io/v2/ubuntu-vm-nfdg_nf_artifact/blobs/uploads/bf59975e-449b-4405-ad0b-0b7bbf606529?_nouploadcache=false&_state=nrcNMt7K-0SjdXRQ23LEOYubLRB4Z51Vfs_EvLE59a57Ik5hbWUiOiJ1YnVudHUtdm0tbmZkZ19uZl9hcnRpZmFjdCIsIlVVSUQiOiJiZjU5OTc1ZS00NDliLTQ0MDUtYWQwYi0wYjdiYmY2MDY1MjkiLCJPZmZzZXQiOjAsIlN0YXJ0ZWRBdCI6IjIwMjMtMDktMjNUMDg6NTg6NDMuODYwOTcwNTEyWiJ9&digest=sha256%3A79051b706686a7c8a7f58f883a63212097be3d0dd3e2a3bdd6e3f33fc635e57e
   response:
     body:
       string: ''
@@ -4921,11 +4921,11 @@ interactions:
       date:
       - Fri, 29 Sep 2023 15:40:12 GMT
       docker-content-digest:
-      - sha256:3a8b274f4b9cc7c373a96b50fbdc7dc3cb76d7a2eccb4c604cdf5b6da3f47ec1
+      - sha256:79051b706686a7c8a7f58f883a63212097be3d0dd3e2a3bdd6e3f33fc635e57e
       docker-distribution-api-version:
       - registry/2.0
       location:
-      - /v2/ubuntu-vm-nfdg_nf_artifact/blobs/sha256:3a8b274f4b9cc7c373a96b50fbdc7dc3cb76d7a2eccb4c604cdf5b6da3f47ec1
+      - /v2/ubuntu-vm-nfdg_nf_artifact/blobs/sha256:79051b706686a7c8a7f58f883a63212097be3d0dd3e2a3bdd6e3f33fc635e57e
       server:
       - openresty
       strict-transport-security:
@@ -5125,8 +5125,8 @@ interactions:
     body: '{"schemaVersion": 2, "mediaType": "application/vnd.oci.image.manifest.v1+json",
       "config": {"mediaType": "application/vnd.unknown.config.v1+json", "size": 0,
       "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
-      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 3340,
-      "digest": "sha256:3a8b274f4b9cc7c373a96b50fbdc7dc3cb76d7a2eccb4c604cdf5b6da3f47ec1",
+      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 3358,
+      "digest": "sha256:79051b706686a7c8a7f58f883a63212097be3d0dd3e2a3bdd6e3f33fc635e57e",
       "annotations": {"org.opencontainers.image.title": "nf_definition.json"}}], "annotations":
       {}}'
     headers:
@@ -5218,8 +5218,8 @@ interactions:
     body: '{"schemaVersion": 2, "mediaType": "application/vnd.oci.image.manifest.v1+json",
       "config": {"mediaType": "application/vnd.unknown.config.v1+json", "size": 0,
       "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
-      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 3340,
-      "digest": "sha256:3a8b274f4b9cc7c373a96b50fbdc7dc3cb76d7a2eccb4c604cdf5b6da3f47ec1",
+      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 3358,
+      "digest": "sha256:79051b706686a7c8a7f58f883a63212097be3d0dd3e2a3bdd6e3f33fc635e57e",
       "annotations": {"org.opencontainers.image.title": "nf_definition.json"}}], "annotations":
       {}}'
     headers:

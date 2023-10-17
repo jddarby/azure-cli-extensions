@@ -70,10 +70,9 @@ class PreDeployerViaSDK:
             logger.info("RG %s not found. Create it.", resource_group_name)
             print(f"Creating resource group {resource_group_name}.")
             rg_params: ResourceGroup = ResourceGroup(location=self.config.location)
-            poller = self.api_clients.resource_client.resource_groups.create_or_update(
+            self.api_clients.resource_client.resource_groups.create_or_update(
                 resource_group_name, rg_params
             )
-            LongRunningOperation(self.cli_ctx, "Creating resource group...")(poller)
         else:
             print(f"Resource group {resource_group_name} exists.")
             self.api_clients.resource_client.resource_groups.get(resource_group_name)
@@ -109,18 +108,18 @@ class PreDeployerViaSDK:
                 f" {resource_group_name}"
             )
         except azure_exceptions.ResourceNotFoundError:
-            # Create the publisher
+            # Create the publisher with default SAMI and private scope
             logger.info("Creating publisher %s if it does not exist", publisher_name)
             print(
                 f"Creating publisher {publisher_name} in resource group"
                 f" {resource_group_name}"
             )
             publisher_properties = PublisherPropertiesFormat(scope="Private")
-            identity = ManagedServiceIdentity(type="SystemAssigned")
+            publisher_sami = ManagedServiceIdentity(type="SystemAssigned")
             poller = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
                 publisher_name=publisher_name,
-                parameters=Publisher(location=location, properties=publisher_properties, identity=identity),
+                parameters=Publisher(location=location, properties=publisher_properties, identity=publisher_sami),
             )
             LongRunningOperation(self.cli_ctx, "Creating publisher...")(poller)
 

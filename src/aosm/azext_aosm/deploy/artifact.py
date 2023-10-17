@@ -5,6 +5,7 @@
 
 # pylint: disable=unidiomatic-typecheck
 """A module to handle interacting with artifacts."""
+import json
 import math
 import shutil
 import subprocess
@@ -88,28 +89,34 @@ class Artifact:
         :param cmd: command to run, in list format
         :raise CLIError: if the subprocess fails
         """
+        log_cmd = cmd.copy()
+        if "--password" in log_cmd:
+            # Do not log out passwords.
+            log_cmd[log_cmd.index("--password") + 1] = "[REDACTED]"
+
         try:
             called_process = subprocess.run(
                 cmd, encoding="utf-8", capture_output=True, text=True, check=True
             )
             logger.debug(
                 "Output from %s: %s. Error: %s",
-                cmd,
+                log_cmd,
                 called_process.stdout,
                 called_process.stderr,
             )
         except subprocess.CalledProcessError as error:
-            logger.debug("Failed to run %s with %s", cmd, error)
+            logger.debug("Failed to run %s with %s", log_cmd, error)
 
             all_output: str = (
-                f"Command: {'' ''.join(cmd)}\n"
+                f"Command: {'' ''.join(log_cmd)}\n"
                 f"Output: {error.stdout}\n"
                 f"Error output: {error.stderr}\n"
                 f"Return code: {error.returncode}"
             )
             logger.debug("All the output %s", all_output)
 
-            raise CLIError(all_output) from error
+            # Raise the error without the original exception, which may contain secrets.
+            raise CLIError(all_output) from None
 
     def _upload_helm_to_acr(
         self, artifact_config: HelmPackageConfig, use_manifest_permissions: bool
@@ -120,10 +127,10 @@ class Artifact:
         Requires helm to be installed.
 
         :param artifact_config: configuration for the artifact being uploaded
-        :param use_manifest_permissions: whether to use the manifest credentials
-               for the upload. If False, the CLI user credentials will be used, which
-               does not require Docker to be installed. If True, the manifest creds will
-               be used, which requires Docker.
+        :param use_manifest_permissions: whether to use the manifest credentials for the
+            upload. If False, the CLI user credentials will be used, which does not
+            require Docker to be installed. If True, the manifest creds will be used,
+            which requires Docker.
         """
         self._check_tool_installed("helm")
         assert isinstance(self.artifact_client, OrasClient)
@@ -166,9 +173,15 @@ class Artifact:
                     acr_login_with_token_cmd, encoding="utf-8", text=True
                 ).strip()
             except subprocess.CalledProcessError as error:
-                if (" 401" or "unauthorized") in error.stderr or (
-                    " 401" or "unauthorized"
-                ) in error.stdout:
+                unauthorized = (
+                    error.stderr
+                    and (" 401" in error.stderr or "unauthorized" in error.stderr)
+                ) or (
+                    error.stdout
+                    and (" 401" in error.stdout or "unauthorized" in error.stdout)
+                )
+
+                if unauthorized:
                     # As we shell out the the subprocess, I think checking for these
                     # strings is the best check we can do for permission failures.
                     raise CLIError(
@@ -295,7 +308,7 @@ class Artifact:
 
     def _get_acr(self) -> str:
         """
-        Get the name of the ACR
+        Get the name of the ACR.
 
         :return: The name of the ACR
         """
@@ -386,7 +399,7 @@ class Artifact:
         Push image to target registry using docker push. Requires docker.
 
         :param local_docker_image: name and tag of the source image on local registry
-                                    e.g. uploadacr.azurecr.io/samples/nginx:stable
+            e.g. uploadacr.azurecr.io/samples/nginx:stable
         :type local_docker_image: str
         :param target_username: The username to use for the az acr login attempt
         :type target_username: str
@@ -460,8 +473,8 @@ class Artifact:
         Uses the CLI user's context to log in to the source registry.
 
         :param: source_registry_login_server: e.g. uploadacr.azurecr.io
-        :param: source_image: source docker image name
-                              e.g. uploadacr.azurecr.io/samples/nginx:stable
+        :param: source_image: source docker image name e.g.
+            uploadacr.azurecr.io/samples/nginx:stable
         """
         try:
             # Login to the source registry with the CLI user credentials. This requires
@@ -535,6 +548,41 @@ class Artifact:
         target_acr = self._get_acr()
         try:
             print("Copying artifact from source registry")
+            # In order to use az acr import cross subscription, we need to use a token
+            # to authenticate to the source registry. This is documented as the way to
+            # us az acr import cross-tenant, not cross-sub, but it also works
+            # cross-subscription, and meant we didn't have to make a breaking change to
+            # the format of input.json. Our usage here won't work cross-tenant since
+            # we're attempting to get the token (source) with the same context as that
+            # in which we are creating the ACR (i.e. the target tenant)
+            get_token_cmd = [str(shutil.which("az")), "account", "get-access-token"]
+            # Dont use _call_subprocess_raise_output here as we don't want to log the
+            # output
+            called_process = subprocess.run(  # noqa: S603
+                get_token_cmd,
+                encoding="utf-8",
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            access_token_json = json.loads(called_process.stdout)
+            access_token = access_token_json["accessToken"]
+        except subprocess.CalledProcessError as get_token_err:
+            # This error is thrown from the az account get-access-token command
+            # If it errored we can log the output as it doesn't contain the token
+            logger.debug(get_token_err, exc_info=True)
+            raise CLIError(  # pylint: disable=raise-missing-from
+                "Failed to import image: could not get an access token from your"
+                " Azure account. Try logging in again with `az login` and then re-run"
+                " the command. If it fails again, please raise an issue and try"
+                " repeating the command using the --no-subscription-permissions"
+                " flag to pull the image to your local machine and then"
+                " push it to the Artifact Store using manifest credentials scoped"
+                " only to the store. This requires Docker to be installed"
+                " locally."
+            )
+
+        try:
             source = f"{self._clean_name(source_registry_login_server)}/{source_image}"
             acr_import_image_cmd = [
                 str(shutil.which("az")),
@@ -546,11 +594,13 @@ class Artifact:
                 source,
                 "--image",
                 self._get_acr_target_image(include_hostname=False),
+                "--password",
+                access_token,
             ]
             self._call_subprocess_raise_output(acr_import_image_cmd)
         except CLIError as error:
             logger.debug(error, exc_info=True)
-            if (" 401" or "Unauthorized") in str(error):
+            if (" 401" in str(error)) or ("Unauthorized" in str(error)):
                 # As we shell out the the subprocess, I think checking for these strings
                 # is the best check we can do for permission failures.
                 raise CLIError(

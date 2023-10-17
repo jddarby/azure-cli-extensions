@@ -50,14 +50,68 @@ class Artifact:
 
 
 @dataclass
-class NFApplicationConfiguration:
+class NFApplicationConfiguration:  # pylint: disable=too-many-instance-attributes
     name: str
     chartName: str
     chartVersion: str
+    releaseName: str
     dependsOnProfile: List[str]
     registryValuesPaths: List[str]
     imagePullSecretsValuesPaths: List[str]
     valueMappingsFile: str
+
+    def __post_init__(self):
+        """Format the fields based on the NFDV validation rules."""
+        self._format_name()
+        self._format_release_name()
+
+    def _format_name(self):
+        """
+        Format the name field.
+
+        The name should start with a alphabetic character, have alphanumeric characters
+        or '-' in-between and end with alphanumerc character, and be less than 64
+        characters long. See NfdVersionValidationHelper.cs in pez codebase
+        """
+        # Replace any non (alphanumeric or '-') characters with '-'
+        self.name = re.sub("[^0-9a-zA-Z-]+", "-", self.name)
+        # Strip leading or trailing -
+        self.name = self.name.strip("-")
+        self.name = self.name[:64]
+
+        if not self.name:
+            raise InvalidTemplateError(
+                "The name field of the NF application configuration for helm package "
+                f"{self.chartName} is empty after removing invalid characters. "
+                "Valid characters are alphanumeric and '-'. Please fix this in the name"
+                " field for the helm package in your input config file."
+            )
+
+    def _format_release_name(self):
+        """
+        Format release name.
+
+        It must consist of lower case alphanumeric characters, '-' or '.', and must
+        start and end with an alphanumeric character See
+        AzureArcKubernetesRuleBuilderExtensions.cs  and
+        AzureArcKubernetesNfValidationMessage.cs in pez codebase
+        """
+        self.releaseName = self.releaseName.lower()
+        # Replace any non (alphanumeric or '-' or '.') characters with '-'
+        self.releaseName = re.sub("[^0-9a-z-.]+", "-", self.releaseName)
+        # Strip leading - or .
+        self.releaseName = self.releaseName.strip("-")
+        self.releaseName = self.releaseName.strip(".")
+        if not self.releaseName:
+            raise InvalidTemplateError(
+                "The releaseName field of the NF application configuration for helm "
+                f"chart {self.chartName} is empty after formatting and removing invalid"
+                "characters. Valid characters are alphanumeric, -.' and '-' and the "
+                "releaseName must start and end with an alphanumeric character. The "
+                "value of this field is taken from Chart.yaml within the helm package. "
+                "Please fix up the helm package. Before removing invalid characters"
+                f", the releaseName was {self.chartName}."
+            )
 
 
 @dataclass
@@ -378,6 +432,7 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
             name=helm_package.name,
             chartName=name,
             chartVersion=version,
+            releaseName=name,
             dependsOnProfile=helm_package.depends_on,
             registryValuesPaths=list(registry_values_paths),
             imagePullSecretsValuesPaths=list(image_pull_secrets_values_paths),
@@ -676,24 +731,11 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         """
         logger.debug("Replacing values with deploy parameters")
         final_values_mapping_dict: Dict[Any, Any] = {}
-        for k, v in values_yaml_dict.items():
+        for k, v in values_yaml_dict.items():  # pylint: disable=too-many-nested-blocks
             # if value is a string and contains deployParameters.
             logger.debug("Processing key %s", k)
             param_name = k if param_prefix is None else f"{param_prefix}_{k}"
-            if isinstance(v, (str, int, bool)):
-                # Replace the parameter with {deploymentParameter.keyname}
-                if self.interactive:
-                    # Interactive mode. Prompt user to include or exclude parameters
-                    # This requires the enter key after the y/n input which isn't ideal
-                    if not input_ack("y", f"Expose parameter {param_name}? y/n "):
-                        logger.debug("Excluding parameter %s", param_name)
-                        final_values_mapping_dict.update({k: v})
-                        continue
-                replacement_value = f"{{deployParameters.{param_name}}}"
-
-                # add the schema for k (from the big schema) to the (smaller) schema
-                final_values_mapping_dict.update({k: replacement_value})
-            elif isinstance(v, dict):
+            if isinstance(v, dict):
                 final_values_mapping_dict[k] = self._replace_values_with_deploy_params(
                     v, param_name
                 )
@@ -703,24 +745,31 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                     param_name = (
                         f"{param_prefix}_{k}_{index}"
                         if param_prefix
-                        else f"{k})_{index}"
+                        else f"{k}_{index}"
                     )
                     if isinstance(item, dict):
                         final_values_mapping_dict[k].append(
                             self._replace_values_with_deploy_params(item, param_name)
                         )
-                    elif isinstance(v, (str, int, bool)) or not v:
+                    elif isinstance(item, (str, int, bool)) or not item:
+                        if self.interactive:
+                            if not input_ack(
+                                "y", f"Expose parameter {param_name}? y/n "
+                            ):
+                                logger.debug("Excluding parameter %s", param_name)
+                                final_values_mapping_dict[k].append(item)
+                                continue
                         replacement_value = f"{{deployParameters.{param_name}}}"
                         final_values_mapping_dict[k].append(replacement_value)
                     else:
                         raise ValueError(
-                            f"Found an unexpected type {type(v)} of key {k} in "
+                            f"Found an unexpected type {type(item)} of key {k} in "
                             "values.yaml, cannot generate values mapping file."
                         )
-            elif not v:
-                # V is blank so we don't know what type it is. Assuming it is an
-                # empty string (but do this after checking for dict and list)
+            elif isinstance(v, (str, int, bool)) or not v:
                 # Replace the parameter with {deploymentParameter.keyname}
+                # If v is blank we don't know what type it is. Assuming it is an
+                # empty string (but do this after checking for dict and list)
                 if self.interactive:
                     # Interactive mode. Prompt user to include or exclude parameters
                     # This requires the enter key after the y/n input which isn't ideal
