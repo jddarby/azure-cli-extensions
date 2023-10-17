@@ -110,6 +110,7 @@ class NFRETGenerator:
         return {
             "network_function_name": self.config.name,
             "publisher_name": self.config.publisher,
+            "publisher_resource_group": self.config.publisher_resource_group,
             "network_function_definition_group_name": (self.config.name),
             "network_function_definition_version_parameter": (self.nfdv_parameter_name),
             "network_function_definition_offering_location": (
