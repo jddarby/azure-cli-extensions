@@ -27,7 +27,12 @@ param location string = '{{location}}'
 
 param nfviType string = '{{nfvi_type}}'
 
-param deploymentParameters array
+param resourceGroupId string = resourceGroup().id
+
+@secure()
+param deploymentParametersObject object
+
+var deploymentParameters = deploymentParametersObject.deploymentParameters
 
 var identityObject = (managedIdentity == '')  ? {
   type: 'SystemAssigned'
