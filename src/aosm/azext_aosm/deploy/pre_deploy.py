@@ -25,7 +25,8 @@ from azext_aosm.vendored_sdks.models import (
     NetworkServiceDesignGroup,
     ProvisioningState,
     Publisher,
-    PublisherPropertiesFormat
+    PublisherPropertiesFormat,
+    ManagedServiceIdentity
 )
 
 logger = get_logger(__name__)
@@ -115,10 +116,11 @@ class PreDeployerViaSDK:
                 f" {resource_group_name}"
             )
             publisher_properties = PublisherPropertiesFormat(scope="Private")
+            identity = ManagedServiceIdentity(type="SystemAssigned")
             poller = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
                 publisher_name=publisher_name,
-                parameters=Publisher(location=location, properties=publisher_properties),
+                parameters=Publisher(location=location, properties=publisher_properties, identity=identity),
             )
             LongRunningOperation(self.cli_ctx, "Creating publisher...")(poller)
 
