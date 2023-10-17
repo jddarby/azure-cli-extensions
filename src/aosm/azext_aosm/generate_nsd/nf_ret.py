@@ -35,7 +35,9 @@ class NFRETGenerator:
             raise NotImplementedError(
                 f"NFDV {self.config.name} has no deploy parameters, cannot generate NSD."
             )
-        self.deploy_parameters: Dict[str, Any] = json.loads(nfdv.properties.deploy_parameters)
+        self.deploy_parameters: Dict[str, Any] = json.loads(
+            nfdv.properties.deploy_parameters
+        )
 
         self.nfd_group_name = self.config.name.replace("-", "_")
         self.nfdv_parameter_name = f"{self.nfd_group_name}_nfd_version"
@@ -49,14 +51,11 @@ class NFRETGenerator:
         print(
             f"Reading existing NFDV resource object {config.version} from group {config.name}"
         )
-        nfdv_object = (
-            api_clients.aosm_client.proxy_network_function_definition_versions.get(
-                publisher_scope_name=config.publisher_scope,
-                publisher_location_name=config.publisher_offering_location,
-                proxy_publisher_name=config.publisher,
-                network_function_definition_group_name=config.name,
-                network_function_definition_version_name=config.version,
-            )
+        nfdv_object = api_clients.aosm_client.network_function_definition_versions.get(
+            resource_group_name=config.publisher_resource_group,
+            publisher_name=config.publisher,
+            network_function_definition_group_name=config.name,
+            network_function_definition_version_name=config.version,
         )
         return nfdv_object
 
@@ -67,9 +66,11 @@ class NFRETGenerator:
 
                 Output will look something like:
         {
-            "deploymentParameters": [
-                "{configurationparameters('foo_ConfigGroupSchema').bar.deploymentParameters}"
-            ],
+            "deploymentParametersObject": {
+                "deploymentParameters": [
+                    "{configurationparameters('foo_ConfigGroupSchema').bar.deploymentParameters}"
+                ]
+            },
             "nginx_nfdg_nfd_version": "{configurationparameters('foo_ConfigGroupSchema').bar.bar_nfd_version}",
             "managedIdentity": "{configurationparameters('foo_ConfigGroupSchema').managedIdentity}",
             "customLocationId": "{configurationparameters('foo_ConfigGroupSchema').bar.customLocationId}"
@@ -87,13 +88,15 @@ class NFRETGenerator:
             assert isinstance(deployment_parameters, str)
             deployment_parameters = [deployment_parameters]
 
+        deployment_parameters_object = {"deploymentParameters": deployment_parameters}
+
         version_parameter = (
             f"{{configurationparameters('{self.cg_schema_name}')."
             f"{nf}.{self.nfdv_parameter_name}}}"
         )
 
         config_mappings = {
-            "deploymentParameters": deployment_parameters,
+            "deploymentParametersObject": deployment_parameters_object,
             self.nfdv_parameter_name: version_parameter,
             "managedIdentity": f"{{configurationparameters('{self.cg_schema_name}').managedIdentity}}",
         }
@@ -111,6 +114,7 @@ class NFRETGenerator:
         return {
             "network_function_name": self.config.name,
             "publisher_name": self.config.publisher,
+            "publisher_resource_group": self.config.publisher_resource_group,
             "network_function_definition_group_name": (self.config.name),
             "network_function_definition_version_parameter": (self.nfdv_parameter_name),
             "network_function_definition_offering_location": (

@@ -21,7 +21,6 @@ from .operations import (
     ComponentsOperations,
     ConfigurationGroupSchemasOperations,
     ConfigurationGroupValuesOperations,
-    HybridNetworkManagementClientOperationsMixin,
     NetworkFunctionDefinitionGroupsOperations,
     NetworkFunctionDefinitionVersionsOperations,
     NetworkFunctionsOperations,
@@ -29,11 +28,6 @@ from .operations import (
     NetworkServiceDesignVersionsOperations,
     Operations,
     ProxyArtifactOperations,
-    ProxyNetworkFunctionDefinitionGroupsOperations,
-    ProxyNetworkFunctionDefinitionVersionsOperations,
-    ProxyNetworkServiceDesignGroupsOperations,
-    ProxyNetworkServiceDesignVersionsOperations,
-    ProxyPublisherOperations,
     PublishersOperations,
     SiteNetworkServicesOperations,
     SitesOperations,
@@ -44,9 +38,7 @@ if TYPE_CHECKING:
     from azure.core.credentials import TokenCredential
 
 
-class HybridNetworkManagementClient(
-    HybridNetworkManagementClientOperationsMixin
-):  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
+class HybridNetworkManagementClient:  # pylint: disable=client-accepts-api-version-keyword,too-many-instance-attributes
     """The definitions in this swagger specification will be used to manage the Hybrid Network
     resources.
 
@@ -75,23 +67,6 @@ class HybridNetworkManagementClient(
      Microsoft.HybridNetwork.operations.NetworkServiceDesignVersionsOperations
     :ivar operations: Operations operations
     :vartype operations: Microsoft.HybridNetwork.operations.Operations
-    :ivar proxy_publisher: ProxyPublisherOperations operations
-    :vartype proxy_publisher: Microsoft.HybridNetwork.operations.ProxyPublisherOperations
-    :ivar proxy_network_function_definition_groups: ProxyNetworkFunctionDefinitionGroupsOperations
-     operations
-    :vartype proxy_network_function_definition_groups:
-     Microsoft.HybridNetwork.operations.ProxyNetworkFunctionDefinitionGroupsOperations
-    :ivar proxy_network_function_definition_versions:
-     ProxyNetworkFunctionDefinitionVersionsOperations operations
-    :vartype proxy_network_function_definition_versions:
-     Microsoft.HybridNetwork.operations.ProxyNetworkFunctionDefinitionVersionsOperations
-    :ivar proxy_network_service_design_groups: ProxyNetworkServiceDesignGroupsOperations operations
-    :vartype proxy_network_service_design_groups:
-     Microsoft.HybridNetwork.operations.ProxyNetworkServiceDesignGroupsOperations
-    :ivar proxy_network_service_design_versions: ProxyNetworkServiceDesignVersionsOperations
-     operations
-    :vartype proxy_network_service_design_versions:
-     Microsoft.HybridNetwork.operations.ProxyNetworkServiceDesignVersionsOperations
     :ivar publishers: PublishersOperations operations
     :vartype publishers: Microsoft.HybridNetwork.operations.PublishersOperations
     :ivar artifact_stores: ArtifactStoresOperations operations
@@ -158,19 +133,6 @@ class HybridNetworkManagementClient(
             self._client, self._config, self._serialize, self._deserialize
         )
         self.operations = Operations(self._client, self._config, self._serialize, self._deserialize)
-        self.proxy_publisher = ProxyPublisherOperations(self._client, self._config, self._serialize, self._deserialize)
-        self.proxy_network_function_definition_groups = ProxyNetworkFunctionDefinitionGroupsOperations(
-            self._client, self._config, self._serialize, self._deserialize
-        )
-        self.proxy_network_function_definition_versions = ProxyNetworkFunctionDefinitionVersionsOperations(
-            self._client, self._config, self._serialize, self._deserialize
-        )
-        self.proxy_network_service_design_groups = ProxyNetworkServiceDesignGroupsOperations(
-            self._client, self._config, self._serialize, self._deserialize
-        )
-        self.proxy_network_service_design_versions = ProxyNetworkServiceDesignVersionsOperations(
-            self._client, self._config, self._serialize, self._deserialize
-        )
         self.publishers = PublishersOperations(self._client, self._config, self._serialize, self._deserialize)
         self.artifact_stores = ArtifactStoresOperations(self._client, self._config, self._serialize, self._deserialize)
         self.artifact_manifests = ArtifactManifestsOperations(
