@@ -27,6 +27,8 @@ param location string = '{{location}}'
 
 param nfviType string = '{{nfvi_type}}'
 
+param resourceGroupId string = resourceGroup().id
+
 @secure()
 param deploymentParametersObject object
 
