@@ -11,6 +11,9 @@ from .vendored_sdks import HybridNetworkManagementClient
 
 
 def cf_aosm(cli_ctx, *_) -> HybridNetworkManagementClient:
+    # By default, get_mgmt_service_client() sets a parameter called 'base_url' when creating
+    # the client. For us, doing so results in a key error. Setting base_url_bound=False prevents
+    # that from happening
     return get_mgmt_service_client(cli_ctx, HybridNetworkManagementClient, base_url_bound=False)
 
 
