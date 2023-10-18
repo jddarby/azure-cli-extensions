@@ -22,6 +22,8 @@ param location string = 'eastus'
 
 param nfviType string = 'AzureCore'
 
+param resourceGroupId string = resourceGroup().id
+
 @secure()
 param deploymentParametersObject object
 
