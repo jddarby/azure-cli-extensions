@@ -24,6 +24,8 @@ param location string = 'eastus'
 
 param nfviType string = 'AzureArcKubernetes'
 
+param resourceGroupId string = resourceGroup().id
+
 @secure()
 param deploymentParametersObject object
 
