@@ -32,8 +32,8 @@ class ArtifactConfig:
     # artifact.py checks for the presence of the default descriptions, change
     # there if you change the descriptions.
     artifact_name: str = ""
-    file_path: Optional[str] = None
     version: Optional[str] = ""
+    file_path: Optional[str] = None
 
     @classmethod
     def helptext(cls) -> "ArtifactConfig":
@@ -42,12 +42,13 @@ class ArtifactConfig:
         """
         return ArtifactConfig(
             artifact_name="Optional. Name of the artifact.",
+            version="Version of the artifact in A.B.C format.",
             file_path=(
-                "Optional. File path of the artifact you wish to upload from your local disk. "
-                "Delete if not required. Relative paths are relative to the configuration file."
+                "File path of the artifact you wish to upload from your local disk. "
+                "Relative paths are relative to the configuration file. "
                 "On Windows escape any backslash with another backslash."
             ),
-            version="Version of the artifact in A.B.C format.",
+
         )
 
     def validate(self):
@@ -64,10 +65,10 @@ class ArtifactConfig:
 class VhdArtifactConfig(ArtifactConfig):
     # If you add a new property to this class, you must also update
     # EXTRA_VHD_PARAMETERS in constants.py
+    blob_sas_url: Optional[str] = None
     image_disk_size_GB: Optional[Union[str, int]] = None
     image_hyper_v_generation: Optional[str] = None
     image_api_version: Optional[str] = None
-    blob_sas_url: Optional[str] = None
 
     def __post_init__(self):
         """
@@ -84,7 +85,18 @@ class VhdArtifactConfig(ArtifactConfig):
         """
         Build an object where each value is helptext for that field.
         """
+
+        artifact_config = ArtifactConfig.helptext()
+        artifact_config.file_path = (
+            "Optional. File path of the artifact you wish to upload from your local disk. "
+            "Delete if not required. Relative paths are relative to the configuration file."
+            "On Windows escape any backslash with another backslash."
+        )
         return VhdArtifactConfig(
+            blob_sas_url=(
+                "Optional. SAS URL of the blob artifact you wish to copy to your Artifact"
+                " Store. Delete if not required."
+            ),
             image_disk_size_GB=(
                 "Optional. Specifies the size of empty data disks in gigabytes. "
                 "This value cannot be larger than 1023 GB."
@@ -97,26 +109,17 @@ class VhdArtifactConfig(ArtifactConfig):
             image_api_version=(
                 "Optional. The ARM API version used to create the Microsoft.Compute/images resource."
             ),
-            blob_sas_url=(
-                "Optional. SAS URL of the blob artifact you wish to copy to your Artifact"
-                " Store. Delete if not required."
-            ),
-            **asdict(ArtifactConfig.helptext()),
+            **asdict(artifact_config),
         )
-    # will this work? not sure if you get blob and filepath in this class
 
     def validate(self):
         """
         Validate the configuration.
         """
         if self.blob_sas_url and self.file_path:
-            raise ValidationError(
-                "Only one of file_path or blob_sas_url may be set."
-            )
+            raise ValidationError("Only one of file_path or blob_sas_url may be set.")
         if not (self.blob_sas_url or self.file_path):
-            raise ValidationError(
-                "One of file_path or sas_blob_url must be set."
-            )
+            raise ValidationError("One of file_path or sas_blob_url must be set.")
 
 
 @dataclass
