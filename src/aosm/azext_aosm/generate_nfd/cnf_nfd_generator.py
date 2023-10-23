@@ -467,11 +467,17 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
         matches = []
         path = []
 
+        # TODO: Change this to exclude values.yaml itself, and anything in "tests"
+        # folder so that we don't pick up the rogue image: line in test-connection.yaml
+        # in the nginx quickstart helm chart
         for file in self._find_yaml_files(chart_dir):
             with open(file, "r", encoding="UTF-8") as f:
                 logger.debug("Searching for %s in %s", IMAGE_START_STRING, file)
                 for line in f:
                     if IMAGE_START_STRING in line:
+                        # TODO - this logic looking for image: sections and ignoring
+                        # them might be ok still. Have a think.  We aren't aiming for
+                        # perfect, just sensible.
                         if line.strip() == IMAGE_START_STRING:
                             logger.debug(
                                 "image section found in %s, "
@@ -486,6 +492,13 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                         # support it but it is best practice to have static image
                         # versions in an NFDV and increment the NFDversion when the
                         # image versions change.)
+                        
+                        # TODO change this logic - we want to allow versions (and I
+                        # guess name as well) to be templated from values.yaml, but we
+                        # should insist that there is a value in there to read from, so
+                        # that we can add the image to the manifest and during nfd
+                        # publish upload the image, also warn the user that they mustn't
+                        # expose these values as deploymentParameters.
                         version_is_templated = re.search(
                             IMAGE_VERSION_WITH_VALUE_TEMPLATING, line
                         )
@@ -510,6 +523,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                             name_and_version,
                         )
 
+                        # TODO You might want check this particular line of the fix
+                        # into the GA branch as it used to check for length 2 which 
+                        # was definitely wrong, but I don't feel very strongly on that
                         if name_and_version and len(name_and_version.groups()) == 3:
                             logger.debug(
                                 "Found image name and version %s %s",
@@ -524,6 +540,9 @@ class CnfNfdGenerator(NFDGenerator):  # pylint: disable=too-many-instance-attrib
                                 )
                             )
                         else:
+                            # Note - decided with Jamie that we would keep this, given
+                            # we will ignore values.yaml and tests folder. 
+                            # TODO delete this comment.
                             logger.warning(
                                 "WARNING. "
                                 "When parsing helm chart %s file %s for image path, "
