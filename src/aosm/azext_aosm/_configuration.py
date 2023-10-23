@@ -28,9 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ArtifactConfig:
-    # artifact.py checks for the presence of the default descriptions, change
-    # there if you change the descriptions.
+class ArtifactConfig(abc.ABC):
     artifact_name: str = ""
     version: Optional[str] = ""
     file_path: Optional[str] = None
@@ -42,7 +40,7 @@ class ArtifactConfig:
         """
         return ArtifactConfig(
             artifact_name="Optional. Name of the artifact.",
-            version="Version of the artifact in A.B.C format.",
+            version="Version of the artifact",
             file_path=(
                 "File path of the artifact you wish to upload from your local disk. "
                 "Relative paths are relative to the configuration file. "
@@ -57,8 +55,40 @@ class ArtifactConfig:
         """
         if not self.version:
             raise ValidationError("version must be set.")
+
+
+@dataclass
+class ArmArtifactConfig(ArtifactConfig):
+    """Config for an ARM template artifact."""
+
+    @classmethod
+    def helptext(cls) -> "ArmArtifactConfig":
+        """
+        Build an object where each value is helptext for that field.
+        """
+
+        artifact_config = ArtifactConfig.helptext()
+        artifact_config.version = (
+            "Version of the artifact in A.B.C format."
+        )
+        return ArmArtifactConfig(
+            **asdict(artifact_config),
+        )
+
+    def validate(self):
+        """
+        Validate the configuration.
+        """
+        super().validate()
+        # Super validation has checked this but mypy doesn't know that.
+        assert self.version
         if not self.file_path:
-            raise ValidationError("file_path must be set.")
+            raise ValidationError("Arm artifact file_path must be set.")
+        if "." not in self.version or "-" in self.version:
+            raise ValidationError(
+                "Config validation error. ARM template artifact version should be in"
+                " format A.B.C"
+            )
 
 
 @dataclass
@@ -120,8 +150,14 @@ class VhdArtifactConfig(ArtifactConfig):
         """
         Validate the configuration.
         """
-        if not self.version:
-            raise ValidationError("version must be set for vhd.")
+        super().validate()
+        # super validation has checked version exists but mypy doesn't know that.
+        assert self.version
+        if "." in self.version or "-" not in self.version:
+            raise ValidationError(
+                "Config validation error. VHD artifact version should be in format"
+                " A-B-C"
+            )
         if self.blob_sas_url and self.file_path:
             raise ValidationError("Only one of file_path or blob_sas_url may be set for vhd.")
         if not (self.blob_sas_url or self.file_path):
@@ -268,7 +304,7 @@ class NFConfiguration(Configuration):
 class VNFConfiguration(NFConfiguration):
     blob_artifact_store_name: str = ""
     image_name_parameter: str = ""
-    arm_template: Union[Dict[str, str], ArtifactConfig] = ArtifactConfig()
+    arm_template: Union[Dict[str, str], ArmArtifactConfig] = ArmArtifactConfig()
     vhd: Union[Dict[str, str], VhdArtifactConfig] = VhdArtifactConfig()
 
     @classmethod
@@ -285,7 +321,7 @@ class VNFConfiguration(NFConfiguration):
                 "The parameter name in the VM ARM template which specifies the name of the "
                 "image to use for the VM."
             ),
-            arm_template=ArtifactConfig.helptext(),
+            arm_template=ArmArtifactConfig.helptext(),
             vhd=VhdArtifactConfig.helptext(),
             **asdict(NFConfiguration.helptext()),
         )
@@ -305,7 +341,7 @@ class VNFConfiguration(NFConfiguration):
                 self.arm_template["file_path"] = self.path_from_cli_dir(
                     self.arm_template["file_path"]
                 )
-            self.arm_template = ArtifactConfig(**self.arm_template)
+            self.arm_template = ArmArtifactConfig(**self.arm_template)
 
         if isinstance(self.vhd, dict):
             if self.vhd.get("file_path"):
@@ -321,23 +357,9 @@ class VNFConfiguration(NFConfiguration):
         super().validate()
 
         assert isinstance(self.vhd, VhdArtifactConfig)
-        assert isinstance(self.arm_template, ArtifactConfig)
+        assert isinstance(self.arm_template, ArmArtifactConfig)
         self.vhd.validate()
         self.arm_template.validate()
-
-        assert self.vhd.version
-        assert self.arm_template.version
-
-        if "." in self.vhd.version or "-" not in self.vhd.version:
-            raise ValidationError(
-                "Config validation error. VHD artifact version should be in format"
-                " A-B-C"
-            )
-        if "." not in self.arm_template.version or "-" in self.arm_template.version:
-            raise ValidationError(
-                "Config validation error. ARM template artifact version should be in"
-                " format A.B.C"
-            )
 
     @property
     def sa_manifest_name(self) -> str:
@@ -348,7 +370,7 @@ class VNFConfiguration(NFConfiguration):
     @property
     def output_directory_for_build(self) -> Path:
         """Return the local folder for generating the bicep template to."""
-        assert isinstance(self.arm_template, ArtifactConfig)
+        assert isinstance(self.arm_template, ArmArtifactConfig)
         assert self.arm_template.file_path
         arm_template_name = Path(self.arm_template.file_path).stem
         return Path(f"{NF_DEFINITION_OUTPUT_BICEP_PREFIX}{arm_template_name}")
@@ -617,14 +639,16 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
         return Path(current_working_directory, NSD_OUTPUT_BICEP_PREFIX)
 
     @property
-    def arm_template(self) -> ArtifactConfig:
+    def arm_template(self) -> ArmArtifactConfig:
         """Return the parameters of the ARM template for this RET to be uploaded as part of
         the NSDV."""
-        artifact = ArtifactConfig()
+        artifact = ArmArtifactConfig()
         artifact.artifact_name = f"{self.name.lower()}_nf_artifact"
 
         # We want the ARM template version to match the NSD version, but we don't have
-        # that information here.
+        # that information here. When required we just use the NSD version. We don't
+        # call validate() on this object so we don't hit problems with its own
+        # validation that the version exists.
         artifact.version = None
         artifact.file_path = os.path.join(
             self.build_output_folder_name, NF_DEFINITION_JSON_FILENAME

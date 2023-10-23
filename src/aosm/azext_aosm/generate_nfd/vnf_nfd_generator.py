@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional
 
 from knack.log import get_logger
 
-from azext_aosm._configuration import ArtifactConfig, VNFConfiguration
+from azext_aosm._configuration import ArmArtifactConfig, VNFConfiguration
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
     CONFIG_MAPPINGS_DIR_NAME,
@@ -67,7 +67,7 @@ class VnfNfdGenerator(NFDGenerator):
     ):
         self.config = config
 
-        assert isinstance(self.config.arm_template, ArtifactConfig)
+        assert isinstance(self.config.arm_template, ArmArtifactConfig)
         assert self.config.arm_template.file_path
 
         self.arm_template_path = Path(self.config.arm_template.file_path)

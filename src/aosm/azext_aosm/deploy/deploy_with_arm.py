@@ -18,12 +18,13 @@ from knack.log import get_logger
 from knack.util import CLIError
 
 from azext_aosm._configuration import (
-    ArtifactConfig,
+    ArmArtifactConfig,
     CNFConfiguration,
     Configuration,
     NFConfiguration,
     NFDRETConfiguration,
     NSConfiguration,
+    VhdArtifactConfig,
     VNFConfiguration,
 )
 from azext_aosm.deploy.artifact import Artifact
@@ -184,8 +185,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         vhd_config = self.config.vhd
         arm_template_config = self.config.arm_template
 
-        assert isinstance(vhd_config, ArtifactConfig)
-        assert isinstance(arm_template_config, ArtifactConfig)
+        assert isinstance(vhd_config, VhdArtifactConfig)
+        assert isinstance(arm_template_config, ArmArtifactConfig)
 
         if self.skip == IMAGE_UPLOAD:
             print("Skipping VHD artifact upload")
@@ -310,8 +311,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         """
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
-            assert isinstance(self.config.vhd, ArtifactConfig)
-            assert isinstance(self.config.arm_template, ArtifactConfig)
+            assert isinstance(self.config.vhd, VhdArtifactConfig)
+            assert isinstance(self.config.arm_template, ArmArtifactConfig)
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
@@ -351,8 +352,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         """Create the parmeters dictionary for VNF, CNF or NSD."""
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
-            assert isinstance(self.config.vhd, ArtifactConfig)
-            assert isinstance(self.config.arm_template, ArtifactConfig)
+            assert isinstance(self.config.vhd, VhdArtifactConfig)
+            assert isinstance(self.config.arm_template, ArmArtifactConfig)
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
