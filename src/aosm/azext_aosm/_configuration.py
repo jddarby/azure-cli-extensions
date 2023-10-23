@@ -63,8 +63,8 @@ class ArtifactConfig:
 
 @dataclass
 class VhdArtifactConfig(ArtifactConfig):
-    # If you add a new property to this class, you must also update
-    # EXTRA_VHD_PARAMETERS in constants.py
+    # If you add a new property to this class, consider updating EXTRA_VHD_PARAMETERS in
+    # constants.py - see comment there for details.
     blob_sas_url: Optional[str] = None
     image_disk_size_GB: Optional[Union[str, int]] = None
     image_hyper_v_generation: Optional[str] = None
@@ -92,6 +92,9 @@ class VhdArtifactConfig(ArtifactConfig):
             "Delete if not required. Relative paths are relative to the configuration file."
             "On Windows escape any backslash with another backslash."
         )
+        artifact_config.version = (
+            "Version of the artifact in A-B-C format."
+        )
         return VhdArtifactConfig(
             blob_sas_url=(
                 "Optional. SAS URL of the blob artifact you wish to copy to your Artifact"
@@ -99,15 +102,16 @@ class VhdArtifactConfig(ArtifactConfig):
             ),
             image_disk_size_GB=(
                 "Optional. Specifies the size of empty data disks in gigabytes. "
-                "This value cannot be larger than 1023 GB."
+                "This value cannot be larger than 1023 GB. Delete if not required."
             ),
             image_hyper_v_generation=(
                 "Optional. Specifies the HyperVGenerationType of the VirtualMachine "
                 "created from the image. Valid values are V1 and V2. V1 is the default if "
-                "not specified."
+                "not specified. Delete if not required."
             ),
             image_api_version=(
-                "Optional. The ARM API version used to create the Microsoft.Compute/images resource."
+                "Optional. The ARM API version used to create the "
+                "Microsoft.Compute/images resource. Delete if not required."
             ),
             **asdict(artifact_config),
         )
@@ -116,10 +120,12 @@ class VhdArtifactConfig(ArtifactConfig):
         """
         Validate the configuration.
         """
+        if not self.version:
+            raise ValidationError("version must be set for vhd.")
         if self.blob_sas_url and self.file_path:
-            raise ValidationError("Only one of file_path or blob_sas_url may be set.")
+            raise ValidationError("Only one of file_path or blob_sas_url may be set for vhd.")
         if not (self.blob_sas_url or self.file_path):
-            raise ValidationError("One of file_path or sas_blob_url must be set.")
+            raise ValidationError("One of file_path or sas_blob_url must be set for vhd.")
 
 
 @dataclass
