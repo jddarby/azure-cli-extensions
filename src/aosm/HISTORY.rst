@@ -3,6 +3,10 @@
 Release History
 ===============
 
+unreleased
+++++++++++
+* Arm RET support within NSDs (without parameter chaining or de-duplication of Config Group Schema elements)
+
 1.0.0b1
 ++++++++
 * Initial release - beta quality
