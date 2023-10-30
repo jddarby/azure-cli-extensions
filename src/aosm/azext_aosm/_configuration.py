@@ -895,6 +895,14 @@ class NSConfiguration(Configuration):
         return arm_cg_schema_names
 
     @property
+    def all_cg_schema_names(self) -> List[str]:
+        """Return the names of all CG Schemas (NF and ARM) for this NSDV."""
+        if self.nf_cg_schema_name in self.arm_cg_schema_names:
+            return self.arm_cg_schema_names
+        else:
+            return self.arm_cg_schema_names + [self.nf_cg_schema_name]
+
+    @property
     def nf_acr_manifest_names(self) -> List[str]:
         """
         The list of ACR manifest names for all the NF RET ARM templates.
