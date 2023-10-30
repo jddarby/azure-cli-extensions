@@ -7,6 +7,7 @@ import abc
 import logging
 import json
 import os
+import re
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -92,7 +93,50 @@ class ArmArtifactConfig(ArtifactConfig):
 
 
 @dataclass
+class NSArmArtifactConfig(ArmArtifactConfig):
+    """
+    Config for an ARM template artifact in a NS.
+    
+    Version for the ARM template artifact is never used, instead the NSD version is
+    used at the time the NSD is built and the manifest deployed. This is because we
+    want the versions of the artifacts to match the NSDV, such that changing the
+    artifact requires a new NSDV to be created.
+    """
+
+    version = None
+
+    @classmethod
+    def helptext(cls) -> "NSArmArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        artifact_config = ArtifactConfig.helptext()
+        # The way we have implemented helptext means that we can't remove version from
+        # it, even though we don't want to expose it. So tell the user to remove it.
+        # This could be refactored to improve the experience.
+        artifact_config.artifact_name = "Optional. The name to give the artifact and Resource Element Template. If deleted, the name of the artifact is taken from the ARM template file name."
+        artifact_config.version = "Delete this line. The version of the artifact is taken from the NSD version."
+        return NSArmArtifactConfig(
+            **asdict(artifact_config),
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        # Not doing super().validate as we don't have a version
+        if not self.file_path:
+            raise ValidationError("Arm artifact file_path must be set.")
+
+    def acr_manifest_name(self, nsd_version: str) -> str:
+        """Return the ACR manifest name from the artifact name."""
+        return (
+            f"{self.artifact_name.lower().replace('_', '-')}"
+            f"-acr-manifest-{nsd_version.replace('.', '-')}"
+        )
+
+
+
+@dataclass
 class VhdArtifactConfig(ArtifactConfig):
+    """Vhd artifact config."""
     # If you add a new property to this class, consider updating EXTRA_VHD_PARAMETERS in
     # constants.py - see comment there for details.
     blob_sas_url: Optional[str] = None
@@ -335,7 +379,6 @@ class VNFConfiguration(NFConfiguration):
         super().__post_init__()
         if self.publisher_name and not self.blob_artifact_store_name:
             self.blob_artifact_store_name = f"{self.publisher_name}-sa"
-
         if isinstance(self.arm_template, dict):
             if self.arm_template.get("file_path"):
                 self.arm_template["file_path"] = self.path_from_cli_dir(
@@ -639,10 +682,10 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
         return Path(current_working_directory, NSD_OUTPUT_BICEP_PREFIX)
 
     @property
-    def arm_template(self) -> ArmArtifactConfig:
+    def arm_template(self) -> NSArmArtifactConfig:
         """Return the parameters of the ARM template for this RET to be uploaded as part of
         the NSDV."""
-        artifact = ArmArtifactConfig()
+        artifact = NSArmArtifactConfig()
         artifact.artifact_name = f"{self.name.lower()}_nf_artifact"
 
         # We want the ARM template version to match the NSD version, but we don't have
@@ -676,12 +719,31 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
 
 @dataclass
 class NSConfiguration(Configuration):
+    """
+    Network Service Design configuration.
+
+    network_functions: config for NFs to go in the NF Resource Element Templates
+    arm_templates: config for Arm templates to go in Arm Resource Element Templates
+    nsd_name: the name of the NSDG
+    nsd_version: the version of the NSDV, must be in A.B.C format
+    nsdv_description: description
+    cgs_split: Only relevant if Arm RETs included. If True, have a separate CGS for
+               each ARM template and one for the NFs. If False, have a shared CGS for
+               the NFs and all ARM templates, with each NF/Arm having its own object
+               within the schema.
+    """
+
     network_functions: List[Union[NFDRETConfiguration, Dict[str, Any]]] = field(
+        default_factory=lambda: []
+    )
+
+    arm_templates: List[Union[Dict[str, Any], NSArmArtifactConfig]] = field(
         default_factory=lambda: []
     )
     nsd_name: str = ""
     nsd_version: str = ""
     nsdv_description: str = ""
+    cgs_split: bool = False
 
     def __post_init__(self):
         """Covert things to the correct format."""
@@ -690,15 +752,36 @@ class NSConfiguration(Configuration):
             nf_ret_list = [
                 NFDRETConfiguration(**config) for config in self.network_functions
             ]
+            # self.network_functions will be sorted in the order added in input.json
             self.network_functions = nf_ret_list
+        if self.arm_templates and isinstance(self.arm_templates[0], dict):
+            # Checking for the dict type means checking for input config, rather than
+            # config helptext created for generate-config
+            arm_template_list = [
+                NSArmArtifactConfig(**config) for config in self.arm_templates
+            ]
+
+            # Set the name of the artifact to be the same as the name of the file
+            for artifact in arm_template_list:
+
+                if artifact.file_path:
+                    artifact.file_path = self.path_from_cli_dir(artifact.file_path)
+            
+                    if not artifact.artifact_name:
+                        artifact.artifact_name = Path(artifact.file_path).stem
+                    # Make sure the artifact name is in the correct format for the manifest
+                    artifact.artifact_name = self.format_artifact_name_for_manifest(artifact.artifact_name)
+            # self.arm_templates will be sorted in the order added in input.json
+            self.arm_templates = arm_template_list
+            #self.arm_templates = sorted(arm_template_list, key=lambda x: x.artifact_name)
+
 
     @classmethod
     def helptext(cls) -> "NSConfiguration":
-        """
-        Build a NSConfiguration object where each value is helptext for that field.
-        """
+        """Build a NSConfiguration object where each value is helptext for that field."""
         nsd_helptext = NSConfiguration(
             network_functions=[asdict(NFDRETConfiguration.helptext())],
+            arm_templates=[NSArmArtifactConfig.helptext()],
             nsd_name=(
                 "Network Service Design (NSD) name. This is the collection of Network Service"
                 " Design Versions. Will be created if it does not exist."
@@ -707,6 +790,11 @@ class NSConfiguration(Configuration):
                 "Version of the NSD to be created. This should be in the format A.B.C"
             ),
             nsdv_description="Description of the NSDV.",
+            cgs_split=(
+                "If True, have a separate Configuration Group Schema for each "
+                "arm_template and all NFs. If False, have a single CGS for everything."
+                " Defaults to False."
+            ),
             **asdict(Configuration.helptext()),
         )
 
@@ -724,6 +812,9 @@ class NSConfiguration(Configuration):
 
         for configuration in self.network_functions:
             configuration.validate()
+        if self.arm_templates:
+            for arm_template_config in self.arm_templates:
+                arm_template_config.validate()
         if not self.nsd_name:
             raise ValueError("nsd_name must be set")
         if not self.nsd_version:
@@ -741,20 +832,154 @@ class NSConfiguration(Configuration):
         return f"{self.nsd_name}_NFVI"
 
     @property
-    def cg_schema_name(self) -> str:
-        """Return the name of the Configuration Schema used for the NSDV."""
-        return f"{self.nsd_name.replace('-', '_')}_ConfigGroupSchema"
+    def nf_cg_schema_name(self) -> str:
+        """Return the name of the Configuration Schema used for the NFs in the NSDV."""
+        return self.format_cgs_name(f"{self.nsd_name}_ConfigGroupSchema")
+
+    @staticmethod
+    def format_cgs_name(cgs_name: str) -> str:
+        """Format CGS name to allowed chars and length."""
+        # Rules for CGS name are up to 64 alphanumeric characters, - or _. Must
+        # begin with an alphanumeric character
+        # Replace any non (alphanumeric or '_') characters with '_'        
+        cgs_name = re.sub("[^0-9a-zA-Z_]+", "_", cgs_name)
+        # Strip leading or trailing -
+        cgs_name = cgs_name.strip("_")
+        cgs_name = cgs_name[:64]
+        return cgs_name
+    
+    @property
+    def network_functions_sorted(self) -> List[NFDRETConfiguration]:
+        """Return the Network Functions sorted in alphabetical order by name."""
+        temp_nf_list = []
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            temp_nf_list.append(nf)
+        
+        return sorted(temp_nf_list, key=lambda x: x.name)
+    
+    @property
+    def arm_templates_sorted(self) -> List[NSArmArtifactConfig]:
+        """Return the Arm RET Arm Templates sorted in alphabetical order by name."""
+        temp_arm_list = []
+        for arm in self.arm_templates:
+            assert isinstance(arm, NSArmArtifactConfig)
+            temp_arm_list.append(arm)
+        
+        return sorted(temp_arm_list, key=lambda x: x.artifact_name)
 
     @property
-    def acr_manifest_names(self) -> List[str]:
-        """The list of ACR manifest names for all the NF ARM templates."""
+    def arm_cg_schema_names(self) -> List[str]:
+        """
+        Return the names of the CGS used for the Arm Templates in the NSDV.
+        
+        If cgs_split is True, there will be a separate CGS for each Arm Template plus
+        one for all the NFs. If cgs_split is False, there will be a single CGS for
+        everything.
+        """
+        arm_cg_schema_names = []
+        if self.cgs_split:
+            logger.debug("CGS split is True so need separate CGS for each Arm Template")
+            for arm_template in self.arm_templates:
+                assert isinstance(arm_template, NSArmArtifactConfig)
+                prefix = f"{arm_template.artifact_name}"
+                cgs_name = f"{prefix}_ConfigGroupSchema"
+                cgs_name = self.format_cgs_name(cgs_name)
+                arm_cg_schema_names.append(cgs_name)
+        else:
+            for _ in self.arm_templates:
+                logger.debug("CGS split is False so use a single CGS name")
+                cgs_name = f"{self.nsd_name}_ConfigGroupSchema"
+                cgs_name = self.format_cgs_name(cgs_name)
+                arm_cg_schema_names.append(cgs_name)
+        return arm_cg_schema_names
+
+    @property
+    def nf_acr_manifest_names(self) -> List[str]:
+        """
+        The list of ACR manifest names for all the NF RET ARM templates.
+
+        These will be sorted alphabetically by name.
+        """
         acr_manifest_names = []
         for nf in self.network_functions:
             assert isinstance(nf, NFDRETConfiguration)
             acr_manifest_names.append(nf.acr_manifest_name(self.nsd_version))
 
+        logger.debug("NF ACR manifest names: %s", acr_manifest_names)
+        return sorted(acr_manifest_names)
+    
+    @property
+    def arm_acr_manifest_names(self) -> List[str]:
+        """
+        The list of ACR manifest names for all the ARM RET ARM templates.
+
+        These will be sorted alphabetically by name.
+        """
+        acr_manifest_names = []
+        for arm_template in self.arm_templates:
+            assert isinstance(arm_template, NSArmArtifactConfig)
+            acr_manifest_names.append(arm_template.acr_manifest_name(self.nsd_version))
+
+        logger.debug("ARM ACR manifest names: %s", acr_manifest_names)
+        return sorted(acr_manifest_names)
+
+    @property
+    def acr_manifest_names(self) -> List[str]:
+        """
+        The list of ACR manifest names for all NF and ARM templates.
+
+        These will be sorted alphabetically by name.
+        """
+        acr_manifest_names = []
+        for arm_template in self.arm_templates:
+            assert isinstance(arm_template, NSArmArtifactConfig)
+            acr_manifest_names.append(arm_template.acr_manifest_name(self.nsd_version))
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            acr_manifest_names.append(nf.acr_manifest_name(self.nsd_version))
+
         logger.debug("ACR manifest names: %s", acr_manifest_names)
-        return acr_manifest_names
+        return sorted(acr_manifest_names)
+    
+    @property
+    def all_arm_template_artifacts_sorted(self) -> List[str]:
+        """
+        The list of all ARM templates for the Artifact manifest, including NF and ARM
+        templates.
+        
+        Note this is sorted alphabetically by name, as are the list of ACR manifest
+        names. Those two sorts must match for the ACR manifest template to be rendered
+        correctly.
+        """
+        arm_template_names = []
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            arm_template_names.append(self.format_artifact_name_for_manifest(nf.arm_template.artifact_name))
+        for arm_template in self.arm_templates:
+            assert isinstance(arm_template, NSArmArtifactConfig)
+            arm_template_names.append(self.format_artifact_name_for_manifest(arm_template.artifact_name))
+        return sorted(arm_template_names)
+
+    @staticmethod
+    def format_artifact_name_for_manifest(artifact_name: str) -> str:
+        """
+        Format artifact name to allowed chars and length.
+        
+        Note this is the artifact name not the artifact manifest name.
+
+        Rules for CGS name are up to 256 lowercase alphanumeric characters, - or _. Must
+        begin with an alphanumeric character.
+        
+        Return the reformatted name.
+        """
+        # Replace any non-allowed characters with '_'
+        artifact_name = artifact_name.lower()
+        artifact_name = re.sub("[^0-9a-z_.-]+", "_", artifact_name)
+        # Strip leading or trailing _
+        artifact_name = artifact_name.strip("_")
+        artifact_name = artifact_name[:256]
+        return artifact_name
 
 
 def get_configuration(configuration_type: str, config_file: str) -> Configuration:

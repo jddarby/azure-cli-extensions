@@ -37,10 +37,11 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
   name: nsDesignGroup
 }
 
+{%- for cg_schema_name in cg_schema_names %}
 // The configuration group schema defines the configuration required to deploy the NSD. The NSD references this object in the
 // `configurationgroupsSchemaReferences` and references the values in the schema in the `parameterValues`.
 // The operator will create a config group values object that will satisfy this schema.
-resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
+resource cgSchema{{loop.index}} 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
   parent: publisher
   name: '{{cg_schema_name}}'
   location: location
@@ -48,6 +49,7 @@ resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@
     schemaDefinition: string(loadJsonContent('schemas/{{cg_schema_name}}.json'))
   }
 }
+{%- endfor %}
 
 // The NSD version
 resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups/networkservicedesignversions@2023-09-01' = {
@@ -62,9 +64,11 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
+{%- for cg_schema_name in cg_schema_names %}
       {{cg_schema_name}}: {
-        id: cgSchema.id
+        id: cgSchema{{loop.index}}.id
       }
+{%- endfor %}
     }
     // This details the NFVIs that should be available in the Site object created by the operator.
     nfvisFromSite: {
@@ -76,9 +80,40 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     // This field lists the templates that will be deployed by AOSM and the config mappings
     // to the values in the CG schemas.
     resourceElementTemplates: [
-{%- for index in range(nf_count) %}
+{#- The following loop relies on ArmResourceElementNames, armRetTemplateNames and armConfigMappingFiles being ordered to match each other #}
+{%- for arm_ret in ArmResourceElementNames %}
       {
-        name: '{{ResourceElementName[index]}}'
+        name: '{{arm_ret}}'
+        // The type of resource element can be ArmResourceDefinition, ConfigurationDefinition or NetworkFunctionDefinition.
+        type: 'ArmResourceDefinition'
+        // The configuration object may be different for different types of resource element.
+        configuration: {
+          // This field points AOSM at the artifact in the artifact store.
+          artifactProfile: {
+            artifactStoreReference: {
+              id: acrArtifactStore.id
+            }
+            artifactName: '{{armRetTemplateNames[loop.index - 1]}}'
+            artifactVersion: '{{armTemplateVersion}}'
+          }
+          templateType: 'ArmTemplate'
+          // The parameter values map values from the CG schema, to values required by the template
+          // deployed by this resource element.
+          parameterValues: string(loadJsonContent('configMappings/{{armConfigMappingFiles[loop.index - 1]}}'))
+        }
+        // Update the dependsOnProfile with the names of other ResourceElementTemplates if 
+        // this ARM template depends on them.
+        dependsOnProfile: {
+          installDependsOn: []
+          uninstallDependsOn: []
+          updateDependsOn: []
+        }
+      }
+{%- endfor %}
+{#- The following loop relies on NfResourceElementNames, nfArmTemplateNames and nfConfigMappingFiles being ordered to match each other #}
+{%- for nf in NfResourceElementNames %}
+      {
+        name: '{{nf}}'
         // The type of resource element can be ArmResourceDefinition, ConfigurationDefinition or NetworkFunctionDefinition.
         type: 'NetworkFunctionDefinition'
         // The configuration object may be different for different types of resource element.
@@ -88,18 +123,26 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             artifactStoreReference: {
               id: acrArtifactStore.id
             }
-            artifactName: '{{armTemplateNames[index]}}'
+            artifactName: '{{nfArmTemplateNames[loop.index - 1]}}'
             artifactVersion: '{{armTemplateVersion}}'
           }
           templateType: 'ArmTemplate'
           // The parameter values map values from the CG schema, to values required by the template
           // deployed by this resource element.
-          parameterValues: string(loadJsonContent('configMappings/{{configMappingFiles[index]}}'))
+          parameterValues: string(loadJsonContent('configMappings/{{nfConfigMappingFiles[loop.index - 1]}}'))
         }
         dependsOnProfile: {
-          installDependsOn: []
+          installDependsOn: [
+{%- for arm_ret in ArmResourceElementNames %}
+            '{{arm_ret}}'
+{%- endfor %}
+          ]
           uninstallDependsOn: []
-          updateDependsOn: []
+          updateDependsOn: [
+{%- for arm_ret in ArmResourceElementNames %}
+            '{{arm_ret}}'
+{%- endfor %}
+          ]
         }
       }
 {%- endfor %}

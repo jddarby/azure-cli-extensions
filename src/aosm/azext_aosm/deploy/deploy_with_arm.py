@@ -23,6 +23,7 @@ from azext_aosm._configuration import (
     Configuration,
     NFConfiguration,
     NFDRETConfiguration,
+    NSArmArtifactConfig,
     NSConfiguration,
     VhdArtifactConfig,
     VNFConfiguration,
@@ -375,21 +376,20 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
             }
         if self.resource_type == NSD:
             assert isinstance(self.config, NSConfiguration)
-
-            arm_template_names = []
-
-            for nf in self.config.network_functions:
-                assert isinstance(nf, NFDRETConfiguration)
-                arm_template_names.append(nf.arm_template.artifact_name)
-
-            # Set the artifact version to be the same as the NSD version, so that they
-            # don't get over written when a new NSD is published.
+            # The nsd_definition.bicep references artifacts which this manifest defines.
+            # The order of artifacts in the manifest does not need to match that in the
+            # NSD, but the names do. Set the artifact version to be the same as the NSD
+            # version, so that they don't get over written when a new NSD is published.
+            #
+            # The sorting of armTemplateNames and acrManifestNames needs to match
+            # because the manifest template iterates over one loop and references the
+            # same index of both. This is done in the NSConfiguration class.
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "acrManifestNames": {"value": self.config.acr_manifest_names},
-                "armTemplateNames": {"value": arm_template_names},
+                "armTemplateNames": {"value": self.config.all_arm_template_artifacts_sorted},
                 "armTemplateVersion": {"value": self.config.nsd_version},
             }
         raise ValueError("Unknown configuration type")
@@ -430,7 +430,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         else:
             # 2) Upload artifacts - must be done before nsd deployment
             for manifest, nf in zip(
-                self.config.acr_manifest_names, self.config.network_functions
+                self.config.nf_acr_manifest_names, self.config.network_functions_sorted
             ):
                 assert isinstance(nf, NFDRETConfiguration)
                 acr_manifest = ArtifactManifestOperator(
@@ -456,8 +456,26 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
                 with open(nf.arm_template.file_path, "w", encoding="utf-8") as file:
                     file.write(json.dumps(arm_template_artifact_json, indent=4))
 
-                print(f"Uploading ARM template artifact: {nf.arm_template.file_path}")
+                print(f"Uploading NF ARM template artifact: {nf.arm_template.file_path}")
                 arm_template_artifact.upload(nf.arm_template)
+
+            for manifest, arm_template in zip(
+                self.config.arm_acr_manifest_names, self.config.arm_templates_sorted
+            ):
+                assert isinstance(arm_template, NSArmArtifactConfig)
+                acr_manifest = ArtifactManifestOperator(
+                    self.config,
+                    self.api_clients,
+                    self.config.acr_artifact_store_name,
+                    manifest,
+                )
+
+                # We create a manifest for every Arm template, so the artifact is always
+                # the only artifact in the manifest
+                arm_template_artifact = acr_manifest.artifacts[0]
+
+                print(f"Uploading ARM template artifact: {arm_template.file_path}")
+                arm_template_artifact.upload(arm_template)
 
         if self.skip == BICEP_PUBLISH:
             print("Skipping bicep nsd publish")
