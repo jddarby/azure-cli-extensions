@@ -12,7 +12,12 @@ from pathlib import Path
 from functools import cached_property
 
 from azext_aosm._configuration import ArmArtifactConfig
-from azext_aosm.util.constants import CNF, VNF, ARM_RET_SHARED_PARAMETERS, ARM_TO_JSON_PARAM_TYPES
+from azext_aosm.util.constants import (
+    CNF,
+    VNF,
+    ARM_RET_SHARED_PARAMETERS,
+    ARM_TO_JSON_PARAM_TYPES,
+)
 from azext_aosm.util.utils import get_cgs_dict
 
 
@@ -36,7 +41,9 @@ class ARMRETGenerator:
         )
         assert self.config.file_path
         self.arm_template_path = Path(self.config.file_path)
-        self.config_mapping_filename = f"{self.config.artifact_name}_config_mapping.json"
+        self.config_mapping_filename = (
+            f"{self.config.artifact_name}_config_mapping.json"
+        )
 
     @cached_property
     def arm_template_parameters(self) -> Dict[str, Any]:
@@ -72,15 +79,16 @@ class ARMRETGenerator:
         """
         logger.debug("Create %s", self.config_mapping_filename)
 
-        config_mappings = {
-        }
+        config_mappings = {}
 
         for arm_template_parameter in self.arm_template_parameters:
             if (
-                arm_template_parameter in ARM_RET_SHARED_PARAMETERS and
-                self.shared_cg_schema_name != self.cg_schema_name
+                arm_template_parameter in ARM_RET_SHARED_PARAMETERS
+                and self.shared_cg_schema_name != self.cg_schema_name
             ):
-                logger.debug("%s parameter found. Using shared schema", arm_template_parameter)
+                logger.debug(
+                    "%s parameter found. Using shared schema", arm_template_parameter
+                )
                 print(
                     f"\n{arm_template_parameter} parameter found in ARM template "
                     f"{self.arm_template_path}. Assuming this is shared and "
@@ -94,18 +102,18 @@ class ARMRETGenerator:
                     f".{arm_template_parameter}}}"
                 )
             elif self.shared_cg_schema_name == self.cg_schema_name:
-                # Shared CGS schema has an object for each RET, matching the artifact 
-                # name. So need to reference the object too. e.g. 
+                # Shared CGS schema has an object for each RET, matching the artifact
+                # name. So need to reference the object too. e.g.
                 # "param2": "{configurationparameters('shared_ConfigGroupSchema').foo.param2}",
-                config_mappings[arm_template_parameter] = (
-                    f"{{configurationparameters('{self.cg_schema_name}').{self.config.artifact_name}.{arm_template_parameter}}}"
-                )
+                config_mappings[
+                    arm_template_parameter
+                ] = f"{{configurationparameters('{self.cg_schema_name}').{self.config.artifact_name}.{arm_template_parameter}}}"
             else:
                 # Individual CGS for this RET. No sub-objects required. e.g.
                 # "param2": "{configurationparameters('foo_ConfigGroupSchema').param2}"
-                config_mappings[arm_template_parameter] = (
-                    f"{{configurationparameters('{self.cg_schema_name}').{arm_template_parameter}}}"
-                )
+                config_mappings[
+                    arm_template_parameter
+                ] = f"{{configurationparameters('{self.cg_schema_name}').{arm_template_parameter}}}"
 
         return config_mappings
 
@@ -135,10 +143,6 @@ class ARMRETGenerator:
 
         properties.update(arm_ret_parameters)
         required.extend(list(arm_ret_parameters.keys()))
-        cgs_snippet = {
-            "type": "object",
-            "properties": properties,
-            "required": required
-        }
+        cgs_snippet = {"type": "object", "properties": properties, "required": required}
 
         return cgs_snippet

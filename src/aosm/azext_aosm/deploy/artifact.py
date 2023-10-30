@@ -39,7 +39,9 @@ class Artifact:
 
     def upload(
         self,
-        artifact_config: Union[ArmArtifactConfig, CNFImageConfig, VhdArtifactConfig, HelmPackageConfig],
+        artifact_config: Union[
+            ArmArtifactConfig, CNFImageConfig, VhdArtifactConfig, HelmPackageConfig
+        ],
         use_manifest_permissions: bool = False,
     ) -> None:
         """

@@ -315,12 +315,10 @@ class ResourceDeleter:
             logger.debug(message)
             print(message)
             try:
-                poller = (
-                    self.api_clients.aosm_client.configuration_group_schemas.begin_delete(
-                        resource_group_name=self.config.publisher_resource_group_name,
-                        publisher_name=self.config.publisher_name,
-                        configuration_group_schema_name=schema,
-                    )
+                poller = self.api_clients.aosm_client.configuration_group_schemas.begin_delete(
+                    resource_group_name=self.config.publisher_resource_group_name,
+                    publisher_name=self.config.publisher_name,
+                    configuration_group_schema_name=schema,
                 )
                 LongRunningOperation(
                     self.cli_ctx, "Deleting Configuration Group Schema..."

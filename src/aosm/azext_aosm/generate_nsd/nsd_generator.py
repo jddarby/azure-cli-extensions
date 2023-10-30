@@ -13,7 +13,11 @@ from typing import Any, Dict
 from jinja2 import Template
 from knack.log import get_logger
 
-from azext_aosm._configuration import NFDRETConfiguration, NSConfiguration, ArmArtifactConfig
+from azext_aosm._configuration import (
+    NFDRETConfiguration,
+    NSConfiguration,
+    ArmArtifactConfig,
+)
 from azext_aosm.generate_nsd.nf_ret import NFRETGenerator
 from azext_aosm.generate_nsd.arm_ret import ARMRETGenerator
 from azext_aosm.util.constants import (
@@ -73,9 +77,9 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
             assert isinstance(arm_ret_config, ArmArtifactConfig)
             self.arm_ret_generators.append(
                 ARMRETGenerator(
-                    config=arm_ret_config, 
+                    config=arm_ret_config,
                     cg_schema_name=self.config.arm_cg_schema_names[index],
-                    shared_cg_schema_name=self.config.nf_cg_schema_name
+                    shared_cg_schema_name=self.config.nf_cg_schema_name,
                 )
             )
 
@@ -148,7 +152,7 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
         """Create a file containing the json schema for the CGS."""
         temp_schemas_folder_path = os.path.join(output_directory, SCHEMAS_DIR_NAME)
         os.mkdir(temp_schemas_folder_path)
-        
+
         if self.config.cgs_split:
             # Separate CGS schema for each ARM RET and one for all NFs
             for arm_ret in self.arm_ret_generators:
@@ -192,7 +196,7 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
                 _file.write(json.dumps(nf.config_mappings, indent=4))
 
             logger.debug("%s created", config_mappings_path)
-            
+
         for arm_ret in self.arm_ret_generators:
             config_mappings_path = os.path.join(
                 temp_mappings_folder_path, arm_ret.config_mapping_filename
@@ -233,7 +237,9 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
         manifest are defined at deploy time, in
         deploy_with_arm.construct_manifest_parameters.
         """
-        nf_ret_names = [nf.config.resource_element_name for nf in self.nf_ret_generators]
+        nf_ret_names = [
+            nf.config.resource_element_name for nf in self.nf_ret_generators
+        ]
         nf_arm_template_names = [
             nf.config.arm_template.artifact_name for nf in self.nf_ret_generators
         ]

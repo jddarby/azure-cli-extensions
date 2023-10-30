@@ -389,7 +389,9 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "acrManifestNames": {"value": self.config.acr_manifest_names},
-                "armTemplateNames": {"value": self.config.all_arm_template_artifacts_sorted},
+                "armTemplateNames": {
+                    "value": self.config.all_arm_template_artifacts_sorted
+                },
                 "armTemplateVersion": {"value": self.config.nsd_version},
             }
         raise ValueError("Unknown configuration type")
@@ -456,7 +458,9 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
                 with open(nf.arm_template.file_path, "w", encoding="utf-8") as file:
                     file.write(json.dumps(arm_template_artifact_json, indent=4))
 
-                print(f"Uploading NF ARM template artifact: {nf.arm_template.file_path}")
+                print(
+                    f"Uploading NF ARM template artifact: {nf.arm_template.file_path}"
+                )
                 arm_template_artifact.upload(nf.arm_template)
 
             for manifest, arm_template in zip(
