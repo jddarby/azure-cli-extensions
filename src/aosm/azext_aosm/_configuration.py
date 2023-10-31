@@ -123,10 +123,7 @@ class NSArmArtifactConfig(ArmArtifactConfig):
 
     def acr_manifest_name(self, nsd_version: str) -> str:
         """Return the ACR manifest name from the artifact name."""
-        return (
-            f"{self.artifact_name.lower().replace('_', '-')}"
-            f"-acr-manifest-{nsd_version.replace('.', '-')}"
-        )
+        return format_manifest_name(f"{self.artifact_name}-mf-{nsd_version}")
 
 
 @dataclass
@@ -284,6 +281,26 @@ class Configuration(abc.ABC):
         """The list of ACR manifest names."""
         raise NotImplementedError("Subclass must define property")
 
+    @staticmethod
+    def format_acr_artifact_name_for_manifest(artifact_name: str) -> str:
+        """
+        Format artifact name to allowed chars and length.
+
+        Note this is the artifact name not the artifact manifest name.
+
+        Rules for CGS name are up to 256 lowercase alphanumeric characters, - or _. Must
+        begin with an alphanumeric character.
+
+        Return the reformatted name.
+        """
+        # Replace any non-allowed characters with '_'
+        artifact_name = artifact_name.lower()
+        artifact_name = re.sub("[^0-9a-z_.-]+", "_", artifact_name)
+        # Strip leading or trailing _
+        artifact_name = artifact_name.strip("_")
+        artifact_name = artifact_name[:256]
+        return artifact_name
+
 
 @dataclass
 class NFConfiguration(Configuration):
@@ -321,9 +338,12 @@ class NFConfiguration(Configuration):
 
         This is returned in a list for consistency with the NSConfiguration, where there
         can be multiple ACR manifests.
+        
+        Artifact manifest resource name must be between 5 and 50 characters long, and
+        must start with a letter and contain only alphanumeric characters optionally
+        separated by a '-'.";
         """
-        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
-        return [f"{sanitized_nf_name}-acr-manifest-{self.version.replace('.', '-')}"]
+        return [format_manifest_name(f"{self.nf_name}-acr-mf-{self.version.replace('.', '-')}")]
 
 
 @dataclass
@@ -391,8 +411,7 @@ class VNFConfiguration(NFConfiguration):
     @property
     def sa_manifest_name(self) -> str:
         """Return the Storage account manifest name from the NFD name."""
-        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
-        return f"{sanitized_nf_name}-sa-manifest-{self.version.replace('.', '-')}"
+        return format_manifest_name(f"{self.nf_name}-sa-mf-{self.version}")
 
     @property
     def output_directory_for_build(self) -> Path:
@@ -683,10 +702,7 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
 
     def acr_manifest_name(self, nsd_version: str) -> str:
         """Return the ACR manifest name from the NFD name."""
-        return (
-            f"{self.name.lower().replace('_', '-')}"
-            f"-nf-acr-manifest-{nsd_version.replace('.', '-')}"
-        )
+        return format_manifest_name(f"{self.name}-nf-mf-{nsd_version}")
 
 
 @dataclass
@@ -741,7 +757,7 @@ class NSConfiguration(Configuration):
                     if not artifact.artifact_name:
                         artifact.artifact_name = Path(artifact.file_path).stem
                     # Make sure the artifact name is in the correct format for the manifest
-                    artifact.artifact_name = self.format_artifact_name_for_manifest(
+                    artifact.artifact_name = self.format_acr_artifact_name_for_manifest(
                         artifact.artifact_name
                     )
             # self.arm_templates will be sorted in the order added in input.json
@@ -935,34 +951,16 @@ class NSConfiguration(Configuration):
         for nf in self.network_functions:
             assert isinstance(nf, NFDRETConfiguration)
             arm_template_names.append(
-                self.format_artifact_name_for_manifest(nf.arm_template.artifact_name)
+                self.format_acr_artifact_name_for_manifest(nf.arm_template.artifact_name)
             )
         for arm_template in self.arm_templates:
             assert isinstance(arm_template, NSArmArtifactConfig)
             arm_template_names.append(
-                self.format_artifact_name_for_manifest(arm_template.artifact_name)
+                self.format_acr_artifact_name_for_manifest(arm_template.artifact_name)
             )
         return sorted(arm_template_names)
 
-    @staticmethod
-    def format_artifact_name_for_manifest(artifact_name: str) -> str:
-        """
-        Format artifact name to allowed chars and length.
 
-        Note this is the artifact name not the artifact manifest name.
-
-        Rules for CGS name are up to 256 lowercase alphanumeric characters, - or _. Must
-        begin with an alphanumeric character.
-
-        Return the reformatted name.
-        """
-        # Replace any non-allowed characters with '_'
-        artifact_name = artifact_name.lower()
-        artifact_name = re.sub("[^0-9a-z_.-]+", "_", artifact_name)
-        # Strip leading or trailing _
-        artifact_name = artifact_name.strip("_")
-        artifact_name = artifact_name[:256]
-        return artifact_name
 
 
 def get_configuration(configuration_type: str, config_file: str) -> Configuration:
@@ -1001,3 +999,32 @@ def get_configuration(configuration_type: str, config_file: str) -> Configuratio
     config.validate()
 
     return config
+
+
+def format_manifest_name(manifest_name: str) -> str:
+    """
+    Format artifact manifest name to allowed chars and length.
+
+    Note this is the artifact manifest name not the artifact name.
+
+    Artifact manifest resource name must be between 5 and 50 characters long, and
+    must start with a letter and contain only alphanumeric characters optionally
+    separated by a '-'. It must not end with a hyphen. (see
+    ArtifactManifestCreationValidator.cs in pez)
+    
+    We lower the name as well
+
+    Return the reformatted name.
+    """
+    manifest_name = manifest_name.lower()
+    # Replace any non-allowed characters with '-'    
+    manifest_name = re.sub("[^0-9A-Za-z-]+", "-", manifest_name)
+    # Strip leading or trailing -
+    manifest_name = manifest_name.strip("-")
+    if len(manifest_name) > 50:
+        raise ValidationError(
+            f"Manifest name {manifest_name} is too long. Must be 50 characters or less."
+            "Please shorten the items in your config file that contribute to this name."
+        )
+    manifest_name = manifest_name[:50]
+    return manifest_name
