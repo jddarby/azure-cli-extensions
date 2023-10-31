@@ -5,6 +5,7 @@
 """Constants used across aosm cli extension."""
 
 from enum import Enum
+from typing import Dict
 
 # The types of definition that can be generated
 VNF = "vnf"
@@ -38,9 +39,7 @@ NSD_DEFINITION_JINJA2_SOURCE_TEMPLATE = "nsd_template.bicep.j2"
 NSD_BICEP_FILENAME = "nsd_definition.bicep"
 NSD_OUTPUT_BICEP_PREFIX = "nsd-bicep-templates"
 NSD_ARTIFACT_MANIFEST_BICEP_FILENAME = "artifact_manifest.bicep"
-NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME = (
-    "artifact_manifest_template.bicep"
-)
+NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME = "artifact_manifest_template.bicep"
 
 VNF_DEFINITION_BICEP_TEMPLATE_FILENAME = "vnfdefinition.bicep"
 VNF_MANIFEST_BICEP_TEMPLATE_FILENAME = "vnfartifactmanifests.bicep"
@@ -93,7 +92,7 @@ SCHEMA_PREFIX = {
 EXTRA_VHD_PARAMETERS = [
     "image_disk_size_GB",
     "image_hyper_v_generation",
-    "image_api_version"
+    "image_api_version",
 ]
 
 # For CNF NFD Generator
@@ -122,3 +121,20 @@ AOSM_REQUIRED_FEATURES = [
     "Allow-2023-09-01",
     "Allow-Publisher",
 ]
+
+# Parameters in RET ARM templates that we assume are in the shared schema
+# and not the ARM-specific schema
+ARM_RET_SHARED_PARAMETERS = [
+    "managedIdentity",
+    "customLocationId",
+]
+
+# Different types are used in ARM templates and AOSM. The list accepted by NFDs and CGSs
+# is documented in the AOSM meta-schema. This will be published in the future but for
+# now can be found in
+# https://microsoft.sharepoint.com/:w:/t/NSODevTeam/Ec7ovdKroSRIv5tumQnWIE0BE-B2LykRcll2Qb9JwfVFMQ
+ARM_TO_JSON_PARAM_TYPES: Dict[str, str] = {
+    "int": "integer",
+    "securestring": "string",
+    "bool": "boolean",
+}
