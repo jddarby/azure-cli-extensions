@@ -7,14 +7,12 @@
 import json
 
 from typing import Dict, Any
-from knack.log import get_logger
 from pathlib import Path
 from functools import cached_property
+from knack.log import get_logger
 
 from azext_aosm._configuration import ArmArtifactConfig
 from azext_aosm.util.constants import (
-    CNF,
-    VNF,
     ARM_RET_SHARED_PARAMETERS,
     ARM_TO_JSON_PARAM_TYPES,
 )
@@ -105,15 +103,17 @@ class ARMRETGenerator:
                 # Shared CGS schema has an object for each RET, matching the artifact
                 # name. So need to reference the object too. e.g.
                 # "param2": "{configurationparameters('shared_ConfigGroupSchema').foo.param2}",
-                config_mappings[
-                    arm_template_parameter
-                ] = f"{{configurationparameters('{self.cg_schema_name}').{self.config.artifact_name}.{arm_template_parameter}}}"
+                config_mappings[arm_template_parameter] = (
+                    f"{{configurationparameters('{self.cg_schema_name}')."
+                    f"{self.config.artifact_name}.{arm_template_parameter}}}"
+                )
             else:
                 # Individual CGS for this RET. No sub-objects required. e.g.
                 # "param2": "{configurationparameters('foo_ConfigGroupSchema').param2}"
-                config_mappings[
-                    arm_template_parameter
-                ] = f"{{configurationparameters('{self.cg_schema_name}').{arm_template_parameter}}}"
+                config_mappings[arm_template_parameter] = (
+                    f"{{configurationparameters('{self.cg_schema_name}')."
+                    f"{arm_template_parameter}}}"
+                )
 
         return config_mappings
 

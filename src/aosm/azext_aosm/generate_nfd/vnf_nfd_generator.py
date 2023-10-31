@@ -34,8 +34,6 @@ from azext_aosm.util.utils import input_ack, snake_case_to_camel_case
 logger = get_logger(__name__)
 
 
-
-
 class VnfNfdGenerator(NFDGenerator):
     # pylint: disable=too-many-instance-attributes
     """
