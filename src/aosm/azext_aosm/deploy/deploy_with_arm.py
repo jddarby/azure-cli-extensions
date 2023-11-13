@@ -380,18 +380,11 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
             # The order of artifacts in the manifest does not need to match that in the
             # NSD, but the names do. Set the artifact version to be the same as the NSD
             # version, so that they don't get over written when a new NSD is published.
-            #
-            # The sorting of armTemplateNames and acrManifestNames needs to match
-            # because the manifest template iterates over one loop and references the
-            # same index of both. This is done in the NSConfiguration class.
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestNames": {"value": self.config.acr_manifest_names},
-                "armTemplateNames": {
-                    "value": self.config.all_arm_template_artifacts_sorted
-                },
+                "armTemplateConfig": {"value": self.config.all_arm_templates_config},
                 "armTemplateVersion": {"value": self.config.nsd_version},
             }
         raise ValueError("Unknown configuration type")

@@ -36,11 +36,10 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
   parent: publisher
   name: nsDesignGroup
 }
-
 // The configuration group schema defines the configuration required to deploy the NSD. The NSD references this object in the
 // `configurationgroupsSchemaReferences` and references the values in the schema in the `parameterValues`.
 // The operator will create a config group values object that will satisfy this schema.
-resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
+resource cgSchema1 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
   parent: publisher
   name: 'multinf_ConfigGroupSchema'
   location: location
@@ -63,7 +62,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
       multinf_ConfigGroupSchema: {
-        id: cgSchema.id
+        id: cgSchema1.id
       }
     }
     // This details the NFVIs that should be available in the Site object created by the operator.
@@ -96,9 +95,11 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
           parameterValues: string(loadJsonContent('configMappings/nginx-nfdg_config_mapping.json'))
         }
         dependsOnProfile: {
-          installDependsOn: []
+          installDependsOn: [
+          ]
           uninstallDependsOn: []
-          updateDependsOn: []
+          updateDependsOn: [
+          ]
         }
       }
       {
@@ -121,9 +122,11 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
           parameterValues: string(loadJsonContent('configMappings/ubuntu-nfdg_config_mapping.json'))
         }
         dependsOnProfile: {
-          installDependsOn: []
+          installDependsOn: [
+          ]
           uninstallDependsOn: []
-          updateDependsOn: []
+          updateDependsOn: [
+          ]
         }
       }
     ]

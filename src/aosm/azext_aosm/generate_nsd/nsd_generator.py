@@ -237,50 +237,38 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
         manifest are defined at deploy time, in
         deploy_with_arm.construct_manifest_parameters.
         """
-        nf_ret_names = [
-            nf.config.resource_element_name for nf in self.nf_ret_generators
-        ]
-        nf_arm_template_names = [
-            nf.config.arm_template.artifact_name for nf in self.nf_ret_generators
-        ]
-        nf_config_mapping_files = [
-            nf.config_mapping_filename for nf in self.nf_ret_generators
+        nf_config = [
+            {
+                "resource_element_name": nf.config.resource_element_name,
+                "artifact_name": nf.config.arm_template.artifact_name,
+                "config_mapping_file": nf.config_mapping_filename,
+            }
+            for nf in self.nf_ret_generators
         ]
         schema_names = [self.config.nf_cg_schema_name]
         if self.config.cgs_split:
             schema_names.extend([arm.cg_schema_name for arm in self.arm_ret_generators])
-        arm_ret_names = [arm.config.artifact_name for arm in self.arm_ret_generators]
-        arm_config_mapping_files = [
-            arm.config_mapping_filename for arm in self.arm_ret_generators
+        arm_templates_config = [
+            {
+                "ret_name": arm.config.artifact_name,
+                "config_mapping_file": arm.config_mapping_filename,
+            }
+            for arm in self.arm_ret_generators
         ]
 
         # We want all armTemplateVersions to be the same as the NSD Version.  That
         # means that if we create a new NSDV then the existing artifacts won't be
         # overwritten. An ARM template update should require a new NSDV.
         #
-        # The jinja2 substitution relies on the following arrays matching up in their
-        # order as the same loop index references each one:
-        #  - NfResourceElementNames
-        #  - nfArmTemplateNames
-        #  - nfConfigMappingFiles
-        # Also these arrays matching up order:
-        #  - ArmResourceElementNames
-        #  - armRetTemplateNames
-        #  - armConfigMappingFiles
-        #
         # Values must also match those given to the artifact manifest
         # (in deploy_with_arm.construct_manifest_parameters)
         params = {
             "nfvi_site_name": self.config.nfvi_site_name,
-            "nfArmTemplateNames": nf_arm_template_names,
+            "nf_config": nf_config,
             "armTemplateVersion": self.config.nsd_version,
             "cg_schema_names": schema_names,
             "nsdv_description": self.config.nsdv_description,
-            "NfResourceElementNames": nf_ret_names,
-            "nfConfigMappingFiles": nf_config_mapping_files,
-            "ArmResourceElementNames": arm_ret_names,
-            "armRetTemplateNames": arm_ret_names,
-            "armConfigMappingFiles": arm_config_mapping_files,
+            "arm_templates_config": arm_templates_config,
         }
 
         self._generate_bicep(

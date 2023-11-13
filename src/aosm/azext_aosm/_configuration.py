@@ -29,17 +29,21 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ArtifactConfig(abc.ABC):
+class BaseArtifactConfig(abc.ABC):
+    """
+    Root base class for all artifact config.
+
+    Should not be used directly.
+    """
+
     artifact_name: str = ""
-    version: Optional[str] = ""
     file_path: Optional[str] = None
 
     @classmethod
-    def helptext(cls) -> "ArtifactConfig":
+    def helptext(cls) -> "BaseArtifactConfig":
         """Build an object where each value is helptext for that field."""
-        return ArtifactConfig(
+        return BaseArtifactConfig(
             artifact_name="Optional. Name of the artifact.",
-            version="Version of the artifact",
             file_path=(
                 "File path of the artifact you wish to upload from your local disk. "
                 "Relative paths are relative to the configuration file. "
@@ -48,33 +52,89 @@ class ArtifactConfig(abc.ABC):
         )
 
     def validate(self):
-        """Validate the configuration."""
-        if not self.version:
-            raise ValidationError("version must be set.")
+        """
+        Validate the configuration.
+
+        The base version of this method currently does nothing as it has no fields
+        requiring validation, but is included for potential future use.
+        """
+        pass
 
 
 @dataclass
-class ArmArtifactConfig(ArtifactConfig):
-    """Config for an ARM template artifact."""
+class BaseVersionedArtifactConfig(BaseArtifactConfig):
+    """
+    Base class for artifact config with an associated version.
+
+    Should not be used directly.
+    """
+
+    version: str = ""
 
     @classmethod
-    def helptext(cls) -> "ArmArtifactConfig":
+    def helptext(cls) -> "BaseVersionedArtifactConfig":
         """Build an object where each value is helptext for that field."""
 
-        artifact_config = ArtifactConfig.helptext()
-        artifact_config.version = "Version of the artifact in A.B.C format."
-        return ArmArtifactConfig(
+        artifact_config = BaseArtifactConfig.helptext()
+        return BaseVersionedArtifactConfig(
+            version="Version of the artifact.",
             **asdict(artifact_config),
         )
 
     def validate(self):
         """Validate the configuration."""
         super().validate()
-        # Super validation has checked this but mypy doesn't know that.
-        assert self.version
+        if not self.version:
+            raise ValidationError("Version must be set.")
+
+
+@dataclass
+class BaseArmArtifactConfig(BaseArtifactConfig):
+    """
+    Base class for config for an ARM template artifact.
+
+    Should not be used directly.
+    """
+
+    @classmethod
+    def helptext(cls) -> "BaseArmArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        artifact_config = BaseArtifactConfig.helptext()
+        # There are currently no additional fields for this class.
+        return BaseArmArtifactConfig(
+            **asdict(artifact_config),
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
         if not self.file_path:
-            raise ValidationError("Arm artifact file_path must be set.")
-        if "." not in self.version or "-" in self.version:
+            raise ValidationError("ARM artifact file_path must be set.")
+
+
+@dataclass
+class ArmArtifactConfig(BaseArmArtifactConfig, BaseVersionedArtifactConfig):
+    """Config for an ARM template artifact with version."""
+
+    @classmethod
+    def helptext(cls) -> "ArmArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        # Combine helptext from both parent classes, favouring BaseArmArtifactConfig.
+        artifact_config = {
+            **asdict(BaseVersionedArtifactConfig.helptext()),
+            **asdict(BaseArmArtifactConfig.helptext()),
+        }
+        artifact_config["version"] = "Version of the artifact in A.B.C format."
+        return ArmArtifactConfig(
+            **artifact_config,
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
+        if "." not in self.version:
             raise ValidationError(
                 "Config validation error. ARM template artifact version should be in"
                 " format A.B.C"
@@ -82,23 +142,21 @@ class ArmArtifactConfig(ArtifactConfig):
 
 
 @dataclass
-class NSArmArtifactConfig(ArmArtifactConfig):
+class NSArmArtifactConfig(BaseArmArtifactConfig):
     """
     Config for an ARM template artifact in a NS.
 
-    Version for the ARM template artifact is never used, instead the NSD version is used
-    at the time the NSD is built and the manifest deployed. This is because we want the
-    versions of the artifacts to match the NSDV, such that changing the artifact
+    The non-versioned base ARM artifact config is inherited from, as the NSD version is
+    used at the time the NSD is built and the manifest deployed. This is because we want
+    the versions of the artifacts to match the NSDV, such that changing the artifact
     requires a new NSDV to be created.
     """
-
-    version = None
 
     @classmethod
     def helptext(cls) -> "NSArmArtifactConfig":
         """Build an object where each value is helptext for that field."""
 
-        artifact_config = ArtifactConfig.helptext()
+        artifact_config = BaseArmArtifactConfig.helptext()
         # The way we have implemented helptext means that we can't remove version from
         # it, even though we don't want to expose it. So tell the user to remove it.
         # This could be refactored to improve the experience.
@@ -107,19 +165,14 @@ class NSArmArtifactConfig(ArmArtifactConfig):
             "If deleted, the name of the artifact is taken from the ARM template file "
             "name."
         )
-        artifact_config.version = (
-            "Delete this line. The version of the artifact is taken from the "
-            "NSD version."
-        )
         return NSArmArtifactConfig(
             **asdict(artifact_config),
         )
 
     def validate(self):
         """Validate the configuration."""
-        # Not doing super().validate as we don't have a version
-        if not self.file_path:
-            raise ValidationError("Arm artifact file_path must be set.")
+        super().validate()
+        # No further validation required.
 
     def acr_manifest_name(self, nsd_version: str) -> str:
         """Return the ACR manifest name from the artifact name."""
@@ -130,7 +183,7 @@ class NSArmArtifactConfig(ArmArtifactConfig):
 
 
 @dataclass
-class VhdArtifactConfig(ArtifactConfig):
+class VhdArtifactConfig(BaseVersionedArtifactConfig):
     """Vhd artifact config."""
 
     # If you add a new property to this class, consider updating EXTRA_VHD_PARAMETERS in
@@ -152,7 +205,7 @@ class VhdArtifactConfig(ArtifactConfig):
     def helptext(cls) -> "VhdArtifactConfig":
         """Build an object where each value is helptext for that field."""
 
-        artifact_config = ArtifactConfig.helptext()
+        artifact_config = BaseVersionedArtifactConfig.helptext()
         artifact_config.file_path = (
             "Optional. File path of the artifact you wish to upload from your local disk. "
             "Delete if not required. Relative paths are relative to the configuration file."
@@ -183,20 +236,18 @@ class VhdArtifactConfig(ArtifactConfig):
     def validate(self):
         """Validate the configuration."""
         super().validate()
-        # super validation has checked version exists but mypy doesn't know that.
-        assert self.version
-        if "." in self.version or "-" not in self.version:
+        if "-" not in self.version:
             raise ValidationError(
                 "Config validation error. VHD artifact version should be in format"
-                " A-B-C"
+                " A-B-C."
             )
         if self.blob_sas_url and self.file_path:
             raise ValidationError(
-                "Only one of file_path or blob_sas_url may be set for vhd."
+                "Only one of file_path or blob_sas_url may be set for VHD."
             )
         if not (self.blob_sas_url or self.file_path):
             raise ValidationError(
-                "One of file_path or sas_blob_url must be set for vhd."
+                "One of file_path or sas_blob_url must be set for VHD."
             )
 
 
@@ -922,27 +973,27 @@ class NSConfiguration(Configuration):
         return sorted(acr_manifest_names)
 
     @property
-    def all_arm_template_artifacts_sorted(self) -> List[str]:
+    def all_arm_templates_config(self) -> List[Dict[str, str]]:
         """
-        The list of all ARM templates for the Artifact manifest, including NF and ARM
-        templates.
-
-        Note this is sorted alphabetically by name, as are the list of ACR manifest
-        names. Those two sorts must match for the ACR manifest template to be rendered
-        correctly.
+        The combined config required for ARM templates in the artifact manifest,
+        composed of the ACR manifest names and corresponding ARM template artifact
+        names.
         """
-        arm_template_names = []
-        for nf in self.network_functions:
-            assert isinstance(nf, NFDRETConfiguration)
-            arm_template_names.append(
-                self.format_artifact_name_for_manifest(nf.arm_template.artifact_name)
-            )
+        arm_templates_config = []
         for arm_template in self.arm_templates:
             assert isinstance(arm_template, NSArmArtifactConfig)
-            arm_template_names.append(
-                self.format_artifact_name_for_manifest(arm_template.artifact_name)
-            )
-        return sorted(arm_template_names)
+            arm_templates_config.append({
+                "acrManifestName": arm_template.acr_manifest_name(self.nsd_version),
+                "armTemplateName": self.format_artifact_name_for_manifest(arm_template.artifact_name)
+            })
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            arm_templates_config.append({
+                "acrManifestName": nf.arm_template.acr_manifest_name(self.nsd_version),
+                "armTemplateName": self.format_artifact_name_for_manifest(nf.arm_template.artifact_name)
+            })
+        return arm_templates_config
+
 
     @staticmethod
     def format_artifact_name_for_manifest(artifact_name: str) -> str:
