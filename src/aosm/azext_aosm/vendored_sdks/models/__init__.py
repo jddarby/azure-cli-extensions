@@ -6,166 +6,182 @@
 # Changes may cause incorrect behavior and will be lost if the code is regenerated.
 # --------------------------------------------------------------------------
 
-from ._models import ArmResourceDefinitionResourceElementTemplate
-from ._models import ArmResourceDefinitionResourceElementTemplateDetails
-from ._models import ArmTemplateArtifactProfile
-from ._models import ArmTemplateMappingRuleProfile
-from ._models import ArtifactAccessCredential
-from ._models import ArtifactChangeState
-from ._models import ArtifactChangeStateProperties
-from ._models import ArtifactManifest
-from ._models import ArtifactManifestPropertiesFormat
-from ._models import ArtifactManifestUpdateState
-from ._models import ArtifactProfile
-from ._models import ArtifactStore
-from ._models import ArtifactStorePropertiesFormat
-from ._models import ArtifactStorePropertiesFormatManagedResourceGroupConfiguration
-from ._models import AzureArcK8SClusterNFVIDetails
-from ._models import AzureArcKubernetesArtifactProfile
-from ._models import AzureArcKubernetesDeployMappingRuleProfile
-from ._models import AzureArcKubernetesHelmApplication
-from ._models import AzureArcKubernetesNetworkFunctionApplication
-from ._models import AzureArcKubernetesNetworkFunctionTemplate
-from ._models import AzureContainerRegistryScopedTokenCredential
-from ._models import AzureCoreArmTemplateArtifactProfile
-from ._models import AzureCoreArmTemplateDeployMappingRuleProfile
-from ._models import AzureCoreNFVIDetails
-from ._models import AzureCoreNetworkFunctionApplication
-from ._models import AzureCoreNetworkFunctionArmTemplateApplication
-from ._models import AzureCoreNetworkFunctionTemplate
-from ._models import AzureCoreNetworkFunctionVhdApplication
-from ._models import AzureCoreVhdImageArtifactProfile
-from ._models import AzureCoreVhdImageDeployMappingRuleProfile
-from ._models import AzureOperatorNexusArmTemplateArtifactProfile
-from ._models import AzureOperatorNexusArmTemplateDeployMappingRuleProfile
-from ._models import AzureOperatorNexusClusterNFVIDetails
-from ._models import AzureOperatorNexusImageArtifactProfile
-from ._models import AzureOperatorNexusImageDeployMappingRuleProfile
-from ._models import AzureOperatorNexusNetworkFunctionApplication
-from ._models import AzureOperatorNexusNetworkFunctionArmTemplateApplication
-from ._models import AzureOperatorNexusNetworkFunctionImageApplication
-from ._models import AzureOperatorNexusNetworkFunctionTemplate
-from ._models import AzureStorageAccountContainerCredential
-from ._models import AzureStorageAccountCredential
-from ._models import Component
-from ._models import ComponentProperties
-from ._models import ConfigurationGroupSchema
-from ._models import ConfigurationGroupSchemaPropertiesFormat
-from ._models import ConfigurationGroupSchemaVersionUpdateState
-from ._models import ConfigurationGroupValue
-from ._models import ConfigurationGroupValuePropertiesFormat
-from ._models import ConfigurationValueWithSecrets
-from ._models import ConfigurationValueWithoutSecrets
-from ._models import ContainerizedNetworkFunctionDefinitionVersion
-from ._models import ContainerizedNetworkFunctionTemplate
-from ._models import CustomLocationResourceId
-from ._models import DaemonSet
-from ._models import DependsOnProfile
-from ._models import Deployment
-from ._models import DeploymentResourceIdReference
-from ._models import DeploymentStatusProperties
-from ._models import ErrorAdditionalInfo
-from ._models import ErrorDetail
-from ._models import ErrorResponse
-from ._models import ExecuteRequestParameters
-from ._models import HelmArtifactProfile
-from ._models import HelmInstallOptions
-from ._models import HelmMappingRuleProfile
-from ._models import HelmMappingRuleProfileOptions
-from ._models import HelmUpgradeOptions
-from ._models import ImageArtifactProfile
-from ._models import ImageMappingRuleProfile
-from ._models import ManagedResourceGroupConfiguration
-from ._models import ManagedServiceIdentity
-from ._models import ManifestArtifactFormat
-from ._models import MappingRuleProfile
-from ._models import NFVIs
-from ._models import NSDArtifactProfile
-from ._models import NetworkFunction
-from ._models import NetworkFunctionApplication
-from ._models import NetworkFunctionDefinitionGroup
-from ._models import NetworkFunctionDefinitionGroupPropertiesFormat
-from ._models import NetworkFunctionDefinitionResourceElementTemplateDetails
-from ._models import NetworkFunctionDefinitionVersion
-from ._models import NetworkFunctionDefinitionVersionPropertiesFormat
-from ._models import NetworkFunctionDefinitionVersionUpdateState
-from ._models import NetworkFunctionPropertiesFormat
-from ._models import NetworkFunctionValueWithSecrets
-from ._models import NetworkFunctionValueWithoutSecrets
-from ._models import NetworkServiceDesignGroup
-from ._models import NetworkServiceDesignGroupPropertiesFormat
-from ._models import NetworkServiceDesignVersion
-from ._models import NetworkServiceDesignVersionPropertiesFormat
-from ._models import NetworkServiceDesignVersionUpdateState
-from ._models import NfviDetails
-from ._models import OpenDeploymentResourceReference
-from ._models import Operation
-from ._models import OperationDisplay
-from ._models import Pod
-from ._models import PodEvent
-from ._models import ProxyArtifactListOverview
-from ._models import ProxyArtifactOverview
-from ._models import ProxyArtifactOverviewPropertiesFormat
-from ._models import ProxyArtifactOverviewPropertiesValue
-from ._models import ProxyArtifactVersionsListOverview
-from ._models import ProxyResource
-from ._models import Publisher
-from ._models import PublisherPropertiesFormat
-from ._models import ReferencedResource
-from ._models import ReplicaSet
-from ._models import RequestMetadata
-from ._models import Resource
-from ._models import ResourceElementTemplate
-from ._models import Resources
-from ._models import SecretDeploymentResourceReference
-from ._models import Site
-from ._models import SiteNetworkService
-from ._models import SiteNetworkServicePropertiesFormat
-from ._models import SitePropertiesFormat
-from ._models import Sku
-from ._models import StatefulSet
-from ._models import SystemData
-from ._models import TagsObject
-from ._models import TrackedResource
-from ._models import UserAssignedIdentity
-from ._models import VhdImageArtifactProfile
-from ._models import VhdImageMappingRuleProfile
-from ._models import VirtualNetworkFunctionDefinitionVersion
-from ._models import VirtualNetworkFunctionTemplate
+from ._models_py3 import ArmResourceDefinitionResourceElementTemplate
+from ._models_py3 import ArmResourceDefinitionResourceElementTemplateDetails
+from ._models_py3 import ArmTemplateArtifactProfile
+from ._models_py3 import ArmTemplateMappingRuleProfile
+from ._models_py3 import ArtifactAccessCredential
+from ._models_py3 import ArtifactChangeState
+from ._models_py3 import ArtifactChangeStateProperties
+from ._models_py3 import ArtifactManifest
+from ._models_py3 import ArtifactManifestListResult
+from ._models_py3 import ArtifactManifestPropertiesFormat
+from ._models_py3 import ArtifactManifestUpdateState
+from ._models_py3 import ArtifactProfile
+from ._models_py3 import ArtifactStore
+from ._models_py3 import ArtifactStoreListResult
+from ._models_py3 import ArtifactStorePropertiesFormat
+from ._models_py3 import ArtifactStorePropertiesFormatManagedResourceGroupConfiguration
+from ._models_py3 import AzureArcK8SClusterNFVIDetails
+from ._models_py3 import AzureArcKubernetesArtifactProfile
+from ._models_py3 import AzureArcKubernetesDeployMappingRuleProfile
+from ._models_py3 import AzureArcKubernetesHelmApplication
+from ._models_py3 import AzureArcKubernetesNetworkFunctionApplication
+from ._models_py3 import AzureArcKubernetesNetworkFunctionTemplate
+from ._models_py3 import AzureContainerRegistryScopedTokenCredential
+from ._models_py3 import AzureCoreArmTemplateArtifactProfile
+from ._models_py3 import AzureCoreArmTemplateDeployMappingRuleProfile
+from ._models_py3 import AzureCoreNFVIDetails
+from ._models_py3 import AzureCoreNetworkFunctionApplication
+from ._models_py3 import AzureCoreNetworkFunctionArmTemplateApplication
+from ._models_py3 import AzureCoreNetworkFunctionTemplate
+from ._models_py3 import AzureCoreNetworkFunctionVhdApplication
+from ._models_py3 import AzureCoreVhdImageArtifactProfile
+from ._models_py3 import AzureCoreVhdImageDeployMappingRuleProfile
+from ._models_py3 import AzureOperatorNexusArmTemplateArtifactProfile
+from ._models_py3 import AzureOperatorNexusArmTemplateDeployMappingRuleProfile
+from ._models_py3 import AzureOperatorNexusClusterNFVIDetails
+from ._models_py3 import AzureOperatorNexusImageArtifactProfile
+from ._models_py3 import AzureOperatorNexusImageDeployMappingRuleProfile
+from ._models_py3 import AzureOperatorNexusNetworkFunctionApplication
+from ._models_py3 import AzureOperatorNexusNetworkFunctionArmTemplateApplication
+from ._models_py3 import AzureOperatorNexusNetworkFunctionImageApplication
+from ._models_py3 import AzureOperatorNexusNetworkFunctionTemplate
+from ._models_py3 import AzureStorageAccountContainerCredential
+from ._models_py3 import AzureStorageAccountCredential
+from ._models_py3 import Component
+from ._models_py3 import ComponentListResult
+from ._models_py3 import ComponentProperties
+from ._models_py3 import ConfigurationGroupSchema
+from ._models_py3 import ConfigurationGroupSchemaListResult
+from ._models_py3 import ConfigurationGroupSchemaPropertiesFormat
+from ._models_py3 import ConfigurationGroupSchemaVersionUpdateState
+from ._models_py3 import ConfigurationGroupValue
+from ._models_py3 import ConfigurationGroupValueListResult
+from ._models_py3 import ConfigurationGroupValuePropertiesFormat
+from ._models_py3 import ConfigurationValueWithSecrets
+from ._models_py3 import ConfigurationValueWithoutSecrets
+from ._models_py3 import ContainerizedNetworkFunctionDefinitionVersion
+from ._models_py3 import ContainerizedNetworkFunctionTemplate
+from ._models_py3 import CustomLocationResourceId
+from ._models_py3 import DaemonSet
+from ._models_py3 import DependsOnProfile
+from ._models_py3 import Deployment
+from ._models_py3 import DeploymentResourceIdReference
+from ._models_py3 import DeploymentStatusProperties
+from ._models_py3 import ErrorAdditionalInfo
+from ._models_py3 import ErrorDetail
+from ._models_py3 import ErrorResponse
+from ._models_py3 import ExecuteRequestParameters
+from ._models_py3 import HelmArtifactProfile
+from ._models_py3 import HelmInstallOptions
+from ._models_py3 import HelmMappingRuleProfile
+from ._models_py3 import HelmMappingRuleProfileOptions
+from ._models_py3 import HelmUpgradeOptions
+from ._models_py3 import ImageArtifactProfile
+from ._models_py3 import ImageMappingRuleProfile
+from ._models_py3 import ManagedResourceGroupConfiguration
+from ._models_py3 import ManagedServiceIdentity
+from ._models_py3 import ManifestArtifactFormat
+from ._models_py3 import MappingRuleProfile
+from ._models_py3 import NFVIs
+from ._models_py3 import NSDArtifactProfile
+from ._models_py3 import NetworkFunction
+from ._models_py3 import NetworkFunctionApplication
+from ._models_py3 import NetworkFunctionDefinitionGroup
+from ._models_py3 import NetworkFunctionDefinitionGroupListResult
+from ._models_py3 import NetworkFunctionDefinitionGroupPropertiesFormat
+from ._models_py3 import NetworkFunctionDefinitionResourceElementTemplateDetails
+from ._models_py3 import NetworkFunctionDefinitionVersion
+from ._models_py3 import NetworkFunctionDefinitionVersionListResult
+from ._models_py3 import NetworkFunctionDefinitionVersionPropertiesFormat
+from ._models_py3 import NetworkFunctionDefinitionVersionUpdateState
+from ._models_py3 import NetworkFunctionListResult
+from ._models_py3 import NetworkFunctionPropertiesFormat
+from ._models_py3 import NetworkFunctionValueWithSecrets
+from ._models_py3 import NetworkFunctionValueWithoutSecrets
+from ._models_py3 import NetworkServiceDesignGroup
+from ._models_py3 import NetworkServiceDesignGroupListResult
+from ._models_py3 import NetworkServiceDesignGroupPropertiesFormat
+from ._models_py3 import NetworkServiceDesignVersion
+from ._models_py3 import NetworkServiceDesignVersionListResult
+from ._models_py3 import NetworkServiceDesignVersionPropertiesFormat
+from ._models_py3 import NetworkServiceDesignVersionUpdateState
+from ._models_py3 import NfviDetails
+from ._models_py3 import OpenDeploymentResourceReference
+from ._models_py3 import Operation
+from ._models_py3 import OperationDisplay
+from ._models_py3 import OperationListResult
+from ._models_py3 import Pod
+from ._models_py3 import PodEvent
+from ._models_py3 import ProxyArtifactListOverview
+from ._models_py3 import ProxyArtifactOverview
+from ._models_py3 import ProxyArtifactOverviewListResult
+from ._models_py3 import ProxyArtifactOverviewPropertiesFormat
+from ._models_py3 import ProxyArtifactOverviewPropertiesValue
+from ._models_py3 import ProxyArtifactVersionsListOverview
+from ._models_py3 import ProxyArtifactVersionsOverviewListResult
+from ._models_py3 import ProxyResource
+from ._models_py3 import Publisher
+from ._models_py3 import PublisherListResult
+from ._models_py3 import PublisherPropertiesFormat
+from ._models_py3 import ReferencedResource
+from ._models_py3 import ReplicaSet
+from ._models_py3 import RequestMetadata
+from ._models_py3 import Resource
+from ._models_py3 import ResourceElementTemplate
+from ._models_py3 import Resources
+from ._models_py3 import SecretDeploymentResourceReference
+from ._models_py3 import Site
+from ._models_py3 import SiteListResult
+from ._models_py3 import SiteNetworkService
+from ._models_py3 import SiteNetworkServiceListResult
+from ._models_py3 import SiteNetworkServicePropertiesFormat
+from ._models_py3 import SitePropertiesFormat
+from ._models_py3 import Sku
+from ._models_py3 import StatefulSet
+from ._models_py3 import SystemData
+from ._models_py3 import TagsObject
+from ._models_py3 import TrackedResource
+from ._models_py3 import UserAssignedIdentity
+from ._models_py3 import VhdImageArtifactProfile
+from ._models_py3 import VhdImageMappingRuleProfile
+from ._models_py3 import VirtualNetworkFunctionDefinitionVersion
+from ._models_py3 import VirtualNetworkFunctionTemplate
 
-from ._enums import ActionType
-from ._enums import ApplicationEnablement
-from ._enums import ArtifactManifestState
-from ._enums import ArtifactReplicationStrategy
-from ._enums import ArtifactState
-from ._enums import ArtifactStoreType
-from ._enums import ArtifactType
-from ._enums import AzureArcKubernetesArtifactType
-from ._enums import AzureCoreArtifactType
-from ._enums import AzureOperatorNexusArtifactType
-from ._enums import ConfigurationGenerationType
-from ._enums import ConfigurationGroupValueConfigurationType
-from ._enums import ContainerizedNetworkFunctionNFVIType
-from ._enums import CreatedByType
-from ._enums import CredentialType
-from ._enums import HttpMethod
-from ._enums import IdType
-from ._enums import ManagedServiceIdentityType
-from ._enums import NFVIType
-from ._enums import NetworkFunctionConfigurationType
-from ._enums import NetworkFunctionType
-from ._enums import Origin
-from ._enums import PodEventType
-from ._enums import PodStatus
-from ._enums import ProvisioningState
-from ._enums import PublisherScope
-from ._enums import SkuName
-from ._enums import SkuTier
-from ._enums import Status
-from ._enums import TemplateType
-from ._enums import Type
-from ._enums import VersionState
-from ._enums import VirtualNetworkFunctionNFVIType
+from ._hybrid_network_management_client_enums import ActionType
+from ._hybrid_network_management_client_enums import ApplicationEnablement
+from ._hybrid_network_management_client_enums import ArtifactManifestState
+from ._hybrid_network_management_client_enums import ArtifactReplicationStrategy
+from ._hybrid_network_management_client_enums import ArtifactState
+from ._hybrid_network_management_client_enums import ArtifactStoreType
+from ._hybrid_network_management_client_enums import ArtifactType
+from ._hybrid_network_management_client_enums import AzureArcKubernetesArtifactType
+from ._hybrid_network_management_client_enums import AzureCoreArtifactType
+from ._hybrid_network_management_client_enums import AzureOperatorNexusArtifactType
+from ._hybrid_network_management_client_enums import ConfigurationGenerationType
+from ._hybrid_network_management_client_enums import ConfigurationGroupValueConfigurationType
+from ._hybrid_network_management_client_enums import ContainerizedNetworkFunctionNFVIType
+from ._hybrid_network_management_client_enums import CreatedByType
+from ._hybrid_network_management_client_enums import CredentialType
+from ._hybrid_network_management_client_enums import HttpMethod
+from ._hybrid_network_management_client_enums import IdType
+from ._hybrid_network_management_client_enums import ManagedServiceIdentityType
+from ._hybrid_network_management_client_enums import NFVIType
+from ._hybrid_network_management_client_enums import NetworkFunctionConfigurationType
+from ._hybrid_network_management_client_enums import NetworkFunctionType
+from ._hybrid_network_management_client_enums import Origin
+from ._hybrid_network_management_client_enums import PodEventType
+from ._hybrid_network_management_client_enums import PodStatus
+from ._hybrid_network_management_client_enums import ProvisioningState
+from ._hybrid_network_management_client_enums import PublisherScope
+from ._hybrid_network_management_client_enums import SkuName
+from ._hybrid_network_management_client_enums import SkuTier
+from ._hybrid_network_management_client_enums import Status
+from ._hybrid_network_management_client_enums import TemplateType
+from ._hybrid_network_management_client_enums import Type
+from ._hybrid_network_management_client_enums import VersionState
+from ._hybrid_network_management_client_enums import VirtualNetworkFunctionNFVIType
 from ._patch import __all__ as _patch_all
 from ._patch import *  # pylint: disable=unused-wildcard-import
 from ._patch import patch_sdk as _patch_sdk
@@ -179,10 +195,12 @@ __all__ = [
     "ArtifactChangeState",
     "ArtifactChangeStateProperties",
     "ArtifactManifest",
+    "ArtifactManifestListResult",
     "ArtifactManifestPropertiesFormat",
     "ArtifactManifestUpdateState",
     "ArtifactProfile",
     "ArtifactStore",
+    "ArtifactStoreListResult",
     "ArtifactStorePropertiesFormat",
     "ArtifactStorePropertiesFormatManagedResourceGroupConfiguration",
     "AzureArcK8SClusterNFVIDetails",
@@ -213,11 +231,14 @@ __all__ = [
     "AzureStorageAccountContainerCredential",
     "AzureStorageAccountCredential",
     "Component",
+    "ComponentListResult",
     "ComponentProperties",
     "ConfigurationGroupSchema",
+    "ConfigurationGroupSchemaListResult",
     "ConfigurationGroupSchemaPropertiesFormat",
     "ConfigurationGroupSchemaVersionUpdateState",
     "ConfigurationGroupValue",
+    "ConfigurationGroupValueListResult",
     "ConfigurationGroupValuePropertiesFormat",
     "ConfigurationValueWithSecrets",
     "ConfigurationValueWithoutSecrets",
@@ -249,32 +270,41 @@ __all__ = [
     "NetworkFunction",
     "NetworkFunctionApplication",
     "NetworkFunctionDefinitionGroup",
+    "NetworkFunctionDefinitionGroupListResult",
     "NetworkFunctionDefinitionGroupPropertiesFormat",
     "NetworkFunctionDefinitionResourceElementTemplateDetails",
     "NetworkFunctionDefinitionVersion",
+    "NetworkFunctionDefinitionVersionListResult",
     "NetworkFunctionDefinitionVersionPropertiesFormat",
     "NetworkFunctionDefinitionVersionUpdateState",
+    "NetworkFunctionListResult",
     "NetworkFunctionPropertiesFormat",
     "NetworkFunctionValueWithSecrets",
     "NetworkFunctionValueWithoutSecrets",
     "NetworkServiceDesignGroup",
+    "NetworkServiceDesignGroupListResult",
     "NetworkServiceDesignGroupPropertiesFormat",
     "NetworkServiceDesignVersion",
+    "NetworkServiceDesignVersionListResult",
     "NetworkServiceDesignVersionPropertiesFormat",
     "NetworkServiceDesignVersionUpdateState",
     "NfviDetails",
     "OpenDeploymentResourceReference",
     "Operation",
     "OperationDisplay",
+    "OperationListResult",
     "Pod",
     "PodEvent",
     "ProxyArtifactListOverview",
     "ProxyArtifactOverview",
+    "ProxyArtifactOverviewListResult",
     "ProxyArtifactOverviewPropertiesFormat",
     "ProxyArtifactOverviewPropertiesValue",
     "ProxyArtifactVersionsListOverview",
+    "ProxyArtifactVersionsOverviewListResult",
     "ProxyResource",
     "Publisher",
+    "PublisherListResult",
     "PublisherPropertiesFormat",
     "ReferencedResource",
     "ReplicaSet",
@@ -284,7 +314,9 @@ __all__ = [
     "Resources",
     "SecretDeploymentResourceReference",
     "Site",
+    "SiteListResult",
     "SiteNetworkService",
+    "SiteNetworkServiceListResult",
     "SiteNetworkServicePropertiesFormat",
     "SitePropertiesFormat",
     "Sku",

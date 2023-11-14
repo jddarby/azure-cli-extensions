@@ -44,48 +44,48 @@ class HybridNetworkManagementClient:  # pylint: disable=client-accepts-api-versi
 
     :ivar configuration_group_schemas: ConfigurationGroupSchemasOperations operations
     :vartype configuration_group_schemas:
-     Microsoft.HybridNetwork.operations.ConfigurationGroupSchemasOperations
+     azure.mgmt.hybridnetwork.operations.ConfigurationGroupSchemasOperations
     :ivar configuration_group_values: ConfigurationGroupValuesOperations operations
     :vartype configuration_group_values:
-     Microsoft.HybridNetwork.operations.ConfigurationGroupValuesOperations
+     azure.mgmt.hybridnetwork.operations.ConfigurationGroupValuesOperations
     :ivar network_functions: NetworkFunctionsOperations operations
-    :vartype network_functions: Microsoft.HybridNetwork.operations.NetworkFunctionsOperations
+    :vartype network_functions: azure.mgmt.hybridnetwork.operations.NetworkFunctionsOperations
     :ivar components: ComponentsOperations operations
-    :vartype components: Microsoft.HybridNetwork.operations.ComponentsOperations
+    :vartype components: azure.mgmt.hybridnetwork.operations.ComponentsOperations
     :ivar network_function_definition_groups: NetworkFunctionDefinitionGroupsOperations operations
     :vartype network_function_definition_groups:
-     Microsoft.HybridNetwork.operations.NetworkFunctionDefinitionGroupsOperations
+     azure.mgmt.hybridnetwork.operations.NetworkFunctionDefinitionGroupsOperations
     :ivar network_function_definition_versions: NetworkFunctionDefinitionVersionsOperations
      operations
     :vartype network_function_definition_versions:
-     Microsoft.HybridNetwork.operations.NetworkFunctionDefinitionVersionsOperations
+     azure.mgmt.hybridnetwork.operations.NetworkFunctionDefinitionVersionsOperations
     :ivar network_service_design_groups: NetworkServiceDesignGroupsOperations operations
     :vartype network_service_design_groups:
-     Microsoft.HybridNetwork.operations.NetworkServiceDesignGroupsOperations
+     azure.mgmt.hybridnetwork.operations.NetworkServiceDesignGroupsOperations
     :ivar network_service_design_versions: NetworkServiceDesignVersionsOperations operations
     :vartype network_service_design_versions:
-     Microsoft.HybridNetwork.operations.NetworkServiceDesignVersionsOperations
+     azure.mgmt.hybridnetwork.operations.NetworkServiceDesignVersionsOperations
     :ivar operations: Operations operations
-    :vartype operations: Microsoft.HybridNetwork.operations.Operations
+    :vartype operations: azure.mgmt.hybridnetwork.operations.Operations
     :ivar publishers: PublishersOperations operations
-    :vartype publishers: Microsoft.HybridNetwork.operations.PublishersOperations
+    :vartype publishers: azure.mgmt.hybridnetwork.operations.PublishersOperations
     :ivar artifact_stores: ArtifactStoresOperations operations
-    :vartype artifact_stores: Microsoft.HybridNetwork.operations.ArtifactStoresOperations
+    :vartype artifact_stores: azure.mgmt.hybridnetwork.operations.ArtifactStoresOperations
     :ivar artifact_manifests: ArtifactManifestsOperations operations
-    :vartype artifact_manifests: Microsoft.HybridNetwork.operations.ArtifactManifestsOperations
+    :vartype artifact_manifests: azure.mgmt.hybridnetwork.operations.ArtifactManifestsOperations
     :ivar proxy_artifact: ProxyArtifactOperations operations
-    :vartype proxy_artifact: Microsoft.HybridNetwork.operations.ProxyArtifactOperations
+    :vartype proxy_artifact: azure.mgmt.hybridnetwork.operations.ProxyArtifactOperations
     :ivar sites: SitesOperations operations
-    :vartype sites: Microsoft.HybridNetwork.operations.SitesOperations
+    :vartype sites: azure.mgmt.hybridnetwork.operations.SitesOperations
     :ivar site_network_services: SiteNetworkServicesOperations operations
     :vartype site_network_services:
-     Microsoft.HybridNetwork.operations.SiteNetworkServicesOperations
-    :param subscription_id: The ID of the target subscription. Required.
-    :type subscription_id: str
+     azure.mgmt.hybridnetwork.operations.SiteNetworkServicesOperations
     :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials.TokenCredential
-    :param endpoint: Service URL. Default value is "https://management.azure.com".
-    :type endpoint: str
+    :param subscription_id: The ID of the target subscription. Required.
+    :type subscription_id: str
+    :param base_url: Service URL. Default value is "https://management.azure.com".
+    :type base_url: str
     :keyword api_version: Api Version. Default value is "2023-09-01". Note that overriding this
      default value may result in unsupported behavior.
     :paramtype api_version: str
@@ -97,16 +97,15 @@ class HybridNetworkManagementClient:  # pylint: disable=client-accepts-api-versi
         self,
         credential: "TokenCredential",
         subscription_id: str,
-        endpoint: str = "https://management.azure.com",
+        base_url: str = "https://management.azure.com",
         **kwargs: Any
     ) -> None:
         self._config = HybridNetworkManagementClientConfiguration(
-            subscription_id=subscription_id, credential=credential, **kwargs
+            credential=credential, subscription_id=subscription_id, **kwargs
         )
-        self._client: ARMPipelineClient = ARMPipelineClient(base_url=endpoint, config=self._config, **kwargs)
+        self._client: ARMPipelineClient = ARMPipelineClient(base_url=base_url, config=self._config, **kwargs)
 
-        client_models = {k: v for k, v in _models._models.__dict__.items() if isinstance(v, type)}
-        client_models.update({k: v for k, v in _models.__dict__.items() if isinstance(v, type)})
+        client_models = {k: v for k, v in _models.__dict__.items() if isinstance(v, type)}
         self._serialize = Serializer(client_models)
         self._deserialize = Deserializer(client_models)
         self._serialize.client_side_validation = False
@@ -144,13 +143,13 @@ class HybridNetworkManagementClient:  # pylint: disable=client-accepts-api-versi
             self._client, self._config, self._serialize, self._deserialize
         )
 
-    def send_request(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
+    def _send_request(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
         """Runs the network request through the client's chained policies.
 
         >>> from azure.core.rest import HttpRequest
         >>> request = HttpRequest("GET", "https://www.example.org/")
         <HttpRequest [GET], url: 'https://www.example.org/'>
-        >>> response = client.send_request(request)
+        >>> response = client._send_request(request)
         <HttpResponse: 200 OK>
 
         For more information on this code flow, see https://aka.ms/azsdk/dpcodegen/python/send_request

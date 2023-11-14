@@ -12,44 +12,42 @@ from azure.core.configuration import Configuration
 from azure.core.pipeline import policies
 from azure.mgmt.core.policies import ARMHttpLoggingPolicy, AsyncARMChallengeAuthenticationPolicy
 
+from .._version import VERSION
+
 if TYPE_CHECKING:
     # pylint: disable=unused-import,ungrouped-imports
     from azure.core.credentials_async import AsyncTokenCredential
 
-VERSION = "unknown"
 
-
-class HybridNetworkManagementClientConfiguration(  # pylint: disable=too-many-instance-attributes,name-too-long
-    Configuration
-):
+class HybridNetworkManagementClientConfiguration(Configuration):  # pylint: disable=too-many-instance-attributes
     """Configuration for HybridNetworkManagementClient.
 
     Note that all parameters used to create this instance are saved as instance
     attributes.
 
-    :param subscription_id: The ID of the target subscription. Required.
-    :type subscription_id: str
     :param credential: Credential needed for the client to connect to Azure. Required.
     :type credential: ~azure.core.credentials_async.AsyncTokenCredential
+    :param subscription_id: The ID of the target subscription. Required.
+    :type subscription_id: str
     :keyword api_version: Api Version. Default value is "2023-09-01". Note that overriding this
      default value may result in unsupported behavior.
     :paramtype api_version: str
     """
 
-    def __init__(self, subscription_id: str, credential: "AsyncTokenCredential", **kwargs: Any) -> None:
+    def __init__(self, credential: "AsyncTokenCredential", subscription_id: str, **kwargs: Any) -> None:
         super(HybridNetworkManagementClientConfiguration, self).__init__(**kwargs)
         api_version: str = kwargs.pop("api_version", "2023-09-01")
 
-        if subscription_id is None:
-            raise ValueError("Parameter 'subscription_id' must not be None.")
         if credential is None:
             raise ValueError("Parameter 'credential' must not be None.")
+        if subscription_id is None:
+            raise ValueError("Parameter 'subscription_id' must not be None.")
 
-        self.subscription_id = subscription_id
         self.credential = credential
+        self.subscription_id = subscription_id
         self.api_version = api_version
         self.credential_scopes = kwargs.pop("credential_scopes", ["https://management.azure.com/.default"])
-        kwargs.setdefault("sdk_moniker", "hybridnetwork/{}".format(VERSION))
+        kwargs.setdefault("sdk_moniker", "mgmt-hybridnetwork/{}".format(VERSION))
         self._configure(**kwargs)
 
     def _configure(self, **kwargs: Any) -> None:
