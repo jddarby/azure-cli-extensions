@@ -157,9 +157,6 @@ class NSArmArtifactConfig(BaseArmArtifactConfig):
         """Build an object where each value is helptext for that field."""
 
         artifact_config = BaseArmArtifactConfig.helptext()
-        # The way we have implemented helptext means that we can't remove version from
-        # it, even though we don't want to expose it. So tell the user to remove it.
-        # This could be refactored to improve the experience.
         artifact_config.artifact_name = (
             "Optional. The name to give the artifact and Resource Element Template. "
             "If deleted, the name of the artifact is taken from the ARM template file "
