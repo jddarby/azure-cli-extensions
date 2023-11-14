@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List
 import tempfile
-from utils.exceptions import InvalidFileTypeError, MissingChartDependencyError
+from util.exceptions import InvalidFileTypeError, MissingChartDependencyError
 import tarfile
 import os
 import shutil
@@ -37,10 +37,7 @@ class HelmChart:
             self.chart_dir = chart_path
         else:
             self.temp_dir_path = Path(tempfile.mkdtemp())
-            self.chart_dir = self._extract_chart_to_dir(
-                chart_path,
-                self.temp_dir_path
-            )
+            self.chart_dir = self._extract_chart_to_dir(chart_path, self.temp_dir_path)
         self._validate()
         metadata = self._get_metadata()
         self.name = metadata.name
@@ -105,20 +102,17 @@ class HelmChart:
 
         # We only need the name of the dependency charts.
         dependencies = [
-            dependency["name"] for dependency
-            in chart_yaml.get("dependencies", [])
+            dependency["name"] for dependency in chart_yaml.get("dependencies", [])
         ]
 
         return HelmChartMetadata(
             name=chart_yaml["name"],
             version=chart_yaml["version"],
             description=chart_yaml.get("description", None),
-            dependencies=dependencies
+            dependencies=dependencies,
         )
 
-    def _get_dependency_charts(
-        self, dependencies: List[str]
-    ) -> List["HelmChart"]:
+    def _get_dependency_charts(self, dependencies: List[str]) -> List["HelmChart"]:
         """
         Get the dependency charts for the Helm chart.
 
@@ -197,9 +191,7 @@ class HelmChart:
                 with file.open(encoding="UTF-8") as template_file:
                     template_data = template_file.readlines()
 
-                templates.append(
-                    HelmChartTemplate(name=file.name, data=template_data)
-                )
+                templates.append(HelmChartTemplate(name=file.name, data=template_data))
 
         return templates
 
