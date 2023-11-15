@@ -7,6 +7,7 @@ class TemplateProcessorStrategy(ABC):
     Abstract base class for template processor strategy.
     """
 
+    @staticmethod
     @abstractmethod
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         """
@@ -14,6 +15,7 @@ class TemplateProcessorStrategy(ABC):
         """
         pass
 
+    @staticmethod
     @abstractmethod
     def generate_nf_application(self) -> NetworkFunctionApplication:
         """

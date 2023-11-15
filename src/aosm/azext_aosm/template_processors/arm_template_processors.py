@@ -15,9 +15,11 @@ class BaseArmTemplateProcessor(TemplateProcessorStrategy):
     and RETs from a given ARM template.
     """
 
+    @staticmethod
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         return ArmResourceDefinitionResourceElementTemplateDetails()
 
+    @staticmethod
     def generate_nf_application(self) -> NetworkFunctionApplication:
         self.generate_schema()
         self.generate_mappings()
