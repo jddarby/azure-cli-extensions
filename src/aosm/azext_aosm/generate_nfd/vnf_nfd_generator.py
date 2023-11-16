@@ -13,9 +13,10 @@ from typing import Any, Dict, Optional
 
 from knack.log import get_logger
 
-from azext_aosm._configuration import ArtifactConfig, VNFConfiguration
+from azext_aosm._configuration import ArmArtifactConfig, VNFConfiguration
 from azext_aosm.generate_nfd.nfd_generator_base import NFDGenerator
 from azext_aosm.util.constants import (
+    ARM_TO_JSON_PARAM_TYPES,
     CONFIG_MAPPINGS_DIR_NAME,
     DEPLOYMENT_PARAMETERS_FILENAME,
     EXTRA_VHD_PARAMETERS,
@@ -31,16 +32,6 @@ from azext_aosm.util.constants import (
 from azext_aosm.util.utils import input_ack, snake_case_to_camel_case
 
 logger = get_logger(__name__)
-
-# Different types are used in ARM templates and NFDs. The list accepted by NFDs is
-# documented in the AOSM meta-schema. This will be published in the future but for now
-# can be found in
-# https://microsoft.sharepoint.com/:w:/t/NSODevTeam/Ec7ovdKroSRIv5tumQnWIE0BE-B2LykRcll2Qb9JwfVFMQ
-ARM_TO_JSON_PARAM_TYPES: Dict[str, str] = {
-    "int": "integer",
-    "securestring": "string",
-    "bool": "boolean",
-}
 
 
 class VnfNfdGenerator(NFDGenerator):
@@ -67,7 +58,7 @@ class VnfNfdGenerator(NFDGenerator):
     ):
         self.config = config
 
-        assert isinstance(self.config.arm_template, ArtifactConfig)
+        assert isinstance(self.config.arm_template, ArmArtifactConfig)
         assert self.config.arm_template.file_path
 
         self.arm_template_path = Path(self.config.arm_template.file_path)

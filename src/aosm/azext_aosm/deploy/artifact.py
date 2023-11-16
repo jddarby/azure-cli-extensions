@@ -18,7 +18,7 @@ from knack.util import CLIError
 from oras.client import OrasClient
 
 from azext_aosm._configuration import (
-    ArtifactConfig,
+    ArmArtifactConfig,
     CNFImageConfig,
     HelmPackageConfig,
     VhdArtifactConfig,
@@ -39,7 +39,9 @@ class Artifact:
 
     def upload(
         self,
-        artifact_config: Union[ArtifactConfig, HelmPackageConfig],
+        artifact_config: Union[
+            ArmArtifactConfig, CNFImageConfig, VhdArtifactConfig, HelmPackageConfig
+        ],
         use_manifest_permissions: bool = False,
     ) -> None:
         """
@@ -50,7 +52,7 @@ class Artifact:
         if isinstance(self.artifact_client, OrasClient):
             if isinstance(artifact_config, HelmPackageConfig):
                 self._upload_helm_to_acr(artifact_config, use_manifest_permissions)
-            elif isinstance(artifact_config, ArtifactConfig):
+            elif isinstance(artifact_config, ArmArtifactConfig):
                 self._upload_arm_to_acr(artifact_config)
             elif isinstance(artifact_config, CNFImageConfig):
                 self._upload_or_copy_image_to_acr(
@@ -59,10 +61,10 @@ class Artifact:
             else:
                 raise ValueError(f"Unsupported artifact type: {type(artifact_config)}.")
         else:
-            assert isinstance(artifact_config, ArtifactConfig)
+            assert isinstance(artifact_config, VhdArtifactConfig)
             self._upload_to_storage_account(artifact_config)
 
-    def _upload_arm_to_acr(self, artifact_config: ArtifactConfig) -> None:
+    def _upload_arm_to_acr(self, artifact_config: ArmArtifactConfig) -> None:
         """
         Upload ARM artifact to ACR.
 
@@ -268,14 +270,14 @@ class Artifact:
         logger.info(message)
         print(message)
 
-    def _upload_to_storage_account(self, artifact_config: ArtifactConfig) -> None:
+    def _upload_to_storage_account(self, artifact_config: VhdArtifactConfig) -> None:
         """
         Upload artifact to storage account.
 
         :param artifact_config: configuration for the artifact being uploaded
         """
         assert isinstance(self.artifact_client, BlobClient)
-        assert isinstance(artifact_config, ArtifactConfig)
+        assert isinstance(artifact_config, VhdArtifactConfig)
 
         # If the file path is given, upload the artifact, else, copy it from an existing blob.
         if artifact_config.file_path:
@@ -294,7 +296,6 @@ class Artifact:
             )
         else:
             # Config Validation will raise error if not true
-            assert isinstance(artifact_config, VhdArtifactConfig)
             assert artifact_config.blob_sas_url
             logger.info("Copy from SAS URL to blob store")
             source_blob = BlobClient.from_blob_url(artifact_config.blob_sas_url)

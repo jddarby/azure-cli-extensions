@@ -18,12 +18,14 @@ from knack.log import get_logger
 from knack.util import CLIError
 
 from azext_aosm._configuration import (
-    ArtifactConfig,
+    ArmArtifactConfig,
     CNFConfiguration,
     Configuration,
     NFConfiguration,
     NFDRETConfiguration,
+    NSArmArtifactConfig,
     NSConfiguration,
+    VhdArtifactConfig,
     VNFConfiguration,
 )
 from azext_aosm.deploy.artifact import Artifact
@@ -184,8 +186,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         vhd_config = self.config.vhd
         arm_template_config = self.config.arm_template
 
-        assert isinstance(vhd_config, ArtifactConfig)
-        assert isinstance(arm_template_config, ArtifactConfig)
+        assert isinstance(vhd_config, VhdArtifactConfig)
+        assert isinstance(arm_template_config, ArmArtifactConfig)
 
         if self.skip == IMAGE_UPLOAD:
             print("Skipping VHD artifact upload")
@@ -310,8 +312,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         """
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
-            assert isinstance(self.config.vhd, ArtifactConfig)
-            assert isinstance(self.config.arm_template, ArtifactConfig)
+            assert isinstance(self.config.vhd, VhdArtifactConfig)
+            assert isinstance(self.config.arm_template, ArmArtifactConfig)
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
@@ -351,8 +353,8 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         """Create the parmeters dictionary for VNF, CNF or NSD."""
         if self.resource_type == VNF:
             assert isinstance(self.config, VNFConfiguration)
-            assert isinstance(self.config.vhd, ArtifactConfig)
-            assert isinstance(self.config.arm_template, ArtifactConfig)
+            assert isinstance(self.config.vhd, VhdArtifactConfig)
+            assert isinstance(self.config.arm_template, ArmArtifactConfig)
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
@@ -374,21 +376,15 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
             }
         if self.resource_type == NSD:
             assert isinstance(self.config, NSConfiguration)
-
-            arm_template_names = []
-
-            for nf in self.config.network_functions:
-                assert isinstance(nf, NFDRETConfiguration)
-                arm_template_names.append(nf.arm_template.artifact_name)
-
-            # Set the artifact version to be the same as the NSD version, so that they
-            # don't get over written when a new NSD is published.
+            # The nsd_definition.bicep references artifacts which this manifest defines.
+            # The order of artifacts in the manifest does not need to match that in the
+            # NSD, but the names do. Set the artifact version to be the same as the NSD
+            # version, so that they don't get over written when a new NSD is published.
             return {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestNames": {"value": self.config.acr_manifest_names},
-                "armTemplateNames": {"value": arm_template_names},
+                "armTemplateConfig": {"value": self.config.all_arm_templates_config},
                 "armTemplateVersion": {"value": self.config.nsd_version},
             }
         raise ValueError("Unknown configuration type")
@@ -429,7 +425,7 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
         else:
             # 2) Upload artifacts - must be done before nsd deployment
             for manifest, nf in zip(
-                self.config.acr_manifest_names, self.config.network_functions
+                self.config.nf_acr_manifest_names, self.config.network_functions_sorted
             ):
                 assert isinstance(nf, NFDRETConfiguration)
                 acr_manifest = ArtifactManifestOperator(
@@ -455,8 +451,28 @@ class DeployerViaArm:  # pylint: disable=too-many-instance-attributes
                 with open(nf.arm_template.file_path, "w", encoding="utf-8") as file:
                     file.write(json.dumps(arm_template_artifact_json, indent=4))
 
-                print(f"Uploading ARM template artifact: {nf.arm_template.file_path}")
+                print(
+                    f"Uploading NF ARM template artifact: {nf.arm_template.file_path}"
+                )
                 arm_template_artifact.upload(nf.arm_template)
+
+            for manifest, arm_template in zip(
+                self.config.arm_acr_manifest_names, self.config.arm_templates_sorted
+            ):
+                assert isinstance(arm_template, NSArmArtifactConfig)
+                acr_manifest = ArtifactManifestOperator(
+                    self.config,
+                    self.api_clients,
+                    self.config.acr_artifact_store_name,
+                    manifest,
+                )
+
+                # We create a manifest for every Arm template, so the artifact is always
+                # the only artifact in the manifest
+                arm_template_artifact = acr_manifest.artifacts[0]
+
+                print(f"Uploading ARM template artifact: {arm_template.file_path}")
+                arm_template_artifact.upload(arm_template)
 
         if self.skip == BICEP_PUBLISH:
             print("Skipping bicep nsd publish")

@@ -26,7 +26,7 @@ from azext_aosm.vendored_sdks.models import (
     ProvisioningState,
     Publisher,
     PublisherPropertiesFormat,
-    ManagedServiceIdentity
+    ManagedServiceIdentity,
 )
 
 logger = get_logger(__name__)
@@ -119,7 +119,11 @@ class PreDeployerViaSDK:
             poller = self.api_clients.aosm_client.publishers.begin_create_or_update(
                 resource_group_name=resource_group_name,
                 publisher_name=publisher_name,
-                parameters=Publisher(location=location, properties=publisher_properties, identity=publisher_sami),
+                parameters=Publisher(
+                    location=location,
+                    properties=publisher_properties,
+                    identity=publisher_sami,
+                ),
             )
             LongRunningOperation(self.cli_ctx, "Creating publisher...")(poller)
 
@@ -176,7 +180,9 @@ class PreDeployerViaSDK:
                 f"Create Artifact Store {artifact_store_name} of type"
                 f" {artifact_store_type}"
             )
-            artifact_store_properties = ArtifactStorePropertiesFormat(store_type=artifact_store_type)
+            artifact_store_properties = ArtifactStorePropertiesFormat(
+                store_type=artifact_store_type
+            )
             poller = (
                 self.api_clients.aosm_client.artifact_stores.begin_create_or_update(
                     resource_group_name=resource_group_name,
@@ -194,8 +200,13 @@ class PreDeployerViaSDK:
                 self.cli_ctx, "Creating Artifact Store..."
             )(poller)
 
-            if artifactStore.properties.provisioning_state != ProvisioningState.SUCCEEDED:
-                logger.debug("Failed to provision artifact store: %s", artifactStore.name)
+            if (
+                artifactStore.properties.provisioning_state
+                != ProvisioningState.SUCCEEDED
+            ):
+                logger.debug(
+                    "Failed to provision artifact store: %s", artifactStore.name
+                )
                 raise RuntimeError(
                     "Creation of artifact store proceeded, but the provisioning"
                     f" state returned is {artifactStore.properties.provisioning_state}. "
@@ -303,7 +314,9 @@ class PreDeployerViaSDK:
                     " \nAborting"
                 ) from ex
             logger.debug(
-                "Provisioning state of %s: %s", nfdg_name, nfdg.properties.provisioning_state
+                "Provisioning state of %s: %s",
+                nfdg_name,
+                nfdg.properties.provisioning_state,
             )
 
     def ensure_config_nfdg_exists(

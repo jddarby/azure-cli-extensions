@@ -103,8 +103,8 @@ class ResourceDeleter:
             print(
                 "Are you sure you want to delete the NSD Version"
                 f" {self.config.nsd_version}, the associated manifests"
-                f" {self.config.acr_manifest_names} and configuration group schema"
-                f" {self.config.cg_schema_name}?"
+                f" {self.config.acr_manifest_names} and configuration group schema(s)"
+                f" {self.config.all_cg_schema_names}?"
             )
             if clean:
                 print(
@@ -117,7 +117,7 @@ class ResourceDeleter:
 
         self.delete_nsdv()
         self.delete_artifact_manifest("acr")
-        self.delete_config_group_schema()
+        self.delete_config_group_schemas()
         if clean:
             self.delete_nsdg()
 
@@ -307,24 +307,23 @@ class ResourceDeleter:
             logger.error("Failed to delete publisher")
             raise
 
-    def delete_config_group_schema(self) -> None:
+    def delete_config_group_schemas(self) -> None:
         """Delete the Configuration Group Schema."""
         assert isinstance(self.config, NSConfiguration)
-        message = f"Delete Configuration Group Schema {self.config.cg_schema_name}"
-        logger.debug(message)
-        print(message)
-        try:
-            poller = (
-                self.api_clients.aosm_client.configuration_group_schemas.begin_delete(
+        for schema in self.config.all_cg_schema_names:
+            message = f"Delete Configuration Group Schema {schema}"
+            logger.debug(message)
+            print(message)
+            try:
+                poller = self.api_clients.aosm_client.configuration_group_schemas.begin_delete(
                     resource_group_name=self.config.publisher_resource_group_name,
                     publisher_name=self.config.publisher_name,
-                    configuration_group_schema_name=self.config.cg_schema_name,
+                    configuration_group_schema_name=schema,
                 )
-            )
-            LongRunningOperation(
-                self.cli_ctx, "Deleting Configuration Group Schema..."
-            )(poller)
-            logger.info("Deleted Configuration Group Schema")
-        except Exception:
-            logger.error("Failed to delete the Configuration Group Schema")
-            raise
+                LongRunningOperation(
+                    self.cli_ctx, "Deleting Configuration Group Schema..."
+                )(poller)
+                logger.info("Deleted Configuration Group Schema")
+            except Exception:
+                logger.error("Failed to delete the Configuration Group Schema")
+                raise

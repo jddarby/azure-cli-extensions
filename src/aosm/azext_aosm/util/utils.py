@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 """Utility functions."""
+from typing import Any, Dict, List
 
 
 def input_ack(ack: str, request_to_user: str) -> bool:
@@ -23,3 +24,25 @@ def snake_case_to_camel_case(text):
     return components[0] + "".join(
         x[0].upper() + x[1:] for x in components[1:]
     )
+
+
+def get_cgs_dict(
+    cg_schema_name: str,
+    properties: Dict[str, Any],
+    required: List[str]
+) -> Dict[str, Any]:
+    """
+    Get a dictionary for the full JSON of a Config Group Schema.
+
+    :param cg_schema_name: The title of the Config Group Schema.
+    :param properties: The properties of the Config Group Schema.
+    :param required: The list of required property names of the Config Group Schema.
+    """
+    cgs_dict: Dict[str, Any] = {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "title": cg_schema_name,
+        "type": "object",
+        "properties": properties,
+        "required": required,
+    }
+    return cgs_dict

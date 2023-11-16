@@ -13,8 +13,13 @@ from typing import Any, Dict
 from jinja2 import Template
 from knack.log import get_logger
 
-from azext_aosm._configuration import NFDRETConfiguration, NSConfiguration
+from azext_aosm._configuration import (
+    NFDRETConfiguration,
+    NSConfiguration,
+    ArmArtifactConfig,
+)
 from azext_aosm.generate_nsd.nf_ret import NFRETGenerator
+from azext_aosm.generate_nsd.arm_ret import ARMRETGenerator
 from azext_aosm.util.constants import (
     CONFIG_MAPPINGS_DIR_NAME,
     NF_TEMPLATE_JINJA2_SOURCE_TEMPLATE,
@@ -26,6 +31,7 @@ from azext_aosm.util.constants import (
     TEMPLATES_DIR_NAME,
 )
 from azext_aosm.util.management_clients import ApiClients
+from azext_aosm.util.utils import get_cgs_dict
 
 logger = get_logger(__name__)
 
@@ -58,11 +64,23 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
         self.nsd_bicep_output_name = NSD_BICEP_FILENAME
 
         self.nf_ret_generators = []
+        self.arm_ret_generators = []
 
         for nf_config in self.config.network_functions:
             assert isinstance(nf_config, NFDRETConfiguration)
             self.nf_ret_generators.append(
-                NFRETGenerator(api_clients, nf_config, self.config.cg_schema_name)
+                NFRETGenerator(api_clients, nf_config, self.config.nf_cg_schema_name)
+            )
+
+        for index, arm_ret_config in enumerate(self.config.arm_templates):
+            # This should end up with ARM RETs in the order specified in the config.
+            assert isinstance(arm_ret_config, ArmArtifactConfig)
+            self.arm_ret_generators.append(
+                ARMRETGenerator(
+                    config=arm_ret_config,
+                    cg_schema_name=self.config.arm_cg_schema_names[index],
+                    shared_cg_schema_name=self.config.nf_cg_schema_name,
+                )
             )
 
     def generate_nsd(self) -> None:
@@ -71,7 +89,7 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
 
         # Create temporary folder.
         with tempfile.TemporaryDirectory() as tmpdirname:
-            self._write_config_group_schema_json(tmpdirname)
+            self._write_config_group_schemas_json(tmpdirname)
             self._write_config_mapping_files(tmpdirname)
             self._write_nsd_manifest(tmpdirname)
             self._write_nf_bicep_files(tmpdirname)
@@ -88,7 +106,7 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
             )
 
     @cached_property
-    def _config_group_schema_dict(self) -> Dict[str, Any]:
+    def _nfs_config_group_schema_dict(self) -> Dict[str, Any]:
         """
         :return: The Config Group Schema as a dictionary.
 
@@ -119,29 +137,45 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
         required = [nf.config.name for nf in self.nf_ret_generators]
         required.append("managedIdentity")
 
-        cgs_dict: Dict[str, Any] = {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": self.config.cg_schema_name,
-            "type": "object",
-            "properties": properties,
-            "required": required,
-        }
+        if not self.config.cgs_split:
+            # ARM RETs should go in the NF CGS schema (which becomes the shared schema)
+            logger.debug("Creating shared CGS for all.")
+            for arm_ret in self.arm_ret_generators:
+                properties[arm_ret.config.artifact_name] = arm_ret.config_schema_snippet
+                required.append(arm_ret.config.artifact_name)
+
+        cgs_dict = get_cgs_dict(self.config.nf_cg_schema_name, properties, required)
 
         return cgs_dict
 
-    def _write_config_group_schema_json(self, output_directory) -> None:
+    def _write_config_group_schemas_json(self, output_directory) -> None:
         """Create a file containing the json schema for the CGS."""
         temp_schemas_folder_path = os.path.join(output_directory, SCHEMAS_DIR_NAME)
         os.mkdir(temp_schemas_folder_path)
 
-        logger.debug("Create %s.json", self.config.cg_schema_name)
+        if self.config.cgs_split:
+            # Separate CGS schema for each ARM RET and one for all NFs
+            for arm_ret in self.arm_ret_generators:
+                logger.debug("Create %s.json", arm_ret.cg_schema_name)
+
+                schema_path = os.path.join(
+                    temp_schemas_folder_path, f"{arm_ret.cg_schema_name}.json"
+                )
+
+                with open(schema_path, "w", encoding="utf-8") as _file:
+                    _file.write(json.dumps(arm_ret.full_config_schema, indent=4))
+
+                logger.debug("%s created", schema_path)
+
+        # CGS schema for all NFs (and shared ARM RETs if not split)
+        logger.debug("Create %s.json", self.config.nf_cg_schema_name)
 
         schema_path = os.path.join(
-            temp_schemas_folder_path, f"{self.config.cg_schema_name}.json"
+            temp_schemas_folder_path, f"{self.config.nf_cg_schema_name}.json"
         )
 
         with open(schema_path, "w", encoding="utf-8") as _file:
-            _file.write(json.dumps(self._config_group_schema_dict, indent=4))
+            _file.write(json.dumps(self._nfs_config_group_schema_dict, indent=4))
 
         logger.debug("%s created", schema_path)
 
@@ -163,6 +197,16 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
 
             logger.debug("%s created", config_mappings_path)
 
+        for arm_ret in self.arm_ret_generators:
+            config_mappings_path = os.path.join(
+                temp_mappings_folder_path, arm_ret.config_mapping_filename
+            )
+
+            with open(config_mappings_path, "w", encoding="utf-8") as _file:
+                _file.write(json.dumps(arm_ret.config_mappings, indent=4))
+
+            logger.debug("%s created", config_mappings_path)
+
     def _write_nf_bicep_files(self, output_directory) -> None:
         """
         Write bicep files for deploying NFs.
@@ -181,26 +225,50 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
             )
 
     def _write_nsd_bicep(self, output_directory) -> None:
-        """Write out the NSD bicep file."""
-        ret_names = [nf.config.resource_element_name for nf in self.nf_ret_generators]
-        arm_template_names = [
-            nf.config.arm_template.artifact_name for nf in self.nf_ret_generators
+        """
+        Write out the NSD bicep file.
+
+        This method creates the jinja2 parameters used to render the NSD bicep template
+        and then calls the _generate_bicep method to render the template.
+
+        It is important that the parameters referencing artifacts match those artifacts
+        that are put into the artifact manifest.  The order in the manifest doesn't
+        matter, but the names and versions do. The parameters put into the artifact
+        manifest are defined at deploy time, in
+        deploy_with_arm.construct_manifest_parameters.
+        """
+        nf_config = [
+            {
+                "resource_element_name": nf.config.resource_element_name,
+                "artifact_name": nf.config.arm_template.artifact_name,
+                "config_mapping_file": nf.config_mapping_filename,
+            }
+            for nf in self.nf_ret_generators
         ]
-        config_mapping_files = [
-            nf.config_mapping_filename for nf in self.nf_ret_generators
+        schema_names = [self.config.nf_cg_schema_name]
+        if self.config.cgs_split:
+            schema_names.extend([arm.cg_schema_name for arm in self.arm_ret_generators])
+        arm_templates_config = [
+            {
+                "ret_name": arm.config.artifact_name,
+                "config_mapping_file": arm.config_mapping_filename,
+            }
+            for arm in self.arm_ret_generators
         ]
 
-        # We want the armTemplateVersion to be the same as the NSD Version.  That means
-        # that if we create a new NSDV then the existing artifacts won't be overwritten.
+        # We want all armTemplateVersions to be the same as the NSD Version.  That
+        # means that if we create a new NSDV then the existing artifacts won't be
+        # overwritten. An ARM template update should require a new NSDV.
+        #
+        # Values must also match those given to the artifact manifest
+        # (in deploy_with_arm.construct_manifest_parameters)
         params = {
             "nfvi_site_name": self.config.nfvi_site_name,
-            "armTemplateNames": arm_template_names,
+            "nf_config": nf_config,
             "armTemplateVersion": self.config.nsd_version,
-            "cg_schema_name": self.config.cg_schema_name,
+            "cg_schema_names": schema_names,
             "nsdv_description": self.config.nsdv_description,
-            "ResourceElementName": ret_names,
-            "configMappingFiles": config_mapping_files,
-            "nf_count": len(self.nf_ret_generators),
+            "arm_templates_config": arm_templates_config,
         }
 
         self._generate_bicep(
@@ -228,7 +296,7 @@ class NSDGenerator:  # pylint: disable=too-few-public-methods
 
         :param template_name: The name of the template to render
         :param output_file_name: The name of the output file
-        :param params: The parameters to render the template with
+        :param params: The jinja2 parameters to render the template with
         """
 
         code_dir = os.path.dirname(__file__)

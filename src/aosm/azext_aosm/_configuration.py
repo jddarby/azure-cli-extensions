@@ -7,6 +7,7 @@ import abc
 import logging
 import json
 import os
+import re
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -28,41 +29,160 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ArtifactConfig:
-    # artifact.py checks for the presence of the default descriptions, change
-    # there if you change the descriptions.
+class BaseArtifactConfig(abc.ABC):
+    """
+    Root base class for all artifact config.
+
+    Should not be used directly.
+    """
+
     artifact_name: str = ""
-    version: Optional[str] = ""
     file_path: Optional[str] = None
 
     @classmethod
-    def helptext(cls) -> "ArtifactConfig":
-        """
-        Build an object where each value is helptext for that field.
-        """
-        return ArtifactConfig(
+    def helptext(cls) -> "BaseArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+        return BaseArtifactConfig(
             artifact_name="Optional. Name of the artifact.",
-            version="Version of the artifact in A.B.C format.",
             file_path=(
                 "File path of the artifact you wish to upload from your local disk. "
                 "Relative paths are relative to the configuration file. "
                 "On Windows escape any backslash with another backslash."
             ),
-
         )
 
     def validate(self):
         """
         Validate the configuration.
+
+        The base version of this method currently does nothing as it has no fields
+        requiring validation, but is included for potential future use.
         """
-        if not self.version:
-            raise ValidationError("version must be set.")
-        if not self.file_path:
-            raise ValidationError("file_path must be set.")
+        pass
 
 
 @dataclass
-class VhdArtifactConfig(ArtifactConfig):
+class BaseVersionedArtifactConfig(BaseArtifactConfig):
+    """
+    Base class for artifact config with an associated version.
+
+    Should not be used directly.
+    """
+
+    version: str = ""
+
+    @classmethod
+    def helptext(cls) -> "BaseVersionedArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        artifact_config = BaseArtifactConfig.helptext()
+        return BaseVersionedArtifactConfig(
+            version="Version of the artifact.",
+            **asdict(artifact_config),
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
+        if not self.version:
+            raise ValidationError("Version must be set.")
+
+
+@dataclass
+class BaseArmArtifactConfig(BaseArtifactConfig):
+    """
+    Base class for config for an ARM template artifact.
+
+    Should not be used directly.
+    """
+
+    @classmethod
+    def helptext(cls) -> "BaseArmArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        artifact_config = BaseArtifactConfig.helptext()
+        # There are currently no additional fields for this class.
+        return BaseArmArtifactConfig(
+            **asdict(artifact_config),
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
+        if not self.file_path:
+            raise ValidationError("ARM artifact file_path must be set.")
+
+
+@dataclass
+class ArmArtifactConfig(BaseArmArtifactConfig, BaseVersionedArtifactConfig):
+    """Config for an ARM template artifact with version."""
+
+    @classmethod
+    def helptext(cls) -> "ArmArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        # Combine helptext from both parent classes, favouring BaseArmArtifactConfig.
+        artifact_config = {
+            **asdict(BaseVersionedArtifactConfig.helptext()),
+            **asdict(BaseArmArtifactConfig.helptext()),
+        }
+        artifact_config["version"] = "Version of the artifact in A.B.C format."
+        return ArmArtifactConfig(
+            **artifact_config,
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
+        if "." not in self.version:
+            raise ValidationError(
+                "Config validation error. ARM template artifact version should be in"
+                " format A.B.C"
+            )
+
+
+@dataclass
+class NSArmArtifactConfig(BaseArmArtifactConfig):
+    """
+    Config for an ARM template artifact in a NS.
+
+    The non-versioned base ARM artifact config is inherited from, as the NSD version is
+    used at the time the NSD is built and the manifest deployed. This is because we want
+    the versions of the artifacts to match the NSDV, such that changing the artifact
+    requires a new NSDV to be created.
+    """
+
+    @classmethod
+    def helptext(cls) -> "NSArmArtifactConfig":
+        """Build an object where each value is helptext for that field."""
+
+        artifact_config = BaseArmArtifactConfig.helptext()
+        artifact_config.artifact_name = (
+            "Optional. The name to give the artifact and Resource Element Template. "
+            "If deleted, the name of the artifact is taken from the ARM template file "
+            "name."
+        )
+        return NSArmArtifactConfig(
+            **asdict(artifact_config),
+        )
+
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
+        # No further validation required.
+
+    def acr_manifest_name(self, nsd_version: str) -> str:
+        """Return the ACR manifest name from the artifact name."""
+        return (
+            f"{self.artifact_name.lower().replace('_', '-')}"
+            f"-acr-manifest-{nsd_version.replace('.', '-')}"
+        )
+
+
+@dataclass
+class VhdArtifactConfig(BaseVersionedArtifactConfig):
+    """Vhd artifact config."""
+
     # If you add a new property to this class, consider updating EXTRA_VHD_PARAMETERS in
     # constants.py - see comment there for details.
     blob_sas_url: Optional[str] = None
@@ -71,9 +191,7 @@ class VhdArtifactConfig(ArtifactConfig):
     image_api_version: Optional[str] = None
 
     def __post_init__(self):
-        """
-        Convert parameters to the correct types.
-        """
+        """Convert parameters to the correct types."""
         if (
             isinstance(self.image_disk_size_GB, str)
             and self.image_disk_size_GB.isdigit()
@@ -82,19 +200,15 @@ class VhdArtifactConfig(ArtifactConfig):
 
     @classmethod
     def helptext(cls) -> "VhdArtifactConfig":
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
 
-        artifact_config = ArtifactConfig.helptext()
+        artifact_config = BaseVersionedArtifactConfig.helptext()
         artifact_config.file_path = (
             "Optional. File path of the artifact you wish to upload from your local disk. "
             "Delete if not required. Relative paths are relative to the configuration file."
             "On Windows escape any backslash with another backslash."
         )
-        artifact_config.version = (
-            "Version of the artifact in A-B-C format."
-        )
+        artifact_config.version = "Version of the artifact in A-B-C format."
         return VhdArtifactConfig(
             blob_sas_url=(
                 "Optional. SAS URL of the blob artifact you wish to copy to your Artifact"
@@ -117,15 +231,21 @@ class VhdArtifactConfig(ArtifactConfig):
         )
 
     def validate(self):
-        """
-        Validate the configuration.
-        """
-        if not self.version:
-            raise ValidationError("version must be set for vhd.")
+        """Validate the configuration."""
+        super().validate()
+        if "-" not in self.version:
+            raise ValidationError(
+                "Config validation error. VHD artifact version should be in format"
+                " A-B-C."
+            )
         if self.blob_sas_url and self.file_path:
-            raise ValidationError("Only one of file_path or blob_sas_url may be set for vhd.")
+            raise ValidationError(
+                "Only one of file_path or blob_sas_url may be set for VHD."
+            )
         if not (self.blob_sas_url or self.file_path):
-            raise ValidationError("One of file_path or sas_blob_url must be set for vhd.")
+            raise ValidationError(
+                "One of file_path or sas_blob_url must be set for VHD."
+            )
 
 
 @dataclass
@@ -137,9 +257,7 @@ class Configuration(abc.ABC):
     location: str = ""
 
     def __post_init__(self):
-        """
-        Set defaults for resource group and ACR as the publisher name tagged with -rg or -acr
-        """
+        """Set defaults for resource group and ACR as the publisher name tagged with -rg or -acr."""
         if self.publisher_name:
             if not self.publisher_resource_group_name:
                 self.publisher_resource_group_name = f"{self.publisher_name}-rg"
@@ -148,9 +266,7 @@ class Configuration(abc.ABC):
 
     @classmethod
     def helptext(cls):
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return Configuration(
             publisher_name=(
                 "Name of the Publisher resource you want your definition published to. "
@@ -168,9 +284,7 @@ class Configuration(abc.ABC):
         )
 
     def validate(self):
-        """
-        Validate the configuration.
-        """
+        """Validate the configuration."""
         if not self.location:
             raise ValidationError("Location must be set")
         if not self.publisher_name:
@@ -228,9 +342,7 @@ class NFConfiguration(Configuration):
 
     @classmethod
     def helptext(cls) -> "NFConfiguration":
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return NFConfiguration(
             nf_name="Name of NF definition",
             version="Version of the NF definition in A.B.C format.",
@@ -238,9 +350,7 @@ class NFConfiguration(Configuration):
         )
 
     def validate(self):
-        """
-        Validate the configuration.
-        """
+        """Validate the configuration."""
         super().validate()
         if not self.nf_name:
             raise ValidationError("nf_name must be set")
@@ -268,14 +378,16 @@ class NFConfiguration(Configuration):
 class VNFConfiguration(NFConfiguration):
     blob_artifact_store_name: str = ""
     image_name_parameter: str = ""
-    arm_template: Union[Dict[str, str], ArtifactConfig] = field(default_factory=ArtifactConfig)
-    vhd: Union[Dict[str, str], VhdArtifactConfig] = field(default_factory=VhdArtifactConfig)
+    arm_template: Union[Dict[str, str], ArmArtifactConfig] = field(
+        default_factory=ArmArtifactConfig
+    )
+    vhd: Union[Dict[str, str], VhdArtifactConfig] = field(
+        default_factory=VhdArtifactConfig
+    )
 
     @classmethod
     def helptext(cls) -> "VNFConfiguration":
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return VNFConfiguration(
             blob_artifact_store_name=(
                 "Optional. Name of the storage account Artifact Store resource. Will be created if it "
@@ -285,7 +397,7 @@ class VNFConfiguration(NFConfiguration):
                 "The parameter name in the VM ARM template which specifies the name of the "
                 "image to use for the VM."
             ),
-            arm_template=ArtifactConfig.helptext(),
+            arm_template=ArmArtifactConfig.helptext(),
             vhd=VhdArtifactConfig.helptext(),
             **asdict(NFConfiguration.helptext()),
         )
@@ -299,13 +411,12 @@ class VNFConfiguration(NFConfiguration):
         super().__post_init__()
         if self.publisher_name and not self.blob_artifact_store_name:
             self.blob_artifact_store_name = f"{self.publisher_name}-sa"
-
         if isinstance(self.arm_template, dict):
             if self.arm_template.get("file_path"):
                 self.arm_template["file_path"] = self.path_from_cli_dir(
                     self.arm_template["file_path"]
                 )
-            self.arm_template = ArtifactConfig(**self.arm_template)
+            self.arm_template = ArmArtifactConfig(**self.arm_template)
 
         if isinstance(self.vhd, dict):
             if self.vhd.get("file_path"):
@@ -321,23 +432,9 @@ class VNFConfiguration(NFConfiguration):
         super().validate()
 
         assert isinstance(self.vhd, VhdArtifactConfig)
-        assert isinstance(self.arm_template, ArtifactConfig)
+        assert isinstance(self.arm_template, ArmArtifactConfig)
         self.vhd.validate()
         self.arm_template.validate()
-
-        assert self.vhd.version
-        assert self.arm_template.version
-
-        if "." in self.vhd.version or "-" not in self.vhd.version:
-            raise ValidationError(
-                "Config validation error. VHD artifact version should be in format"
-                " A-B-C"
-            )
-        if "." not in self.arm_template.version or "-" in self.arm_template.version:
-            raise ValidationError(
-                "Config validation error. ARM template artifact version should be in"
-                " format A.B.C"
-            )
 
     @property
     def sa_manifest_name(self) -> str:
@@ -348,7 +445,7 @@ class VNFConfiguration(NFConfiguration):
     @property
     def output_directory_for_build(self) -> Path:
         """Return the local folder for generating the bicep template to."""
-        assert isinstance(self.arm_template, ArtifactConfig)
+        assert isinstance(self.arm_template, ArmArtifactConfig)
         assert self.arm_template.file_path
         arm_template_name = Path(self.arm_template.file_path).stem
         return Path(f"{NF_DEFINITION_OUTPUT_BICEP_PREFIX}{arm_template_name}")
@@ -363,9 +460,7 @@ class HelmPackageConfig:
 
     @classmethod
     def helptext(cls):
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return HelmPackageConfig(
             name="Name of the Helm package",
             path_to_chart=(
@@ -386,9 +481,7 @@ class HelmPackageConfig:
         )
 
     def validate(self):
-        """
-        Validate the configuration.
-        """
+        """Validate the configuration."""
         if not self.name:
             raise ValidationError("name must be set")
         if not self.path_to_chart:
@@ -418,9 +511,7 @@ class CNFImageConfig:
 
     @classmethod
     def helptext(cls) -> "CNFImageConfig":
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return CNFImageConfig(
             source_registry=(
                 "Optional. Login server of the source acr registry from which to pull the "
@@ -443,9 +534,7 @@ class CNFImageConfig:
         )
 
     def validate(self):
-        """
-        Validate the configuration.
-        """
+        """Validate the configuration."""
         if self.source_registry_namespace and not self.source_registry:
             raise ValidationError(
                 "Config validation error. The image source registry namespace should "
@@ -465,7 +554,9 @@ class CNFImageConfig:
 
 @dataclass
 class CNFConfiguration(NFConfiguration):
-    images: Union[Dict[str, str], CNFImageConfig] = field(default_factory=CNFImageConfig)
+    images: Union[Dict[str, str], CNFImageConfig] = field(
+        default_factory=CNFImageConfig
+    )
     helm_packages: List[Union[Dict[str, Any], HelmPackageConfig]] = field(
         default_factory=lambda: []
     )
@@ -491,9 +582,7 @@ class CNFConfiguration(NFConfiguration):
 
     @classmethod
     def helptext(cls) -> "CNFConfiguration":
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return CNFConfiguration(
             images=CNFImageConfig.helptext(),
             helm_packages=[HelmPackageConfig.helptext()],
@@ -534,9 +623,7 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
     multiple_instances: Union[str, bool] = False
 
     def __post_init__(self):
-        """
-        Convert parameters to the correct types.
-        """
+        """Convert parameters to the correct types."""
         # Cope with multiple_instances being supplied as a string, rather than a bool.
         if isinstance(self.multiple_instances, str):
             if self.multiple_instances.lower() == "true":
@@ -546,9 +633,7 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
 
     @classmethod
     def helptext(cls) -> "NFDRETConfiguration":
-        """
-        Build an object where each value is helptext for that field.
-        """
+        """Build an object where each value is helptext for that field."""
         return NFDRETConfiguration(
             publisher="The name of the existing Network Function Definition Group to deploy using this NSD",
             publisher_resource_group="The resource group that the publisher is hosted in.",
@@ -617,14 +702,16 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
         return Path(current_working_directory, NSD_OUTPUT_BICEP_PREFIX)
 
     @property
-    def arm_template(self) -> ArtifactConfig:
+    def arm_template(self) -> NSArmArtifactConfig:
         """Return the parameters of the ARM template for this RET to be uploaded as part of
         the NSDV."""
-        artifact = ArtifactConfig()
+        artifact = NSArmArtifactConfig()
         artifact.artifact_name = f"{self.name.lower()}_nf_artifact"
 
         # We want the ARM template version to match the NSD version, but we don't have
-        # that information here.
+        # that information here. When required we just use the NSD version. We don't
+        # call validate() on this object so we don't hit problems with its own
+        # validation that the version exists.
         artifact.version = None
         artifact.file_path = os.path.join(
             self.build_output_folder_name, NF_DEFINITION_JSON_FILENAME
@@ -652,12 +739,31 @@ class NFDRETConfiguration:  # pylint: disable=too-many-instance-attributes
 
 @dataclass
 class NSConfiguration(Configuration):
+    """
+    Network Service Design configuration.
+
+    network_functions: config for NFs to go in the NF Resource Element Templates
+    arm_templates: config for Arm templates to go in Arm Resource Element Templates
+    nsd_name: the name of the NSDG
+    nsd_version: the version of the NSDV, must be in A.B.C format
+    nsdv_description: description
+    cgs_split: Only relevant if Arm RETs included. If True, have a separate CGS for
+               each ARM template and one for the NFs. If False, have a shared CGS for
+               the NFs and all ARM templates, with each NF/Arm having its own object
+               within the schema.
+    """
+
     network_functions: List[Union[NFDRETConfiguration, Dict[str, Any]]] = field(
+        default_factory=lambda: []
+    )
+
+    arm_templates: List[Union[Dict[str, Any], NSArmArtifactConfig]] = field(
         default_factory=lambda: []
     )
     nsd_name: str = ""
     nsd_version: str = ""
     nsdv_description: str = ""
+    cgs_split: bool = False
 
     def __post_init__(self):
         """Covert things to the correct format."""
@@ -666,15 +772,35 @@ class NSConfiguration(Configuration):
             nf_ret_list = [
                 NFDRETConfiguration(**config) for config in self.network_functions
             ]
+            # self.network_functions will be sorted in the order added in input.json
             self.network_functions = nf_ret_list
+        if self.arm_templates and isinstance(self.arm_templates[0], dict):
+            # Checking for the dict type means checking for input config, rather than
+            # config helptext created for generate-config
+            arm_template_list = [
+                NSArmArtifactConfig(**config) for config in self.arm_templates
+            ]
+
+            # Set the name of the artifact to be the same as the name of the file
+            for artifact in arm_template_list:
+                if artifact.file_path:
+                    artifact.file_path = self.path_from_cli_dir(artifact.file_path)
+
+                    if not artifact.artifact_name:
+                        artifact.artifact_name = Path(artifact.file_path).stem
+                    # Make sure the artifact name is in the correct format for the manifest
+                    artifact.artifact_name = self.format_artifact_name_for_manifest(
+                        artifact.artifact_name
+                    )
+            # self.arm_templates will be sorted in the order added in input.json
+            self.arm_templates = arm_template_list
 
     @classmethod
     def helptext(cls) -> "NSConfiguration":
-        """
-        Build a NSConfiguration object where each value is helptext for that field.
-        """
+        """Build a NSConfiguration object where each value is helptext for that field."""
         nsd_helptext = NSConfiguration(
             network_functions=[asdict(NFDRETConfiguration.helptext())],
+            arm_templates=[NSArmArtifactConfig.helptext()],
             nsd_name=(
                 "Network Service Design (NSD) name. This is the collection of Network Service"
                 " Design Versions. Will be created if it does not exist."
@@ -683,6 +809,11 @@ class NSConfiguration(Configuration):
                 "Version of the NSD to be created. This should be in the format A.B.C"
             ),
             nsdv_description="Description of the NSDV.",
+            cgs_split=(
+                "If True, have a separate Configuration Group Schema for each "
+                "arm_template and all NFs. If False, have a single CGS for everything."
+                " Defaults to False."
+            ),
             **asdict(Configuration.helptext()),
         )
 
@@ -700,6 +831,9 @@ class NSConfiguration(Configuration):
 
         for configuration in self.network_functions:
             configuration.validate()
+        if self.arm_templates:
+            for arm_template_config in self.arm_templates:
+                arm_template_config.validate()
         if not self.nsd_name:
             raise ValueError("nsd_name must be set")
         if not self.nsd_version:
@@ -717,20 +851,166 @@ class NSConfiguration(Configuration):
         return f"{self.nsd_name}_NFVI"
 
     @property
-    def cg_schema_name(self) -> str:
-        """Return the name of the Configuration Schema used for the NSDV."""
-        return f"{self.nsd_name.replace('-', '_')}_ConfigGroupSchema"
+    def nf_cg_schema_name(self) -> str:
+        """Return the name of the Configuration Schema used for the NFs in the NSDV."""
+        return self.format_cgs_name(f"{self.nsd_name}_ConfigGroupSchema")
+
+    @staticmethod
+    def format_cgs_name(cgs_name: str) -> str:
+        """Format CGS name to allowed chars and length."""
+        # Rules for CGS name are up to 64 alphanumeric characters, - or _. Must
+        # begin with an alphanumeric character
+        # Replace any non (alphanumeric or '_') characters with '_'
+        cgs_name = re.sub("[^0-9a-zA-Z_]+", "_", cgs_name)
+        # Strip leading or trailing -
+        cgs_name = cgs_name.strip("_")
+        cgs_name = cgs_name[:64]
+        return cgs_name
 
     @property
-    def acr_manifest_names(self) -> List[str]:
-        """The list of ACR manifest names for all the NF ARM templates."""
+    def network_functions_sorted(self) -> List[NFDRETConfiguration]:
+        """Return the Network Functions sorted in alphabetical order by name."""
+        temp_nf_list = []
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            temp_nf_list.append(nf)
+
+        return sorted(temp_nf_list, key=lambda x: x.name)
+
+    @property
+    def arm_templates_sorted(self) -> List[NSArmArtifactConfig]:
+        """Return the Arm RET Arm Templates sorted in alphabetical order by name."""
+        temp_arm_list = []
+        for arm in self.arm_templates:
+            assert isinstance(arm, NSArmArtifactConfig)
+            temp_arm_list.append(arm)
+
+        return sorted(temp_arm_list, key=lambda x: x.artifact_name)
+
+    @property
+    def arm_cg_schema_names(self) -> List[str]:
+        """
+        Return the names of the CGS used for the Arm Templates in the NSDV.
+
+        If cgs_split is True, there will be a separate CGS for each Arm Template plus
+        one for all the NFs. If cgs_split is False, there will be a single CGS for
+        everything.
+        """
+        arm_cg_schema_names = []
+        if self.cgs_split:
+            logger.debug("CGS split is True so need separate CGS for each Arm Template")
+            for arm_template in self.arm_templates:
+                assert isinstance(arm_template, NSArmArtifactConfig)
+                prefix = f"{arm_template.artifact_name}"
+                cgs_name = f"{prefix}_ConfigGroupSchema"
+                cgs_name = self.format_cgs_name(cgs_name)
+                arm_cg_schema_names.append(cgs_name)
+        else:
+            for _ in self.arm_templates:
+                logger.debug("CGS split is False so use a single CGS name")
+                cgs_name = f"{self.nsd_name}_ConfigGroupSchema"
+                cgs_name = self.format_cgs_name(cgs_name)
+                arm_cg_schema_names.append(cgs_name)
+        return arm_cg_schema_names
+
+    @property
+    def all_cg_schema_names(self) -> List[str]:
+        """Return the names of all CG Schemas (NF and ARM) for this NSDV."""
+        if self.nf_cg_schema_name in self.arm_cg_schema_names:
+            return self.arm_cg_schema_names
+
+        return self.arm_cg_schema_names + [self.nf_cg_schema_name]
+
+    @property
+    def nf_acr_manifest_names(self) -> List[str]:
+        """
+        The list of ACR manifest names for all the NF RET ARM templates.
+
+        These will be sorted alphabetically by name.
+        """
         acr_manifest_names = []
         for nf in self.network_functions:
             assert isinstance(nf, NFDRETConfiguration)
             acr_manifest_names.append(nf.acr_manifest_name(self.nsd_version))
 
+        logger.debug("NF ACR manifest names: %s", acr_manifest_names)
+        return sorted(acr_manifest_names)
+
+    @property
+    def arm_acr_manifest_names(self) -> List[str]:
+        """
+        The list of ACR manifest names for all the ARM RET ARM templates.
+
+        These will be sorted alphabetically by name.
+        """
+        acr_manifest_names = []
+        for arm_template in self.arm_templates:
+            assert isinstance(arm_template, NSArmArtifactConfig)
+            acr_manifest_names.append(arm_template.acr_manifest_name(self.nsd_version))
+
+        logger.debug("ARM ACR manifest names: %s", acr_manifest_names)
+        return sorted(acr_manifest_names)
+
+    @property
+    def acr_manifest_names(self) -> List[str]:
+        """
+        The list of ACR manifest names for all NF and ARM templates.
+
+        These will be sorted alphabetically by name.
+        """
+        acr_manifest_names = []
+        for arm_template in self.arm_templates:
+            assert isinstance(arm_template, NSArmArtifactConfig)
+            acr_manifest_names.append(arm_template.acr_manifest_name(self.nsd_version))
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            acr_manifest_names.append(nf.acr_manifest_name(self.nsd_version))
+
         logger.debug("ACR manifest names: %s", acr_manifest_names)
-        return acr_manifest_names
+        return sorted(acr_manifest_names)
+
+    @property
+    def all_arm_templates_config(self) -> List[Dict[str, str]]:
+        """
+        The combined config required for ARM templates in the artifact manifest,
+        composed of the ACR manifest names and corresponding ARM template artifact
+        names.
+        """
+        arm_templates_config = []
+        for arm_template in self.arm_templates:
+            assert isinstance(arm_template, NSArmArtifactConfig)
+            arm_templates_config.append({
+                "acrManifestName": arm_template.acr_manifest_name(self.nsd_version),
+                "armTemplateName": self.format_artifact_name_for_manifest(arm_template.artifact_name)
+            })
+        for nf in self.network_functions:
+            assert isinstance(nf, NFDRETConfiguration)
+            arm_templates_config.append({
+                "acrManifestName": nf.arm_template.acr_manifest_name(self.nsd_version),
+                "armTemplateName": self.format_artifact_name_for_manifest(nf.arm_template.artifact_name)
+            })
+        return arm_templates_config
+
+
+    @staticmethod
+    def format_artifact_name_for_manifest(artifact_name: str) -> str:
+        """
+        Format artifact name to allowed chars and length.
+
+        Note this is the artifact name not the artifact manifest name.
+
+        Rules for CGS name are up to 256 lowercase alphanumeric characters, - or _. Must
+        begin with an alphanumeric character.
+
+        Return the reformatted name.
+        """
+        # Replace any non-allowed characters with '_'
+        artifact_name = artifact_name.lower()
+        artifact_name = re.sub("[^0-9a-z_.-]+", "_", artifact_name)
+        # Strip leading or trailing _
+        artifact_name = artifact_name.strip("_")
+        artifact_name = artifact_name[:256]
+        return artifact_name
 
 
 def get_configuration(configuration_type: str, config_file: str) -> Configuration:
