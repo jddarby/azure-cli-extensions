@@ -9,7 +9,7 @@ class TemplateProcessorStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def generate_resource_element_template(self) -> ResourceElementTemplate:
+    def generate_resource_element_template() -> ResourceElementTemplate:
         """
         Abstract method to generate resource element template.
         """
@@ -17,7 +17,7 @@ class TemplateProcessorStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def generate_nf_application(self) -> NetworkFunctionApplication:
+    def generate_nf_application() -> NetworkFunctionApplication:
         """
         Abstract method to generate network function application.
         """
