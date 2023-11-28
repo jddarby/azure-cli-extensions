@@ -6,6 +6,7 @@
 from abc import ABC, abstractmethod
 
 from build_processors.artifact_details import BaseArtifact
+from common.local_file_builder import LocalFileBuilder
 from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate
 
 
@@ -20,7 +21,7 @@ class BaseBuildProcessor(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_artifact_details() -> list[BaseArtifact]:
+    def get_artifact_details() -> tuple[list[BaseArtifact], list[LocalFileBuilder]]:
         """Get the artifact details."""
         raise NotImplementedError
 

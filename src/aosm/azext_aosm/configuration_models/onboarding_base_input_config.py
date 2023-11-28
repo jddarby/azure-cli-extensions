@@ -29,4 +29,3 @@ class OnboardingBaseInputConfig(ABC):
             "comment": "Optional. Name of the ACR Artifact Store resource. Will be created if it does not exist (with a default name if none is supplied)."
         }
     )
-    # TODO: Add more fields here as needed.

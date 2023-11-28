@@ -4,10 +4,15 @@
 # --------------------------------------------------------------------------------------------
 
 from onboarding_nfd_base_handler import OnboardingBaseCLIHandler
+from configuration_models.onboarding_nsd_input_config import OnboardingNSDInputConfig
 
 
 class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for publishing NFDs."""
+
+    def _get_config(self, input_config: dict = {}) -> OnboardingNSDInputConfig:
+        """Get the configuration for the command."""
+        return OnboardingNSDInputConfig(**input_config)
 
     def build_base_bicep(self):
         """Build the base bicep file."""

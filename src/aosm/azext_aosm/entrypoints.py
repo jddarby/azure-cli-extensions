@@ -3,33 +3,74 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-# May want common get_vnf_handler, and get_cnf_handler, get_nsd_handler.
+from cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandler
+from cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
+from cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
 
-# Branch based on CNF or VNF
-def onboard_nfd_generate_config():
-    # If VNF:
-        # handler = OnboardVNFCLIHandler()
-        # handler.generate_config()
-    return NotImplementedError
 
-def onboard_nfd_build():
-    return NotImplementedError
+def onboard_nfd_generate_config(definition_type: str):
+    if definition_type == "cnf":
+        handler = OnboardingCNFCLIHandler()
+        handler.generate_config()
+    elif definition_type == "vnf":
+        handler = OnboardingVNFCLIHandler()
+        handler.generate_config()
+    else:
+        # TODO: better error
+        raise Exception("Invalid definition type")
 
-def onboard_nfd_deploy():
-    return NotImplementedError
 
-def onboard_nfd_delete():
-    return NotImplementedError
+def onboard_nfd_build(definition_type: str, config_file: str):
+    if definition_type == "cnf":
+        handler = OnboardingCNFCLIHandler(config_file)
+        handler.build()
+    elif definition_type == "vnf":
+        handler = OnboardingVNFCLIHandler(config_file)
+        handler.build()
+    else:
+        # TODO: better error
+        raise Exception("Invalid definition type")
+
+
+def onboard_nfd_publish(definition_type: str, config_file: str):
+    if definition_type == "cnf":
+        handler = OnboardingCNFCLIHandler(config_file)
+        handler.publish()
+    elif definition_type == "vnf":
+        handler = OnboardingVNFCLIHandler(config_file)
+        handler.publish()
+    else:
+        # TODO: better error
+        raise Exception("Invalid definition type")
+
+
+def onboard_nfd_delete(definition_type: str, config_file: str):
+    if definition_type == "cnf":
+        handler = OnboardingCNFCLIHandler(config_file)
+        handler.delete()
+    elif definition_type == "vnf":
+        handler = OnboardingVNFCLIHandler(config_file)
+        handler.delete()
+    else:
+        # TODO: better error
+        raise Exception("Invalid definition type")
 
 
 def onboard_nsd_generate_config():
-    return NotImplementedError
+    handler = OnboardingNSDCLIHandler()
+    handler.generate_config()
 
-def onboard_nsd_build():
-    return NotImplementedError
 
-def onboard_nsd_deploy():
-    return NotImplementedError
+def onboard_nsd_build(config_file: str):
+    handler = OnboardingNSDCLIHandler(config_file)
+    handler.build()
 
-def onboard_nsd_delete():
-    return NotImplementedError
+
+def onboard_nsd_publish(config_file: str):
+    handler = OnboardingNSDCLIHandler(config_file)
+    handler.publish()
+
+
+def onboard_nsd_delete(config_file: str):
+    handler = OnboardingNSDCLIHandler(config_file)
+    handler.delete()
