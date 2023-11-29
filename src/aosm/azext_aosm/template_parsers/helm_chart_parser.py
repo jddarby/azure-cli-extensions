@@ -158,46 +158,71 @@ class HelmChart(BaseParser):
         return templates
 
     def _extract_chart_to_dir(self, chart_path: Path, target_dir: Path) -> Path:
-        file_extension = chart_path.suffix
+            """
+            Extracts the helm chart package to the target directory.
 
-        if file_extension in (".gz", ".tgz"):
-            with tarfile.open(chart_path, "r:gz") as tar:
-                tar.extractall(path=target_dir)
-        elif file_extension == ".tar":
-            with tarfile.open(chart_path, "r:") as tar:
-                tar.extractall(path=target_dir)
-        else:
-            raise InvalidFileTypeError(
-                f"ERROR: The helm package '{chart_path}' is not"
-                "a .tgz, .tar or .tar.gz file."
-            )
+            Args:
+                chart_path (Path): The path to the helm chart package.
+                target_dir (Path): The target directory to extract the chart to.
 
-        return Path(target_dir, os.listdir(target_dir)[0])
+            Returns:
+                Path: The path to the extracted chart directory.
+
+            Raises:
+                InvalidFileTypeError: If the file type is not supported by the parser.
+            """
+            file_extension = chart_path.suffix
+
+            if file_extension in (".gz", ".tgz"):
+                with tarfile.open(chart_path, "r:gz") as tar:
+                    tar.extractall(path=target_dir)
+            elif file_extension == ".tar":
+                with tarfile.open(chart_path, "r:") as tar:
+                    tar.extractall(path=target_dir)
+            else:
+                raise InvalidFileTypeError(
+                    f"ERROR: The helm package, '{chart_path}', is not"
+                    "a .tgz, .tar or .tar.gz file."
+                )
+
+            return Path(target_dir, os.listdir(target_dir)[0])
 
     def _validate(self):
-        if not Path(self._chart_dir, "Chart.yaml").exists():
-            raise FileNotFoundError(
-                f"ERROR: The Helm chart '{self.chart_path}' does not contain"
-                "a Chart.yaml file."
-            )
+            """
+            Validates the Helm chart by checking if the Chart.yaml file exists.
+
+            Raises:
+                FileNotFoundError: If the Chart.yaml file does not exist.
+            """
+            if not Path(self._chart_dir, "Chart.yaml").exists():
+                raise FileNotFoundError(
+                    f"ERROR: The Helm chart '{self.chart_path}' does not contain"
+                    "a Chart.yaml file."
+                )
 
     def _get_metadata(self) -> HelmChartMetadata:
-        # The metadata is stored in the Chart.yaml file.
-        chart_yaml_path = Path(self._chart_dir, "Chart.yaml")
+            """
+            Retrieves the metadata of the Helm chart.
 
-        with chart_yaml_path.open(encoding="UTF-8") as chart_yaml_file:
-            chart_yaml = yaml.safe_load(chart_yaml_file)
+            Returns:
+                HelmChartMetadata: The metadata of the Helm chart.
+            """
+            # The metadata is stored in the Chart.yaml file.
+            chart_yaml_path = Path(self._chart_dir, "Chart.yaml")
 
-        # We only need the name of the dependency charts.
-        dependencies = [
-            dependency["name"] for dependency in chart_yaml.get("dependencies", [])
-        ]
+            with chart_yaml_path.open(encoding="UTF-8") as chart_yaml_file:
+                chart_yaml = yaml.safe_load(chart_yaml_file)
 
-        return HelmChartMetadata(
-            name=chart_yaml["name"],
-            version=chart_yaml["version"],
-            dependencies=dependencies,
-        )
+            # We only need the name of the dependency charts.
+            dependencies = [
+                dependency["name"] for dependency in chart_yaml.get("dependencies", [])
+            ]
+
+            return HelmChartMetadata(
+                name=chart_yaml["name"],
+                version=chart_yaml["version"],
+                dependencies=dependencies,
+            )
     
     def _read_values_yaml(self) -> Dict[str, Any]:
             """
