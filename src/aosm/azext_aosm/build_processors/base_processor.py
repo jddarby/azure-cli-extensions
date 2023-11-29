@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
+from typing import List, Tuple
 
 from build_processors.artifact_details import BaseArtifact
 from common.local_file_builder import LocalFileBuilder
@@ -15,13 +16,13 @@ class BaseBuildProcessor(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_artifact_manifest_list() -> list[ManifestArtifactFormat]:
+    def get_artifact_manifest_list() -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
-    def get_artifact_details() -> tuple[list[BaseArtifact], list[LocalFileBuilder]]:
+    def get_artifact_details() -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         raise NotImplementedError
 

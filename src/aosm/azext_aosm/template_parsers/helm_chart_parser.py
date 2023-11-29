@@ -1,3 +1,8 @@
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
+
 import json
 import os
 import shutil
@@ -27,7 +32,16 @@ class HelmChartTemplate:
 
 
 class HelmChart(BaseParser):
+    """
+    A utility class for working with Helm charts.
+
+    Attributes:
+        chart_dir (Path): The path to the unpacked Helm chart.
+        defaults_path (Path): The path to the default values file.
+    """
+
     def __init__(self, chart_path: Path, defaults_path: Path = None):
+        """Initialize the HelmChart class."""
         super().__init__(chart_path, defaults_path)
         self._temp_dir_path = Path(tempfile.mkdtemp())
         if chart_path.is_dir():
