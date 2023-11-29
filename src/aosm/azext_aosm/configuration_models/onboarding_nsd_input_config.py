@@ -51,15 +51,17 @@ class NetworkFunctionPropertiesConfig:
         }
     )
 
+
 @dataclass
 class NetworkFunctionConfig:
     """Network function object for NSDs."""
+
     resource_element_type: str = field(
         metadata={"comment": "Type of Resource Element. Either NF or ArmTemplate"}
     )
     properties: NetworkFunctionPropertiesConfig = field()
-  
-    
+
+
 @dataclass
 class ArmTemplateConfig:
     """Configuration for RET."""
@@ -79,8 +81,10 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
 
     nsd_name: str = field(
         metadata={
-            "comment": ("Network Service Design (NSD) name. "
-            "This is the collection of Network Service Design Versions. Will be created if it does not exist.")
+            "comment": (
+                "Network Service Design (NSD) name. "
+                "This is the collection of Network Service Design Versions. Will be created if it does not exist."
+            )
         }
     )
     nsd_version: str = field(

@@ -7,13 +7,30 @@ from dataclasses import dataclass, field
 
 from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
+
 @dataclass
 class ImageConfig:
     """Object representing an image configuration"""
 
-    # TODO: Fill in comments
-    source_registry: str = field(metadata={"comment": ""})
-    source_registry_namespace: str = field(metadata={"comment": ""})
+    source_registry: str = field(
+        metadata={
+            "comment": (
+                "optional. login server of the source acr registry from which to pull the image(s). "
+                "For example sourceacr.azurecr.io. "
+                "Leave blank if you have set source_local_docker_image."
+            )
+        }
+    )
+    source_registry_namespace: str = field(
+        metadata={
+            "comment": (
+                "optional. namespace of the repository of the source acr registry from which to pull. "
+                "For example if your repository is samples/prod/nginx then set this to samples/prod. "
+                "Leave blank if the image is in the root namespace or you have set source_local_docker_image."
+                "See https://learn.microsoft.com/en-us/azure/container-registry/container-registry-best-practices#repository-namespaces for further details."
+            )
+        }
+    )
     source_local_docker_image: str = field(
         metadata={
             "comment": (
@@ -52,8 +69,10 @@ class HelmPackageConfig:
     # TODO: Implement split into 3 lists, if done elsewhere in code
     depends_on: list = field(
         metadata={
-            "comment": ("Names of the Helm packages this package depends on. " 
-                        "Leave as an empty array if there are no dependencies.")
+            "comment": (
+                "Names of the Helm packages this package depends on. "
+                "Leave as an empty array if there are no dependencies."
+            )
         }
     )
 
