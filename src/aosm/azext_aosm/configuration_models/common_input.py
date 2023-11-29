@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class ArmTemplateConfig:
+class ArmTemplatePropertiesConfig:
     """ARM template configuration."""
 
     artifact_name: str = field(metadata={"comment": "Optional. Name of the artifact."})

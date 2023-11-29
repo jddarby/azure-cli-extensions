@@ -4,12 +4,12 @@
 # --------------------------------------------------------------------------------------------
 
 from dataclasses import dataclass, field
-from common_input import ArmTemplateConfig
+from common_input import ArmTemplatePropertiesConfig
 from onboarding_base_input_config import OnboardingBaseInputConfig
 
 
 @dataclass
-class NetworkFunctionConfig:
+class NetworkFunctionPropertiesConfig:
     """Network function object for NSDs."""
 
     # TODO: Change publisher commment
@@ -51,16 +51,24 @@ class NetworkFunctionConfig:
         }
     )
 
-
 @dataclass
-class RETConfig:
+class NetworkFunctionConfig:
+    """Network function object for NSDs."""
+    resource_element_type: str = field(
+        metadata={"comment": "Type of Resource Element. Either NF or ArmTemplate"}
+    )
+    properties: NetworkFunctionPropertiesConfig = field()
+  
+    
+@dataclass
+class ArmTemplateConfig:
     """Configuration for RET."""
 
     resource_element_type: str = field(
         metadata={"comment": "Type of Resource Element. Either NF or ArmTemplate"}
     )
     # Jordan: look up how to do this properly, Union?
-    properties: NetworkFunctionConfig | ArmTemplateConfig = field(
+    properties: ArmTemplatePropertiesConfig = field(
         metadata={"comment": "Properties of the Resource Element."}
     )
 
@@ -87,6 +95,6 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
     )
 
     # TODO: Add detailed comment for this
-    resource_element_templates: [RETConfig] = field(
+    resource_element_templates: [NetworkFunctionConfig, ArmTemplateConfig] = field(
         metadata={"comment": "List of Resource Element Templates."}
     )

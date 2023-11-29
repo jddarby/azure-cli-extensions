@@ -7,8 +7,6 @@ from dataclasses import dataclass, field
 
 from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
-
-# Jordan: These will definitely be defined in the build class, atlhough probably separate?
 @dataclass
 class ImageConfig:
     """Object representing an image configuration"""
@@ -51,7 +49,7 @@ class HelmPackageConfig:
             )
         }
     )
-    # Do we make this 3 parts?
+    # TODO: Implement split into 3 lists, if done elsewhere in code
     depends_on: list = field(
         metadata={
             "comment": ("Names of the Helm packages this package depends on. " 
@@ -60,7 +58,7 @@ class HelmPackageConfig:
     )
 
 
-# Jordan: remove if not implementing this now, add to helmpackage config if we are
+# TODO: remove if not implementing this now, add to helmpackage config if we are
 @dataclass
 class DependsOnConfig:
     """Object representing a depends on object."""

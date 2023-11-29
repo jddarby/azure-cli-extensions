@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 from dataclasses import dataclass, field
-from common_input import ArmTemplateConfig
+from common_input import ArmTemplatePropertiesConfig
 from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
 
@@ -82,7 +82,7 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     )
 
     # TODO: Add better comments
-    arm_template: [ArmTemplateConfig] = field(
+    arm_template: [ArmTemplatePropertiesConfig] = field(
         metadata={"comment": "ARM template configuration."}
     )
 
