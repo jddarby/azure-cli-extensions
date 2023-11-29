@@ -6,17 +6,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict
-
+from typing import Any, Dict, Optional
 
 @dataclass
-class BaseParser(ABC):
-    """
-    Base class for template parsers.
-    """
+class BaseInputTemplate(ABC):
 
     template_path: Path
-    defaults_path: Path
+    defaults_path: Optional[Path] = None
 
     @abstractmethod
     def get_defaults(self) -> Dict[str, Any]:
