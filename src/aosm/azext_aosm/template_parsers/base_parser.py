@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Optional
 
 @dataclass
-class BaseParser(ABC):
+class BaseInputTemplate(ABC):
 
     template_path: Path
-    defaults_path: Optional(Path) = None
+    defaults_path: Optional[Path] = None
 
     @abstractmethod
     def get_defaults(self):
