@@ -10,19 +10,19 @@ import tarfile
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, Optional, List
 
 import genson
 import yaml
 from common.exceptions import DefaultValuesNotFoundError, InvalidFileTypeError, MissingChartDependencyError, SchemaGetOrGenerateError
-from template_parsers.base_parser import BaseParser
+from input_templates.base_input_template import BaseInputTemplate
 
 
 @dataclass
 class HelmChartMetadata:
     name: str
     version: str
-    dependencies: List[str] = None
+    dependencies: List[str] = []
 
 
 @dataclass
@@ -31,7 +31,7 @@ class HelmChartTemplate:
     data: List[str]
 
 
-class HelmChart(BaseParser):
+class HelmChart(BaseInputTemplate):
     """
     A utility class for working with Helm charts.
 
@@ -40,7 +40,7 @@ class HelmChart(BaseParser):
         defaults_path (Path): The path to the default values file.
     """
 
-    def __init__(self, chart_path: Path, defaults_path: Path = None):
+    def __init__(self, chart_path: Path, defaults_path: Optional[Path] = None):
         """Initialize the HelmChart class."""
         super().__init__(chart_path, defaults_path)
         self._temp_dir_path = Path(tempfile.mkdtemp())
@@ -154,7 +154,7 @@ class HelmChart(BaseParser):
         """
         # Template files are located in the templates directory.
         template_dir = Path(self._chart_dir, "templates")
-        templates = []
+        templates: List[HelmChartTemplate] = []
 
         # TODO: Decide whether to raise an exception if the templates directory
         # does not exist.

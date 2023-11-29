@@ -1,0 +1,250 @@
+import json
+import re
+from build_processors.base_processor import BaseBuildProcessor
+from input_templates.helm_chart import HelmChart
+from typing import Any, Dict, Set
+from vendored_sdks.models import (
+    ArtifactStore,
+    ApplicationEnablement,
+    AzureArcKubernetesArtifactProfile,
+    AzureArcKubernetesDeployMappingRuleProfile,
+    DependsOnProfile,
+    HelmMappingRuleProfile,
+    ReferencedResource,
+    ResourceElementTemplate,
+    AzureArcKubernetesHelmApplication,
+    HelmArtifactProfile,
+)
+
+VALUE_PATH_REGEX = r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
+
+class HelmChartProcessor(BaseBuildProcessor):
+    """
+    A template processor for Helm charts.
+
+    This class provides methods to generate resource element templates and network function applications
+    for Helm charts.
+    """
+
+    def __init__(self, name: str, artifact_store: ArtifactStore, input_template: HelmChart):
+        """
+        Initialize the HelmChartProcessor class.
+
+        Args:
+            artifact_store (ArtifactStore): The artifact store to use for the artifact profile.
+            chart (HelmChart): The Helm chart to use for the artifact profile.
+        """
+        super().__init__(name, artifact_store, input_template)
+        # assert isinstance(self.input_template, HelmChart)
+
+    def generate_resource_element_template(self) -> ResourceElementTemplate:
+        raise NotImplementedError("NSDs do not support deployment of Helm charts.")
+
+    def generate_nf_application(self) -> AzureArcKubernetesHelmApplication:
+        """
+        Generates an Azure Arc Kubernetes Helm application for the given artifact store and Helm chart.
+
+        Returns:
+            AzureArcKubernetesHelmApplication: The generated Helm application.
+        """
+        artifact_profile = self._generate_artifact_profile()
+        # We want to remove the registry values paths and image pull secrets values paths from the values mappings
+        # as these values are supplied by NFM when it installs the chart.
+        values_to_remove = (
+            artifact_profile.helm_artifact_profile.registry_values_paths
+            | artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
+        )
+        mapping_rule_profile = self._generate_mapping_rule_profile(values_to_remove)
+
+        return AzureArcKubernetesHelmApplication(
+            name=self.name,
+            depends_on_profile=DependsOnProfile(),
+            artifact_profile=artifact_profile,
+            deploy_parameters_mapping_rule_profile=mapping_rule_profile,
+        )
+
+    def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:
+        """
+        Generates an Azure Arc Kubernetes artifact profile for the given artifact store and Helm chart.
+
+        Returns:
+            AzureArcKubernetesArtifactProfile: The generated artifact profile.
+        """
+        image_pull_secrets_values_paths: Set[str] = set()
+        self._find_image_pull_secrets_values_paths(image_pull_secrets_values_paths)
+
+        registry_values_paths: Set[str] = set()
+        self._find_registry_values_paths(registry_values_paths)
+
+        chart_profile = HelmArtifactProfile(
+            helm_package_name=self.input_template.metadata.name,
+            helm_package_version_range=self.input_template.metadata.version,
+            registry_values_paths=registry_values_paths,
+            image_pull_secrets_values_paths=image_pull_secrets_values_paths,
+        )
+
+        return AzureArcKubernetesArtifactProfile(
+            artifact_store=ReferencedResource(id=self.artifact_store.id),
+            helm_artifact_profile=chart_profile,
+        )
+
+    def _find_image_pull_secrets_values_paths(self, matches: Set[str]) -> None:
+        """
+        Find image pull secrets values paths in the Helm chart templates.
+
+        Args:
+            chart (HelmChart): The Helm chart to search for image pull secrets
+            values paths.
+            matches (Set[str]): A set of image pull secrets parameters found so far.
+
+        Returns:
+            None
+        """
+        for template in self.input_template.get_templates():
+            # Loop through each line in the template.
+            for index in range(len(template.data)):
+                count = 0
+                # If the line contains 'imagePullSecrets:' we check if there is a
+                # value path matching the regex. If there is, we add it to the
+                # matches set and break the loop. If there is not, we check the
+                # next line. We do this until we find a line that contains a match.
+                # NFM provides the image pull secrets parameter as a list. If we find
+                # a line that contains 'name:' we know that the image pull secrets
+                # parameter value path is for a string and not a list, and
+                # so we can break from the loop.
+                while ("imagePullSecrets:" in template.data[index]) and (
+                    "name:" not in template.data[index + count]
+                ):
+                    new_matches = re.findall(
+                        VALUE_PATH_REGEX, template.data[index + count]
+                    )
+                    if len(new_matches) != 0:
+                        matches.update(new_matches)
+                        break
+
+                    count += 1
+
+        # Recursively search the dependency charts for image pull secrets parameters
+        for chart in self.input_template.get_dependencies():
+            HelmChartProcessor._find_image_pull_secrets_values_paths(chart, matches)
+
+    def _find_registry_values_paths(self, matches: Set[str]) -> None:
+        """
+        Find registry values paths in the Helm chart templates.
+
+        Args:
+            chart (HelmChart): The Helm chart to search for registry values paths.
+            matches (Set[str]): A set of registry values paths found so far.
+
+        Returns:
+            None
+        """
+        for template in self.input_template.get_templates():
+            for line in template.data:
+                if "image:" in line:
+                    # Images are specified in the format <registry>/<image>:<tag>
+                    # so we split the line on '/' and then find the value path
+                    # in the first element of the resulting list.
+                    print(f"line: {line}")
+                    new_matches = re.findall(VALUE_PATH_REGEX, line.split("/")[0])
+                    print(f"new_matches: {new_matches}")
+                    if len(new_matches) != 0:
+                        matches.update(new_matches)
+
+        # Recursively search the dependency charts for registry values paths
+        for chart in self.input_template.get_dependencies():
+            HelmChartProcessor._find_registry_values_paths(chart, matches)
+
+    def _generate_mapping_rule_profile(self, values_to_remove: Set[str]) -> AzureArcKubernetesDeployMappingRuleProfile:
+        """
+        Generate the mappings for a Helm chart.
+
+        Args:
+            name (str): The name of the Helm release.
+            chart (HelmChart): The Helm chart object.
+            values_to_remove (Set[str]): The values to remove from the values mappings.
+
+        Returns:
+            AzureArcKubernetesDeployMappingRuleProfile: The mapping rule profile for Azure Arc Kubernetes deployment.
+        """
+        schema = self.input_template.get_schema()
+        default_values = self.input_template.get_defaults()
+        # Generate the values mappings for the Helm chart.
+        values_mappings = self._generate_values_mappings(
+            schema, default_values
+        )
+
+        # Remove the values to remove from the values mappings.
+        for value_to_remove in values_to_remove:
+            self._remove_key_from_dict(values_mappings, value_to_remove)
+
+        # TODO: Should namespace be configurable?
+        mapping_rule_profile = HelmMappingRuleProfile(
+            release_name=self.name,
+            release_namespace=self.name,
+            helm_package_version=self.input_template.metadata.version,
+            values=values_mappings,
+        )
+
+        return AzureArcKubernetesDeployMappingRuleProfile(
+            application_enablement=ApplicationEnablement.ENABLED,
+            helm_mapping_rule_profile=mapping_rule_profile,
+        )
+
+    def _generate_values_mappings(
+        self, schema: Dict[str, Any], values: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Generate values mappings for a Helm chart.
+
+        Args:
+            schema (Dict[str, Any]): The schema of the Helm chart.
+            values (Dict[str, Any]): The values of the Helm chart.
+
+        Returns:
+            Dict[str, Any]: The value mappings for the Helm chart.
+        """
+        # Loop through each property in the schema.
+        for k, v in schema["properties"].items():
+            # If the property is not in the values, and is required, add it to the values.
+            if k not in values and k in schema["required"]:
+                print(f"Adding {k} to values")
+                if v["type"] == "object":
+                    values[k] = self._generate_values_mappings(
+                        v, {}
+                    )
+                else:
+                    values[k] = f"{{deployParameters.{self.name}.{k}}}"
+            # If the property is in the values, and is an object, generate the values mappings
+            # for the subschema.
+            if k in values and v["type"] == "object" and values[k]:
+                values[k] = self._generate_values_mappings(
+                    v, values[k]
+                )
+        return values
+
+    def _remove_key_from_dict(self, dictionary: Dict[str, Any], path: str) -> None:
+        """
+        Remove a key from a nested dictionary based on the given path.
+
+        Args:
+            dictionary (Dict[str, Any]): The nested dictionary.
+            path (str): The path to the key in dot notation.
+
+        Returns:
+            None: This method does not return anything.
+        """
+        # Split the path by the dot character
+        keys = path.split(".")
+        # Check if the path is valid
+        if len(keys) == 0 or keys[0] not in dictionary:
+            return None  # Invalid path
+        # If the path has only one key, remove it from the dictionary
+        if len(keys) == 1:
+            del dictionary[keys[0]]
+            return None  # Key removed
+        # Otherwise, recursively call the function on the sub-dictionary
+        else:
+            return self._remove_key_from_dict(
+                dictionary[keys[0]], ".".join(keys[1:])
+            )

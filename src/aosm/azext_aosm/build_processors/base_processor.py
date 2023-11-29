@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 from build_processors.artifact_details import BaseArtifact
-from template_parsers.base_parser import BaseInputTemplate
+from input_templates.base_input_template import BaseInputTemplate
 from common.local_file_builder import LocalFileBuilder
 from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
 
@@ -19,26 +19,22 @@ class BaseBuildProcessor(ABC):
     artifact_store: ArtifactStore
     input_template: BaseInputTemplate
 
-    @staticmethod
     @abstractmethod
-    def get_artifact_manifest_list() -> List[ManifestArtifactFormat]:
+    def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
         raise NotImplementedError
 
-    @staticmethod
     @abstractmethod
-    def get_artifact_details() -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         raise NotImplementedError
 
-    @staticmethod
     @abstractmethod
-    def generate_nf_application() -> NetworkFunctionApplication:
+    def generate_nf_application(self) -> NetworkFunctionApplication:
         """Generate the NF application."""
         raise NotImplementedError
 
-    @staticmethod
     @abstractmethod
-    def generate_resource_element_template() -> ResourceElementTemplate:
+    def generate_resource_element_template(self) -> ResourceElementTemplate:
         """Generate the resource element template."""
         raise NotImplementedError
