@@ -7,9 +7,64 @@ from dataclasses import dataclass, field
 
 from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
+# Jordan: These will definitely be defined in the build class, atlhough probably separate?
+@dataclass
+class ImageConfig():
+    """ Object representing an image configuration"""
+    # TODO: Fill in comments
+    source_registry: str = field(
+        metadata={"comment": ""}
+    )
+    source_registry_namespace: str = field(
+        metadata={"comment": ""}
+    )
+    source_local_docker_image: str = field(
+        metadata={"comment": "Optional. The image name of the source docker image from your local machine. " //
+                  "For limited use case where the CNF only requires a single docker image that exists in the local docker repository."}
+    )
 
+@dataclass
+class HelmPackageConfig():
+    """Helm package configuration."""
+    nf_name: str = field(
+        metadata={"comment": "The name of the Helm package."}
+    )
+    path_to_chart: str = field(
+        metadata={"comment": " The file path of Helm Chart on the local disk. Accepts .tgz, .tar or .tar.gz. " //
+                  "Use Linux slash (/) file separator even if running on Windows."}
+    )
+    path_to_mappings: str = field(
+        metadata={"comment": "The file path (absolute or relative to input.json) of value mappings on the local disk where chosen values are replaced with deploymentParameter placeholders. " //
+                  "Accepts .yaml or .yml. If left as a blank string, a value mappings file is generated with every value mapped to a deployment parameter. " //
+                  "Use a blank string and --interactive on the build command to interactively choose which values to map."}
+    )
+    # Do we make this 3 parts?
+    depends_on: list = field(
+        metadata={"comment": "Names of the Helm packages this package depends on. Leave as an empty array if there are no dependencies."}
+    )
+
+# Jordan: remove if not implementing this now, add to helmpackage config if we are
+@dataclass
+class DependsOnConfig():
+    """Object representing a depends on object."""
+    install_dependency: list = field(
+        metadata={"comment": "List of Helm packages this package depends on for install."}
+    )
+    update_dependency: list = field(
+        metadata={"comment": "List of Helm packages this package depends on for update."}
+    )
+    delete_dependency: list = field(
+        metadata={"comment": "List of Helm packages this package depends on for delete."}
+    )
+    
 @dataclass
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
     # TODO: Add fields here as needed.
-    pass
+    # Jordan: check this is never a list (90%sure)
+    images: ImageConfig = field(
+        metadata={"comment":"List of images "}
+    )
+    helm_packages: [HelmPackageConfig] = field(
+        metadata={"comment":"List of Helm packages to be included in the CNF."}
+    )
