@@ -7,7 +7,7 @@ from typing import Optional
 class BaseParser(ABC):
 
     template_path: Path
-    defaults_path: Optional(Path)
+    defaults_path: Optional(Path) = None
 
     @abstractmethod
     def get_defaults(self):
