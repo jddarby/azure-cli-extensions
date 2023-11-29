@@ -47,13 +47,21 @@ class OnboardingBaseCLIHandler(ABC):
 
     def publish(self, input_json_path: str):
         """Publish the definition."""
+        # Takes folder, deploys to Azure
+        #  - Read folder/ create folder object
+        #  - For each step (element):
+        #    - Do element.deploy()
         # TODO: Implement
-        pass
+
 
     def delete(self, input_json_path: str):
         """Delete the definition."""
+        # Takes folder, deletes to Azure
+        #  - Read folder/ create folder object
+        #  - For each element (reversed):
+        #    - Do element.delete()
         # TODO: Implement
-        pass
+
 
     @abstractmethod
     def build_base_bicep(self):

@@ -12,4 +12,11 @@ from onboarding_base_input_config import OnboardingBaseInputConfig
 class OnboardingNFDBaseInputConfig(OnboardingBaseInputConfig):
     """Common input configuration for onboarding NFDs."""
     # TODO: Add fields here as needed.
-    pass
+    nf_name: str = field(
+        metadata={"comment": "Name of NF definition."}
+    )
+    version: str = field(
+        metadata={
+            "comment:": "Version of the NF definition in A.B.C format."
+        }
+    )
