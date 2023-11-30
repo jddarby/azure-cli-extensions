@@ -7,7 +7,6 @@ from azure.cli.core import AzCommandsLoader
 
 from azext_aosm._help import helps  # pylint: disable=unused-import
 
-
 class AosmCommandsLoader(AzCommandsLoader):
     def __init__(self, cli_ctx=None):
         from azure.cli.core.commands import CliCommandType

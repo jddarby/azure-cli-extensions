@@ -99,6 +99,6 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
     )
 
     # TODO: Add detailed comment for this
-    resource_element_templates: [NetworkFunctionConfig, ArmTemplateConfig] = field(
+    resource_element_templates: "list[NetworkFunctionConfig | ArmTemplateConfig]" = field(
         metadata={"comment": "List of Resource Element Templates."}
     )

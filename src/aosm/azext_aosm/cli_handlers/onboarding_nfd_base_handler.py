@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from onboarding_base_handler import OnboardingBaseCLIHandler
+from .onboarding_base_handler import OnboardingBaseCLIHandler
 
 
 class OnboardingNFDBaseCLIHandler(OnboardingBaseCLIHandler):

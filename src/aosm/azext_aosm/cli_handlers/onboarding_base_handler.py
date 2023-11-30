@@ -5,7 +5,7 @@
 
 from abc import ABC, abstractmethod
 
-from configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
+from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
 
 
 class OnboardingBaseCLIHandler(ABC):
@@ -35,8 +35,9 @@ class OnboardingBaseCLIHandler(ABC):
     ):
         """Write the configuration to a file."""
         # TODO: Implement by converting config to JSONC
+        print(output_file)
 
-    def generate_config(self, output_file: str = "input.jsonc"):
+    def generate_config(self, output_file: str):
         """Generate the configuration file for the command."""
         # TODO: Make file name depend on class via property
         self._write_config_to_file(self.config, output_file)

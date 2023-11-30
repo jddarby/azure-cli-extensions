@@ -9,7 +9,7 @@ from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
 
 @dataclass
-class ImageConfig:
+class ImageSourceConfig:
     """Object representing an image configuration"""
 
     source_registry: str = field(
@@ -104,7 +104,7 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
 
     # Jordan: check this is never a list (90% sure)
-    images: ImageConfig = field(metadata={"comment": "List of images "})
+    images: ImageSourceConfig = field(metadata={"comment": "List of images "})
     helm_packages: [HelmPackageConfig] = field(
         metadata={"comment": "List of Helm packages to be included in the CNF."}
     )

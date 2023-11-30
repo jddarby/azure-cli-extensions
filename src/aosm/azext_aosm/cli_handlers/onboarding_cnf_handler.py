@@ -3,8 +3,8 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
-from configuration_models.onboarding_cnf_input_config import OnboardingCNFInputConfig
+from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from azext_aosm.configuration_models.onboarding_cnf_input_config import OnboardingCNFInputConfig
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
