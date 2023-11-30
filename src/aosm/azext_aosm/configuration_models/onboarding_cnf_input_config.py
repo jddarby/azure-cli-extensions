@@ -5,7 +5,7 @@
 
 from dataclasses import dataclass, field
 
-from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
+from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
 
 @dataclass
@@ -13,6 +13,7 @@ class ImageSourceConfig:
     """Object representing an image configuration"""
 
     source_registry: str = field(
+        default="",
         metadata={
             "comment": (
                 "optional. login server of the source acr registry from which to pull the image(s). "
@@ -22,6 +23,7 @@ class ImageSourceConfig:
         }
     )
     source_registry_namespace: str = field(
+        default="",
         metadata={
             "comment": (
                 "optional. namespace of the repository of the source acr registry from which to pull. "
@@ -32,6 +34,7 @@ class ImageSourceConfig:
         }
     )
     source_local_docker_image: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. The image name of the source docker image from your local machine. "
@@ -46,8 +49,11 @@ class ImageSourceConfig:
 class HelmPackageConfig:
     """Helm package configuration."""
 
-    nf_name: str = field(metadata={"comment": "The name of the Helm package."})
+    nf_name: str = field(
+        default="",
+        metadata={"comment": "The name of the Helm package."})
     path_to_chart: str = field(
+        default="",
         metadata={
             "comment": (
                 "The file path of Helm Chart on the local disk. Accepts .tgz, .tar or .tar.gz. "
@@ -56,6 +62,7 @@ class HelmPackageConfig:
         }
     )
     path_to_mappings: str = field(
+        default="",
         metadata={
             "comment": (
                 "The file path (absolute or relative to input.json) of value mappings on the local disk where "
@@ -68,6 +75,7 @@ class HelmPackageConfig:
     )
     # TODO: Implement split into 3 lists, if done elsewhere in code
     depends_on: list = field(
+        default="",
         metadata={
             "comment": (
                 "Names of the Helm packages this package depends on. "
@@ -83,16 +91,19 @@ class DependsOnConfig:
     """Object representing a depends on object."""
 
     install_dependency: list = field(
+        default_factory=[],
         metadata={
             "comment": "List of Helm packages this package depends on for install."
         }
     )
     update_dependency: list = field(
+        default_factory=[],
         metadata={
             "comment": "List of Helm packages this package depends on for update."
         }
     )
     delete_dependency: list = field(
+        default_factory=[],
         metadata={
             "comment": "List of Helm packages this package depends on for delete."
         }
@@ -103,8 +114,11 @@ class DependsOnConfig:
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
 
-    # Jordan: check this is never a list (90% sure)
-    images: ImageSourceConfig = field(metadata={"comment": "List of images "})
+    # TODO: Decide whether implementation of images have changed
+    images: ImageSourceConfig = field(
+        default_factory=ImageSourceConfig,
+        metadata={"comment": "List of images "})
     helm_packages: [HelmPackageConfig] = field(
+        default_factory=lambda: [HelmPackageConfig()],
         metadata={"comment": "List of Helm packages to be included in the CNF."}
     )

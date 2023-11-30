@@ -2,9 +2,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
-from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from __future__ import annotations
 from azext_aosm.configuration_models.onboarding_cnf_input_config import OnboardingCNFInputConfig
+from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):

@@ -13,9 +13,11 @@ class OnboardingBaseInputConfig(ABC):
     """Base input configuration for onboarding commands."""
 
     location: str = field(
+        default="",
         metadata={"comment": "Azure location to use when creating resources."}
     )
     publisher_name: str = field(
+        default="",
         metadata={
             "comment:": (
                 "Name of the Publisher resource you want your definition published to. "
@@ -24,6 +26,7 @@ class OnboardingBaseInputConfig(ABC):
         }
     )
     publisher_resource_group_name: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. Resource group for the Publisher resource. "
@@ -32,6 +35,7 @@ class OnboardingBaseInputConfig(ABC):
         }
     )
     acr_artifact_store_name: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. Name of the ACR Artifact Store resource. "

@@ -5,17 +5,18 @@
 
 from dataclasses import dataclass, field
 
-from onboarding_base_input_config import OnboardingBaseInputConfig
+from .onboarding_base_input_config import OnboardingBaseInputConfig
 
 
 @dataclass
 class OnboardingNFDBaseInputConfig(OnboardingBaseInputConfig):
     """Common input configuration for onboarding NFDs."""
-    # TODO: Add fields here as needed.
     nf_name: str = field(
+        default="",
         metadata={"comment": "Name of NF definition."}
     )
     version: str = field(
+        default="",
         metadata={
             "comment:": "Version of the NF definition in A.B.C format."
         }

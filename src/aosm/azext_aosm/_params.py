@@ -6,7 +6,7 @@
 from argcomplete.completers import FilesCompleter
 from azure.cli.core import AzCommandsLoader
 
-from .util.constants import CNF, VNF, BICEP_PUBLISH, ARTIFACT_UPLOAD, IMAGE_UPLOAD
+from .common.constants import CNF, VNF, BICEP_PUBLISH, ARTIFACT_UPLOAD, IMAGE_UPLOAD
 
 
 def load_arguments(self: AzCommandsLoader, _):

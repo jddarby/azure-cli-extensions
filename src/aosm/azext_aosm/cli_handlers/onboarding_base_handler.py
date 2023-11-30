@@ -2,9 +2,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+from __future__ import annotations
 from abc import ABC, abstractmethod
-
 from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
 
 
