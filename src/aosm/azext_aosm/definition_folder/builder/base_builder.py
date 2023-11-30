@@ -4,15 +4,30 @@
 # --------------------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
+from pathlib import Path
+
+from azext_aosm.common.local_file_builder import LocalFileBuilder
 
 class BaseDefinitionElementBuilder(ABC):
     """Base element definition builder."""
-    # TODO: Implement.
+    path: Path
+    supporting_files: list[LocalFileBuilder]
+    only_delete_on_clean: bool
+
+    def __init__(self, Path: Path, only_delete_on_clean: bool = False):
+        self.path = Path
+        self.supporting_files = []
+        self.only_delete_on_clean = only_delete_on_clean
+
+    def add_supporting_file(self, supporting_file: LocalFileBuilder):
+        """Add a supporting file to the element."""
+        self.supporting_files.append(supporting_file)
+
+    def _write_supporting_files(self):
+        """Write supporting files to disk."""
+        for supporting_file in self.supporting_files:
+            supporting_file.write()
 
     @abstractmethod
-    def deploy(self):
-        return NotImplementedError
-
-    @abstractmethod
-    def delete(self):
+    def write(self):
         return NotImplementedError

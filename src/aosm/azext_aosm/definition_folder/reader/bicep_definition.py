@@ -5,12 +5,19 @@
 
 from base_definition import BaseDefinitionElement
 
+
 class BicepDefinitionElement(BaseDefinitionElement):
     """ Bicep definition """
 
-    def write(self):
-        return NotImplementedError
+    def __init__(self, path: str, only_delete_on_clean: bool):
+        super().__init__(path, only_delete_on_clean)
 
-    def add_supporting_file(self):
-        return NotImplementedError
-    
+    def deploy(self):
+        """Deploy the element."""
+        # TODO: Implement.
+        pass
+
+    def delete(self):
+        """Delete the element."""
+        # TODO: Implement.
+        pass
