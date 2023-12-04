@@ -22,75 +22,90 @@ class OnboardingBaseCLIHandler(ABC):
         self.config = self._get_config(config_dict)
 
     def _read_config_from_file(self, input_json_path: str) -> dict:
-        """Read the input JSONC file."""
-        # TODO: Implement
+        """Reads the input JSONC file, removes comments + returns config as dictionary."""
+        with open(input_json_path, "r") as f:
+            lines = f.readlines()
+        lines = [line for line in lines if not line.strip().startswith("//")]
+        config_dict = json.loads("".join(lines))
+
+        return config_dict
 
     @abstractmethod
     def _get_config(self, input_config: dict = {}) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
         raise NotImplementedError
 
-    def serialize(self,instance, indent_count = 1):
+    def _serialize(self, dataclass, indent_count = 1):
         """
         Convert a dataclass instance to a JSONC string.
-        This function takes 
+        This function recursively iterates over the fields of the dataclass and serializes them.
+        
+        We expect the dataclass to contain values of type string, list or another dataclass.
+        Lists may only contain dataclasses. 
+        For example,
+        {
+            "param1": "value1",
+            "param2": [
+                { ... },
+                { ... }
+            ],
+            "param3": { ... }
+        }
         """
-        indent = "\t" * indent_count
+        indent = "    " * indent_count
         double_indent = indent * 2
-        # Initialize an empty list to hold the lines of the JSONC string.
-        result = []
-        # Iterate over the fields of the dataclass.
-        for field_info in fields(instance):
+        jsonc_string = []
+
+        for field_info in fields(dataclass):
             # Get the value of the current field.
-            value = getattr(instance, field_info.name)
-            
+            field_value = getattr(dataclass, field_info.name)
+
             # Get comment, if it exists + add it to the result
             comment = field_info.metadata.get('comment', '')
             if comment:
                 for line in comment.split('\n'):
-                    result.append(f'{indent}// {line}')
+                    jsonc_string.append(f'{indent}// {line}')
 
-            if is_dataclass(value):
+            if is_dataclass(field_value):
                 # Serialize the nested dataclass and add it as a nested JSON object.
-                if field_info == fields(instance)[-1]:
-                    nested_json = "{\n" + self.serialize(value, indent_count+1) + "\n" + indent + "}"
+                # Checks if it is last field to omit trailing comma
+                if field_info == fields(dataclass)[-1]:
+                    nested_json = "{\n" + self._serialize(field_value, indent_count+1) + "\n" + indent + "}"
                 else:
-                    nested_json = "{\n" + self.serialize(value, indent_count+1) + "\n" +  indent + "},"
-                result.append(f'{indent}"{field_info.name}": {nested_json}')
-            elif isinstance(value, list):
+                    nested_json = "{\n" + self._serialize(field_value, indent_count+1) + "\n" +  indent + "},"
+                jsonc_string.append(f'{indent}"{field_info.name}": {nested_json}')
+            elif isinstance(field_value, list):
                 # If the value is a list, iterate over the items.
-                result.append(f'{indent}"{field_info.name}": [')
-                for item in value:
+                jsonc_string.append(f'{indent}"{field_info.name}": [')
+                for item in field_value:
                     # Check if the item is a dataclass and serialize it.
                     if is_dataclass(item):
-                        inner_dataclass = self.serialize(item, indent_count+2)
-                        if item == value[-1]:
-                            result.append(double_indent + '{\n' + inner_dataclass + '\n' + double_indent +'}')
+                        inner_dataclass = self._serialize(item, indent_count+2)
+                        if item == field_value[-1]:
+                            jsonc_string.append(double_indent + '{\n' + inner_dataclass + '\n' + double_indent +'}')
                         else:
-                            result.append(double_indent +'{\n' + inner_dataclass + '\n' + double_indent +'},')
+                            jsonc_string.append(double_indent +'{\n' + inner_dataclass + '\n' + double_indent +'},')
                     else:
-                        result.append(json.dumps(item, indent=4) + ',')
-
-                if field_info == fields(instance)[-1]:
-                    result.append(indent +']')
+                        jsonc_string.append(json.dumps(item, indent=4) + ',')
+                # If the field is the last field, omit the trailing comma.
+                if field_info == fields(dataclass)[-1]:
+                    jsonc_string.append(indent +']')
                 else:
-                    result.append(indent +'],')
+                    jsonc_string.append(indent +'],')
             else:
-                # If the value is neither a dataclass nor a list, serialize it directly.
-                if field_info == fields(instance)[-1]:
-                    result.append(f'{indent}"{field_info.name}": {json.dumps(value,indent=4)}')
+                # If the value is a string, serialize it directly.
+                if field_info == fields(dataclass)[-1]:
+                    jsonc_string.append(f'{indent}"{field_info.name}": {json.dumps(field_value,indent=4)}')
                 else:
-                    result.append(f'{indent}"{field_info.name}": {json.dumps(value,indent=4)},')
-        return '\n'.join(result)
+                    jsonc_string.append(f'{indent}"{field_info.name}": {json.dumps(field_value,indent=4)},')
+        return '\n'.join(jsonc_string)
 
     def _write_config_to_file(
-        self, config: OnboardingBaseInputConfig, output_file: str
+        self, output_file: str
     ):
         """Write the configuration to a file."""
-        # TODO: Implement by converting config to JSONC
-        # print(config.__dataclass_fields__['location'].metadata["comment"])
         # Serialize the top-level dataclass instance and wrap it in curly braces to form a valid JSONC string.
-        jsonc_str = "{\n" + self.serialize(self.config) + "\n}"
+        jsonc_str = "{\n" + self._serialize(self.config) + "\n}"
         with open(output_file, "w") as f:
             f.write(jsonc_str)
 
@@ -98,9 +113,9 @@ class OnboardingBaseCLIHandler(ABC):
     def generate_config(self, output_file: str):
         """Generate the configuration file for the command."""
         # TODO: Make file name depend on class via property
-        self._write_config_to_file(self.config, output_file)
+        self._write_config_to_file(output_file)
 
-    def build(self, input_json_path: str):
+    def build(self):
         """Build the definition."""
         self.build_base_bicep()
         self.build_manifest_bicep()
