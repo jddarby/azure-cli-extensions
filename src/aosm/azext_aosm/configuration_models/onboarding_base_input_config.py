@@ -19,7 +19,7 @@ class OnboardingBaseInputConfig(ABC):
     publisher_name: str = field(
         default="",
         metadata={
-            "comment:": (
+            "comment": (
                 "Name of the Publisher resource you want your definition published to. "
                 "Will be created if it does not exist."
             )

@@ -18,12 +18,12 @@ class NetworkFunctionPropertiesConfig:
     )
     publisher_resource_group: str = field(
         default="",
-        metadata={"comment:": "The resource group that the publisher is hosted in."}
+        metadata={"comment": "The resource group that the publisher is hosted in."}
     )
     name: str = field(
         default="",
         metadata={
-            "comment:": "The name of the existing Network Function Definition Group to deploy using this NSD."
+            "comment": "The name of the existing Network Function Definition Group to deploy using this NSD."
         }
     )
     version: str = field(
@@ -50,7 +50,7 @@ class NetworkFunctionPropertiesConfig:
     multiple_instances: str = field(
         default="",
         metadata={
-            "comment:": (
+            "comment": (
                 "Set to true or false. Whether the NSD should allow arbitrary numbers of this type of NF. "
                 "If false only a single instance will be allowed. Only supported on VNFs, must be set to false on CNFs."
             )
@@ -101,7 +101,7 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
     nsd_version: str = field(
         default="",
         metadata={
-            "comment:": "Version of the NSD to be created. This should be in the format A.B.C"
+            "comment": "Version of the NSD to be created. This should be in the format A.B.C"
         }
     )
     nsdv_description: str = field(
@@ -111,8 +111,8 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
         }
     )
 
-    # TODO: Add detailed comment for this
+    # # TODO: Add detailed comment for this
     resource_element_templates: "list[NetworkFunctionConfig | ArmTemplateConfig]" = field(
-        default_factory=lambda: "list[NetworkFunctionConfig() | ArmTemplateConfig()]",
+        default_factory=lambda: [NetworkFunctionConfig(), ArmTemplateConfig()],
         metadata={"comment": "List of Resource Element Templates."}
     )
