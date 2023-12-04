@@ -14,15 +14,15 @@ from typing import Any, Dict, Optional, List
 
 import genson
 import yaml
-from common.exceptions import DefaultValuesNotFoundError, InvalidFileTypeError, MissingChartDependencyError, SchemaGetOrGenerateError
-from input_templates.base_input_template import BaseInputTemplate
+from azext_aosm.common.exceptions import DefaultValuesNotFoundError, InvalidFileTypeError, MissingChartDependencyError, SchemaGetOrGenerateError
+from src.aosm.azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
 
 
 @dataclass
 class HelmChartMetadata:
     name: str
     version: str
-    dependencies: List[str] = []
+    dependencies: List[str] = None
 
 
 @dataclass
@@ -31,7 +31,7 @@ class HelmChartTemplate:
     data: List[str]
 
 
-class HelmChart(BaseInputTemplate):
+class HelmChart(BaseInputArtifact):
     """
     A utility class for working with Helm charts.
 
@@ -40,14 +40,14 @@ class HelmChart(BaseInputTemplate):
         defaults_path (Path): The path to the default values file.
     """
 
-    def __init__(self, chart_path: Path, defaults_path: Optional[Path] = None):
+    def __init__(self, artifact_path: Path, default_config: Optional[Dict[str, Any]] = None):
         """Initialize the HelmChart class."""
-        super().__init__(chart_path, defaults_path)
+        super().__init__(artifact_path, default_config)
         self._temp_dir_path = Path(tempfile.mkdtemp())
-        if chart_path.is_dir():
-            self._chart_dir = chart_path
+        if artifact_path.is_dir():
+            self._chart_dir = artifact_path
         else:
-            self._chart_dir = self._extract_chart_to_dir(chart_path, self._temp_dir_path)
+            self._chart_dir = self._extract_chart_to_dir(self._temp_dir_path)
         self._validate()
         self.metadata = self._get_metadata()
 
@@ -63,16 +63,11 @@ class HelmChart(BaseInputTemplate):
                 found in the Helm chart directory.
             """
             try:
-                if self.defaults_path:
-                    with self.defaults_path.open(encoding="UTF-8") as values_file:
-                        values_yaml = yaml.safe_load(values_file)
-                    return values_yaml
-                else:
-                    return self._read_values_yaml()
+                return self.default_config or self._read_values_yaml()
             except FileNotFoundError:
                 raise DefaultValuesNotFoundError(
-                    "ERROR: No default values file was found for the Helm chart"
-                    f" '{self.chart_path}'. Please provide a default values file"
+                    "ERROR: No default values found for the Helm chart"
+                    f" '{self.artifact_path}'. Please provide default values"
                     " or add a values.yaml file to the Helm chart."
                 )
 
@@ -135,10 +130,10 @@ class HelmChart(BaseInputTemplate):
         # all the dependency names defined in Chart.yaml.
         for dependency in self.metadata.dependencies:
             if dependency not in [
-                dependency_chart.name for dependency_chart in dependency_charts
+                dependency_chart.metadata.name for dependency_chart in dependency_charts
             ]:
                 raise MissingChartDependencyError(
-                    f"ERROR: The Helm chart '{self.name}' has a"
+                    f"ERROR: The Helm chart '{self.metadata.name}' has a"
                     f"dependency on the chart '{dependency}' which is not"
                     "a local dependency."
                 )
@@ -171,12 +166,11 @@ class HelmChart(BaseInputTemplate):
 
         return templates
 
-    def _extract_chart_to_dir(self, chart_path: Path, target_dir: Path) -> Path:
+    def _extract_chart_to_dir(self, target_dir: Path) -> Path:
             """
             Extracts the helm chart package to the target directory.
 
             Args:
-                chart_path (Path): The path to the helm chart package.
                 target_dir (Path): The target directory to extract the chart to.
 
             Returns:
@@ -185,17 +179,17 @@ class HelmChart(BaseInputTemplate):
             Raises:
                 InvalidFileTypeError: If the file type is not supported by the parser.
             """
-            file_extension = chart_path.suffix
+            file_extension = self.artifact_path.suffix
 
             if file_extension in (".gz", ".tgz"):
-                with tarfile.open(chart_path, "r:gz") as tar:
+                with tarfile.open(self.artifact_path, "r:gz") as tar:
                     tar.extractall(path=target_dir)
             elif file_extension == ".tar":
-                with tarfile.open(chart_path, "r:") as tar:
+                with tarfile.open(self.artifact_path, "r:") as tar:
                     tar.extractall(path=target_dir)
             else:
                 raise InvalidFileTypeError(
-                    f"ERROR: The helm package, '{chart_path}', is not"
+                    f"ERROR: The helm package, '{self.artifact_path}', is not"
                     "a .tgz, .tar or .tar.gz file."
                 )
 
@@ -210,7 +204,7 @@ class HelmChart(BaseInputTemplate):
             """
             if not Path(self._chart_dir, "Chart.yaml").exists():
                 raise FileNotFoundError(
-                    f"ERROR: The Helm chart '{self.chart_path}' does not contain"
+                    f"ERROR: The Helm chart '{self.artifact_path}' does not contain"
                     "a Chart.yaml file."
                 )
 
@@ -256,7 +250,7 @@ class HelmChart(BaseInputTemplate):
             
             raise FileNotFoundError(
                 f"ERROR: No values file was found in the Helm chart"
-                f" '{self.chart_path}'."
+                f" '{self.artifact_path}'."
             )
 
     def __del__(self):

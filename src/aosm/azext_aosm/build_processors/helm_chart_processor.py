@@ -1,9 +1,12 @@
-import json
 import re
+from functools import lru_cache
 from build_processors.base_processor import BaseBuildProcessor
-from input_templates.helm_chart import HelmChart
-from typing import Any, Dict, Set
+from build_processors.artifact_details import BaseArtifact
+from common.local_file_builder import LocalFileBuilder
+from input_artifacts.helm_chart import HelmChart
+from typing import Any, Dict, Set, List, Tuple
 from vendored_sdks.models import (
+    ArtifactType,
     ArtifactStore,
     ApplicationEnablement,
     AzureArcKubernetesArtifactProfile,
@@ -14,6 +17,7 @@ from vendored_sdks.models import (
     ResourceElementTemplate,
     AzureArcKubernetesHelmApplication,
     HelmArtifactProfile,
+    ManifestArtifactFormat
 )
 
 VALUE_PATH_REGEX = r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
@@ -26,7 +30,7 @@ class HelmChartProcessor(BaseBuildProcessor):
     for Helm charts.
     """
 
-    def __init__(self, name: str, artifact_store: ArtifactStore, input_template: HelmChart):
+    def __init__(self, name: str, artifact_store: ArtifactStore, input_artifact: HelmChart):
         """
         Initialize the HelmChartProcessor class.
 
@@ -34,8 +38,35 @@ class HelmChartProcessor(BaseBuildProcessor):
             artifact_store (ArtifactStore): The artifact store to use for the artifact profile.
             chart (HelmChart): The Helm chart to use for the artifact profile.
         """
-        super().__init__(name, artifact_store, input_template)
-        # assert isinstance(self.input_template, HelmChart)
+        super().__init__(name, artifact_store, input_artifact)
+        # assert isinstance(self.input_artifact, HelmChart)
+
+    def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
+        """Get the artifact list."""
+        artifact_manifest_list = []
+        artifact_manifest_list.append(
+            ManifestArtifactFormat(
+                artifact_name=self.input_artifact.metadata.name,
+                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_version=self.input_artifact.metadata.version,
+            )
+        )
+
+        for image_name, image_version in self._find_chart_images():
+            artifact_manifest_list.append(
+                ManifestArtifactFormat(
+                    artifact_name=image_name,
+                    artifact_type=ArtifactType.OCI_ARTIFACT,
+                    artifact_version=image_version,
+                )
+            )
+
+        return artifact_manifest_list
+
+    def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+        """Get the artifact details."""
+        raise NotImplementedError
+
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         raise NotImplementedError("NSDs do not support deployment of Helm charts.")
@@ -63,6 +94,34 @@ class HelmChartProcessor(BaseBuildProcessor):
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )
 
+    def _find_chart_images(self) -> List[Tuple[str, str]]:
+        """
+        Find the images used in the Helm chart.
+
+        Returns:
+            List[Tuple[str, str]]: A list of tuples containing the image registry and image name.
+        """
+        pass
+
+    @lru_cache(maxsize=None)
+    def _find_image_lines(self, image_lines: Set[str]) -> None:
+        """
+        Finds the lines containing image references in the given Helm chart and its dependencies.
+
+        Args:
+            image_lines (Set[str]): A set to store the found image lines.
+
+        Returns:
+            None
+        """
+        for template in self.input_artifact.get_templates():
+            for line in template.data:
+                if "image:" in line:
+                    image_lines.add(line.replace("image:", "").strip())
+
+        for dep in self.input_artifact.get_dependencies():
+            self._find_image_lines(dep, image_lines)
+
     def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:
         """
         Generates an Azure Arc Kubernetes artifact profile for the given artifact store and Helm chart.
@@ -77,8 +136,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         self._find_registry_values_paths(registry_values_paths)
 
         chart_profile = HelmArtifactProfile(
-            helm_package_name=self.input_template.metadata.name,
-            helm_package_version_range=self.input_template.metadata.version,
+            helm_package_name=self.input_artifact.metadata.name,
+            helm_package_version_range=self.input_artifact.metadata.version,
             registry_values_paths=registry_values_paths,
             image_pull_secrets_values_paths=image_pull_secrets_values_paths,
         )
@@ -100,7 +159,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             None
         """
-        for template in self.input_template.get_templates():
+        for template in self.input_artifact.get_templates():
             # Loop through each line in the template.
             for index in range(len(template.data)):
                 count = 0
@@ -125,7 +184,7 @@ class HelmChartProcessor(BaseBuildProcessor):
                     count += 1
 
         # Recursively search the dependency charts for image pull secrets parameters
-        for chart in self.input_template.get_dependencies():
+        for chart in self.input_artifact.get_dependencies():
             HelmChartProcessor._find_image_pull_secrets_values_paths(chart, matches)
 
     def _find_registry_values_paths(self, matches: Set[str]) -> None:
@@ -139,21 +198,16 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             None
         """
-        for template in self.input_template.get_templates():
-            for line in template.data:
-                if "image:" in line:
-                    # Images are specified in the format <registry>/<image>:<tag>
-                    # so we split the line on '/' and then find the value path
-                    # in the first element of the resulting list.
-                    print(f"line: {line}")
-                    new_matches = re.findall(VALUE_PATH_REGEX, line.split("/")[0])
-                    print(f"new_matches: {new_matches}")
-                    if len(new_matches) != 0:
-                        matches.update(new_matches)
-
-        # Recursively search the dependency charts for registry values paths
-        for chart in self.input_template.get_dependencies():
-            HelmChartProcessor._find_registry_values_paths(chart, matches)
+        image_lines: Set[str] = set()
+        for line in self._find_image_lines(image_lines):
+            # Images are specified in the format <registry>/<image>:<tag>
+            # so we split the line on '/' and then find the value path
+            # in the first element of the resulting list.
+            print(f"line: {line}")
+            new_matches = re.findall(VALUE_PATH_REGEX, line.split("/")[0])
+            print(f"new_matches: {new_matches}")
+            if len(new_matches) != 0:
+                matches.update(new_matches)
 
     def _generate_mapping_rule_profile(self, values_to_remove: Set[str]) -> AzureArcKubernetesDeployMappingRuleProfile:
         """
@@ -167,8 +221,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             AzureArcKubernetesDeployMappingRuleProfile: The mapping rule profile for Azure Arc Kubernetes deployment.
         """
-        schema = self.input_template.get_schema()
-        default_values = self.input_template.get_defaults()
+        schema = self.input_artifact.get_schema()
+        default_values = self.input_artifact.get_defaults()
         # Generate the values mappings for the Helm chart.
         values_mappings = self._generate_values_mappings(
             schema, default_values
@@ -182,7 +236,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         mapping_rule_profile = HelmMappingRuleProfile(
             release_name=self.name,
             release_namespace=self.name,
-            helm_package_version=self.input_template.metadata.version,
+            helm_package_version=self.input_artifact.metadata.version,
             values=values_mappings,
         )
 

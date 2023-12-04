@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 from build_processors.artifact_details import BaseArtifact
-from input_templates.base_input_template import BaseInputTemplate
+from src.aosm.azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
 from common.local_file_builder import LocalFileBuilder
 from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
 
@@ -17,7 +17,7 @@ class BaseBuildProcessor(ABC):
 
     name: str
     artifact_store: ArtifactStore
-    input_template: BaseInputTemplate
+    input_artifact: BaseInputArtifact
 
     @abstractmethod
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:

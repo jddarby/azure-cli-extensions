@@ -9,15 +9,15 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 @dataclass
-class BaseInputTemplate(ABC):
+class BaseInputArtifact(ABC):
 
-    template_path: Path
-    defaults_path: Optional[Path] = None
+    artifact_path: Path
+    default_config: Optional[Dict[str, Any]] = None
 
     @abstractmethod
     def get_defaults(self) -> Dict[str, Any]:
         """
-        Abstract method to get the default values for the template.
+        Abstract method to get the default values for configuring the artifact.
         Returns:
             A dictionary containing the default values.
         """
@@ -26,7 +26,7 @@ class BaseInputTemplate(ABC):
     @abstractmethod
     def get_schema(self) -> Dict[str, Any]:
         """
-        Abstract method to get the schema for the template.
+        Abstract method to get the schema for configuring the artifact.
         Returns:
             A dictionary containing the schema.
         """
