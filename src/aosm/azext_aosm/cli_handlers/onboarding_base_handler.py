@@ -5,8 +5,18 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
-from dataclasses import asdict, dataclass,fields, is_dataclass
+from dataclasses import fields, is_dataclass
+
+from azure.cli.core.azclierror import (
+    # CLIInternalError,
+    # InvalidArgumentValueError,
+    UnclassifiedUserFault,
+)
+from knack.log import get_logger
+from pathlib import Path
 import json
+
+logger = get_logger(__name__)
 
 class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
@@ -59,7 +69,6 @@ class OnboardingBaseCLIHandler(ABC):
         for field_info in fields(dataclass):
             # Get the value of the current field.
             field_value = getattr(dataclass, field_info.name)
-
             # Get comment, if it exists + add it to the result
             comment = field_info.metadata.get('comment', '')
             if comment:
@@ -108,11 +117,23 @@ class OnboardingBaseCLIHandler(ABC):
         jsonc_str = "{\n" + self._serialize(self.config) + "\n}"
         with open(output_file, "w") as f:
             f.write(jsonc_str)
+  
+        print(f"Empty configuration has been written to {output_file}")
+        logger.info("Empty  configuration has been written to %s", output_file)
 
+    def _check_for_overwrite(self, output_file: str):
+        """Check that the input file exists."""
+        if Path(output_file).exists():
+            carry_on = input(
+                f"The file {output_file} already exists - do you want to overwrite it?"
+                " (y/n)"
+            )
+            if carry_on != "y":
+                raise UnclassifiedUserFault("User aborted!")
 
     def generate_config(self, output_file: str):
         """Generate the configuration file for the command."""
-        # TODO: Make file name depend on class via property
+        self._check_for_overwrite(output_file)
         self._write_config_to_file(output_file)
 
     def build(self):
