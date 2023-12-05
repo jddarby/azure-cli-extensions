@@ -25,3 +25,11 @@ class ArmTemplatePropertiesConfig:
             )
         }
     )
+    def validate(self):
+        """Validate the configuration."""
+        if not self.artifact_name:
+            raise ValueError("Artifact name must be set")
+        if not self.version:
+            raise ValueError("Artifact version must be set")
+        if not self.file_path:
+            raise ValueError("Artifact file path must be set")

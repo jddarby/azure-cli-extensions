@@ -4,18 +4,17 @@
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
+from pathlib import Path
+import json
 from dataclasses import fields, is_dataclass
-
+from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
 from azure.cli.core.azclierror import (
     # CLIInternalError,
     # InvalidArgumentValueError,
     UnclassifiedUserFault,
+    ValidationError
 )
 from knack.log import get_logger
-from pathlib import Path
-import json
-
 logger = get_logger(__name__)
 
 class OnboardingBaseCLIHandler(ABC):
@@ -29,7 +28,13 @@ class OnboardingBaseCLIHandler(ABC):
         config_dict = (
             self._read_config_from_file(input_json_path) if input_json_path else {}
         )
-        self.config = self._get_config(config_dict)
+        # Ensure config is of correct type
+        try:
+            self.config = self._get_config(config_dict)
+        except Exception as e:
+            raise UnclassifiedUserFault("Invalid configuration file") from e
+        print("hre")
+        self.config.validate()
 
     def _read_config_from_file(self, input_json_path: str) -> dict:
         """Reads the input JSONC file, removes comments + returns config as dictionary."""
@@ -136,8 +141,21 @@ class OnboardingBaseCLIHandler(ABC):
         self._check_for_overwrite(output_file)
         self._write_config_to_file(output_file)
 
+    # def validate(self):
+    #     """Validate the configuration."""
+    #     print("in validate")
+    #     if not self.config.location:
+    #         raise ValidationError("Location must be set")
+    #     if not self.config.publisher_name:
+    #         raise ValidationError("Publisher name must be set")
+    #     if not self.config.publisher_resource_group_name:
+    #         raise ValidationError("Publisher resource group name must be set")
+    #     if not self.config.acr_artifact_store_name:
+    #         raise ValidationError("ACR Artifact Store name must be set") 
+    
     def build(self):
         """Build the definition."""
+        # self.validate()
         self.build_base_bicep()
         self.build_manifest_bicep()
         self.build_artifact_list()

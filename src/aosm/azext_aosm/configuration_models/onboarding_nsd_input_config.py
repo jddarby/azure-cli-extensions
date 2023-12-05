@@ -6,7 +6,12 @@
 from dataclasses import dataclass, field
 from .common_input import ArmTemplatePropertiesConfig
 from .onboarding_base_input_config import OnboardingBaseInputConfig
-
+from azure.cli.core.azclierror import (
+    # CLIInternalError,
+    # InvalidArgumentValueError,
+    UnclassifiedUserFault,
+    ValidationError
+)
 
 @dataclass
 class NetworkFunctionPropertiesConfig:
@@ -36,7 +41,6 @@ class NetworkFunctionPropertiesConfig:
             )
         }
     )
-
     publisher_offering_location: str = field(
         default="",
         metadata={"comment": "The region that the NFDV is published to."}
@@ -56,7 +60,22 @@ class NetworkFunctionPropertiesConfig:
             )
         }
     )
-
+    def validate(self):
+        """Validate the configuration."""
+        if not self.publisher:
+            raise ValidationError("publisher must be set for your network function")
+        if not self.publisher_resource_group:
+            raise ValidationError("publisher_resource_group must be set for your network function")
+        if not self.name:
+            raise ValidationError("name must be set for your network function")
+        if not self.version:
+            raise ValidationError("version must be set for your network function")
+        if not self.publisher_offering_location:
+            raise ValidationError("publisher_offering_location must be set for your network function")
+        if not self.type:
+            raise ValidationError("type must be set for your network function")
+        if not self.multiple_instances:
+            raise ValidationError("multiple_instances must be set for your network function")
 
 @dataclass
 class NetworkFunctionConfig:
@@ -69,6 +88,12 @@ class NetworkFunctionConfig:
     properties: NetworkFunctionPropertiesConfig = field(
         default_factory=NetworkFunctionPropertiesConfig,
     )
+    def validate(self):
+        """Validate the configuration."""
+        if not self.resource_element_type:
+            raise ValidationError(("You must specify the type of Resource Element."))
+        if not self.properties:
+            raise ValidationError(("You must specify the properties of the Resource Element."))
 
 
 @dataclass
@@ -83,6 +108,13 @@ class ArmTemplateConfig:
         default_factory=ArmTemplatePropertiesConfig,
         metadata={"comment": "Properties of the Resource Element."}
     )
+    def validate(self):
+        """Validate the configuration."""
+        if not self.resource_element_type:
+            raise ValidationError(("You must specify the type of Resource Element."))
+        if not self.properties:
+            raise ValidationError(("You must specify the properties of the Resource Element."))
+
 
 
 @dataclass
@@ -116,3 +148,15 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
         default_factory=lambda: [NetworkFunctionConfig(), ArmTemplateConfig()],
         metadata={"comment": "List of Resource Element Templates."}
     )
+    def validate(self):
+        """Validate the configuration."""
+        super().validate()
+        if not self.resource_element_templates:
+            raise ValidationError(("At least one Resource Element Template must be included."))
+
+        for configuration in self.resource_element_templates:
+            configuration.validate()
+        if not self.nsd_name:
+            raise ValidationError("nsd_name must be set")
+        if not self.nsd_version:
+            raise ValidationError("nsd_version must be set")

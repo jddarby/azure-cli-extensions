@@ -6,7 +6,12 @@
 import json
 from abc import ABC
 from dataclasses import dataclass, field
-
+from azure.cli.core.azclierror import (
+    # CLIInternalError,
+    # InvalidArgumentValueError,
+    UnclassifiedUserFault,
+    ValidationError
+)
 
 @dataclass
 class OnboardingBaseInputConfig(ABC):
@@ -43,3 +48,15 @@ class OnboardingBaseInputConfig(ABC):
             )
         }
     )
+    
+    def validate(self):
+        """Validate the configuration."""
+        print("in validate")
+        if not self.location:
+            raise ValidationError("Location must be set")
+        if not self.publisher_name:
+            raise ValidationError("Publisher name must be set")
+        if not self.publisher_resource_group_name:
+            raise ValidationError("Publisher resource group name must be set")
+        if not self.acr_artifact_store_name:
+            raise ValidationError("ACR Artifact Store name must be set")
