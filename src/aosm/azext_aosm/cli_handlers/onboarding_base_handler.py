@@ -8,12 +8,7 @@ from pathlib import Path
 import json
 from dataclasses import fields, is_dataclass
 from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
-from azure.cli.core.azclierror import (
-    # CLIInternalError,
-    # InvalidArgumentValueError,
-    UnclassifiedUserFault,
-    ValidationError
-)
+from azure.cli.core.azclierror import UnclassifiedUserFault
 from knack.log import get_logger
 logger = get_logger(__name__)
 
@@ -21,10 +16,16 @@ class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
     config: OnboardingBaseInputConfig
+    
+    @property
+    @abstractmethod
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        raise NotImplementedError
 
-    def __init__(self, input_json_path: str | None = None):
+    def __init__(self, input_json: str | None = None):
         # Config may be optional (to generate blank config file)
-
+        input_json_path = Path(input_json) if input_json else None
         config_dict = (
             self._read_config_from_file(input_json_path) if input_json_path else {}
         )
@@ -33,13 +34,10 @@ class OnboardingBaseCLIHandler(ABC):
             self.config = self._get_config(config_dict)
         except Exception as e:
             raise UnclassifiedUserFault("Invalid configuration file") from e
-        print("hre")
-        self.config.validate()
-
-    def _read_config_from_file(self, input_json_path: str) -> dict:
+       
+    def _read_config_from_file(self, input_json_path: Path) -> dict:
         """Reads the input JSONC file, removes comments + returns config as dictionary."""
-        with open(input_json_path, "r") as f:
-            lines = f.readlines()
+        lines = input_json_path.read_text().splitlines()
         lines = [line for line in lines if not line.strip().startswith("//")]
         config_dict = json.loads("".join(lines))
 
@@ -115,47 +113,37 @@ class OnboardingBaseCLIHandler(ABC):
         return '\n'.join(jsonc_string)
 
     def _write_config_to_file(
-        self, output_file: str
+        self, output_path: Path
     ):
         """Write the configuration to a file."""
         # Serialize the top-level dataclass instance and wrap it in curly braces to form a valid JSONC string.
         jsonc_str = "{\n" + self._serialize(self.config) + "\n}"
-        with open(output_file, "w") as f:
-            f.write(jsonc_str)
-  
-        print(f"Empty configuration has been written to {output_file}")
-        logger.info("Empty  configuration has been written to %s", output_file)
+        output_path.write_text(jsonc_str)
 
-    def _check_for_overwrite(self, output_file: str):
+        print(f"Empty configuration has been written to {output_path.name}")
+        logger.info("Empty  configuration has been written to %s", output_path.name)
+
+    def _check_for_overwrite(self, output_path: Path):
         """Check that the input file exists."""
-        if Path(output_file).exists():
+        if output_path.exists():
             carry_on = input(
-                f"The file {output_file} already exists - do you want to overwrite it?"
+                f"The file {output_path.name} already exists in this location - do you want to overwrite it?"
                 " (y/n)"
             )
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
 
-    def generate_config(self, output_file: str):
+    def generate_config(self, output_file: str | None = None):
         """Generate the configuration file for the command."""
-        self._check_for_overwrite(output_file)
-        self._write_config_to_file(output_file)
+        if not output_file:
+            output_file = self.default_config_file_name
+        output_path = Path(output_file)
+        self._check_for_overwrite(output_path)
+        self._write_config_to_file(output_path)
 
-    # def validate(self):
-    #     """Validate the configuration."""
-    #     print("in validate")
-    #     if not self.config.location:
-    #         raise ValidationError("Location must be set")
-    #     if not self.config.publisher_name:
-    #         raise ValidationError("Publisher name must be set")
-    #     if not self.config.publisher_resource_group_name:
-    #         raise ValidationError("Publisher resource group name must be set")
-    #     if not self.config.acr_artifact_store_name:
-    #         raise ValidationError("ACR Artifact Store name must be set") 
-    
     def build(self):
         """Build the definition."""
-        # self.validate()
+        self.config.validate()
         self.build_base_bicep()
         self.build_manifest_bicep()
         self.build_artifact_list()

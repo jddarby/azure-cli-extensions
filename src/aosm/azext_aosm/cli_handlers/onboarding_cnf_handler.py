@@ -11,6 +11,11 @@ from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
+    @property
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        return "cnf-input.jsonc"
+
     def _get_config(self, input_config: dict = {}) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         return OnboardingCNFInputConfig(**input_config)

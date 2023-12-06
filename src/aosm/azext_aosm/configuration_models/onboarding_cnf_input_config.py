@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 from dataclasses import dataclass, field
-
+from azure.cli.core.azclierror import ValidationError
 from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
 
@@ -43,6 +43,23 @@ class ImageSourceConfig:
             )
         }
     )
+    def validate(self):
+        """ Validate the image configuration."""
+        if self.source_registry_namespace and not self.source_registry:
+            raise ValidationError(
+                "Config validation error. The image source registry namespace should "
+                "only be configured if a source registry is configured."
+            )
+
+        if self.source_registry and self.source_local_docker_image:
+            raise ValidationError(
+                "Only one of source_registry and source_local_docker_image can be set."
+            )
+
+        if not (self.source_registry or self.source_local_docker_image):
+            raise ValidationError(
+                "One of source_registry or source_local_docker_image must be set."
+            )       
 
 
 @dataclass
@@ -73,7 +90,6 @@ class HelmPackageConfig:
             )
         }
     )
-    # TODO: Implement split into 3 lists, if done elsewhere in code
     depends_on: list = field(
         default="",
         metadata={
@@ -83,38 +99,22 @@ class HelmPackageConfig:
             )
         }
     )
-
-
-# TODO: remove if not implementing this now, add to helmpackage config if we are
-@dataclass
-class DependsOnConfig:
-    """Object representing a depends on object."""
-
-    install_dependency: list = field(
-        default_factory=[],
-        metadata={
-            "comment": "List of Helm packages this package depends on for install."
-        }
-    )
-    update_dependency: list = field(
-        default_factory=[],
-        metadata={
-            "comment": "List of Helm packages this package depends on for update."
-        }
-    )
-    delete_dependency: list = field(
-        default_factory=[],
-        metadata={
-            "comment": "List of Helm packages this package depends on for delete."
-        }
-    )
+    def validate(self):
+        """Validate the helm package configuration."""
+        if not self.nf_name:
+            raise ValidationError("nf_name must be set for your helm package")
+        if not self.path_to_chart:
+            raise ValidationError("path_to_chart must be set for your helm package")
+        if not self.path_to_mappings:
+            raise ValidationError("path_to_mappings must be set for your helm package")
+        if not self.depends_on:
+            raise ValidationError("depends_on must be set for your helm package")
 
 
 @dataclass
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
-
-    # TODO: Decide whether implementation of images have changed
+    # TODO: Add better comment for images as not a list
     images: ImageSourceConfig = field(
         default_factory=ImageSourceConfig,
         metadata={"comment": "List of images "})
@@ -122,3 +122,24 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
         default_factory=lambda: [HelmPackageConfig()],
         metadata={"comment": "List of Helm packages to be included in the CNF."}
     )
+    def validate(self):
+        """Validate the CNFconfiguration."""
+        super().validate()
+        if not self.images:
+            raise ValidationError("At least one image must be included.")
+        if not self.helm_packages:
+            raise ValidationError("At least one Helm package must be included.")
+        self.images.validate()
+        for helm_package in self.helm_packages:
+            helm_package.validate()
+
+    def __post_init__(self):
+        if self.images and isinstance(self.images, dict):
+            self.images = ImageSourceConfig(**self.images)
+        for helm_package in self.helm_packages:
+            helm_list = []
+            if isinstance(helm_package, dict):
+                helm_list.append(HelmPackageConfig(**helm_package))
+            else:
+                helm_list.append(helm_package)
+        self.helm_packages = helm_list
