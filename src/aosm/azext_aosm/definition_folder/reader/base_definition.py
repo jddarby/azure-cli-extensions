@@ -4,13 +4,14 @@
 # --------------------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 class BaseDefinitionElement(ABC):
     """Base element definition."""
     path: str
     only_delete_on_clean: bool
 
-    def __init__(self, path: str, only_delete_on_clean: bool):
+    def __init__(self, path: Path, only_delete_on_clean: bool):
         self.path = path
         self.only_delete_on_clean = only_delete_on_clean
 

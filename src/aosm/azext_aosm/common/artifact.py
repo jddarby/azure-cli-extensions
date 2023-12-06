@@ -23,17 +23,21 @@ class BaseArtifact(ABC):
     def from_dict(cls, input_dict: dict) -> "BaseArtifact":
         """Create an instance of the class from a dict."""
         dict_copy = input_dict.copy()
+        # Remove the type as we don't need it anymore.
+        dict_copy.pop("type")
         manifest = ManifestArtifactFormat(
             artifact_name=dict_copy.pop("artifact_name"),
             artifact_type=dict_copy.pop("artifact_type"),
             artifact_version=dict_copy.pop("artifact_version"),
         )
-        return cls(**input_dict)
+        dict_copy["artifact_manifest"] = manifest
+        return cls(**dict_copy)
 
     def to_dict(self) -> dict:
         """Convert an instance to a dict."""
-        # Flatten the artifact manifest into the dict
+        # Flatten the artifact manifest into the dict and add type.
         output_dict = {
+            "type": ARTIFACT_CLASS_TO_TYPE[type(self)],
             "artifact_name": self.artifact_manifest.artifact_name,
             "artifact_type": self.artifact_manifest.artifact_type,
             "artifact_version": self.artifact_manifest.artifact_version,
@@ -133,3 +137,16 @@ class BlobStorageAccountArtifact(BaseStorageAccountArtifact):
     def upload(self):
         """Upload the artifact."""
         raise NotImplementedError
+
+
+# Mapping of artifact type names to their classes.
+ARTIFACT_TYPE_TO_CLASS = {
+    "ACRFromLocalFile": LocalFileACRArtifact,
+    "ACRFromLocalDocker": LocalDockerACRArtifact,
+    "ACRFromRemote": RemoteACRArtifact,
+    "StorageAccountFromLocalFile": LocalFileStorageAccountArtifact,
+    "StorageAccountFromBlob": BlobStorageAccountArtifact,
+}
+
+# Generated mapping of artifact classes to type names.
+ARTIFACT_CLASS_TO_TYPE = {v: k for k, v in ARTIFACT_TYPE_TO_CLASS.items()}

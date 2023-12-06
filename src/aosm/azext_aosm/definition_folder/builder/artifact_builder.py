@@ -8,14 +8,14 @@ from pathlib import Path
 
 from .base_builder import BaseDefinitionElementBuilder
 
-from azext_aosm.build_processors.artifact_details import BaseArtifact
+from azext_aosm.common.artifact import BaseArtifact
 
 class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
     """ Artifact builder """
     artifacts: [BaseArtifact]
 
-    def __init__(self, path: Path, artifacts: [BaseArtifact]):
-        super().__init__(path)
+    def __init__(self, path: Path, artifacts: [BaseArtifact], only_delete_on_clean: bool = False):
+        super().__init__(path, only_delete_on_clean)
         self.artifacts = artifacts
 
     def write(self):
