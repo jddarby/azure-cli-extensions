@@ -11,9 +11,14 @@ from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
-    def _get_config(self, input_json_path: str | None = None) -> OnboardingCNFInputConfig:
+    @property
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        return "cnf-input.jsonc"
+
+    def _get_config(self, input_config: dict = {}) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
-        return OnboardingCNFInputConfig(**self._read_config_from_file(input_json_path))
+        return OnboardingCNFInputConfig(**input_config)
 
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""

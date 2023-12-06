@@ -3,11 +3,10 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-import json
+from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass, field
-
-
+from azure.cli.core.azclierror import ValidationError
 @dataclass
 class OnboardingBaseInputConfig(ABC):
     """Base input configuration for onboarding commands."""
@@ -19,13 +18,13 @@ class OnboardingBaseInputConfig(ABC):
     publisher_name: str = field(
         default="",
         metadata={
-            "comment:": (
+            "comment": (
                 "Name of the Publisher resource you want your definition published to. "
                 "Will be created if it does not exist."
             )
         }
     )
-    publisher_resource_group_name: str = field(
+    publisher_resource_group_name: str | None = field(
         default="",
         metadata={
             "comment": (
@@ -34,7 +33,7 @@ class OnboardingBaseInputConfig(ABC):
             )
         }
     )
-    acr_artifact_store_name: str = field(
+    acr_artifact_store_name: str | None = field(
         default="",
         metadata={
             "comment": (
@@ -43,3 +42,10 @@ class OnboardingBaseInputConfig(ABC):
             )
         }
     )
+
+    def validate(self):
+        """Validate the configuration."""
+        if not self.location:
+            raise ValidationError("Location must be set")
+        if not self.publisher_name:
+            raise ValidationError("Publisher name must be set")

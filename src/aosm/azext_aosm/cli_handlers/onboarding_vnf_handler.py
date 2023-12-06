@@ -10,6 +10,11 @@ from azext_aosm.configuration_models.onboarding_vnf_input_config import Onboardi
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
+    @property
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        return "vnf-input.jsonc"
+    
     def _get_config(self, input_config: dict = {}) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         return OnboardingVNFInputConfig(**input_config)
