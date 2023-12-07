@@ -24,12 +24,12 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
                 raise ValueError("Artifact type is missing or invalid")
             self.artifacts.append(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].from_dict(artifact))
 
-    def deploy(self):
+    def deploy(self, resource_client):
         """Deploy the element."""
         for artifact in self.artifacts:
-            artifact.upload()
+            artifact.upload(resource_client)
 
-    def delete(self):
+    def delete(self, resource_client):
         """Delete the element."""
         # TODO: Implement?
         pass

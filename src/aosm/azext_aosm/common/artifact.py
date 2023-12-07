@@ -71,6 +71,8 @@ class LocalFileACRArtifact(BaseACRArtifact):
         self.file_path = file_path
 
     # TODO: Implement
+    # Note: check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
+    # This way we can support in-place Bicep artifacts in the folder.
     def upload(self):
         """Upload the artifact."""
         raise NotImplementedError

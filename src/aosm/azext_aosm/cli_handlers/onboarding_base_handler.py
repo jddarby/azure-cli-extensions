@@ -149,20 +149,18 @@ class OnboardingBaseCLIHandler(ABC):
         self.build_artifact_list()
         self.build_resource_bicep()
 
-    def publish(self, input_json_path: str):
+    def publish(self, resource_client):
         """Publish the definition."""
         # Takes folder, deploys to Azure
         #  - Read folder/ create folder object
-        #  - For each step (element):
-        #    - Do element.deploy()
+        #  - Do folder.deploy(resource_client)
         # TODO: Implement
 
-    def delete(self, input_json_path: str):
+    def delete(self):
         """Delete the definition."""
         # Takes folder, deletes to Azure
         #  - Read folder/ create folder object
-        #  - For each element (reversed):
-        #    - Do element.delete()
+        #  - Do folder.delete(resource_client)
         # TODO: Implement
 
     @abstractmethod
