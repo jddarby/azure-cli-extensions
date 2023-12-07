@@ -79,7 +79,7 @@ class NetworkFunctionPropertiesConfig:
 
         if not self.type:
             raise ValidationError("type must be set for your network function")
-        if self.type.lower() not in ["cnf", "vnf"]:
+        if self.type.lower() not in ['cnf','vnf']:
             raise ValidationError("type must either be cnf or vnf")
 
         if not self.multiple_instances:
@@ -88,7 +88,6 @@ class NetworkFunctionPropertiesConfig:
             )
         if self.multiple_instances.lower() not in ["false", "true"]:
             raise ValidationError("multiple_instances must be either true or false")
-
 
 @dataclass
 class NetworkFunctionConfig:

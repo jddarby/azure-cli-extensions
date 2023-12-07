@@ -70,6 +70,19 @@ class VhdImageConfig:
             )
         },
     )
+    def validate(self):
+        """Validate the configuration."""
+        if not self.version:
+            raise ValidationError("Artifact version must be set")
+        if "." not in self.version or "-" in self.version:
+            raise ValidationError(
+                "Config validation error. VHD image artifact version should be in"
+                " format A.B.C"
+            )
+        if self.blob_sas_url and self.file_path:
+            raise ValidationError("Only one of file_path or blob_sas_url may be set for vhd.")
+        if not (self.blob_sas_url or self.file_path):
+            raise ValidationError("One of file_path or sas_blob_url must be set for vhd.")
 
     def validate(self):
         """Validate the configuration."""
@@ -116,12 +129,12 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     # TODO: Add better comments
     arm_template: List[ArmTemplatePropertiesConfig] = field(
         default_factory=lambda: [ArmTemplatePropertiesConfig()],
-        metadata={"comment": "ARM template configuration."},
+        metadata={"comment": "ARM template configuration."}
     )
 
     vhd: List[VhdImageConfig] = field(
         default_factory=lambda: [VhdImageConfig()],
-        metadata={"comment": "VHD image configuration."},
+        metadata={"comment": "VHD image configuration."}
     )
 
     def __post_init__(self):

@@ -32,7 +32,6 @@ class ArmTemplatePropertiesConfig:
         """Validate the configuration."""
         if not self.version:
             raise ValidationError("Artifact version must be set")
-
         if "." not in self.version or "-" in self.version:
             raise ValidationError(
                 "Config validation error. ARM template artifact version should be in"
