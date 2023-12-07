@@ -1,3 +1,8 @@
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
+
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, final, List, Tuple
@@ -18,7 +23,7 @@ from ..vendored_sdks.models import (
     AzureCoreNetworkFunctionArmTemplateApplication,
     AzureCoreArtifactType,
     AzureCoreArmTemplateArtifactProfile,
-    ArmTemplateArtifactProfile
+    ArmTemplateArtifactProfile,
 )
 
 
@@ -44,11 +49,13 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
-        return [ManifestArtifactFormat(
-            artifact_name=f"{self.name}-arm-template",
-            artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
-            artifact_version=   # TODO: Get this same way as for generate_artifact_profile()
-        )]
+        return [
+            ManifestArtifactFormat(
+                artifact_name=self.input_artifact.artifact_name,
+                artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
+                artifact_version=self.input_artifact.artifact_version,
+            )
+        ]
 
     @abstractmethod
     def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
@@ -77,12 +84,12 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
     # @abstractmethod?
     def generate_artifact_profile(self) -> AzureCoreArmTemplateArtifactProfile:
         artifact_profile = ArmTemplateArtifactProfile(
-            template_name=f"{self.name}-arm-template",
-            template_version=  #TODO: Get this from the input.jsonc? Look at VHD build processor for example
+            template_name=self.input_artifact.artifact_name,
+            template_version=self.input_artifact.artifact_version,
         )
         return AzureCoreArmTemplateArtifactProfile(
             artifact_store=self.artifact_store,
-            template_artifact_profile=artifact_profile
+            template_artifact_profile=artifact_profile,
         )
 
     @abstractmethod
@@ -98,14 +105,15 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
     This class represents an ARM template processor for Azure Core.
     """
 
-    def generate_nfvi_specific_nf_application(self) -> AzureCoreNetworkFunctionArmTemplateApplication:
-
+    def generate_nfvi_specific_nf_application(
+        self,
+    ) -> AzureCoreNetworkFunctionArmTemplateApplication:
         return AzureCoreNetworkFunctionArmTemplateApplication(
-            name = self.name,
+            name=self.name,
             depends_on_profile=DependsOnProfile(),
             artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
             artifact_profile=self.generate_artifact_profile(),
-            deploy_parameters_mapping_rule_profile=self.generate_mappings()
+            deploy_parameters_mapping_rule_profile=self.generate_mappings(),
         )
 
 

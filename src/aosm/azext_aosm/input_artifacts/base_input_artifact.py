@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 @dataclass
 class BaseInputArtifact(ABC):
 
+    artifact_name: str
+    artifact_version: str
     artifact_path: Path
     default_config: Optional[Dict[str, Any]] = None
 
