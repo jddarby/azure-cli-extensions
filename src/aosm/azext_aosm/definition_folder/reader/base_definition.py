@@ -4,15 +4,23 @@
 # --------------------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 class BaseDefinitionElement(ABC):
     """Base element definition."""
-    # TODO: Implement.
+    path: str
+    only_delete_on_clean: bool
+
+    def __init__(self, path: Path, only_delete_on_clean: bool):
+        self.path = path
+        self.only_delete_on_clean = only_delete_on_clean
 
     @abstractmethod
-    def write(self):
+    def deploy(self):
+        """Deploy the element."""
         return NotImplementedError
-
-
-    def add_supporting_file(self):
+    
+    @abstractmethod
+    def delete(self):
+        """Delete the element."""
         return NotImplementedError

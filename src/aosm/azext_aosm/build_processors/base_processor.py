@@ -7,10 +7,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from build_processors.artifact_details import BaseArtifact
-from src.aosm.azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
-from common.local_file_builder import LocalFileBuilder
-from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
+from ..common.artifact import BaseArtifact
+from ..input_artifacts.base_input_artifact import BaseInputArtifact
+from ..common.local_file_builder import LocalFileBuilder
+from ..vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
 
 @dataclass
 class BaseBuildProcessor(ABC):

@@ -6,7 +6,7 @@
 from argcomplete.completers import FilesCompleter
 from azure.cli.core import AzCommandsLoader
 
-from .util.constants import CNF, VNF, BICEP_PUBLISH, ARTIFACT_UPLOAD, IMAGE_UPLOAD
+from .common.constants import CNF, VNF, BICEP_PUBLISH, ARTIFACT_UPLOAD, IMAGE_UPLOAD
 
 
 def load_arguments(self: AzCommandsLoader, _):
@@ -31,10 +31,16 @@ def load_arguments(self: AzCommandsLoader, _):
             required=True,
         )
         c.argument(
+            "output_file",
+            options_list=["--output-file"],
+            help="The name of the output file.",
+            required=False,
+        )
+        c.argument(
             "config_file",
             options_list=["--config-file", "-f"],
             type=file_type,
-            completer=FilesCompleter(allowednames="*.json"),
+            completer=FilesCompleter(allowednames="*.jsonc"),
             help="The path to the configuration file.",
         )
         c.argument(
@@ -142,10 +148,16 @@ def load_arguments(self: AzCommandsLoader, _):
 
     with self.argument_context("aosm nsd") as c:
         c.argument(
+            "output_file",
+            options_list=["--output-file"],
+            help="The name of the output file.",
+            required=False,
+        )
+        c.argument(
             "config_file",
             options_list=["--config-file", "-f"],
             type=file_type,
-            completer=FilesCompleter(allowednames="*.json"),
+            completer=FilesCompleter(allowednames="*.jsonc"),
             help="The path to the configuration file.",
         )
         c.argument("skip", arg_type=ns_skip_steps, help="Optional skip steps")
