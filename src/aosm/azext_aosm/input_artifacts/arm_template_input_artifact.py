@@ -8,16 +8,12 @@ from .base_input_artifact import BaseInputArtifact
 @dataclass
 class ArmTemplateInputArtifact(BaseInputArtifact):
 
-    template_path: Path
-    defaults_path: Optional[Path] = None
-
     def get_defaults(self):
-        # TODO: Implement this
-        pass
+        return self.default_config
 
     def get_schema(self) -> Dict[str, Any]:
         # For ARM templates, the schema is defined by the parameters section
-        with open(self.template_path, "r", encoding="utf-8") as _file:
+        with open(self.artifact_path, "r", encoding="utf-8") as _file:
             data = json.load(_file)
             if "parameters" in data:
                 parameters: Dict[str, Any] = data["parameters"]
