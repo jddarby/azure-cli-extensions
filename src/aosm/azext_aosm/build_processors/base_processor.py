@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import List, Tuple
 
 from build_processors.artifact_details import BaseArtifact
@@ -11,7 +12,7 @@ from src.aosm.azext_aosm.input_artifacts.base_input_artifact import BaseInputArt
 from common.local_file_builder import LocalFileBuilder
 from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
 
-
+@dataclass
 class BaseBuildProcessor(ABC):
     """Base class for build processors."""
 
