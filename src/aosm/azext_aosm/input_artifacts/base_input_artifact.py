@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 @dataclass
 class BaseInputArtifact(ABC):
 
+    artifact_name: str
+    artifact_version: str
     artifact_path: Path
     default_config: Optional[Dict[str, Any]] = None
 
@@ -21,7 +23,7 @@ class BaseInputArtifact(ABC):
         Returns:
             A dictionary containing the default values.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_schema(self) -> Dict[str, Any]:
@@ -30,4 +32,4 @@ class BaseInputArtifact(ABC):
         Returns:
             A dictionary containing the schema.
         """
-        pass
+        raise NotImplementedError
