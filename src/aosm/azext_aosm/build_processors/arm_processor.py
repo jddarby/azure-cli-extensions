@@ -11,7 +11,6 @@ from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
-
 from ..vendored_sdks.models import (
     DependsOnProfile,
     ResourceElementTemplate,
@@ -55,10 +54,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
             )
         ]
 
-    @abstractmethod
-    def get_artifact_details(
-        self,
-    ) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(self) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         return (
             [
