@@ -9,7 +9,7 @@ from typing import Any, Dict, final, List, Tuple
 
 
 from base_processor import BaseBuildProcessor
-from artifact_details import BaseArtifact
+from ..common.artifact import LocalFileACRArtifact
 from ..input_artifacts.arm_template_input_artifact import ArmTemplateInputArtifact
 from ..common.local_file_builder import LocalFileBuilder
 
@@ -58,9 +58,21 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         ]
 
     @abstractmethod
-    def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(self) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        raise NotImplementedError
+        return (
+            [
+                LocalFileACRArtifact(
+                    artifact_manifest=ManifestArtifactFormat(
+                        artifact_name=self.input_artifact.artifact_name,
+                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
+                        artifact_version=self.input_artifact.artifact_version,
+                    ),
+                    file_path=self.input_artifact.artifact_path,
+                )
+            ],
+            [],
+        )
 
     @final
     def generate_nf_application(self) -> NetworkFunctionApplication:
@@ -119,8 +131,8 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
 
 class NexusArmBuildProcessor(BaseArmBuildProcessor):
     """
-    This class represents a processor for generating ARM templates specific to Nexus.
+    Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus.
     """
 
     def generate_nfvi_specific_nf_application(self):
-        pass
+        return NotImplementedError
