@@ -3,13 +3,18 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
-from configuration_models.onboarding_vnf_input_config import OnboardingVNFInputConfig
+from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from azext_aosm.configuration_models.onboarding_vnf_input_config import OnboardingVNFInputConfig
 
 
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
+    @property
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        return "vnf-input.jsonc"
+    
     def _get_config(self, input_config: dict = {}) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         return OnboardingVNFInputConfig(**input_config)

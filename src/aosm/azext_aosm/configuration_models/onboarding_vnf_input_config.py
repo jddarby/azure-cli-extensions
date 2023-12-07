@@ -4,19 +4,23 @@
 # --------------------------------------------------------------------------------------------
 
 from dataclasses import dataclass, field
-from common_input import ArmTemplatePropertiesConfig
-from onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
+from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
+from .common_input import ArmTemplatePropertiesConfig
 
 
 @dataclass
 class VhdImageConfig:
     """Configuration for a VHD image."""
 
-    artifact_name: str = field(metadata={"comment": "Optional. Name of the artifact."})
+    artifact_name: str = field(
+        default="", metadata={"comment": "Optional. Name of the artifact."}
+    )
     version: str = field(
+        default="",
         metadata={"comment": "Version of the artifact in A-B-C format."}
     )
     file_path: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. File path of the artifact you wish to upload from your local disk. "
@@ -26,6 +30,7 @@ class VhdImageConfig:
         }
     )
     blob_sas_url: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. SAS URL of the blob artifact you wish to copy to your Artifact Store. "
@@ -35,6 +40,7 @@ class VhdImageConfig:
         }
     )
     image_disk_size_GB: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. Specifies the size of empty data disks in gigabytes. "
@@ -43,6 +49,7 @@ class VhdImageConfig:
         }
     )
     image_hyper_v_generation: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. Specifies the HyperVGenerationType of the VirtualMachine created from the image. "
@@ -51,6 +58,7 @@ class VhdImageConfig:
         }
     )
     image_api_version: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. The ARM API version used to create the Microsoft.Compute/images resource. "
@@ -65,6 +73,7 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding VNFs."""
 
     blob_artifact_store_name: str = field(
+        default="",
         metadata={
             "comment": (
                 "Optional. Name of the storage account Artifact Store resource. "
@@ -73,6 +82,7 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
         }
     )
     image_name_parameter: str = field(
+        default="",
         metadata={
             "comment": (
                 "The parameter name in the VM ARM template which "
@@ -83,7 +93,10 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
 
     # TODO: Add better comments
     arm_template: [ArmTemplatePropertiesConfig] = field(
-        metadata={"comment": "ARM template configuration."}
+        default_factory=lambda: [ArmTemplatePropertiesConfig()],
+        metadata={"comment": "ARM template configuration."},
     )
 
-    vhd: [VhdImageConfig] = field(metadata={"comment": "VHD image configuration."})
+    vhd: [VhdImageConfig] = field(
+        default_factory=lambda: [VhdImageConfig()],
+        metadata={"comment": "VHD image configuration."})

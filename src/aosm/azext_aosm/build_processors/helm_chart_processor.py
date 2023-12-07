@@ -1,11 +1,11 @@
 import re
-from functools import lru_cache
-from build_processors.base_processor import BaseBuildProcessor
-from build_processors.artifact_details import BaseArtifact
-from common.local_file_builder import LocalFileBuilder
-from input_artifacts.helm_chart import HelmChart
 from typing import Any, Dict, Set, List, Tuple
-from vendored_sdks.models import (
+from functools import lru_cache
+from azext_aosm.build_processors.base_processor import BaseBuildProcessor
+from azext_aosm.common.artifact import BaseArtifact
+from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.input_artifacts.helm_chart import HelmChart
+from azext_aosm.vendored_sdks.models import (
     ArtifactType,
     ArtifactStore,
     ApplicationEnablement,
@@ -66,7 +66,6 @@ class HelmChartProcessor(BaseBuildProcessor):
     def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         raise NotImplementedError
-
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         raise NotImplementedError("NSDs do not support deployment of Helm charts.")

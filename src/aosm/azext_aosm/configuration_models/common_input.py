@@ -2,7 +2,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+from __future__ import annotations
+from azure.cli.core.azclierror import ValidationError
 from dataclasses import dataclass, field
 
 
@@ -10,11 +11,13 @@ from dataclasses import dataclass, field
 class ArmTemplatePropertiesConfig:
     """ARM template configuration."""
 
-    artifact_name: str = field(metadata={"comment": "Optional. Name of the artifact."})
+    artifact_name: str | None = field(default="", metadata={"comment": "Optional. Name of the artifact."})
     version: str = field(
+        default="",
         metadata={"comment": "Version of the artifact in A.B.C format."}
     )
     file_path: str = field(
+        default="",
         metadata={
             "comment": (
                 "File path of the artifact you wish to upload from your local disk. "
@@ -23,3 +26,9 @@ class ArmTemplatePropertiesConfig:
             )
         }
     )
+    def validate(self):
+        """Validate the configuration."""
+        if not self.version:
+            raise ValidationError("Artifact version must be set")
+        if not self.file_path:
+            raise ValidationError("Artifact file path must be set")
