@@ -4,9 +4,11 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import json
 from pathlib import Path
 
 from azext_aosm.definition_folder.builder.base_builder import BaseDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
 
 
 class DefinitionFolderBuilder():
@@ -27,5 +29,12 @@ class DefinitionFolderBuilder():
         self.path.mkdir()
         for element in self.elements:
             element.write()
-        # TODO: Write the index file
+        index_json = []
+        for element in self.elements:
+            index_json.append({
+                "name": element.path.name,
+                "type": "bicep" if isinstance(element, BicepDefinitionElementBuilder) else "artifact",
+                "only_delete_on_clean": element.only_delete_on_clean
+            })
+        (self.path / "index.json").write_text(json.dumps(index_json))
         # TODO: Write some readme file

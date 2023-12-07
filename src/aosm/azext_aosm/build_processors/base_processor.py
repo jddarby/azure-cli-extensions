@@ -5,8 +5,8 @@
 
 from abc import ABC, abstractmethod
 
-from build_processors.artifact_details import BaseArtifact
 from template_parsers.base_parser import BaseInputTemplate
+from common.artifact import BaseArtifact
 from common.local_file_builder import LocalFileBuilder
 from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
 

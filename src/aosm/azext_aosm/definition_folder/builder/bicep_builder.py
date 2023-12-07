@@ -4,14 +4,14 @@
 # --------------------------------------------------------------------------------------------
 
 from pathlib import Path
-from base_builder import BaseDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.base_builder import BaseDefinitionElementBuilder
 
 class BicepDefinitionElementBuilder(BaseDefinitionElementBuilder):
     """Bicep definition element builder."""
     bicep_content: str
 
-    def __init__(self, path: Path, bicep_content: str):
-        super().__init__(path)
+    def __init__(self, path: Path, bicep_content: str, only_delete_on_clean: bool = False):
+        super().__init__(path, only_delete_on_clean)
         self.bicep_content = bicep_content
 
     def write(self):
