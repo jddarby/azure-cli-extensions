@@ -9,10 +9,11 @@ from pathlib import Path
 from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
 from azext_aosm.common.artifact import ARTIFACT_TYPE_TO_CLASS, BaseArtifact
 
+from typing import List
 
 class ArtifactDefinitionElement(BaseDefinitionElement):
     """ Definition for Artifact """
-    artifacts: [BaseArtifact]
+    artifacts: List[BaseArtifact]
 
     def __init__(self, path: Path, only_delete_on_clean: bool):
         super().__init__(path, only_delete_on_clean)

@@ -10,6 +10,7 @@ from common.artifact import BaseArtifact
 from common.local_file_builder import LocalFileBuilder
 from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
 
+from typing import List, Tuple
 
 class BaseBuildProcessor(ABC):
     """Base class for build processors."""
@@ -20,13 +21,13 @@ class BaseBuildProcessor(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_artifact_manifest_list() -> list[ManifestArtifactFormat]:
+    def get_artifact_manifest_list() -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
-    def get_artifact_details() -> tuple[list[BaseArtifact], list[LocalFileBuilder]]:
+    def get_artifact_details() -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         raise NotImplementedError
 
