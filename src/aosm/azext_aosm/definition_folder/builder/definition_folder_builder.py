@@ -20,7 +20,7 @@ class DefinitionFolderBuilder:
     """Builds and writes out a definition folder for an NFD or NSD."""
 
     path: Path
-    elements: List[BaseDefinitionElementBuilder]
+    elements: "list[BaseDefinitionElementBuilder]"
 
     def __init__(self, path: Path):
         self.path = path

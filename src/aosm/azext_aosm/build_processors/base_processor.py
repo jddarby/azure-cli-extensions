@@ -15,7 +15,6 @@ from azext_aosm.vendored_sdks.models import (
     ResourceElementTemplate,
 )
 
-
 @dataclass
 class BaseBuildProcessor(ABC):
     """Base class for build processors."""

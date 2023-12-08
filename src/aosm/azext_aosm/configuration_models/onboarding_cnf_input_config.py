@@ -71,9 +71,9 @@ class ImageSourceConfig:
 class HelmPackageConfig:
     """Helm package configuration."""
 
-    nf_name: str = field(
-        default="", metadata={"comment": "The name of the Helm package."}
-    )
+    name: str = field(
+        default="",
+        metadata={"comment": "The name of the Helm package."})
     path_to_chart: str = field(
         default="",
         metadata={
@@ -107,7 +107,7 @@ class HelmPackageConfig:
 
     def validate(self):
         """Validate the helm package configuration."""
-        if not self.nf_name:
+        if not self.name:
             raise ValidationError("nf_name must be set for your helm package")
         if not self.path_to_chart:
             raise ValidationError("path_to_chart must be set for your helm package")

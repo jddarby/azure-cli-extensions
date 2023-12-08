@@ -15,7 +15,7 @@ class BaseDefinitionElementBuilder(ABC):
     """Base element definition builder."""
 
     path: Path
-    supporting_files: List[LocalFileBuilder]
+    supporting_files: "list[LocalFileBuilder]"
     only_delete_on_clean: bool
 
     def __init__(self, path: Path, only_delete_on_clean: bool = False):
