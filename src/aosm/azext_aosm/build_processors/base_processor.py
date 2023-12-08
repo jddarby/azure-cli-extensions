@@ -5,24 +5,23 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Tuple
-
-from azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
+from dataclasses import dataclass
+from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.vendored_sdks.models import (
     ManifestArtifactFormat,
     NetworkFunctionApplication,
     ResourceElementTemplate,
-    ArtifactStore
 )
 
 
+@dataclass
 class BaseBuildProcessor(ABC):
     """Base class for build processors."""
 
     name: str
-    artifact_store: ArtifactStore
-    input_artifact: BaseInputArtifact
+    input_artifact: BaseInput
 
     @abstractmethod
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:

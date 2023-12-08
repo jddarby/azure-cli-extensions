@@ -4,14 +4,19 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-from typing import Any, Dict
-from azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, Optional
+from src.aosm.azext_aosm.inputs.base_input import BaseInput
 
-
-class VHDFile(BaseInputArtifact):
+@dataclass
+class VHDFile(BaseInput):
     """
     A utility class for working with VHD files.
     """
+
+    file_path: Optional[Path] = None
+    blob_sas_uri: Optional[str] = None
 
     def get_defaults(self) -> Dict[str, Any]:
         """

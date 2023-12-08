@@ -1,13 +1,13 @@
+import json
 import re
 from typing import Any, Dict, Set, List, Tuple
 from functools import lru_cache
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.input_artifacts.helm_chart import HelmChart
+from azext_aosm.inputs.helm_chart_input import HelmChart
 from azext_aosm.vendored_sdks.models import (
     ArtifactType,
-    ArtifactStore,
     ApplicationEnablement,
     AzureArcKubernetesArtifactProfile,
     AzureArcKubernetesDeployMappingRuleProfile,
@@ -30,15 +30,14 @@ class HelmChartProcessor(BaseBuildProcessor):
     for Helm charts.
     """
 
-    def __init__(self, name: str, artifact_store: ArtifactStore, input_artifact: HelmChart):
+    def __init__(self, name: str, input_artifact: HelmChart):
         """
         Initialize the HelmChartProcessor class.
 
         Args:
-            artifact_store (ArtifactStore): The artifact store to use for the artifact profile.
             chart (HelmChart): The Helm chart to use for the artifact profile.
         """
-        super().__init__(name, artifact_store, input_artifact)
+        super().__init__(name, input_artifact)
         # assert isinstance(self.input_artifact, HelmChart)
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -46,9 +45,9 @@ class HelmChartProcessor(BaseBuildProcessor):
         artifact_manifest_list = []
         artifact_manifest_list.append(
             ManifestArtifactFormat(
-                artifact_name=self.input_artifact.metadata.name,
+                artifact_name=self.input_artifact.artifact_name,
                 artifact_type=ArtifactType.OCI_ARTIFACT,
-                artifact_version=self.input_artifact.metadata.version,
+                artifact_version=self.input_artifact.artifact_version,
             )
         )
 
@@ -103,7 +102,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         pass
 
     @lru_cache(maxsize=None)
-    def _find_image_lines(self, image_lines: Set[str]) -> None:
+    def _find_image_lines(self, chart: HelmChart, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 
@@ -113,12 +112,12 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             None
         """
-        for template in self.input_artifact.get_templates():
+        for template in chart.get_templates():
             for line in template.data:
                 if "image:" in line:
                     image_lines.add(line.replace("image:", "").strip())
 
-        for dep in self.input_artifact.get_dependencies():
+        for dep in chart.get_dependencies():
             self._find_image_lines(dep, image_lines)
 
     def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:
@@ -135,14 +134,14 @@ class HelmChartProcessor(BaseBuildProcessor):
         self._find_registry_values_paths(registry_values_paths)
 
         chart_profile = HelmArtifactProfile(
-            helm_package_name=self.input_artifact.metadata.name,
-            helm_package_version_range=self.input_artifact.metadata.version,
+            helm_package_name=self.input_artifact.artifact_name,
+            helm_package_version_range=self.input_artifact.artifact_version,
             registry_values_paths=registry_values_paths,
             image_pull_secrets_values_paths=image_pull_secrets_values_paths,
         )
 
         return AzureArcKubernetesArtifactProfile(
-            artifact_store=ReferencedResource(id=self.artifact_store.id),
+            artifact_store=ReferencedResource(id=""),
             helm_artifact_profile=chart_profile,
         )
 
@@ -235,8 +234,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         mapping_rule_profile = HelmMappingRuleProfile(
             release_name=self.name,
             release_namespace=self.name,
-            helm_package_version=self.input_artifact.metadata.version,
-            values=values_mappings,
+            helm_package_version=self.input_artifact.artifact_version,
+            values=json.dumps(values_mappings),
         )
 
         return AzureArcKubernetesDeployMappingRuleProfile(

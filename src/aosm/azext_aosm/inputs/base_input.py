@@ -5,15 +5,13 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 @dataclass
-class BaseInputArtifact(ABC):
+class BaseInput(ABC):
 
     artifact_name: str
     artifact_version: str
-    artifact_path: Path
     default_config: Optional[Dict[str, Any]] = None
 
     @abstractmethod

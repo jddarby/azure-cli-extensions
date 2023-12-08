@@ -4,8 +4,8 @@
 # --------------------------------------------------------------------------------------------
 
 from dataclasses import dataclass, field
-from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
-from .common_input import ArmTemplatePropertiesConfig
+from azext_aosm.configuration_models.onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
+from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
 
 
 @dataclass
