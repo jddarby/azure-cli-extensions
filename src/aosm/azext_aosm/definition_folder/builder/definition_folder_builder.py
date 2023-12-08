@@ -14,7 +14,7 @@ from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionEl
 class DefinitionFolderBuilder():
     """Builds and writes out a definition folder for an NFD or NSD."""
     path: Path
-    elements : list[BaseDefinitionElementBuilder]
+    elements : "list[BaseDefinitionElementBuilder]"
 
     def __init__(self, path: Path):
         self.path = path

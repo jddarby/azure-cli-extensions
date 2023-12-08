@@ -3,9 +3,14 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from azext_aosm.configuration_models.onboarding_cnf_input_config import OnboardingCNFInputConfig
+from pathlib import Path
+from azext_aosm.configuration_models.onboarding_cnf_input_config import (
+    OnboardingCNFInputConfig,
+)
+from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
-
+from azext_aosm.vendored_sdks.models import ManifestArtifactFormat
+# from azext_aosm.vendored_sdks.models import ArtifactStore
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -23,7 +28,28 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
         # TODO: Implement
-        pass
+        # print("config", self.config)
+        artifact_list = []
+        # Jordan: Logic when HelmChartProcessor is implemented
+        # for helm_package in self.config.helm_packages:
+        #     processed_helm = HelmChartProcessor(
+        #         helm_package.name,
+        #         self.config.acr_artifact_store_name,
+        #         helm_package,
+        #     )
+        #     artifacts = processed_helm.get_artifact_manifest_list()
+
+        # # Add artifacts to a list of unique artifacts
+        #     if artifacts not in artifact_list:
+        #         artifact_list.append(artifacts)
+
+        # Jordan: For testing write manifest bicep
+        artifact_list.append(ManifestArtifactFormat(artifact_name="test", artifact_type="OCIArtifact", artifact_version="4.1.0-12-rel-4-1-0"))
+
+        template_path = self._get_template_path("cnfartifactmanifest.bicep.j2")
+        bicep_contents = self._write_manifest_bicep_file(template_path, artifact_list)
+
+        return bicep_contents
 
     def build_artifact_list(self):
         """Build the artifact list."""
@@ -33,4 +59,16 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def build_resource_bicep(self):
         """Build the resource bicep file."""
         # TODO: Implement
-        pass
+        nf_application_list = []
+        for helm_package in self.config.helm_packages:
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                self.config.acr_artifact_store_name,
+                helm_package,
+            )
+            nf_application_list.append(processed_helm.generate_nf_application())
+        
+        template_path = self._get_template_path("cnfdefinition.bicep.j2")
+        bicep_contents = self._write_definition_bicep_file(template_path, nf_application_list)
+        
+        return bicep_contents

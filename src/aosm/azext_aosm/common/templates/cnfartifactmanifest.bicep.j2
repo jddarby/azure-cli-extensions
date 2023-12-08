@@ -29,9 +29,9 @@ resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/
     artifacts: [
     {%- for artifact in artifacts %}
       {
-        artifactName: '{{ artifact.name }}'
+        artifactName: '{{ artifact.artifact_name }}'
         artifactType: 'OCIArtifact'
-        artifactVersion: '{{ artifact.version }}'
+        artifactVersion: '{{ artifact.artifact_version }}'
       }
     {%- endfor %}
     ]
