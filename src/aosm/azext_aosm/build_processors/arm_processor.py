@@ -17,6 +17,7 @@ from ..vendored_sdks.models import (
     ArtifactStore,
     DependsOnProfile,
     ResourceElementTemplate,
+    ReferencedResource,
     ManifestArtifactFormat,
     NetworkFunctionApplication,
     ArmResourceDefinitionResourceElementTemplateDetails,
@@ -44,7 +45,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
     """
 
     name: str
-    artifact_store: ArtifactStore
     input_artifact: ArmTemplateInputArtifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -100,7 +100,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
             template_version=self.input_artifact.artifact_version,
         )
         return AzureCoreArmTemplateArtifactProfile(
-            artifact_store=self.artifact_store,
+            artifact_store=ReferencedResource(id=""),
             template_artifact_profile=artifact_profile,
         )
 
