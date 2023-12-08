@@ -11,9 +11,7 @@ from dataclasses import dataclass, field
 class ArmTemplatePropertiesConfig:
     """ARM template configuration."""
 
-    artifact_name: str | None = field(
-        default="", metadata={"comment": "Optional. Name of the artifact."}
-    )
+    artifact_name: str = field(default="", metadata={"comment": "Name of the artifact."})
     version: str = field(
         default="", metadata={"comment": "Version of the artifact in A.B.C format."}
     )
@@ -30,6 +28,8 @@ class ArmTemplatePropertiesConfig:
 
     def validate(self):
         """Validate the configuration."""
+        if not self.artifact_name:
+            raise ValidationError("Artifact name must be set")
         if not self.version:
             raise ValidationError("Artifact version must be set")
         if "." not in self.version or "-" in self.version:
