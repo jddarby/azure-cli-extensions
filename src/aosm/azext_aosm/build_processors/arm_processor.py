@@ -44,7 +44,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
 
     """
 
-    name: str
     input_artifact: ArmTemplateInputArtifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:

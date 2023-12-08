@@ -22,7 +22,6 @@ class BaseBuildProcessor(ABC):
     """Base class for build processors."""
 
     name: str
-    artifact_store: ArtifactStore
     input_artifact: BaseInputArtifact
 
     @abstractmethod

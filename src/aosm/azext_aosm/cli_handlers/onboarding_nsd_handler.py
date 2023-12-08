@@ -19,12 +19,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         """Get the configuration for the command."""
         return OnboardingNSDInputConfig(**input_config)
 
-
-    def build_base_bicep(self):
-        """Build the base bicep file."""
-        # TODO: Implement
-        pass
-
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
         # TODO: Implement

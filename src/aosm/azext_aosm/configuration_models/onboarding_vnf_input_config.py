@@ -106,7 +106,7 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     )
 
     # TODO: Add better comments
-    arm_template: [ArmTemplatePropertiesConfig] = field(
+    arm_templates: [ArmTemplatePropertiesConfig] = field(
         default_factory=lambda: [ArmTemplatePropertiesConfig()],
         metadata={"comment": "ARM template configuration."},
     )
@@ -116,13 +116,13 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
         metadata={"comment": "VHD image configuration."})
 
     def __post_init__(self):
-        for arm_template in self.arm_template:
+        for arm_template in self.arm_templates:
             arm_list = []
             if arm_template and isinstance(arm_template, dict):
                 arm_list.append(ArmTemplatePropertiesConfig(**arm_template))
             else:
                 arm_list.append(arm_template)
-        self.arm_template = arm_list
+        self.arm_templates = arm_list
 
         for vhd in self.vhd:
             vhd_list = []
@@ -138,13 +138,13 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
 
         if not self.image_name_parameter:
             raise ValidationError("image_name_parameter must be set")
-        if not self.arm_template:
+        if not self.arm_templates:
             raise ValidationError("arm_template must be set")
         if not self.vhd:
             raise ValidationError("vhd must be set")
-        if not self.arm_template:
+        if not self.arm_templates:
             raise ValidationError("You must include at least one arm template")
-        for arm_template in self.arm_template:
+        for arm_template in self.arm_templates:
             arm_template.validate()
         for vhd in self.vhd:
             vhd.validate()

@@ -8,6 +8,8 @@ from .base_input_artifact import BaseInputArtifact
 @dataclass
 class ArmTemplateInputArtifact(BaseInputArtifact):
 
+    artifact_path: Path
+
     def get_defaults(self):
         return self.default_config
 
