@@ -1,3 +1,7 @@
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
 import json
 import re
 from typing import Any, Dict, Set, List, Tuple
@@ -10,7 +14,7 @@ from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,
     AzureArcKubernetesArtifactProfile,
     AzureArcKubernetesDeployMappingRuleProfile,
-    DependsOnProfile,
+    # DependsOnProfile,
     HelmMappingRuleProfile,
     ReferencedResource,
     ResourceElementTemplate,

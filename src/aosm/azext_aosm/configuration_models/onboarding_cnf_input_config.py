@@ -141,8 +141,9 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     def __post_init__(self):
         if self.images and isinstance(self.images, dict):
             self.images = ImageSourceConfig(**self.images)
+
+        helm_list = []
         for helm_package in self.helm_packages:
-            helm_list = []
             if isinstance(helm_package, dict):
                 helm_list.append(HelmPackageConfig(**helm_package))
             else:

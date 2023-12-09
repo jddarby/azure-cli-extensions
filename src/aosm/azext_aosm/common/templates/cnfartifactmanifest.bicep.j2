@@ -27,7 +27,7 @@ resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/
   location: location
   properties: {
     artifacts: [
-    {%- for artifact in artifacts %}
+    {%- for artifact in acr_artifacts %}
       {
         artifactName: '{{ artifact.artifact_name }}'
         artifactType: 'OCIArtifact'

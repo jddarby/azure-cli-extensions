@@ -32,7 +32,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
         # TODO: Implement
-        # print("config", self.config)
         artifact_list = []
         # Jordan: Logic when HelmChartProcessor is implemented
         # for helm_package in self.config.helm_packages:
@@ -52,8 +51,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         template_path = self._get_template_path("cnfartifactmanifest.bicep.j2")
         bicep_contents = self._write_manifest_bicep_file(template_path, artifact_list)
-        print("JORDAN MANIFEST", bicep_contents)
-
         return bicep_contents
 
     def build_artifact_list(self):
@@ -93,10 +90,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                                                                                               )))
         nf_application_list.append(test_nf_application)
         template_path = self._get_template_path("cnfdefinition.bicep.j2")
-        
-        #   values: string(loadJsonContent('configMappings/{{ configuration.valueMappingsFile }}'))
            
         bicep_contents = self._write_definition_bicep_file(template_path, nf_application_list)
-        print("JORDAN NF", bicep_contents)
 
         return bicep_contents

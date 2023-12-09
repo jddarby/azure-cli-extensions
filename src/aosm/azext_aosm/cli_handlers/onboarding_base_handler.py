@@ -8,11 +8,11 @@ from pathlib import Path
 import json
 
 from dataclasses import fields, is_dataclass
-from azext_aosm.definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
+from knack.log import get_logger
 from jinja2 import StrictUndefined, Template
+from azext_aosm.definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
 from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from ..definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from knack.log import get_logger
 
@@ -57,7 +57,8 @@ class OnboardingBaseCLIHandler(ABC):
 
         return config_dict
 
-    def _write_definition_bicep_file(self, template_path: Path, nf_application: list):
+    def _write_definition_bicep_file(self, template_path: Path,
+                                     acr_nf_application: list, sa_nf_application: list = None):
         """Write the definition bicep file from given template. """
         with open(template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
@@ -66,11 +67,12 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            nf_application_configurations=nf_application,
+            acr_nf_applications=acr_nf_application,
+            sa_nf_applications=sa_nf_application
         )
         return bicep_contents
 
-    def _write_manifest_bicep_file(self, template_path: Path, artifact_list: list):
+    def _write_manifest_bicep_file(self, template_path: Path, acr_artifact_list: list, sa_artifact_list: list = None):
         """Write the manifest bicep file from given template.
 
         Returns bicep content as string
@@ -82,7 +84,8 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            artifacts=artifact_list,
+            acr_artifacts=acr_artifact_list,
+            sa_artifacts=sa_artifact_list
         )
         return bicep_contents
 
