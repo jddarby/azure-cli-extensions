@@ -110,7 +110,6 @@ class NetworkFunctionConfig:
             raise ValidationError("You must specify the properties of the Resource Element.")
         self.properties.validate()
     def __post_init__(self):
-        print("in propertis")
         if self.properties and isinstance(self.properties, dict):
             self.properties = NetworkFunctionPropertiesConfig(**self.properties)
 
@@ -197,9 +196,7 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
         RET_list = []
         for resource_element in self.resource_element_templates:
             if resource_element and isinstance(resource_element, dict):
-                print("here")
                 if resource_element["resource_element_type"] == "ArmTemplate":
-                    print("in ARN")
                     RET_list.append(ArmTemplateConfig(**resource_element))
                 elif resource_element["resource_element_type"] == "NF":
                     RET_list.append(NetworkFunctionConfig(**resource_element))

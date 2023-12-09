@@ -91,7 +91,7 @@ class HelmPackageConfig:
         }
     )
     depends_on: list = field(
-        default="",
+        default_factory=lambda: [],
         metadata={
             "comment": (
                 "Names of the Helm packages this package depends on. "

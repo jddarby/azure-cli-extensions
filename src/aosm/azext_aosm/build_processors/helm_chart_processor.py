@@ -88,7 +88,8 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            # depends_on_profile=DependsOnProfile(),
+            depends_on_profile=[],
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )

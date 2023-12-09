@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional, List
 import genson
 import yaml
 from azext_aosm.common.exceptions import DefaultValuesNotFoundError, InvalidFileTypeError, MissingChartDependencyError, SchemaGetOrGenerateError
-from src.aosm.azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
+from azext_aosm.input_artifacts.base_input_artifact import BaseInputArtifact
 
 
 @dataclass
