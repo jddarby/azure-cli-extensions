@@ -43,7 +43,55 @@ class OnboardingBaseCLIHandler(ABC):
             raise UnclassifiedUserFault("Invalid configuration file") from e
         self.definition_folder_builder = DefinitionFolderBuilder(Path.cwd() / "aosm-cli-output")  # TODO: generate custom directory name
 
+    def generate_config(self, output_file: str | None = None):
+        """Generate the configuration file for the command."""
+        if not output_file:
+            output_file = self.default_config_file_name
 
+        # Make Path object and ensure it has .jsonc extension
+        output_path = Path(output_file).with_suffix(".jsonc")
+
+        self._check_for_overwrite(output_path)
+        self._write_config_to_file(output_path)
+
+    def build(self):
+        """Build the definition."""
+        self.config.validate()
+        self.definition_folder_builder.add_element(self.build_manifest_bicep())
+        self.definition_folder_builder.add_element(self.build_artifact_list())
+        self.definition_folder_builder.add_element(self.build_resource_bicep())
+        self.definition_folder_builder.write()
+
+    def publish(self, input_json_path: str):
+        """Publish the definition."""
+        # Takes folder, deploys to Azure
+        #  - Read folder/ create folder object
+        #  - For each step (element):
+        #    - Do element.deploy()
+        # TODO: Implement
+
+    def delete(self, input_json_path: str):
+        """Delete the definition."""
+        # Takes folder, deletes to Azure
+        #  - Read folder/ create folder object
+        #  - For each element (reversed):
+        #    - Do element.delete()
+        # TODO: Implement
+
+    @abstractmethod
+    def build_manifest_bicep(self):
+        """Build the manifest bicep file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def build_artifact_list(self):
+        """Build the artifact list."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def build_resource_bicep(self):
+        """Build the resource bicep file."""
+        raise NotImplementedError
     @abstractmethod
     def _get_config(self, input_config: dict = {}) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
@@ -182,53 +230,3 @@ class OnboardingBaseCLIHandler(ABC):
             )
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
-
-    def generate_config(self, output_file: str | None = None):
-        """Generate the configuration file for the command."""
-        if not output_file:
-            output_file = self.default_config_file_name
-
-        # Make Path object and ensure it has .jsonc extension
-        output_path = Path(output_file).with_suffix(".jsonc")
-
-        self._check_for_overwrite(output_path)
-        self._write_config_to_file(output_path)
-
-    def build(self):
-        """Build the definition."""
-        self.config.validate()
-        self.definition_folder_builder.add_element(self.build_manifest_bicep())
-        self.definition_folder_builder.add_element(self.build_artifact_list())
-        self.definition_folder_builder.add_element(self.build_resource_bicep())
-        self.definition_folder_builder.write()
-
-    def publish(self, input_json_path: str):
-        """Publish the definition."""
-        # Takes folder, deploys to Azure
-        #  - Read folder/ create folder object
-        #  - For each step (element):
-        #    - Do element.deploy()
-        # TODO: Implement
-
-    def delete(self, input_json_path: str):
-        """Delete the definition."""
-        # Takes folder, deletes to Azure
-        #  - Read folder/ create folder object
-        #  - For each element (reversed):
-        #    - Do element.delete()
-        # TODO: Implement
-
-    @abstractmethod
-    def build_manifest_bicep(self):
-        """Build the manifest bicep file."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def build_artifact_list(self):
-        """Build the artifact list."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def build_resource_bicep(self):
-        """Build the resource bicep file."""
-        raise NotImplementedError

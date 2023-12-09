@@ -23,6 +23,6 @@ class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
         self.path.mkdir()
         artifacts_list = []
         for artifact in self.artifacts:
-            artifacts_list.append(artifact.to_dict())
+            artifacts_list.append(artifact)
         (self.path / "artifacts.json").write_text(json.dumps(artifacts_list))
         self._write_supporting_files()
