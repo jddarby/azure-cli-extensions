@@ -4,18 +4,19 @@
 # --------------------------------------------------------------------------------------------
 
 # from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from __future__ import annotations
 from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
 
 
-def onboard_nfd_generate_config(definition_type: str):
+def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
     if definition_type == "cnf":
         handler = OnboardingCNFCLIHandler()
-        handler.generate_config("cnf-input.jsonc")
+        handler.generate_config(output_file)
     elif definition_type == "vnf":
         handler = OnboardingVNFCLIHandler()
-        handler.generate_config("vnf-input.jsonc")
+        handler.generate_config(output_file)
     else:
         # TODO: better error
         raise Exception("Invalid definition type")
@@ -57,9 +58,9 @@ def onboard_nfd_delete(definition_type: str, config_file: str):
         raise Exception("Invalid definition type")
 
 
-def onboard_nsd_generate_config():
+def onboard_nsd_generate_config(output_file: str | None):
     handler = OnboardingNSDCLIHandler()
-    handler.generate_config("nsd-input.jsonc")
+    handler.generate_config(output_file)
 
 
 def onboard_nsd_build(config_file: str):

@@ -19,7 +19,7 @@ class OnboardingBaseInputConfig(ABC):
         default="",
         metadata={
             "comment": (
-                "Name of the Publisher resource you want your definition published to. "
+                "Name of the Publisher resource you want your definition published to.\n"
                 "Will be created if it does not exist."
             )
         }
@@ -28,7 +28,7 @@ class OnboardingBaseInputConfig(ABC):
         default="",
         metadata={
             "comment": (
-                "Optional. Resource group for the Publisher resource. "
+                "Optional. Resource group for the Publisher resource.\n"
                 "Will be created if it does not exist (with a default name if none is supplied)."
             )
         }
@@ -37,7 +37,7 @@ class OnboardingBaseInputConfig(ABC):
         default="",
         metadata={
             "comment": (
-                "Optional. Name of the ACR Artifact Store resource. "
+                "Optional. Name of the ACR Artifact Store resource.\n"
                 "Will be created if it does not exist (with a default name if none is supplied)."
             )
         }

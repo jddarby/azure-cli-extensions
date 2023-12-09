@@ -16,7 +16,7 @@ class ImageSourceConfig:
         default="",
         metadata={
             "comment": (
-                "optional. login server of the source acr registry from which to pull the image(s). "
+                "Optional. login server of the source acr registry from which to pull the image(s).\n"
                 "For example sourceacr.azurecr.io. "
                 "Leave blank if you have set source_local_docker_image."
             )
@@ -26,9 +26,9 @@ class ImageSourceConfig:
         default="",
         metadata={
             "comment": (
-                "optional. namespace of the repository of the source acr registry from which to pull. "
-                "For example if your repository is samples/prod/nginx then set this to samples/prod. "
-                "Leave blank if the image is in the root namespace or you have set source_local_docker_image."
+                "Optional. namespace of the repository of the source acr registry from which to pull.\n"
+                "For example if your repository is samples/prod/nginx then set this to samples/prod.\n"
+                "Leave blank if the image is in the root namespace or you have set source_local_docker_image.\n"
                 "See https://learn.microsoft.com/en-us/azure/container-registry/container-registry-best-practices#repository-namespaces for further details."
             )
         }
@@ -37,7 +37,7 @@ class ImageSourceConfig:
         default="",
         metadata={
             "comment": (
-                "Optional. The image name of the source docker image from your local machine. "
+                "Optional. The image name of the source docker image from your local machine.\n"
                 "For limited use case where the CNF only requires a single docker image "
                 "that exists in the local docker repository."
             )
@@ -73,7 +73,7 @@ class HelmPackageConfig:
         default="",
         metadata={
             "comment": (
-                "The file path of Helm Chart on the local disk. Accepts .tgz, .tar or .tar.gz. "
+                "The file path of Helm Chart on the local disk. Accepts .tgz, .tar or .tar.gz.\n"
                 "Use Linux slash (/) file separator even if running on Windows."
             )
         }
@@ -83,9 +83,9 @@ class HelmPackageConfig:
         metadata={
             "comment": (
                 "The file path (absolute or relative to input.json) of value mappings on the local disk where "
-                "chosen values are replaced with deploymentParameter placeholders.\n "
+                "chosen values are replaced with deploymentParameter placeholders.\n"
                 "Accepts .yaml or .yml. If left as a blank string, "
-                "a value mappings file is generated with every value mapped to a deployment parameter. "
+                "a value mappings file is generated with every value mapped to a deployment parameter.\n"
                 "Use a blank string and --interactive on the build command to interactively choose which values to map."
             )
         }
@@ -94,7 +94,7 @@ class HelmPackageConfig:
         default_factory=lambda: [],
         metadata={
             "comment": (
-                "Names of the Helm packages this package depends on. "
+                "Names of the Helm packages this package depends on.\n"
                 "Leave as an empty array if there are no dependencies."
             )
         }
@@ -107,8 +107,7 @@ class HelmPackageConfig:
             raise ValidationError("path_to_chart must be set for your helm package")
         if not self.path_to_mappings:
             raise ValidationError("path_to_mappings must be set for your helm package")
-        if not self.depends_on:
-            raise ValidationError("depends_on must be set for your helm package")
+
 
 
 @dataclass
