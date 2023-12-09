@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
 from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
+from typing import List
 
 @dataclass
 class ImageSourceConfig:
@@ -59,7 +60,7 @@ class ImageSourceConfig:
         if not (self.source_registry or self.source_local_docker_image):
             raise ValidationError(
                 "One of source_registry or source_local_docker_image must be set."
-            )       
+            )
 
 
 @dataclass
@@ -117,7 +118,7 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     images: ImageSourceConfig = field(
         default_factory=ImageSourceConfig,
         metadata={"comment": "List of images "})
-    helm_packages: [HelmPackageConfig] = field(
+    helm_packages: List[HelmPackageConfig] = field(
         default_factory=lambda: [HelmPackageConfig()],
         metadata={"comment": "List of Helm packages to be included in the CNF."}
     )

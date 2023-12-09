@@ -3,11 +3,11 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from azure.cli.core.azclierror import ValidationError
+from typing import List
 from dataclasses import dataclass, field
+from azure.cli.core.azclierror import ValidationError
 from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 from .common_input import ArmTemplatePropertiesConfig
-
 
 @dataclass
 class VhdImageConfig:
@@ -106,12 +106,12 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     )
 
     # TODO: Add better comments
-    arm_templates: [ArmTemplatePropertiesConfig] = field(
+    arm_templates: List[ArmTemplatePropertiesConfig] = field(
         default_factory=lambda: [ArmTemplatePropertiesConfig()],
         metadata={"comment": "ARM template configuration."},
     )
 
-    vhd: [VhdImageConfig] = field(
+    vhd: List[VhdImageConfig] = field(
         default_factory=lambda: [VhdImageConfig()],
         metadata={"comment": "VHD image configuration."})
 

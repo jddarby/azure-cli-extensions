@@ -10,7 +10,7 @@ from pathlib import Path
 from azext_aosm.definition_folder.builder.base_builder import BaseDefinitionElementBuilder
 from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
 
-
+from typing import List
 class DefinitionFolderBuilder():
     """Builds and writes out a definition folder for an NFD or NSD."""
     path: Path

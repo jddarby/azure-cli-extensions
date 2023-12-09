@@ -3,9 +3,8 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from azure.cli.core.azclierror import ValidationError
 from dataclasses import dataclass, field
-
+from azure.cli.core.azclierror import ValidationError
 
 @dataclass
 class ArmTemplatePropertiesConfig:
@@ -32,7 +31,6 @@ class ArmTemplatePropertiesConfig:
             raise ValidationError("Artifact name must be set")
         if not self.version:
             raise ValidationError("Artifact version must be set")
-
         if "." not in self.version or "-" in self.version:
             raise ValidationError(
                 "Config validation error. ARM template artifact version should be in"

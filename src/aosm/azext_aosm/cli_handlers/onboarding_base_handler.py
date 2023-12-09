@@ -10,11 +10,12 @@ import json
 from dataclasses import fields, is_dataclass
 from knack.log import get_logger
 from jinja2 import StrictUndefined, Template
+from azure.cli.core.azclierror import UnclassifiedUserFault
 from azext_aosm.definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
 from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from ..definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
-from azure.cli.core.azclierror import UnclassifiedUserFault
+
 
 logger = get_logger(__name__)
 
@@ -230,3 +231,4 @@ class OnboardingBaseCLIHandler(ABC):
             )
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
+            
