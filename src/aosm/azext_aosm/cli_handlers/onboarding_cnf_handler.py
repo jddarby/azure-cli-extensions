@@ -7,12 +7,22 @@ from pathlib import Path
 from azext_aosm.configuration_models.onboarding_cnf_input_config import (
     OnboardingCNFInputConfig,
 )
+from azext_aosm.definition_folder.builder.artifact_builder import (
+    ArtifactDefinitionElementBuilder
+)
+from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from azext_aosm.vendored_sdks.models import (
-    ManifestArtifactFormat, AzureArcKubernetesHelmApplication, 
-    AzureArcKubernetesArtifactProfile, HelmArtifactProfile,
-    AzureArcKubernetesDeployMappingRuleProfile, HelmMappingRuleProfile, HelmMappingRuleProfileOptions)
+    ManifestArtifactFormat,
+    AzureArcKubernetesHelmApplication,
+    AzureArcKubernetesArtifactProfile,
+    HelmArtifactProfile,
+    AzureArcKubernetesDeployMappingRuleProfile,
+    HelmMappingRuleProfile,
+    HelmMappingRuleProfileOptions,
+)
+
 # from azext_aosm.vendored_sdks.models import ArtifactStore
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -47,16 +57,43 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #         artifact_list.append(artifacts)
 
         # Jordan: For testing write manifest bicep
-        artifact_list.append(ManifestArtifactFormat(artifact_name="test", artifact_type="OCIArtifact", artifact_version="4.1.0-12-rel-4-1-0"))
+        artifact_list.append(
+            ManifestArtifactFormat(
+                artifact_name="test",
+                artifact_type="OCIArtifact",
+                artifact_version="4.1.0-12-rel-4-1-0",
+            )
+        )
 
         template_path = self._get_template_path("cnfartifactmanifest.bicep.j2")
         bicep_contents = self._write_manifest_bicep_file(template_path, artifact_list)
-        return bicep_contents
+        return BicepDefinitionElementBuilder(Path("testpath1"), bicep_contents)
 
     def build_artifact_list(self):
         """Build the artifact list."""
+        artifact_list = []
         # TODO: Implement
-        raise NotImplementedError
+
+        # for helm_package in self.config.helm_packages:
+        #     processed_helm = HelmChartProcessor(
+        #         helm_package.name,
+        #         self.config.acr_artifact_store_name,
+        #         helm_package,
+        #     )
+        #     (artifacts, files) = processed_helm.get_artifact_details()
+        #     if artifacts not in artifact_list:
+        #         artifact_list.append(artifacts)
+
+        # # For testing artifact builder works
+        artifact_list.append(
+            ManifestArtifactFormat(
+                artifact_name="test",
+                artifact_type="OCIArtifact",
+                artifact_version="4.1.0-12-rel-4-1-0",
+            )
+        )
+
+        return ArtifactDefinitionElementBuilder(Path("testpath"), artifact_list)
 
     def build_resource_bicep(self):
         """Build the resource bicep file."""
@@ -69,28 +106,36 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #         helm_package,
         #     )
         #     nf_application_list.append(processed_helm.generate_nf_application())
-        
+
         # Jordan: mocked nf applicaton
         test_nf_application = AzureArcKubernetesHelmApplication(
             name="testNFApplication",
             depends_on_profile=[],
-            artifact_profile=AzureArcKubernetesArtifactProfile(artifact_store="testArtifactStore", 
-                                                               helm_artifact_profile=HelmArtifactProfile(
-                                                                   helm_package_name="testHelmPackage",
-                                                                   helm_package_version_range="1.0.0",
-                                                                   registry_values_paths=["testPath1", "testPath2"],
-                                                                   image_pull_secrets_values_paths=["testPath3", "testPath4"])),
-            deploy_parameters_mapping_rule_profile=AzureArcKubernetesDeployMappingRuleProfile(application_enablement="testApplicationEnablement",
-                                                                                              helm_mapping_rule_profile=HelmMappingRuleProfile(
-                                                                                                  release_namespace="testReleaseNamespace",
-                                                                                                  release_name="testReleaseName",
-                                                                                                  helm_package_version="1.0.0",
-                                                                                                  values="testValues",
-                                                                                                  options=None
-                                                                                              )))
+            artifact_profile=AzureArcKubernetesArtifactProfile(
+                artifact_store="testArtifactStore",
+                helm_artifact_profile=HelmArtifactProfile(
+                    helm_package_name="testHelmPackage",
+                    helm_package_version_range="1.0.0",
+                    registry_values_paths=["testPath1", "testPath2"],
+                    image_pull_secrets_values_paths=["testPath3", "testPath4"],
+                ),
+            ),
+            deploy_parameters_mapping_rule_profile=AzureArcKubernetesDeployMappingRuleProfile(
+                application_enablement="testApplicationEnablement",
+                helm_mapping_rule_profile=HelmMappingRuleProfile(
+                    release_namespace="testReleaseNamespace",
+                    release_name="testReleaseName",
+                    helm_package_version="1.0.0",
+                    values="testValues",
+                    options=None,
+                ),
+            ),
+        )
         nf_application_list.append(test_nf_application)
         template_path = self._get_template_path("cnfdefinition.bicep.j2")
-           
-        bicep_contents = self._write_definition_bicep_file(template_path, nf_application_list)
 
-        return bicep_contents
+        bicep_contents = self._write_definition_bicep_file(
+            template_path, nf_application_list
+        )
+
+        return BicepDefinitionElementBuilder(Path("testpathb"), bicep_contents)

@@ -44,7 +44,7 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
     networkFunctionTemplate: {
       nfviType: 'AzureArcKubernetes'
       networkFunctionApplications: [
-      {%- for configuration in nf_application_configurations %}
+      {%- for configuration in acr_nf_applications %}
         {
           artifactType: 'HelmPackage'
           name: '{{ configuration.name }}'
