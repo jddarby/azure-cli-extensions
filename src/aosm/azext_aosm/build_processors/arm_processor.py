@@ -8,13 +8,12 @@ from dataclasses import dataclass
 from typing import Any, Dict, final, List, Tuple
 
 
-from base_processor import BaseBuildProcessor
+from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from ..common.artifact import LocalFileACRArtifact
 from ..input_artifacts.arm_template_input_artifact import ArmTemplateInputArtifact
 from ..common.local_file_builder import LocalFileBuilder
 
 from ..vendored_sdks.models import (
-    ArtifactStore,
     DependsOnProfile,
     ResourceElementTemplate,
     ReferencedResource,

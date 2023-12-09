@@ -116,16 +116,16 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
         metadata={"comment": "VHD image configuration."})
 
     def __post_init__(self):
+        arm_list = []
         for arm_template in self.arm_templates:
-            arm_list = []
             if arm_template and isinstance(arm_template, dict):
                 arm_list.append(ArmTemplatePropertiesConfig(**arm_template))
             else:
                 arm_list.append(arm_template)
         self.arm_templates = arm_list
-
+        
+        vhd_list = []
         for vhd in self.vhd:
-            vhd_list = []
             if vhd and isinstance(vhd, dict):
                 vhd_list.append(VhdImageConfig(**vhd))
             else:
