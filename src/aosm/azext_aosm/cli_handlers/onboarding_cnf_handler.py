@@ -23,7 +23,9 @@ from azext_aosm.common.constants import (
     CNF_DEFINITION_TEMPLATE_FILENAME,
     CNF_MANIFEST_TEMPLATE_FILENAME,
     CNF_OUTPUT_FOLDER_FILENAME,
-    ARTIFACT_LIST_FILENAME
+    ARTIFACT_LIST_FILENAME,
+    MANIFEST_FOLDER_NAME,
+    NF_DEFINITION_FOLDER_NAME
 )
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from azext_aosm.vendored_sdks.models import (
@@ -82,12 +84,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list.append(test_base_artifact)
 
         template_path = self._get_template_path("cnf", CNF_MANIFEST_TEMPLATE_FILENAME)
-        bicep_contents = self._write_manifest_bicep_file(template_path, artifact_list)
+        bicep_contents = self._write_manifest_bicep_contents(template_path, artifact_list)
         # print(bicep_contents)
 
         return BicepDefinitionElementBuilder(
             Path(
-                CNF_OUTPUT_FOLDER_FILENAME, CNF_MANIFEST_TEMPLATE_FILENAME
+                CNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME
             ),
             bicep_contents,
         )
@@ -95,7 +97,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def build_artifact_list(self):
         """Build the artifact list."""
         artifact_list = []
-        # TODO: Implement
+        # TODO: Test with processor
 
         # for helm_package in self.config.helm_packages:
         #     processed_helm = HelmChartProcessor(
@@ -159,7 +161,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             ),
         )
         nf_application_list.append(test_nf_application)
-        template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
+        template_path = self._get_template_path("cnf", NF_DEFINITION_FOLDER_NAME)
 
         bicep_contents = self._write_definition_bicep_file(
             template_path, nf_application_list

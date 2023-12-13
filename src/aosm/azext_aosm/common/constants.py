@@ -31,8 +31,11 @@ class SkipSteps(Enum):
 
 
 # Names of files used in the repo
-
+# TODO: remove unused constants
 ARTIFACT_LIST_FILENAME = "artifacts"
+MANIFEST_FOLDER_NAME = "artifactManifest"
+NF_DEFINITION_FOLDER_NAME = "nfDefinition"
+# TODO: add for nsd
 
 NF_TEMPLATE_JINJA2_SOURCE_TEMPLATE = "nf_template.bicep.j2"
 NF_DEFINITION_JSON_FILENAME = "nf_definition.json"
@@ -43,11 +46,11 @@ NSD_OUTPUT_BICEP_PREFIX = "nsd-bicep-templates"
 NSD_ARTIFACT_MANIFEST_BICEP_FILENAME = "artifact_manifest.bicep"
 NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME = "artifact_manifest_template.bicep"
 
+VNF_OUTPUT_FOLDER_FILENAME = "vnf-cli-output"
 VNF_DEFINITION_TEMPLATE_FILENAME = "vnfdefinition.bicep.j2"
-VNF_MANIFEST_TEMPLATE_FILENAME = "vnfartifactmanifests.bicep.j2"
+VNF_MANIFEST_TEMPLATE_FILENAME = "vnfartifactmanifest.bicep.j2"
 
 CNF_OUTPUT_FOLDER_FILENAME = "cnf-cli-output"
-
 CNF_DEFINITION_TEMPLATE_FILENAME = "cnfdefinition.bicep.j2"
 CNF_MANIFEST_TEMPLATE_FILENAME = "cnfartifactmanifest.bicep.j2"
 # CNF_DEFINITION_BICEP_TEMPLATE_FILENAME = "cnfdefinition.bicep"
