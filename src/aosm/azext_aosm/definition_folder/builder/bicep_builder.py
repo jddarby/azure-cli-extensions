@@ -22,7 +22,7 @@ class BicepDefinitionElementBuilder(BaseDefinitionElementBuilder):
 
     def write(self):
         """Write the definition element to disk."""
-        self.path.mkdir()
+        self.path.mkdir(exist_ok=True)
         (self.path / "deploy.bicep").write_text(self.bicep_content)
 
         self._write_supporting_files()

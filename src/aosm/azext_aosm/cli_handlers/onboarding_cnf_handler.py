@@ -8,10 +8,23 @@ from azext_aosm.configuration_models.onboarding_cnf_input_config import (
     OnboardingCNFInputConfig,
 )
 from azext_aosm.definition_folder.builder.artifact_builder import (
-    ArtifactDefinitionElementBuilder
+    ArtifactDefinitionElementBuilder,
 )
-from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
+from azext_aosm.common.artifact import (
+    BaseArtifact,
+    LocalFileACRArtifact,
+    BaseACRArtifact,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
+from azext_aosm.common.constants import (
+    CNF_DEFINITION_TEMPLATE_FILENAME,
+    CNF_MANIFEST_TEMPLATE_FILENAME,
+    CNF_OUTPUT_FOLDER_FILENAME,
+    ARTIFACT_LIST_FILENAME
+)
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from azext_aosm.vendored_sdks.models import (
     ManifestArtifactFormat,
@@ -23,7 +36,6 @@ from azext_aosm.vendored_sdks.models import (
     HelmMappingRuleProfileOptions,
 )
 
-# from azext_aosm.vendored_sdks.models import ArtifactStore
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
@@ -33,7 +45,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the default configuration file name."""
         return "cnf-input.jsonc"
 
-    def _get_config(self, input_config: dict = None) -> OnboardingCNFInputConfig:
+    @property
+    def output_folder_file_name(self) -> str:
+        """Get the output folder file name."""
+        return CNF_OUTPUT_FOLDER_FILENAME
+
+    def _get_config(self, input_config: dict = {}) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -56,18 +73,24 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #     if artifacts not in artifact_list:
         #         artifact_list.append(artifacts)
 
-        # Jordan: For testing write manifest bicep
-        artifact_list.append(
-            ManifestArtifactFormat(
-                artifact_name="test",
-                artifact_type="OCIArtifact",
-                artifact_version="4.1.0-12-rel-4-1-0",
-            )
+        # Jordan: For testing write manifest bicep. THIS IS THE RIGHT TEST
+        test_base_artifact = ManifestArtifactFormat(
+            artifact_name="test",
+            artifact_type="OCIArtifact",
+            artifact_version="4.1.0-12-rel-4-1-0",
         )
+        artifact_list.append(test_base_artifact)
 
-        template_path = self._get_template_path("cnfartifactmanifest.bicep.j2")
+        template_path = self._get_template_path("cnf", CNF_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._write_manifest_bicep_file(template_path, artifact_list)
-        return BicepDefinitionElementBuilder(Path("testpath1"), bicep_contents)
+        # print(bicep_contents)
+
+        return BicepDefinitionElementBuilder(
+            Path(
+                CNF_OUTPUT_FOLDER_FILENAME, CNF_MANIFEST_TEMPLATE_FILENAME
+            ),
+            bicep_contents,
+        )
 
     def build_artifact_list(self):
         """Build the artifact list."""
@@ -85,15 +108,19 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #         artifact_list.append(artifacts)
 
         # # For testing artifact builder works
-        artifact_list.append(
-            ManifestArtifactFormat(
+        test_base_artifact = LocalFileACRArtifact(
+            artifact_manifest=ManifestArtifactFormat(
                 artifact_name="test",
                 artifact_type="OCIArtifact",
                 artifact_version="4.1.0-12-rel-4-1-0",
-            )
+            ),
+            file_path=Path("test"),
         )
-
-        return ArtifactDefinitionElementBuilder(Path("testpath"), artifact_list)
+        artifact_list.append(test_base_artifact)
+        # print(artifact_list)
+        return ArtifactDefinitionElementBuilder(
+            Path(CNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
+        )
 
     def build_resource_bicep(self):
         """Build the resource bicep file."""
@@ -132,10 +159,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             ),
         )
         nf_application_list.append(test_nf_application)
-        template_path = self._get_template_path("cnfdefinition.bicep.j2")
+        template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
 
         bicep_contents = self._write_definition_bicep_file(
             template_path, nf_application_list
         )
-
-        return BicepDefinitionElementBuilder(Path("testpathb"), bicep_contents)
+        # print(bicep_contents)
+        return BicepDefinitionElementBuilder(
+            Path(CNF_OUTPUT_FOLDER_FILENAME, CNF_DEFINITION_TEMPLATE_FILENAME), bicep_contents
+        )
