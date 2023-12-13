@@ -91,12 +91,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             template_path, artifact_list
         )
         # print(bicep_contents)
-        
+
         bicep_file = BicepDefinitionElementBuilder(
-            Path(CNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME),
-            bicep_contents)
+            Path(CNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
+        )
         # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._write_manifest_parameters_contents())
+        bicep_file.add_supporting_file(self._render_manifest_parameters_contents())
         return bicep_file
 
     def build_artifact_list(self):
@@ -134,7 +134,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # TODO: Implement
         nf_application_list = []
         supporting_files = []
-        
+
         ## For each helm package, generate nf application, generate mappings profile
         # for helm_package in self.config.helm_packages:
         #     processed_helm = HelmChartProcessor(
@@ -146,11 +146,11 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #     nf_application_list.append(nf_application)
 
         #     # Adding supporting file: config mappings
-            # deploy_values = nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-            # mapping_file = LocalFileBuilder(Path(                    
-            #     CNF_OUTPUT_FOLDER_FILENAME,
-            #     NF_DEFINITION_FOLDER_NAME,
-            #     nf_application.name + "-mappings.json"), deploy_values)
+        # deploy_values = nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
+        # mapping_file = LocalFileBuilder(Path(
+        #     CNF_OUTPUT_FOLDER_FILENAME,
+        #     NF_DEFINITION_FOLDER_NAME,
+        #     nf_application.name + "-mappings.json"), deploy_values)
         #     supporting_files.append(mapping_file)
 
         # Jordan: mocked nf applicaton
@@ -205,38 +205,52 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             bicep_file.add_supporting_file(mappings_file)
 
         # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._write_definition_parameters_contents())
+        bicep_file.add_supporting_file(self._render_definition_parameters_contents())
 
         # JORDAN: do i even return anything anymore?
         return bicep_file
-    
-    def _write_manifest_parameters_contents(self):
+
+    def _render_manifest_parameters_contents(self):
         params_content = {
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-                "contentVersion": "1.0.0.0",
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {"value": self.config.acr_artifact_store_name + '-manifest'},
-            }
+                "acrManifestName": {
+                    "value": self.config.acr_artifact_store_name + "-manifest"
+                },
+            },
+        }
 
-        return LocalFileBuilder(Path(
+        return LocalFileBuilder(
+            Path(
                 CNF_OUTPUT_FOLDER_FILENAME,
                 MANIFEST_FOLDER_NAME,
-                "deploy.parameters.json"), json.dumps(params_content, indent=4))
-        
-    def _write_definition_parameters_contents(self):
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
+
+    def _render_definition_parameters_contents(self):
         params_content = {
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-                "contentVersion": "1.0.0.0",
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "nfDefinitionGroup": {"value": self.config.nf_name},
-                "nfDefinitionVersion": {"value": self.config.version},
+                "nfDefinitionVersion": {"value": self.config.version}
             }
+        }
 
-        return LocalFileBuilder(Path(
+        return LocalFileBuilder(
+            Path(
                 CNF_OUTPUT_FOLDER_FILENAME,
-                MANIFEST_FOLDER_NAME,
-                "deploy.parameters.json"), json.dumps(params_content, indent=4))
+                NF_DEFINITION_FOLDER_NAME,
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
