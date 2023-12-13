@@ -24,11 +24,17 @@ class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
     config: OnboardingBaseInputConfig
-
+    
     @property
     @abstractmethod
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def output_folder_file_name(self) -> str:
+        """Get the output folder file name."""
         raise NotImplementedError
 
     def __init__(self, input_json: str | None = None):
@@ -42,7 +48,8 @@ class OnboardingBaseCLIHandler(ABC):
             self.config = self._get_config(config_dict)
         except Exception as e:
             raise UnclassifiedUserFault("Invalid configuration file") from e
-        self.definition_folder_builder = DefinitionFolderBuilder(Path.cwd() / "aosm-cli-output")  # TODO: generate custom directory name
+        # TODO: generate custom directory name
+        self.definition_folder_builder = DefinitionFolderBuilder(Path.cwd() / self.output_folder_file_name)
 
     def generate_config(self, output_file: str | None = None):
         """Generate the configuration file for the command."""
@@ -138,12 +145,13 @@ class OnboardingBaseCLIHandler(ABC):
         )
         return bicep_contents
 
-    def _get_template_path(self, template_name: str) -> Path:
+    def _get_template_path(self, definition_type: str, template_name: str) -> Path:
         """Get the path to a template."""
         return (
             Path(__file__).parent.parent
             / "common"
             / "templates"
+            / definition_type
             / template_name
         )
 

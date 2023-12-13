@@ -35,7 +35,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         acr_artifact_list = []
         sa_artifact_list = []
 
-        # for arm_template in self.config.arm_templates:
+        for arm_template in self.config.arm_templates:
         #     # arm_input = ArmTemplateInputArtifact(
         #     #     artifact_name=arm_template.artifact_name,
         #     #     artifact_version=arm_template.version,
@@ -43,25 +43,25 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #     # We use the aritfact name
         #     # processor = BaseArmBuildProcessor(arm_input.artifact_name, arm_input)
         #     # processor.get_artifact_manifest_list()
-        #     acr_artifact_list.append(
-        #         ManifestArtifactFormat(
-        #             artifact_name="testarm",
-        #             artifact_type="ArmTemplate",
-        #             artifact_version="1",
-        #         )
-        #     )
+            acr_artifact_list.append(
+                ManifestArtifactFormat(
+                    artifact_name="testarm",
+                    artifact_type="ArmTemplate",
+                    artifact_version="1",
+                )
+            )
 
-        # for vhd in self.config.vhd:
+        for vhd in self.config.vhd:
         #     if not vhd.artifact_name:
         #         vhd.artifact_name = self.config.nf_name + "-vhd"
         #     # Mocked for testing bicep
-        #     sa_artifact_list.append(
-        #         ManifestArtifactFormat(
-        #             artifact_name=vhd.artifact_name,
-        #             artifact_type="VHDImage",
-        #             artifact_version="2",
-        #         )
-        #     )
+            sa_artifact_list.append(
+                ManifestArtifactFormat(
+                    artifact_name=vhd.artifact_name,
+                    artifact_type="VHDImage",
+                    artifact_version="2",
+                )
+            )
 
         template_path = self._get_template_path("vnfartifactmanifest.bicep.j2")
         bicep_contents = self._write_manifest_bicep_file(
