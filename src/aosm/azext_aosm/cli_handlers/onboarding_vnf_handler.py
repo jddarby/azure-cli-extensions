@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from pathlib import Path
+import json
 from azext_aosm.common.constants import (
     VNF_DEFINITION_TEMPLATE_FILENAME,
     VNF_MANIFEST_TEMPLATE_FILENAME,
@@ -11,6 +12,7 @@ from azext_aosm.common.constants import (
     MANIFEST_FOLDER_NAME,
     NF_DEFINITION_FOLDER_NAME,
 )
+from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
     OnboardingVNFInputConfig,
 )
@@ -18,10 +20,9 @@ from azext_aosm.definition_folder.builder.artifact_builder import (
     ArtifactDefinitionElementBuilder,
 )
 from azext_aosm.common.artifact import LocalFileACRArtifact
-from src.aosm.azext_aosm.definition_folder.builder.bicep_builder import (
+from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
-
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 from azext_aosm.vendored_sdks.models import (
@@ -34,8 +35,11 @@ from azext_aosm.vendored_sdks.models import (
     ArmTemplateArtifactProfile,
 )
 
-from ..build_processors.arm_processor import BaseArmBuildProcessor
-from ..input_artifacts.arm_template_input_artifact import ArmTemplateInputArtifact
+from azext_aosm.build_processors.arm_processor import BaseArmBuildProcessor
+from azext_aosm.build_processors.vhd_processor import VHDProcessor
+from azext_aosm.input_artifacts.arm_template_input_artifact import (
+    ArmTemplateInputArtifact,
+)
 
 
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -69,8 +73,8 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             #     artifact_version=arm_template.version,
             #     artifact_path=arm_template.file_path)
             # # We use the aritfact name
-            # processor = BaseArmBuildProcessor(arm_input.artifact_name, arm_input)
-            # test = processor.get_artifact_manifest_list()
+            # arm_processor = BaseArmBuildProcessor(arm_input.artifact_name, arm_input)
+            # test = arm_processor.get_artifact_manifest_list()
             # print("test", test)
             acr_artifact_list.append(
                 ManifestArtifactFormat(
@@ -81,8 +85,15 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
 
         for vhd in self.config.vhd:
-            #     if not vhd.artifact_name:
-            #         vhd.artifact_name = self.config.nf_name + "-vhd"
+            if not vhd.artifact_name:
+                vhd.artifact_name = self.config.nf_name + "-vhd"
+            vhd_processor = VHDProcessor(
+                name=vhd.artifact_name,
+                artifact_store=self.config.blob_artifact_store_name,
+                input_artifact=VHDFile,
+            )
+            vhd_processor.get_artifact_manifest_list()
+
             #     # Mocked for testing bicep
             sa_artifact_list.append(
                 ManifestArtifactFormat(
@@ -110,8 +121,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # TODO: Implement
         # for arm_template in self.config.arm_templates:
         #     processed_arm = BaseArmBuildProcessor()
-        #     processed_arm.get_artifact_details()
-        #     (artifacts, files) = processed_helm.get_artifact_details()
+        #     (artifacts, files) = processed_arm.get_artifact_details()
         #     if artifacts not in artifact_list:
         #         artifact_list.append(artifacts)
 
@@ -132,12 +142,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def build_resource_bicep(self):
         """Build the resource bicep file."""
-        # TODO: Implement
         # TODO: Remove testing code
         acr_nf_application_list = []
         sa_nf_application_list = []
-        # # Mocking return of processor.generate_nf_application()
-        # # We need: type, name, dependson, profile : {{ name, version}}
 
         for arm_template in self.config.arm_templates:
             #     processed_arm = BaseArmBuildProcessor()
@@ -155,7 +162,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
 
             acr_nf_application_list.append(nf_application)
-        # JORDAN: For testing (probably is the actual solution)
+        # JORDAN: For testing (add get nf application for workingprobably is the actual solution)
         for vhd in self.config.vhd:
             sa_nf_application_list.append(
                 AzureCoreVhdImageArtifactProfile(
@@ -175,4 +182,53 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         return BicepDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME),
             bicep_contents,
+        )
+
+    def _render_manifest_parameters_contents(self):
+        params_content = {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "location": {"value": self.config.location},
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "acrManifestName": {
+                    "value": self.config.acr_artifact_store_name + "-manifest"
+                },
+                "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
+                "saManifestName": {
+                    "value": self.config.blob_artifact_store_name + "-manifest"
+                }
+            },
+        }
+
+        return LocalFileBuilder(
+            Path(
+                VNF_OUTPUT_FOLDER_FILENAME,
+                MANIFEST_FOLDER_NAME,
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
+
+    def _render_definition_parameters_contents(self):
+        params_content = {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "location": {"value": self.config.location},
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "saArtifactStoreName" : {"value": self.config.blob_artifact_store_name},
+                "nfDefinitionGroup": {"value": self.config.nf_name},
+                "nfDefinitionVersion": {"value": self.config.version},
+            },
+        }
+        return LocalFileBuilder(
+            Path(
+                VNF_OUTPUT_FOLDER_FILENAME,
+                NF_DEFINITION_FOLDER_NAME,
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
         )
