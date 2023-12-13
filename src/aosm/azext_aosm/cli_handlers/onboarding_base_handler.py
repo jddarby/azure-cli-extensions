@@ -128,7 +128,7 @@ class OnboardingBaseCLIHandler(ABC):
         )
         return bicep_contents
 
-    def _write_manifest_bicep_file(self, template_path: Path, acr_artifact_list: list, sa_artifact_list: list = None):
+    def _write_manifest_bicep_contents(self, template_path: Path, acr_artifact_list: list, sa_artifact_list: list = None):
         """Write the manifest bicep file from given template.
 
         Returns bicep content as string
