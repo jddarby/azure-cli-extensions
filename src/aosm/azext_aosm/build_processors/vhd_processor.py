@@ -6,7 +6,7 @@
 import json
 from typing import List, Tuple
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.build_processors.artifact_details import BaseArtifact
+from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import snake_case_to_camel_case
 from azext_aosm.input_artifacts.vhd_file import VHDFile

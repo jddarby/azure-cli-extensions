@@ -23,7 +23,7 @@ resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@202
   location: location
 }
 
-resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' existing = {
+resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
   parent: publisher
   name: nfDefinitionGroup
   location: location
@@ -68,7 +68,7 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
               releaseNamespace: '{{ configuration.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.release_namespace }}'
               releaseName: '{{ configuration.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.release_name }}'
               helmPackageVersion: '{{ configuration.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.helm_package_version }}'
-              values: string(loadJsonContent('configMappings/{{ configuration.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values }}'))
+              values: string(loadJsonContent('{{configuration.name}}-mappings.json'))
             }
           }
         }
