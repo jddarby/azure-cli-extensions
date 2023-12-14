@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 import json
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any, Dict
 from azext_aosm.inputs.base_input import BaseInput
@@ -17,6 +18,7 @@ class NFDInput(BaseInput):
     """
 
     network_function_definition: NetworkFunctionDefinitionVersion
+    arm_template_output_path: Path
 
     def get_defaults(self) -> Dict[str, Any]:
         """
