@@ -10,11 +10,12 @@ from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionEl
 from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
 from azext_aosm.definition_folder.reader.artifact_definition import ArtifactDefinitionElement
 
+from typing import Any, Dict, List
 
 class DefinitionFolder():
     """Represents a definition folder for an NFD or NSD."""
     path: Path
-    elements: list[BaseDefinitionElement]
+    elements: List[BaseDefinitionElement]
 
     def __init__(self, path: Path):
         self.path = path
@@ -29,7 +30,7 @@ class DefinitionFolder():
             elif element["type"] == "artifact":
                 self.elements.append(ArtifactDefinitionElement(element["path"], element["only_delete_on_clean"]))
 
-    def _parse_index_file(self, file_content: str) -> list[dict[str, any]]:
+    def _parse_index_file(self, file_content: str) -> List[Dict[str, Any]]:
         """Read the index file. Return a list of dicts containing path, type, only_delete_on_clean"""
         json_content = json.loads(file_content)
         parsed_elements = []

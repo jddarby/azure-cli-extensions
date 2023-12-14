@@ -33,7 +33,7 @@ class NetworkFunctionPropertiesConfig:
         default="",
         metadata={
             "comment": (
-                "The version of the existing Network Function Definition to base this NSD on.\n "
+                "The version of the existing Network Function Definition to base this NSD on.\n"
                 "This NSD will be able to deploy any NFDV with deployment parameters"
                 " compatible with this version."
             )
@@ -77,14 +77,14 @@ class NetworkFunctionPropertiesConfig:
         
         if not self.type:
             raise ValidationError("type must be set for your network function")
-        if not self.type in ['cnf','vnf','VNF','CNF']:
+        if self.type.lower() not in ['cnf','vnf']:
             raise ValidationError("type must either be cnf or vnf")
         
         if not self.multiple_instances:
             raise ValidationError(
                 "multiple_instances must be set for your network function"
             )
-        if not self.multiple_instances in ['false','true', 'FALSE', 'TRUE', 'False', 'True']:
+        if self.multiple_instances.lower() not in ['false','true']:
             raise ValidationError("multiple_instances must be either true or false")
 
 
@@ -110,7 +110,6 @@ class NetworkFunctionConfig:
             raise ValidationError("You must specify the properties of the Resource Element.")
         self.properties.validate()
     def __post_init__(self):
-        print("in propertis")
         if self.properties and isinstance(self.properties, dict):
             self.properties = NetworkFunctionPropertiesConfig(**self.properties)
 
@@ -197,9 +196,7 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
         RET_list = []
         for resource_element in self.resource_element_templates:
             if resource_element and isinstance(resource_element, dict):
-                print("here")
                 if resource_element["resource_element_type"] == "ArmTemplate":
-                    print("in ARN")
                     RET_list.append(ArmTemplateConfig(**resource_element))
                 elif resource_element["resource_element_type"] == "NF":
                     RET_list.append(NetworkFunctionConfig(**resource_element))

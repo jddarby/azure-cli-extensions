@@ -137,7 +137,10 @@ class OnboardingBaseCLIHandler(ABC):
         """Generate the configuration file for the command."""
         if not output_file:
             output_file = self.default_config_file_name
-        output_path = Path(output_file)
+
+        # Make Path object and ensure it has .jsonc extension
+        output_path = Path(output_file).with_suffix(".jsonc")
+
         self._check_for_overwrite(output_path)
         self._write_config_to_file(output_path)
 

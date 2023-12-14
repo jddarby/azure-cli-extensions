@@ -8,10 +8,12 @@ from pathlib import Path
 
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 
+from typing import List
+
 class BaseDefinitionElementBuilder(ABC):
     """Base element definition builder."""
     path: Path
-    supporting_files: list[LocalFileBuilder]
+    supporting_files: List[LocalFileBuilder]
     only_delete_on_clean: bool
 
     def __init__(self, path: Path, only_delete_on_clean: bool = False):
