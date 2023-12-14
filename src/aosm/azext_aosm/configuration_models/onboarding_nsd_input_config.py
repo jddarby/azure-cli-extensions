@@ -7,7 +7,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
 from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
-from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
+from azext_aosm.configuration_models.onboarding_base_input_config import (
+    OnboardingBaseInputConfig,
+)
 
 
 @dataclass
@@ -74,17 +76,17 @@ class NetworkFunctionPropertiesConfig:
             raise ValidationError(
                 "publisher_offering_location must be set for your network function"
             )
-        
+
         if not self.type:
             raise ValidationError("type must be set for your network function")
-        if self.type.lower() not in ['cnf','vnf']:
+        if self.type.lower() not in ["cnf", "vnf"]:
             raise ValidationError("type must either be cnf or vnf")
-        
+
         if not self.multiple_instances:
             raise ValidationError(
                 "multiple_instances must be set for your network function"
             )
-        if self.multiple_instances.lower() not in ['false','true']:
+        if self.multiple_instances.lower() not in ["false", "true"]:
             raise ValidationError("multiple_instances must be either true or false")
 
 
@@ -107,8 +109,11 @@ class NetworkFunctionConfig:
             raise ValidationError("You must specify the type of Resource Element.")
         # TODO: fix logic here as no properties doesnt error
         if not self.properties:
-            raise ValidationError("You must specify the properties of the Resource Element.")
+            raise ValidationError(
+                "You must specify the properties of the Resource Element."
+            )
         self.properties.validate()
+
     def __post_init__(self):
         if self.properties and isinstance(self.properties, dict):
             self.properties = NetworkFunctionPropertiesConfig(**self.properties)
@@ -122,7 +127,7 @@ class ArmTemplateConfig:
         default="ArmTemplate",
         metadata={"comment": "Type of Resource Element. Either NF or ArmTemplate"},
     )
-    properties: ArmTemplatePropertiesConfig | dict= field(
+    properties: ArmTemplatePropertiesConfig | dict = field(
         default_factory=ArmTemplatePropertiesConfig,
         metadata={"comment": "Properties of the Resource Element."},
     )
@@ -136,6 +141,7 @@ class ArmTemplateConfig:
                 ("You must specify the properties of the Resource Element.")
             )
         self.properties.validate()
+
     def __post_init__(self):
         if self.properties and isinstance(self.properties, dict):
             self.properties = ArmTemplatePropertiesConfig(**self.properties)

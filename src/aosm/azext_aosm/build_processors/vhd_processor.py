@@ -9,7 +9,7 @@ from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import (
     BaseStorageAccountArtifact,
     BlobStorageAccountArtifact,
-    LocalFileStorageAccountArtifact
+    LocalFileStorageAccountArtifact,
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import snake_case_to_camel_case
@@ -28,6 +28,7 @@ from azext_aosm.vendored_sdks.models import (
     VhdImageArtifactProfile,
 )
 
+
 class VHDProcessor(BaseBuildProcessor):
     """Base class for build processors."""
 
@@ -41,7 +42,9 @@ class VHDProcessor(BaseBuildProcessor):
             )
         ]
 
-    def get_artifact_details(self) -> Tuple[List[BaseStorageAccountArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(
+        self,
+    ) -> Tuple[List[BaseStorageAccountArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         artifacts = []
         file_builders = []
@@ -55,15 +58,19 @@ class VHDProcessor(BaseBuildProcessor):
         self.input_artifact = VHDFile(**self.input_artifact)
 
         if self.input_artifact.file_path:
-            artifacts.append(LocalFileStorageAccountArtifact(
-                artifact_manifest=artifact_manifest,
-                file_path=self.input_artifact.file_path,
-            ))
+            artifacts.append(
+                LocalFileStorageAccountArtifact(
+                    artifact_manifest=artifact_manifest,
+                    file_path=self.input_artifact.file_path,
+                )
+            )
         elif self.input_artifact.blob_sas_uri:
-            artifacts.append(BlobStorageAccountArtifact(
-                artifact_manifest=artifact_manifest,
-                blob_sas_uri=self.input_artifact.blob_sas_uri,
-            ))
+            artifacts.append(
+                BlobStorageAccountArtifact(
+                    artifact_manifest=artifact_manifest,
+                    blob_sas_uri=self.input_artifact.blob_sas_uri,
+                )
+            )
         else:
             raise ValueError("VHDFile must have either a file path or a blob SAS URI.")
 
@@ -91,10 +98,12 @@ class VHDProcessor(BaseBuildProcessor):
 
         return AzureCoreVhdImageArtifactProfile(
             artifact_store=ReferencedResource(id=""),
-            vhd_artifact_profile=artifact_profile
+            vhd_artifact_profile=artifact_profile,
         )
 
-    def _generate_mapping_rule_profile(self) -> AzureCoreVhdImageDeployMappingRuleProfile:
+    def _generate_mapping_rule_profile(
+        self,
+    ) -> AzureCoreVhdImageDeployMappingRuleProfile:
         """Generate the mapping rule profile."""
 
         user_configuration = {
@@ -103,7 +112,7 @@ class VHDProcessor(BaseBuildProcessor):
                 snake_case_to_camel_case(key): value
                 for key, value in self.input_artifact.get_defaults().items()
                 if value is not None
-            }
+            },
         }
 
         mapping = VhdImageMappingRuleProfile(

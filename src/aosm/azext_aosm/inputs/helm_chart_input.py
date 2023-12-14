@@ -58,7 +58,9 @@ class HelmChart(BaseInput):
         self.metadata = self._get_metadata()
 
     @staticmethod
-    def from_chart_path(chart_path: Path, default_config: Optional[Dict[str, Any]]) -> "HelmChart":
+    def from_chart_path(
+        chart_path: Path, default_config: Optional[Dict[str, Any]]
+    ) -> "HelmChart":
         """Create a HelmChart object from a HelmPackageConfig object."""
         temp_dir = Path(tempfile.mkdtemp())
 

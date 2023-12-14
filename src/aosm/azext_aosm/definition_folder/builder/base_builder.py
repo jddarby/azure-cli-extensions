@@ -10,8 +10,10 @@ from azext_aosm.common.local_file_builder import LocalFileBuilder
 
 from typing import List
 
+
 class BaseDefinitionElementBuilder(ABC):
     """Base element definition builder."""
+
     path: Path
     supporting_files: List[LocalFileBuilder]
     only_delete_on_clean: bool

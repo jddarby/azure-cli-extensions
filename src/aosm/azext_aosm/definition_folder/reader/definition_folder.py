@@ -1,4 +1,3 @@
-
 # --------------------------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -8,12 +7,16 @@ from pathlib import Path
 
 from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
 from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
-from azext_aosm.definition_folder.reader.artifact_definition import ArtifactDefinitionElement
+from azext_aosm.definition_folder.reader.artifact_definition import (
+    ArtifactDefinitionElement,
+)
 
 from typing import Any, Dict, List
 
-class DefinitionFolder():
+
+class DefinitionFolder:
     """Represents a definition folder for an NFD or NSD."""
+
     path: Path
     elements: List[BaseDefinitionElement]
 
@@ -26,9 +29,17 @@ class DefinitionFolder():
         self.elements = []
         for element in index:
             if element["type"] == "bicep":
-                self.elements.append(BicepDefinitionElement(element["path"], element["only_delete_on_clean"]))
+                self.elements.append(
+                    BicepDefinitionElement(
+                        element["path"], element["only_delete_on_clean"]
+                    )
+                )
             elif element["type"] == "artifact":
-                self.elements.append(ArtifactDefinitionElement(element["path"], element["only_delete_on_clean"]))
+                self.elements.append(
+                    ArtifactDefinitionElement(
+                        element["path"], element["only_delete_on_clean"]
+                    )
+                )
 
     def _parse_index_file(self, file_content: str) -> List[Dict[str, Any]]:
         """Read the index file. Return a list of dicts containing path, type, only_delete_on_clean"""
@@ -38,16 +49,22 @@ class DefinitionFolder():
             if "name" not in element:
                 raise ValueError("Index file element is missing name")
             if "type" not in element:
-                raise ValueError(f"Index file element {element['name']} is missing type")
+                raise ValueError(
+                    f"Index file element {element['name']} is missing type"
+                )
             if "only_delete_on_clean" not in element:
                 element["only_delete_on_clean"] = False
             elif not isinstance(element["only_delete_on_clean"], bool):
-                raise ValueError(f"Index file element {element['name']} only_delete_on_clean should be a boolean")
-            parsed_elements.append({
-                "path": self.path / element["name"],
-                "type": element["type"],
-                "only_delete_on_clean": element["only_delete_on_clean"]
-            })
+                raise ValueError(
+                    f"Index file element {element['name']} only_delete_on_clean should be a boolean"
+                )
+            parsed_elements.append(
+                {
+                    "path": self.path / element["name"],
+                    "type": element["type"],
+                    "only_delete_on_clean": element["only_delete_on_clean"],
+                }
+            )
         return parsed_elements
 
     def deploy(self):

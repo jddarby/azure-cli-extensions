@@ -21,6 +21,7 @@ from azext_aosm.vendored_sdks.models import (
     TemplateType,
 )
 
+
 class NFDProcessor(BaseBuildProcessor):
     """Base class for build processors."""
 
@@ -57,7 +58,7 @@ class NFDProcessor(BaseBuildProcessor):
             parameter_values=json.dumps(parameter_values_dict),
         )
         return NFDResourceElementTemplate(
-            name = self.name,
+            name=self.name,
             configuration=configuration,
             depends_on_profile=DependsOnProfile(),
         )

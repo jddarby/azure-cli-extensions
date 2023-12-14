@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 from azext_aosm.inputs.base_input import BaseInput
 
+
 @dataclass
 class ArmTemplateInput(BaseInput):
 

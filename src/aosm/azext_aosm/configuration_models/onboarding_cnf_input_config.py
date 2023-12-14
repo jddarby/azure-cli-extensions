@@ -5,8 +5,11 @@
 
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
-from azext_aosm.configuration_models.onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
+from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
+    OnboardingNFDBaseInputConfig,
+)
 from typing import List
+
 
 @dataclass
 class ImageSourceConfig:
@@ -20,7 +23,7 @@ class ImageSourceConfig:
                 "For example sourceacr.azurecr.io. "
                 "Leave blank if you have set source_local_docker_image."
             )
-        }
+        },
     )
     source_registry_namespace: str = field(
         default="",
@@ -29,9 +32,10 @@ class ImageSourceConfig:
                 "Optional. namespace of the repository of the source acr registry from which to pull.\n"
                 "For example if your repository is samples/prod/nginx then set this to samples/prod.\n"
                 "Leave blank if the image is in the root namespace or you have set source_local_docker_image.\n"
-                "See https://learn.microsoft.com/en-us/azure/container-registry/container-registry-best-practices#repository-namespaces for further details."
+                "See https://learn.microsoft.com/en-us/azure/container-registry/"
+                "container-registry-best-practices#repository-namespaces for further details."
             )
-        }
+        },
     )
     source_local_docker_image: str = field(
         default="",
@@ -41,10 +45,11 @@ class ImageSourceConfig:
                 "For limited use case where the CNF only requires a single docker image "
                 "that exists in the local docker repository."
             )
-        }
+        },
     )
+
     def validate(self):
-        """ Validate the image configuration."""
+        """Validate the image configuration."""
         if self.source_registry_namespace and not self.source_registry:
             raise ValidationError(
                 "Config validation error. The image source registry namespace should "
@@ -67,8 +72,8 @@ class HelmPackageConfig:
     """Helm package configuration."""
 
     nf_name: str = field(
-        default="",
-        metadata={"comment": "The name of the Helm package."})
+        default="", metadata={"comment": "The name of the Helm package."}
+    )
     path_to_chart: str = field(
         default="",
         metadata={
@@ -76,7 +81,7 @@ class HelmPackageConfig:
                 "The file path of Helm Chart on the local disk. Accepts .tgz, .tar or .tar.gz.\n"
                 "Use Linux slash (/) file separator even if running on Windows."
             )
-        }
+        },
     )
     path_to_mappings: str = field(
         default="",
@@ -88,7 +93,7 @@ class HelmPackageConfig:
                 "a value mappings file is generated with every value mapped to a deployment parameter.\n"
                 "Use a blank string and --interactive on the build command to interactively choose which values to map."
             )
-        }
+        },
     )
     depends_on: list = field(
         default_factory=lambda: [],
@@ -97,8 +102,9 @@ class HelmPackageConfig:
                 "Names of the Helm packages this package depends on.\n"
                 "Leave as an empty array if there are no dependencies."
             )
-        }
+        },
     )
+
     def validate(self):
         """Validate the helm package configuration."""
         if not self.nf_name:
@@ -109,18 +115,19 @@ class HelmPackageConfig:
             raise ValidationError("path_to_mappings must be set for your helm package")
 
 
-
 @dataclass
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
+
     # TODO: Add better comment for images as not a list
     images: ImageSourceConfig = field(
-        default_factory=ImageSourceConfig,
-        metadata={"comment": "List of images "})
+        default_factory=ImageSourceConfig, metadata={"comment": "List of images "}
+    )
     helm_packages: List[HelmPackageConfig] = field(
         default_factory=lambda: [HelmPackageConfig()],
-        metadata={"comment": "List of Helm packages to be included in the CNF."}
+        metadata={"comment": "List of Helm packages to be included in the CNF."},
     )
+
     def validate(self):
         """Validate the CNFconfiguration."""
         super().validate()

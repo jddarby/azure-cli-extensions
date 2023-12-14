@@ -11,19 +11,23 @@ from azext_aosm.common.artifact import ARTIFACT_TYPE_TO_CLASS, BaseArtifact
 
 from typing import List
 
+
 class ArtifactDefinitionElement(BaseDefinitionElement):
-    """ Definition for Artifact """
+    """Definition for Artifact"""
+
     artifacts: List[BaseArtifact]
 
     def __init__(self, path: Path, only_delete_on_clean: bool):
         super().__init__(path, only_delete_on_clean)
-        artifact_list =  json.loads((path / "artifacts.json").read_text())
+        artifact_list = json.loads((path / "artifacts.json").read_text())
         self.artifacts = []
         print(ARTIFACT_TYPE_TO_CLASS)
         for artifact in artifact_list:
             if "type" not in artifact or artifact["type"] not in ARTIFACT_TYPE_TO_CLASS:
                 raise ValueError("Artifact type is missing or invalid")
-            self.artifacts.append(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].from_dict(artifact))
+            self.artifacts.append(
+                ARTIFACT_TYPE_TO_CLASS[artifact["type"]].from_dict(artifact)
+            )
 
     def deploy(self):
         """Deploy the element."""

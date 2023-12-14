@@ -5,22 +5,21 @@
 
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
-from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
+from azext_aosm.configuration_models.onboarding_base_input_config import (
+    OnboardingBaseInputConfig,
+)
 
 
 @dataclass
 class OnboardingNFDBaseInputConfig(OnboardingBaseInputConfig):
     """Common input configuration for onboarding NFDs."""
-    nf_name: str = field(
-        default="",
-        metadata={"comment": "Name of NF definition."}
-    )
+
+    nf_name: str = field(default="", metadata={"comment": "Name of NF definition."})
     version: str = field(
         default="",
-        metadata={
-            "comment": "Version of the NF definition in A.B.C format."
-        }
+        metadata={"comment": "Version of the NF definition in A.B.C format."},
     )
+
     def validate(self):
         """Validate the configuration."""
         super().validate()

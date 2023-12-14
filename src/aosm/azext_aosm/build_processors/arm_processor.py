@@ -56,7 +56,9 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         ]
 
     @abstractmethod
-    def get_artifact_details(self) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(
+        self,
+    ) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         return (
             [

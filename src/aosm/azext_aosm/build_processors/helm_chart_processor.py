@@ -1,7 +1,6 @@
 import json
 import re
 from typing import Any, Dict, Set, List, Tuple
-from functools import lru_cache
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
@@ -17,10 +16,13 @@ from azext_aosm.vendored_sdks.models import (
     ResourceElementTemplate,
     AzureArcKubernetesHelmApplication,
     HelmArtifactProfile,
-    ManifestArtifactFormat
+    ManifestArtifactFormat,
 )
 
-VALUE_PATH_REGEX = r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
+VALUE_PATH_REGEX = (
+    r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
+)
+
 
 class HelmChartProcessor(BaseBuildProcessor):
     """
@@ -99,9 +101,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             List[Tuple[str, str]]: A list of tuples containing the image registry and image name.
         """
-        pass
+        raise NotImplementedError
 
-    @lru_cache(maxsize=None)
     def _find_image_lines(self, chart: HelmChart, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
@@ -207,7 +208,9 @@ class HelmChartProcessor(BaseBuildProcessor):
             if len(new_matches) != 0:
                 matches.update(new_matches)
 
-    def _generate_mapping_rule_profile(self, values_to_remove: Set[str]) -> AzureArcKubernetesDeployMappingRuleProfile:
+    def _generate_mapping_rule_profile(
+        self, values_to_remove: Set[str]
+    ) -> AzureArcKubernetesDeployMappingRuleProfile:
         """
         Generate the mappings for a Helm chart.
 
@@ -222,9 +225,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         schema = self.input_artifact.get_schema()
         default_values = self.input_artifact.get_defaults()
         # Generate the values mappings for the Helm chart.
-        values_mappings = self._generate_values_mappings(
-            schema, default_values
-        )
+        values_mappings = self._generate_values_mappings(schema, default_values)
 
         # Remove the values to remove from the values mappings.
         for value_to_remove in values_to_remove:
@@ -262,17 +263,13 @@ class HelmChartProcessor(BaseBuildProcessor):
             if k not in values and k in schema["required"]:
                 print(f"Adding {k} to values")
                 if v["type"] == "object":
-                    values[k] = self._generate_values_mappings(
-                        v, {}
-                    )
+                    values[k] = self._generate_values_mappings(v, {})
                 else:
                     values[k] = f"{{deployParameters.{self.name}.{k}}}"
             # If the property is in the values, and is an object, generate the values mappings
             # for the subschema.
             if k in values and v["type"] == "object" and values[k]:
-                values[k] = self._generate_values_mappings(
-                    v, values[k]
-                )
+                values[k] = self._generate_values_mappings(v, values[k])
         return values
 
     def _remove_key_from_dict(self, dictionary: Dict[str, Any], path: str) -> None:
@@ -296,7 +293,4 @@ class HelmChartProcessor(BaseBuildProcessor):
             del dictionary[keys[0]]
             return None  # Key removed
         # Otherwise, recursively call the function on the sub-dictionary
-        else:
-            return self._remove_key_from_dict(
-                dictionary[keys[0]], ".".join(keys[1:])
-            )
+        return self._remove_key_from_dict(dictionary[keys[0]], ".".join(keys[1:]))

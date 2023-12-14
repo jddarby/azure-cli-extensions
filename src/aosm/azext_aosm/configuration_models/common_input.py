@@ -11,10 +11,11 @@ from dataclasses import dataclass, field
 class ArmTemplatePropertiesConfig:
     """ARM template configuration."""
 
-    artifact_name: str | None = field(default="", metadata={"comment": "Optional. Name of the artifact."})
+    artifact_name: str | None = field(
+        default="", metadata={"comment": "Optional. Name of the artifact."}
+    )
     version: str = field(
-        default="",
-        metadata={"comment": "Version of the artifact in A.B.C format."}
+        default="", metadata={"comment": "Version of the artifact in A.B.C format."}
     )
     file_path: str = field(
         default="",
@@ -24,13 +25,14 @@ class ArmTemplatePropertiesConfig:
                 "Relative paths are relative to the configuration file. "
                 "On Windows escape any backslash with another backslash."
             )
-        }
+        },
     )
+
     def validate(self):
         """Validate the configuration."""
         if not self.version:
             raise ValidationError("Artifact version must be set")
-        
+
         if "." not in self.version or "-" in self.version:
             raise ValidationError(
                 "Config validation error. ARM template artifact version should be in"

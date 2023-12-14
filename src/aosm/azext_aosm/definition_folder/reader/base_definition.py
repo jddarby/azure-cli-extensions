@@ -6,8 +6,10 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+
 class BaseDefinitionElement(ABC):
     """Base element definition."""
+
     path: str
     only_delete_on_clean: bool
 
@@ -19,7 +21,7 @@ class BaseDefinitionElement(ABC):
     def deploy(self):
         """Deploy the element."""
         return NotImplementedError
-    
+
     @abstractmethod
     def delete(self):
         """Delete the element."""

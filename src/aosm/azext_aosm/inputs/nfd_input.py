@@ -9,11 +9,13 @@ from typing import Any, Dict
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 
+
 @dataclass
 class NFDInput(BaseInput):
     """
     A utility class for working with VHD files.
     """
+
     network_function_definition: NetworkFunctionDefinitionVersion
 
     def get_defaults(self) -> Dict[str, Any]:
