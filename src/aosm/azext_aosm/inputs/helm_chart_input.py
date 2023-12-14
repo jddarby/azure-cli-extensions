@@ -17,9 +17,6 @@ from azext_aosm.common.exceptions import (
     MissingChartDependencyError,
     SchemaGetOrGenerateError,
 )
-from azext_aosm.configuration_models.onboarding_cnf_input_config import (
-    HelmPackageConfig,
-)
 from azext_aosm.common.utils import extract_tarfile
 from azext_aosm.inputs.base_input import BaseInput
 
@@ -50,7 +47,8 @@ class HelmChart(BaseInput):
         default_config: Optional[Dict[str, Any]] = None,
     ):
         """Initialize the HelmChart class."""
-        super().__init__(artifact_name, artifact_version, chart_path, default_config)
+        super().__init__(artifact_name, artifact_version, default_config)
+        self.chart_path = chart_path
         self._temp_dir_path = Path(tempfile.mkdtemp())
         if chart_path.is_dir():
             self._chart_dir = chart_path
@@ -60,20 +58,16 @@ class HelmChart(BaseInput):
         self.metadata = self._get_metadata()
 
     @staticmethod
-    def from_config(chart_config: HelmPackageConfig) -> "HelmChart":
+    def from_chart_path(chart_path: Path, default_config: Optional[Dict[str, Any]]) -> "HelmChart":
         """Create a HelmChart object from a HelmPackageConfig object."""
         temp_dir = Path(tempfile.mkdtemp())
 
         if chart_path.is_dir():
             chart_path = extract_tarfile(chart_path, temp_dir)
         else:
-            chart_path = Path(chart_config.path_to_chart)
+            chart_path = Path(chart_path)
 
         name, version = HelmChart._get_name_and_version(chart_path)
-
-        if chart_config.path_to_mappings:
-            with Path(chart_config.path_to_mappings).open(encoding="UTF-8") as f:
-                mappings = json.load(f)
 
         shutil.rmtree(temp_dir)
 
@@ -81,7 +75,7 @@ class HelmChart(BaseInput):
             artifact_name=name,
             artifact_version=version,
             chart_path=chart_path,
-            default_config=mappings,
+            default_config=default_config,
         )
 
     def get_defaults(self) -> Dict[str, Any]:
@@ -100,7 +94,7 @@ class HelmChart(BaseInput):
         except FileNotFoundError as error:
             raise DefaultValuesNotFoundError(
                 "ERROR: No default values found for the Helm chart"
-                f" '{self.artifact_path}'. Please provide default values"
+                f" '{self.chart_path}'. Please provide default values"
                 " or add a values.yaml file to the Helm chart."
             ) from error
 
@@ -155,7 +149,7 @@ class HelmChart(BaseInput):
 
         # For each chart in the charts directory, create a HelmChart object.
         dependency_charts = [
-            HelmChart(Path(dependency_chart_dir, chart_dir.name))
+            HelmChart.from_chart_path(Path(chart_dir), None)
             for chart_dir in dependency_chart_dir.iterdir()
         ]
 
@@ -226,7 +220,7 @@ class HelmChart(BaseInput):
         """
         if not Path(self._chart_dir, "Chart.yaml").exists():
             raise FileNotFoundError(
-                f"ERROR: The Helm chart '{self.artifact_path}' does not contain"
+                f"ERROR: The Helm chart '{self.chart_path}' does not contain"
                 "a Chart.yaml file."
             )
 
@@ -272,7 +266,7 @@ class HelmChart(BaseInput):
 
         raise FileNotFoundError(
             f"ERROR: No values file was found in the Helm chart"
-            f" '{self.artifact_path}'."
+            f" '{self.chart_path}'."
         )
 
     def __del__(self):
