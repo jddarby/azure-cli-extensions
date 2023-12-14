@@ -36,7 +36,8 @@ class VHDProcessor(BaseBuildProcessor):
             artifact_store (ArtifactStore): The artifact store to use for the artifact profile.
             chart (HelmChart): The Helm chart to use for the artifact profile.
         """
-        super().__init__(name, artifact_store, input_artifact)
+        self.artifact_store = artifact_store
+        super().__init__(name, input_artifact)
         # assert isinstance(self.input_artifact, HelmChart)
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:

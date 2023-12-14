@@ -140,7 +140,7 @@ class OnboardingBaseCLIHandler(ABC):
         )
         return bicep_contents
 
-    def _write_manifest_bicep_contents(
+    def _render_manifest_bicep_contents(
         self,
         template_path: Path,
         acr_artifact_list: list,

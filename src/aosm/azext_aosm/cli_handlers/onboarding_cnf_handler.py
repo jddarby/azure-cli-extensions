@@ -85,7 +85,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list.append(test_base_artifact)
 
         template_path = self._get_template_path("cnf", CNF_MANIFEST_TEMPLATE_FILENAME)
-        bicep_contents = self._write_manifest_bicep_contents(
+        bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
         # print(bicep_contents)
@@ -226,7 +226,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Add the deployParameters schema
         bicep_file.add_supporting_file(self._render_deploy_params_schema(complete_params_schema))
-        # JORDAN: do i even return anything anymore?
         return bicep_file
 
     def _render_deploy_params_schema(self, complete_params_schema):
