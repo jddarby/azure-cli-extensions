@@ -52,7 +52,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 )
 
         template_path = self._get_template_path("nsdartifactmanifest.bicep.j2")
-        bicep_contents = self._write_manifest_bicep_contents(template_path, artifact_list)
+        bicep_contents = self._render_manifest_bicep_contents(template_path, artifact_list)
         print(bicep_contents)
         return bicep_contents
 
