@@ -5,8 +5,10 @@
 from __future__ import annotations
 from azure.cli.core.azclierror import ValidationError
 from dataclasses import dataclass, field
-from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
-from .common_input import ArmTemplatePropertiesConfig
+from azext_aosm.configuration_models.onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
+from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
+
+from typing import List
 
 
 @dataclass
@@ -106,12 +108,12 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     )
 
     # TODO: Add better comments
-    arm_template: [ArmTemplatePropertiesConfig] = field(
+    arm_template: List[ArmTemplatePropertiesConfig] = field(
         default_factory=lambda: [ArmTemplatePropertiesConfig()],
         metadata={"comment": "ARM template configuration."},
     )
 
-    vhd: [VhdImageConfig] = field(
+    vhd: List[VhdImageConfig] = field(
         default_factory=lambda: [VhdImageConfig()],
         metadata={"comment": "VHD image configuration."})
 

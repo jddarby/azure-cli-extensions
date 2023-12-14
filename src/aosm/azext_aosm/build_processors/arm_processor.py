@@ -7,14 +7,12 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, final, List, Tuple
 
-
-from base_processor import BaseBuildProcessor
-from ..common.artifact import LocalFileACRArtifact
-from ..input_artifacts.arm_template_input_artifact import ArmTemplateInputArtifact
-from ..common.local_file_builder import LocalFileBuilder
+from azext_aosm.build_processors.base_processor import BaseBuildProcessor
+from azext_aosm.common.artifact import LocalFileACRArtifact
+from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 
 from ..vendored_sdks.models import (
-    ArtifactStore,
     DependsOnProfile,
     ResourceElementTemplate,
     ReferencedResource,
@@ -45,7 +43,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
     """
 
     name: str
-    input_artifact: ArmTemplateInputArtifact
+    input_artifact: ArmTemplateInput
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""

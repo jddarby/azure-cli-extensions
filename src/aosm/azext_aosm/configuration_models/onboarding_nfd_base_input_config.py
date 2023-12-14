@@ -5,7 +5,8 @@
 
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
-from .onboarding_base_input_config import OnboardingBaseInputConfig
+from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
+
 
 @dataclass
 class OnboardingNFDBaseInputConfig(OnboardingBaseInputConfig):
