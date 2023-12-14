@@ -9,7 +9,7 @@ from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionEl
 
 
 class BicepDefinitionElement(BaseDefinitionElement):
-    """ Bicep definition """
+    """Bicep definition"""
 
     def __init__(self, path: Path, only_delete_on_clean: bool):
         super().__init__(path, only_delete_on_clean)

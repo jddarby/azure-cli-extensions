@@ -7,13 +7,15 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
+
+
 @dataclass
 class OnboardingBaseInputConfig(ABC):
     """Base input configuration for onboarding commands."""
 
     location: str = field(
         default="",
-        metadata={"comment": "Azure location to use when creating resources."}
+        metadata={"comment": "Azure location to use when creating resources."},
     )
     publisher_name: str = field(
         default="",
@@ -22,7 +24,7 @@ class OnboardingBaseInputConfig(ABC):
                 "Name of the Publisher resource you want your definition published to.\n"
                 "Will be created if it does not exist."
             )
-        }
+        },
     )
     publisher_resource_group_name: str | None = field(
         default="",
@@ -31,7 +33,7 @@ class OnboardingBaseInputConfig(ABC):
                 "Optional. Resource group for the Publisher resource.\n"
                 "Will be created if it does not exist (with a default name if none is supplied)."
             )
-        }
+        },
     )
     acr_artifact_store_name: str | None = field(
         default="",
@@ -40,7 +42,7 @@ class OnboardingBaseInputConfig(ABC):
                 "Optional. Name of the ACR Artifact Store resource.\n"
                 "Will be created if it does not exist (with a default name if none is supplied)."
             )
-        }
+        },
     )
 
     def validate(self):

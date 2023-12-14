@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+
 @dataclass
-class BaseInputTemplate(ABC):
+class BaseInput(ABC):
 
     template_path: Path
     defaults_path: Optional[Path] = None

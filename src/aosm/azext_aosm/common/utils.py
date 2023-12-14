@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+
 def convert_bicep_to_arm():
     # Need this in bicep element and artifacts
     return NotImplementedError

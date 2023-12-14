@@ -14,6 +14,7 @@ from azext_aosm.vendored_sdks.models import ManifestArtifactFormat
 
 class BaseArtifact(ABC):
     """Abstract base class for artifacts."""
+
     artifact_manifest: ManifestArtifactFormat
 
     def __init__(self, artifact_manifest: ManifestArtifactFormat):
@@ -43,7 +44,9 @@ class BaseArtifact(ABC):
             "artifact_version": self.artifact_manifest.artifact_version,
         }
         # Pull in all the fields from the class that aren't the artifact manifest
-        output_dict.update({k: vars(self)[k] for k in vars(self) if k != "artifact_manifest"})
+        output_dict.update(
+            {k: vars(self)[k] for k in vars(self) if k != "artifact_manifest"}
+        )
         return output_dict
 
     @abstractmethod
@@ -56,14 +59,15 @@ class BaseArtifact(ABC):
 class BaseACRArtifact(BaseArtifact):
     """Abstract base class for ACR artifacts."""
 
-    def __init__(self, artifact_manifest: ManifestArtifactFormat):
-        super().__init__(artifact_manifest)
+    @abstractmethod
+    def upload(self):
+        """Upload the artifact."""
+        raise NotImplementedError
 
-    # TODO: Implement
-    pass
 
 class LocalFileACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a local file."""
+
     file_path: Path
 
     def __init__(self, artifact_manifest: ManifestArtifactFormat, file_path: Path):
@@ -75,11 +79,15 @@ class LocalFileACRArtifact(BaseACRArtifact):
         """Upload the artifact."""
         raise NotImplementedError
 
+
 class LocalDockerACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a local Docker image."""
+
     docker_image_name: str
 
-    def __init__(self, artifact_manifest: ManifestArtifactFormat, docker_image_name: str):
+    def __init__(
+        self, artifact_manifest: ManifestArtifactFormat, docker_image_name: str
+    ):
         super().__init__(artifact_manifest)
         self.docker_image_name = docker_image_name
 
@@ -88,12 +96,16 @@ class LocalDockerACRArtifact(BaseACRArtifact):
         """Upload the artifact."""
         raise NotImplementedError
 
+
 class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
+
     acr_name: str
     namespace: str
 
-    def __init__(self, artifact_manifest: ManifestArtifactFormat, acr_name: str, namespace: str):
+    def __init__(
+        self, artifact_manifest: ManifestArtifactFormat, acr_name: str, namespace: str
+    ):
         super().__init__(artifact_manifest)
         self.acr_name = acr_name
         self.namespace = namespace
@@ -103,17 +115,19 @@ class RemoteACRArtifact(BaseACRArtifact):
         """Upload the artifact."""
         raise NotImplementedError
 
+
 class BaseStorageAccountArtifact(BaseArtifact):
     """Abstract base class for storage account artifacts."""
 
-    def __init__(self, artifact_manifest: ManifestArtifactFormat):
-        super().__init__(artifact_manifest)
-
     # TODO: Implement
-    pass
+    def upload(self):
+        """Upload the artifact."""
+        raise NotImplementedError
+
 
 class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
     """Class for storage account artifacts from a local file."""
+
     file_path: Path
 
     def __init__(self, artifact_manifest: ManifestArtifactFormat, file_path: Path):
@@ -125,8 +139,10 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
         """Upload the artifact."""
         raise NotImplementedError
 
+
 class BlobStorageAccountArtifact(BaseStorageAccountArtifact):
     """Class for storage account artifacts from a remote blob."""
+
     blob_sas_uri: str
 
     def __init__(self, artifact_manifest: ManifestArtifactFormat, blob_sas_uri: str):

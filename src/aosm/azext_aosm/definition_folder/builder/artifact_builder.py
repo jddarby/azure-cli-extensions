@@ -12,11 +12,18 @@ from azext_aosm.common.artifact import BaseArtifact
 
 from typing import List
 
+
 class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
-    """ Artifact builder """
+    """Artifact builder"""
+
     artifacts: List[BaseArtifact]
 
-    def __init__(self, path: Path, artifacts: List[BaseArtifact], only_delete_on_clean: bool = False):
+    def __init__(
+        self,
+        path: Path,
+        artifacts: List[BaseArtifact],
+        only_delete_on_clean: bool = False,
+    ):
         super().__init__(path, only_delete_on_clean)
         self.artifacts = artifacts
 

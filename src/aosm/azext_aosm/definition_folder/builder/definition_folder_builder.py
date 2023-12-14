@@ -1,4 +1,3 @@
-
 # --------------------------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,14 +6,21 @@
 import json
 from pathlib import Path
 
-from azext_aosm.definition_folder.builder.base_builder import BaseDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.base_builder import (
+    BaseDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
 
 from typing import List
-class DefinitionFolderBuilder():
+
+
+class DefinitionFolderBuilder:
     """Builds and writes out a definition folder for an NFD or NSD."""
+
     path: Path
-    elements : List[BaseDefinitionElementBuilder]
+    elements: List[BaseDefinitionElementBuilder]
 
     def __init__(self, path: Path):
         self.path = path
@@ -31,10 +37,14 @@ class DefinitionFolderBuilder():
             element.write()
         index_json = []
         for element in self.elements:
-            index_json.append({
-                "name": element.path.name,
-                "type": "bicep" if isinstance(element, BicepDefinitionElementBuilder) else "artifact",
-                "only_delete_on_clean": element.only_delete_on_clean
-            })
+            index_json.append(
+                {
+                    "name": element.path.name,
+                    "type": "bicep"
+                    if isinstance(element, BicepDefinitionElementBuilder)
+                    else "artifact",
+                    "only_delete_on_clean": element.only_delete_on_clean,
+                }
+            )
         (self.path / "index.json").write_text(json.dumps(index_json))
         # TODO: Write some readme file

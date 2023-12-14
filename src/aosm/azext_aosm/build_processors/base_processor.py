@@ -5,19 +5,25 @@
 
 from abc import ABC, abstractmethod
 
-from template_parsers.base_parser import BaseInputTemplate
-from common.artifact import BaseArtifact
-from common.local_file_builder import LocalFileBuilder
-from vendored_sdks.models import ManifestArtifactFormat, NetworkFunctionApplication, ResourceElementTemplate, ArtifactStore
+from azext_aosm.inputs.base_input import BaseInput
+from azext_aosm.common.artifact import BaseArtifact
+from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.vendored_sdks.models import (
+    ManifestArtifactFormat,
+    NetworkFunctionApplication,
+    ResourceElementTemplate,
+    ArtifactStore,
+)
 
 from typing import List, Tuple
+
 
 class BaseBuildProcessor(ABC):
     """Base class for build processors."""
 
     name: str
     artifact_store: ArtifactStore
-    input_template: BaseInputTemplate
+    input_template: BaseInput
 
     @staticmethod
     @abstractmethod
