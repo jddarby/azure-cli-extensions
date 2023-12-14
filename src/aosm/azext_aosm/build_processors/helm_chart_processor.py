@@ -2,8 +2,13 @@ import json
 import re
 from typing import Any, Dict, Set, List, Tuple
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import BaseArtifact
+from azext_aosm.common.artifact import (
+    BaseACRArtifact,
+    LocalFileACRArtifact,
+    RemoteACRArtifact,
+)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.common.utils import generate_values_mappings
 from azext_aosm.inputs.helm_chart_input import HelmChart
 from azext_aosm.vendored_sdks.models import (
     ArtifactType,
@@ -32,16 +37,6 @@ class HelmChartProcessor(BaseBuildProcessor):
     for Helm charts.
     """
 
-    def __init__(self, name: str, input_artifact: HelmChart):
-        """
-        Initialize the HelmChartProcessor class.
-
-        Args:
-            chart (HelmChart): The Helm chart to use for the artifact profile.
-        """
-        super().__init__(name, input_artifact)
-        # assert isinstance(self.input_artifact, HelmChart)
-
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
         artifact_manifest_list = []
@@ -64,9 +59,35 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         return artifact_manifest_list
 
-    def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(
+        self,
+    ) -> Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        raise NotImplementedError
+        assert isinstance(self.input_artifact, HelmChart)
+        artifact_details = []
+        helm_chart_details = LocalFileACRArtifact(
+            ManifestArtifactFormat(
+                artifact_name=self.input_artifact.artifact_name,
+                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_version=self.input_artifact.artifact_version,
+            ),
+            self.input_artifact.chart_path,
+        )
+        artifact_details.append(helm_chart_details)
+
+        for image_name, image_version in self._find_chart_images():
+            artifact_details.append(
+                RemoteACRArtifact(
+                    ManifestArtifactFormat(
+                        artifact_name=image_name,
+                        artifact_type=ArtifactType.OCI_ARTIFACT,
+                        artifact_version=image_version,
+                    ),
+                    self.input_artifact.image_source_acr,
+                )
+            )
+
+        return artifact_details, []
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         raise NotImplementedError("NSDs do not support deployment of Helm charts.")
@@ -101,7 +122,18 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             List[Tuple[str, str]]: A list of tuples containing the image registry and image name.
         """
-        raise NotImplementedError
+        image_lines: Set[str] = set()
+        self._find_image_lines(image_lines)
+
+        images: List[Tuple[str, str]] = []
+        for line in image_lines:
+            # Images are specified in the format <registry>/<image>:<tag>
+            # so we split the line on '/' and then split the second element
+            # of the resulting list on ':' to get the image name and tag.
+            name_and_tag = line.split("/")[1].split(":")
+            images.append((name_and_tag[0], name_and_tag[1]))
+
+        return images
 
     def _find_image_lines(self, chart: HelmChart, image_lines: Set[str]) -> None:
         """
@@ -202,9 +234,7 @@ class HelmChartProcessor(BaseBuildProcessor):
             # Images are specified in the format <registry>/<image>:<tag>
             # so we split the line on '/' and then find the value path
             # in the first element of the resulting list.
-            print(f"line: {line}")
             new_matches = re.findall(VALUE_PATH_REGEX, line.split("/")[0])
-            print(f"new_matches: {new_matches}")
             if len(new_matches) != 0:
                 matches.update(new_matches)
 
@@ -222,10 +252,12 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             AzureArcKubernetesDeployMappingRuleProfile: The mapping rule profile for Azure Arc Kubernetes deployment.
         """
-        schema = self.input_artifact.get_schema()
-        default_values = self.input_artifact.get_defaults()
         # Generate the values mappings for the Helm chart.
-        values_mappings = self._generate_values_mappings(schema, default_values)
+        values_mappings = generate_values_mappings(
+            self.name,
+            self.input_artifact.get_schema(),
+            self.input_artifact.get_defaults(),
+        )
 
         # Remove the values to remove from the values mappings.
         for value_to_remove in values_to_remove:
@@ -243,34 +275,6 @@ class HelmChartProcessor(BaseBuildProcessor):
             application_enablement=ApplicationEnablement.ENABLED,
             helm_mapping_rule_profile=mapping_rule_profile,
         )
-
-    def _generate_values_mappings(
-        self, schema: Dict[str, Any], values: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Generate values mappings for a Helm chart.
-
-        Args:
-            schema (Dict[str, Any]): The schema of the Helm chart.
-            values (Dict[str, Any]): The values of the Helm chart.
-
-        Returns:
-            Dict[str, Any]: The value mappings for the Helm chart.
-        """
-        # Loop through each property in the schema.
-        for k, v in schema["properties"].items():
-            # If the property is not in the values, and is required, add it to the values.
-            if k not in values and k in schema["required"]:
-                print(f"Adding {k} to values")
-                if v["type"] == "object":
-                    values[k] = self._generate_values_mappings(v, {})
-                else:
-                    values[k] = f"{{deployParameters.{self.name}.{k}}}"
-            # If the property is in the values, and is an object, generate the values mappings
-            # for the subschema.
-            if k in values and v["type"] == "object" and values[k]:
-                values[k] = self._generate_values_mappings(v, values[k])
-        return values
 
     def _remove_key_from_dict(self, dictionary: Dict[str, Any], path: str) -> None:
         """

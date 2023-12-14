@@ -34,6 +34,7 @@ class HelmChartTemplate:
     data: List[str]
 
 
+@dataclass
 class HelmChart(BaseInput):
     """
     A utility class for working with Helm charts.
@@ -44,11 +45,13 @@ class HelmChart(BaseInput):
         artifact_name: str,
         artifact_version: str,
         chart_path: Path,
+        image_source_acr: str,
         default_config: Optional[Dict[str, Any]] = None,
     ):
         """Initialize the HelmChart class."""
         super().__init__(artifact_name, artifact_version, default_config)
         self.chart_path = chart_path
+        self.image_source_acr = image_source_acr
         self._temp_dir_path = Path(tempfile.mkdtemp())
         if chart_path.is_dir():
             self._chart_dir = chart_path
