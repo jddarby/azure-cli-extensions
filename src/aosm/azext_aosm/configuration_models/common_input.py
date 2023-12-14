@@ -3,9 +3,8 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from azure.cli.core.azclierror import ValidationError
 from dataclasses import dataclass, field
-
+from azure.cli.core.azclierror import ValidationError
 
 @dataclass
 class ArmTemplatePropertiesConfig:

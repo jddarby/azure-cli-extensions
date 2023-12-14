@@ -11,6 +11,7 @@ from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
+
 from ..vendored_sdks.models import (
     DependsOnProfile,
     ResourceElementTemplate,
@@ -126,9 +127,7 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
 
 
 class NexusArmBuildProcessor(BaseArmBuildProcessor):
-    """
-    Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus.
-    """
+    """ Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus."""
 
     def generate_nfvi_specific_nf_application(self):
         return NotImplementedError

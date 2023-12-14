@@ -15,6 +15,15 @@ from azext_aosm.configuration_models.onboarding_base_input_config import Onboard
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from knack.log import get_logger
+from knack.log import get_logger
+from jinja2 import StrictUndefined, Template
+from azure.cli.core.azclierror import UnclassifiedUserFault
+
+from azext_aosm.build_processors.base_processor import BaseBuildProcessor
+from ..definition_folder.builder.definition_folder_builder import (
+    DefinitionFolderBuilder,
+)
+
 
 logger = get_logger(__name__)
 
