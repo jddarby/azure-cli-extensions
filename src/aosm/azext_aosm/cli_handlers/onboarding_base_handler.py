@@ -11,10 +11,16 @@ from dataclasses import fields, is_dataclass
 from knack.log import get_logger
 from jinja2 import StrictUndefined, Template
 from azure.cli.core.azclierror import UnclassifiedUserFault
-from azext_aosm.definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
-from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
+from azext_aosm.definition_folder.builder.definition_folder_builder import (
+    DefinitionFolderBuilder,
+)
+from azext_aosm.configuration_models.onboarding_base_input_config import (
+    OnboardingBaseInputConfig,
+)
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from ..definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
+from ..definition_folder.builder.definition_folder_builder import (
+    DefinitionFolderBuilder,
+)
 
 
 logger = get_logger(__name__)
@@ -24,13 +30,13 @@ class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
     config: OnboardingBaseInputConfig
-    
+
     @property
     @abstractmethod
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
         raise NotImplementedError
-    
+
     @property
     @abstractmethod
     def output_folder_file_name(self) -> str:
@@ -49,7 +55,9 @@ class OnboardingBaseCLIHandler(ABC):
         except Exception as e:
             raise UnclassifiedUserFault("Invalid configuration file") from e
         # TODO: generate custom directory name
-        self.definition_folder_builder = DefinitionFolderBuilder(Path.cwd() / self.output_folder_file_name)
+        self.definition_folder_builder = DefinitionFolderBuilder(
+            Path.cwd() / self.output_folder_file_name
+        )
 
     def generate_config(self, output_file: str | None = None):
         """Generate the configuration file for the command."""
@@ -100,6 +108,7 @@ class OnboardingBaseCLIHandler(ABC):
     def build_resource_bicep(self):
         """Build the resource bicep file."""
         raise NotImplementedError
+
     @abstractmethod
     def _get_config(self, input_config: dict = {}) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
@@ -113,9 +122,13 @@ class OnboardingBaseCLIHandler(ABC):
 
         return config_dict
 
-    def _write_definition_bicep_file(self, template_path: Path,
-                                     acr_nf_application: list, sa_nf_application: list = None):
-        """Write the definition bicep file from given template. """
+    def _write_definition_bicep_file(
+        self,
+        template_path: Path,
+        acr_nf_application: list,
+        sa_nf_application: list = None,
+    ):
+        """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
                 f.read(),
@@ -123,12 +136,16 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            acr_nf_applications=acr_nf_application,
-            sa_nf_applications=sa_nf_application
+            acr_nf_applications=acr_nf_application, sa_nf_applications=sa_nf_application
         )
         return bicep_contents
 
-    def _write_manifest_bicep_contents(self, template_path: Path, acr_artifact_list: list, sa_artifact_list: list = None):
+    def _write_manifest_bicep_contents(
+        self,
+        template_path: Path,
+        acr_artifact_list: list,
+        sa_artifact_list: list = None,
+    ):
         """Write the manifest bicep file from given template.
 
         Returns bicep content as string
@@ -140,8 +157,7 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            acr_artifacts=acr_artifact_list,
-            sa_artifacts=sa_artifact_list
+            acr_artifacts=acr_artifact_list, sa_artifacts=sa_artifact_list
         )
         return bicep_contents
 
@@ -155,7 +171,20 @@ class OnboardingBaseCLIHandler(ABC):
             / template_name
         )
 
-    def _serialize(self, dataclass, indent_count = 1):
+    def _build_deploy_params_schema(self, schema_properties):
+        """ 
+        Build the schema for deployParameters.json
+        """
+        schema_contents = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "title": "DeployParametersSchema",
+            "type": "object",
+            "properties" : {}
+        }
+        schema_contents["properties"] = schema_properties
+        return schema_contents
+
+    def _serialize(self, dataclass, indent_count=1):
         """
         Convert a dataclass instance to a JSONC string.
         This function recursively iterates over the fields of the dataclass and serializes them.
@@ -180,18 +209,30 @@ class OnboardingBaseCLIHandler(ABC):
             # Get the value of the current field.
             field_value = getattr(dataclass, field_info.name)
             # Get comment, if it exists + add it to the result
-            comment = field_info.metadata.get('comment', '')
+            comment = field_info.metadata.get("comment", "")
             if comment:
-                for line in comment.split('\n'):
-                    jsonc_string.append(f'{indent}// {line}')
+                for line in comment.split("\n"):
+                    jsonc_string.append(f"{indent}// {line}")
 
             if is_dataclass(field_value):
                 # Serialize the nested dataclass and add it as a nested JSON object.
                 # Checks if it is last field to omit trailing comma
                 if field_info == fields(dataclass)[-1]:
-                    nested_json = "{\n" + self._serialize(field_value, indent_count+1) + "\n" + indent + "}"
+                    nested_json = (
+                        "{\n"
+                        + self._serialize(field_value, indent_count + 1)
+                        + "\n"
+                        + indent
+                        + "}"
+                    )
                 else:
-                    nested_json = "{\n" + self._serialize(field_value, indent_count+1) + "\n" +  indent + "},"
+                    nested_json = (
+                        "{\n"
+                        + self._serialize(field_value, indent_count + 1)
+                        + "\n"
+                        + indent
+                        + "},"
+                    )
                 jsonc_string.append(f'{indent}"{field_info.name}": {nested_json}')
             elif isinstance(field_value, list):
                 # If the value is a list, iterate over the items.
@@ -199,29 +240,45 @@ class OnboardingBaseCLIHandler(ABC):
                 for item in field_value:
                     # Check if the item is a dataclass and serialize it.
                     if is_dataclass(item):
-                        inner_dataclass = self._serialize(item, indent_count+2)
+                        inner_dataclass = self._serialize(item, indent_count + 2)
                         if item == field_value[-1]:
-                            jsonc_string.append(double_indent + '{\n' + inner_dataclass + '\n' + double_indent +'}')
+                            jsonc_string.append(
+                                double_indent
+                                + "{\n"
+                                + inner_dataclass
+                                + "\n"
+                                + double_indent
+                                + "}"
+                            )
                         else:
-                            jsonc_string.append(double_indent +'{\n' + inner_dataclass + '\n' + double_indent +'},')
+                            jsonc_string.append(
+                                double_indent
+                                + "{\n"
+                                + inner_dataclass
+                                + "\n"
+                                + double_indent
+                                + "},"
+                            )
                     else:
-                        jsonc_string.append(json.dumps(item, indent=4) + ',')
+                        jsonc_string.append(json.dumps(item, indent=4) + ",")
                 # If the field is the last field, omit the trailing comma.
                 if field_info == fields(dataclass)[-1]:
-                    jsonc_string.append(indent +']')
+                    jsonc_string.append(indent + "]")
                 else:
-                    jsonc_string.append(indent +'],')
+                    jsonc_string.append(indent + "],")
             else:
                 # If the value is a string, serialize it directly.
                 if field_info == fields(dataclass)[-1]:
-                    jsonc_string.append(f'{indent}"{field_info.name}": {json.dumps(field_value,indent=4)}')
+                    jsonc_string.append(
+                        f'{indent}"{field_info.name}": {json.dumps(field_value,indent=4)}'
+                    )
                 else:
-                    jsonc_string.append(f'{indent}"{field_info.name}": {json.dumps(field_value,indent=4)},')
-        return '\n'.join(jsonc_string)
+                    jsonc_string.append(
+                        f'{indent}"{field_info.name}": {json.dumps(field_value,indent=4)},'
+                    )
+        return "\n".join(jsonc_string)
 
-    def _write_config_to_file(
-        self, output_path: Path
-    ):
+    def _write_config_to_file(self, output_path: Path):
         """Write the configuration to a file."""
         # Serialize the top-level dataclass instance and wrap it in curly braces to form a valid JSONC string.
         jsonc_str = "{\n" + self._serialize(self.config) + "\n}"
@@ -239,4 +296,3 @@ class OnboardingBaseCLIHandler(ABC):
             )
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
-            

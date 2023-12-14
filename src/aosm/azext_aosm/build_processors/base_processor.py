@@ -24,7 +24,7 @@ class BaseBuildProcessor(ABC):
 
     @abstractmethod
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
-        """Get the artifact list."""
+        """Returns list of artifacts in ManifestArtifactFormat"""
         raise NotImplementedError
 
     @abstractmethod
@@ -41,3 +41,6 @@ class BaseBuildProcessor(ABC):
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         """Generate the resource element template."""
         raise NotImplementedError
+    
+    # @abstractmethod
+    # def generate_params_schema(self) -> Dict[str,Any]:
