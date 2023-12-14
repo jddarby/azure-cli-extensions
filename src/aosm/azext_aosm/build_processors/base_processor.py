@@ -4,8 +4,8 @@
 # --------------------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple
 from dataclasses import dataclass
+from typing import List, Tuple
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
