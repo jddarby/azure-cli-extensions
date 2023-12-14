@@ -134,8 +134,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # TODO: Implement
         nf_application_list = []
         supporting_files = []
-
-        ## For each helm package, generate nf application, generate mappings profile
+        complete_params_schema = {}
+        # For each helm package, generate nf application, generate mappings profile
         # for helm_package in self.config.helm_packages:
         #     processed_helm = HelmChartProcessor(
         #         helm_package.name,
@@ -145,13 +145,23 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #     nf_application = processed_helm.generate_nf_application()
         #     nf_application_list.append(nf_application)
 
+        #     # # params_schema = processed_helm.generate_params_schema()
+        #     # complete_params_schema.update(params_schema)
+        #     # example params_schema "nf_app_name": <SCHEMA>
+
         #     # Adding supporting file: config mappings
-        # deploy_values = nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-        # mapping_file = LocalFileBuilder(Path(
-        #     CNF_OUTPUT_FOLDER_FILENAME,
-        #     NF_DEFINITION_FOLDER_NAME,
-        #     nf_application.name + "-mappings.json"), deploy_values)
-        #     supporting_files.append(mapping_file)
+        # deploy_values = (
+        #     nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
+        # )
+        # mapping_file = LocalFileBuilder(
+        #     Path(
+        #         CNF_OUTPUT_FOLDER_FILENAME,
+        #         NF_DEFINITION_FOLDER_NAME,
+        #         nf_application.name + "-mappings.json",
+        #     ),
+        #     deploy_values,
+        # )
+        # supporting_files.append(mapping_file)
 
         # Jordan: mocked nf applicaton
         test_nf_application = AzureArcKubernetesHelmApplication(
@@ -191,13 +201,22 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
         )
         nf_application_list.append(test_nf_application)
+        complete_params_schema.update(
+            {
+                test_nf_application.name: {
+                    "type": "object",
+                    "properties": {"test1": {"type": "string"}, "test2" : {"type": "string"}},
+                }
+            }
+        )
         # End testing
 
         template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
         bicep_contents = self._write_definition_bicep_file(
             template_path, nf_application_list
         )
-        # print(bicep_contents)
+
+        # Create a bicep element + add its supporting files (mappings + schema)
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME), bicep_contents
         )
@@ -207,9 +226,20 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # Add the accompanying parameters.json
         bicep_file.add_supporting_file(self._render_definition_parameters_contents())
 
+        # Add the deployParameters schema
+        bicep_file.add_supporting_file(self._render_deploy_params_schema(complete_params_schema))
         # JORDAN: do i even return anything anymore?
         return bicep_file
 
+    def _render_deploy_params_schema(self, complete_params_schema):
+        return LocalFileBuilder(
+            Path(
+                CNF_OUTPUT_FOLDER_FILENAME,
+                NF_DEFINITION_FOLDER_NAME,
+                "deploymentParameters.json",
+            ),
+            json.dumps(self._build_deploy_params_schema(complete_params_schema), indent=4),
+        )
     def _render_manifest_parameters_contents(self):
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
@@ -242,8 +272,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "nfDefinitionGroup": {"value": self.config.nf_name},
-                "nfDefinitionVersion": {"value": self.config.version}
-            }
+                "nfDefinitionVersion": {"value": self.config.version},
+            },
         }
 
         return LocalFileBuilder(

@@ -23,13 +23,13 @@ class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
     config: OnboardingBaseInputConfig
-    
+
     @property
     @abstractmethod
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
         raise NotImplementedError
-    
+
     @property
     @abstractmethod
     def output_folder_file_name(self) -> str:
@@ -48,7 +48,9 @@ class OnboardingBaseCLIHandler(ABC):
         except Exception as e:
             raise UnclassifiedUserFault("Invalid configuration file") from e
         # TODO: generate custom directory name
-        self.definition_folder_builder = DefinitionFolderBuilder(Path.cwd() / self.output_folder_file_name)
+        self.definition_folder_builder = DefinitionFolderBuilder(
+            Path.cwd() / self.output_folder_file_name
+        )
 
     def generate_config(self, output_file: str | None = None):
         """Generate the configuration file for the command."""
@@ -99,6 +101,7 @@ class OnboardingBaseCLIHandler(ABC):
     def build_resource_bicep(self):
         """Build the resource bicep file."""
         raise NotImplementedError
+
     @abstractmethod
     def _get_config(self, input_config: dict = {}) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
@@ -112,9 +115,13 @@ class OnboardingBaseCLIHandler(ABC):
 
         return config_dict
 
-    def _write_definition_bicep_file(self, template_path: Path,
-                                     acr_nf_application: list, sa_nf_application: list = None):
-        """Write the definition bicep file from given template. """
+    def _write_definition_bicep_file(
+        self,
+        template_path: Path,
+        acr_nf_application: list,
+        sa_nf_application: list = None,
+    ):
+        """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
                 f.read(),
@@ -122,12 +129,16 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            acr_nf_applications=acr_nf_application,
-            sa_nf_applications=sa_nf_application
+            acr_nf_applications=acr_nf_application, sa_nf_applications=sa_nf_application
         )
         return bicep_contents
 
-    def _write_manifest_bicep_contents(self, template_path: Path, acr_artifact_list: list, sa_artifact_list: list = None):
+    def _write_manifest_bicep_contents(
+        self,
+        template_path: Path,
+        acr_artifact_list: list,
+        sa_artifact_list: list = None,
+    ):
         """Write the manifest bicep file from given template.
 
         Returns bicep content as string
@@ -139,8 +150,7 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            acr_artifacts=acr_artifact_list,
-            sa_artifacts=sa_artifact_list
+            acr_artifacts=acr_artifact_list, sa_artifacts=sa_artifact_list
         )
         return bicep_contents
 
@@ -153,6 +163,19 @@ class OnboardingBaseCLIHandler(ABC):
             / definition_type
             / template_name
         )
+
+    def _build_deploy_params_schema(self, schema_properties):
+        """ 
+        Build the schema for deployParameters.json
+        """
+        schema_contents = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "title": "DeployParametersSchema",
+            "type": "object",
+            "properties" : {}
+        }
+        schema_contents["properties"] = schema_properties
+        return schema_contents
 
     def _serialize(self, dataclass, indent_count=1):
         """
