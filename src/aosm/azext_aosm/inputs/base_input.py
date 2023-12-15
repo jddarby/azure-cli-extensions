@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class BaseInput(ABC):
 
-    template_path: Path
-    defaults_path: Optional[Path] = None
+    artifact_name: str
+    artifact_version: str
+    default_config: Optional[Dict[str, Any]] = None
 
     @abstractmethod
     def get_defaults(self):

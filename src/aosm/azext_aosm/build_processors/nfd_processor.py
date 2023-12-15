@@ -6,9 +6,10 @@
 import json
 from typing import List, Tuple
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import BaseArtifact
+from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import generate_values_mappings
+from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
     ArmResourceDefinitionResourceElementTemplate,
     ArtifactType,
@@ -35,9 +36,26 @@ class NFDProcessor(BaseBuildProcessor):
             )
         ]
 
-    def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(
+        self,
+    ) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        return [], []
+        assert isinstance(self.input_artifact, NFDInput)
+        artifact_details = LocalFileACRArtifact(
+            ManifestArtifactFormat(
+                artifact_name=self.input_artifact.artifact_name,
+                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_version=self.input_artifact.artifact_version,
+            ),
+            self.input_artifact.arm_template_output_path,
+        )
+
+        file_builder = LocalFileBuilder(
+            self.input_artifact.arm_template_output_path,
+            "",
+        )
+
+        return [artifact_details], [file_builder]
 
     def generate_nf_application(self) -> NetworkFunctionApplication:
         """Generate the NF application."""
