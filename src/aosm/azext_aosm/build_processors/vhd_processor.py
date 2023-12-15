@@ -11,7 +11,6 @@ from azext_aosm.common.artifact import (
     BlobStorageAccountArtifact,
     LocalFileStorageAccountArtifact,
 )
-from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import snake_case_to_camel_case
 from azext_aosm.inputs.vhd_file_input import VHDFile

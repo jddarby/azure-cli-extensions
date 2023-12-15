@@ -6,11 +6,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
 
+
 @dataclass
 class ArmTemplatePropertiesConfig:
     """ARM template configuration."""
 
-    artifact_name: str = field(default="", metadata={"comment": "Name of the artifact."})
+    artifact_name: str = field(
+        default="", metadata={"comment": "Name of the artifact."}
+    )
     version: str = field(
         default="", metadata={"comment": "Version of the artifact in A.B.C format."}
     )

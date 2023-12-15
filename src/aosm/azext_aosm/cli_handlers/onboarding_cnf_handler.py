@@ -3,42 +3,31 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
+
 import json
 from pathlib import Path
-from azext_aosm.configuration_models.onboarding_cnf_input_config import (
-    OnboardingCNFInputConfig,
-)
-from azext_aosm.definition_folder.builder.artifact_builder import (
-    ArtifactDefinitionElementBuilder,
-)
+
+from azext_aosm.common.artifact import LocalFileACRArtifact
+from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
+                                         CNF_DEFINITION_TEMPLATE_FILENAME,
+                                         CNF_MANIFEST_TEMPLATE_FILENAME,
+                                         CNF_OUTPUT_FOLDER_FILENAME,
+                                         MANIFEST_FOLDER_NAME,
+                                         NF_DEFINITION_FOLDER_NAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.common.artifact import (
-    BaseArtifact,
-    LocalFileACRArtifact,
-    BaseACRArtifact,
-)
-from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder,
-)
-from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
-from azext_aosm.common.constants import (
-    CNF_DEFINITION_TEMPLATE_FILENAME,
-    CNF_MANIFEST_TEMPLATE_FILENAME,
-    CNF_OUTPUT_FOLDER_FILENAME,
-    ARTIFACT_LIST_FILENAME,
-    MANIFEST_FOLDER_NAME,
-    NF_DEFINITION_FOLDER_NAME,
-)
-from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from azext_aosm.configuration_models.onboarding_cnf_input_config import \
+    OnboardingCNFInputConfig
+from azext_aosm.definition_folder.builder.artifact_builder import \
+    ArtifactDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.bicep_builder import \
+    BicepDefinitionElementBuilder
 from azext_aosm.vendored_sdks.models import (
-    ManifestArtifactFormat,
-    AzureArcKubernetesHelmApplication,
     AzureArcKubernetesArtifactProfile,
-    HelmArtifactProfile,
     AzureArcKubernetesDeployMappingRuleProfile,
-    HelmMappingRuleProfile,
-    HelmMappingRuleProfileOptions,
-)
+    AzureArcKubernetesHelmApplication, HelmArtifactProfile,
+    HelmMappingRuleProfile, ManifestArtifactFormat)
+
+from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -54,7 +43,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return CNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_config(self, input_config: dict = {}) -> OnboardingCNFInputConfig:
+    def _get_config(self, input_config: dict = None) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -205,7 +194,10 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             {
                 test_nf_application.name: {
                     "type": "object",
-                    "properties": {"test1": {"type": "string"}, "test2" : {"type": "string"}},
+                    "properties": {
+                        "test1": {"type": "string"},
+                        "test2": {"type": "string"},
+                    },
                 }
             }
         )
@@ -227,7 +219,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         bicep_file.add_supporting_file(self._render_definition_parameters_contents())
 
         # Add the deployParameters schema
-        bicep_file.add_supporting_file(self._render_deploy_params_schema(complete_params_schema))
+        bicep_file.add_supporting_file(
+            self._render_deploy_params_schema(complete_params_schema)
+        )
         return bicep_file
 
     def _render_deploy_params_schema(self, complete_params_schema):
@@ -237,8 +231,11 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 NF_DEFINITION_FOLDER_NAME,
                 "deploymentParameters.json",
             ),
-            json.dumps(self._build_deploy_params_schema(complete_params_schema), indent=4),
+            json.dumps(
+                self._build_deploy_params_schema(complete_params_schema), indent=4
+            ),
         )
+
     def _render_manifest_parameters_contents(self):
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",

@@ -6,8 +6,12 @@
 import json
 from pathlib import Path
 from azure.cli.core.azclierror import UnclassifiedUserFault
-from azext_aosm.definition_folder.builder.base_builder import BaseDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.base_builder import (
+    BaseDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
 
 from typing import List
 
@@ -34,11 +38,15 @@ class DefinitionFolderBuilder:
             element.write()
         index_json = []
         for element in self.elements:
-            index_json.append({
-                "name": element.path.name,
-                "type": "bicep" if isinstance(element, BicepDefinitionElementBuilder) else "artifact",
-                "only_delete_on_clean": element.only_delete_on_clean
-            })
+            index_json.append(
+                {
+                    "name": element.path.name,
+                    "type": "bicep"
+                    if isinstance(element, BicepDefinitionElementBuilder)
+                    else "artifact",
+                    "only_delete_on_clean": element.only_delete_on_clean,
+                }
+            )
         (self.path / "index.json").write_text(json.dumps(index_json, indent=4))
         # TODO: Write some readme file
 
@@ -50,5 +58,3 @@ class DefinitionFolderBuilder:
             )
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
-
-    

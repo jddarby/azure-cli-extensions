@@ -2,45 +2,29 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-from pathlib import Path
 import json
-from azext_aosm.common.constants import (
-    VNF_DEFINITION_TEMPLATE_FILENAME,
-    VNF_MANIFEST_TEMPLATE_FILENAME,
-    VNF_OUTPUT_FOLDER_FILENAME,
-    ARTIFACT_LIST_FILENAME,
-    MANIFEST_FOLDER_NAME,
-    NF_DEFINITION_FOLDER_NAME,
-)
-from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.onboarding_vnf_input_config import (
-    OnboardingVNFInputConfig,
-)
-from azext_aosm.definition_folder.builder.artifact_builder import (
-    ArtifactDefinitionElementBuilder,
-)
-from azext_aosm.common.artifact import LocalFileACRArtifact
-from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder,
-)
-from src.aosm.azext_aosm.input_artifacts.vhd_file import VHDFile
-from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from pathlib import Path
 
-from azext_aosm.vendored_sdks.models import (
-    ManifestArtifactFormat,
-    NetworkFunctionApplication,
-    AzureCoreVhdImageArtifactProfile,
-    VhdImageArtifactProfile,
-    AzureCoreNetworkFunctionArmTemplateApplication,
-    AzureCoreArmTemplateArtifactProfile,
-    ArmTemplateArtifactProfile,
-)
-
-from azext_aosm.build_processors.arm_processor import BaseArmBuildProcessor, AzureCoreArmBuildProcessor
+from azext_aosm.build_processors.arm_processor import \
+    AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
-from azext_aosm.input_artifacts.arm_template_input_artifact import (
-    ArmTemplateInputArtifact,
-)
+from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
+                                         MANIFEST_FOLDER_NAME,
+                                         NF_DEFINITION_FOLDER_NAME,
+                                         VNF_DEFINITION_TEMPLATE_FILENAME,
+                                         VNF_MANIFEST_TEMPLATE_FILENAME,
+                                         VNF_OUTPUT_FOLDER_FILENAME)
+from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.configuration_models.onboarding_vnf_input_config import \
+    OnboardingVNFInputConfig
+from azext_aosm.definition_folder.builder.artifact_builder import \
+    ArtifactDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.bicep_builder import \
+    BicepDefinitionElementBuilder
+from azext_aosm.inputs.arm_template_input import ArmTemplateInput
+from azext_aosm.inputs.vhd_file_input import VHDFile
+
+from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -58,7 +42,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return VNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_config(self, input_config: dict = {}) -> OnboardingVNFInputConfig:
+    def _get_config(self, input_config: dict = None) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -71,12 +55,16 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         sa_artifact_list = []
 
         for arm_template in self.config.arm_templates:
-            arm_input = ArmTemplateInputArtifact(
+            arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                artifact_path=arm_template.file_path)
+                default_config=None,
+                template_path=Path(arm_template.file_path),
+            )
             # TODO: generalise for nexus in nexus ready stories
-            arm_processor = AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+            arm_processor = AzureCoreArmBuildProcessor(
+                arm_input.artifact_name, arm_input
+            )
             acr_artifact_list.extend(arm_processor.get_artifact_manifest_list())
             # acr_artifact_list.append(
             #     ManifestArtifactFormat(
@@ -91,10 +79,12 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 vhd.artifact_name = self.config.nf_name + "-vhd"
             vhd_processor = VHDProcessor(
                 name=vhd.artifact_name,
-                artifact_store=self.config.blob_artifact_store_name,
                 input_artifact=VHDFile(
-                    artifact_name=vhd.artifact_name, artifact_version=vhd.version
-                )
+                    artifact_name=vhd.artifact_name,
+                    artifact_version=vhd.version,
+                    file_path=vhd.file_path,
+                    blob_sas_uri=vhd.blob_sas_url,
+                ),
             )
             sa_artifact_list.extend(vhd_processor.get_artifact_manifest_list())
             print("SA", sa_artifact_list)
@@ -129,12 +119,15 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list = []
         # TODO: Implement
         for arm_template in self.config.arm_templates:
-            arm_input = ArmTemplateInputArtifact(
+            arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                artifact_path=arm_template.file_path)
+                template_path=arm_template.file_path,
+            )
             # TODO: generalise for nexus in nexus ready stories
-            arm_processor = AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+            arm_processor = AzureCoreArmBuildProcessor(
+                arm_input.artifact_name, arm_input
+            )
             (artifacts, files) = arm_processor.get_artifact_details()
             if artifacts not in artifact_list:
                 artifact_list.append(artifacts)
@@ -163,7 +156,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #     (artifact,files) = vhd_processor.get_artifact_details()
         #     if artifacts not in artifact_list:
         #         artifact_list.append(artifacts)
-            
+
         # print(artifact_list)
         return ArtifactDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
@@ -176,14 +169,17 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         sa_nf_application_list = []
 
         for arm_template in self.config.arm_templates:
-            arm_input = ArmTemplateInputArtifact(
+            arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                artifact_path=arm_template.file_path)
+                artifact_path=arm_template.file_path,
+            )
             # TODO: generalise for nexus in nexus ready stories
-            arm_processor = AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+            arm_processor = AzureCoreArmBuildProcessor(
+                arm_input.artifact_name, arm_input
+            )
             acr_nf_application_list.append(arm_processor.generate_nf_application())
-            
+
             # nf_application = AzureCoreNetworkFunctionArmTemplateApplication(
             #     name="test",
             #     depends_on_profile=None,
@@ -203,10 +199,12 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 vhd.artifact_name = self.config.nf_name + "-vhd"
             vhd_processor = VHDProcessor(
                 name=vhd.artifact_name,
-                artifact_store=self.config.blob_artifact_store_name,
                 input_artifact=VHDFile(
-                    artifact_name=vhd.artifact_name, artifact_version=vhd.version
-                )
+                    artifact_name=vhd.artifact_name,
+                    artifact_version=vhd.version,
+                    file_path=vhd.file_path,
+                    blob_sas_uri=vhd.blob_sas_url,
+                ),
             )
             sa_nf_application_list.append(vhd_processor.generate_nf_application())
         # JORDAN: For testing (add get nf application for workingprobably is the actual solution)
@@ -229,7 +227,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME),
             bicep_contents,
         )
-        
+
         # Add the accompanying parameters.json
         bicep_file.add_supporting_file(self._render_definition_parameters_contents())
 

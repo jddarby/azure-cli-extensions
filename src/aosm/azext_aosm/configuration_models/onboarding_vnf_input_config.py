@@ -13,6 +13,7 @@ from azure.cli.core.azclierror import ValidationError
 from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 from .common_input import ArmTemplatePropertiesConfig
 
+
 @dataclass
 class VhdImageConfig:
     """Configuration for a VHD image."""
@@ -70,6 +71,7 @@ class VhdImageConfig:
             )
         },
     )
+
     def validate(self):
         """Validate the configuration."""
         if not self.version:
@@ -80,9 +82,13 @@ class VhdImageConfig:
                 " format A.B.C"
             )
         if self.blob_sas_url and self.file_path:
-            raise ValidationError("Only one of file_path or blob_sas_url may be set for vhd.")
+            raise ValidationError(
+                "Only one of file_path or blob_sas_url may be set for vhd."
+            )
         if not (self.blob_sas_url or self.file_path):
-            raise ValidationError("One of file_path or sas_blob_url must be set for vhd.")
+            raise ValidationError(
+                "One of file_path or sas_blob_url must be set for vhd."
+            )
 
 
 @dataclass
@@ -111,12 +117,12 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     # TODO: Add better comments
     arm_templates: List[ArmTemplatePropertiesConfig] = field(
         default_factory=lambda: [ArmTemplatePropertiesConfig()],
-        metadata={"comment": "ARM template configuration."}
+        metadata={"comment": "ARM template configuration."},
     )
 
     vhd: List[VhdImageConfig] = field(
         default_factory=lambda: [VhdImageConfig()],
-        metadata={"comment": "VHD image configuration."}
+        metadata={"comment": "VHD image configuration."},
     )
 
     def __post_init__(self):
@@ -127,7 +133,7 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
             else:
                 arm_list.append(arm_template)
         self.arm_templates = arm_list
-        
+
         vhd_list = []
         for vhd in self.vhd:
             if vhd and isinstance(vhd, dict):

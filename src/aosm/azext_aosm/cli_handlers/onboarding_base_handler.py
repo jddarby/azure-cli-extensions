@@ -3,27 +3,20 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from abc import ABC, abstractmethod
-from pathlib import Path
+
 import json
-
+from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
-from knack.log import get_logger
-from jinja2 import StrictUndefined, Template
-from azext_aosm.definition_folder.builder.definition_folder_builder import DefinitionFolderBuilder
-from azext_aosm.configuration_models.onboarding_base_input_config import OnboardingBaseInputConfig
-from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azure.cli.core.azclierror import UnclassifiedUserFault
-from knack.log import get_logger
-from knack.log import get_logger
-from jinja2 import StrictUndefined, Template
-from azure.cli.core.azclierror import UnclassifiedUserFault
+from pathlib import Path
 
-from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from ..definition_folder.builder.definition_folder_builder import (
-    DefinitionFolderBuilder,
-)
+from azure.cli.core.azclierror import UnclassifiedUserFault
+from jinja2 import StrictUndefined, Template
+from knack.log import get_logger
 
+from azext_aosm.configuration_models.onboarding_base_input_config import \
+    OnboardingBaseInputConfig
+from azext_aosm.definition_folder.builder.definition_folder_builder import \
+    DefinitionFolderBuilder
 
 logger = get_logger(__name__)
 
@@ -112,7 +105,7 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_config(self, input_config: dict = {}) -> OnboardingBaseInputConfig:
+    def _get_config(self, input_config: dict = None) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
         raise NotImplementedError
 
@@ -174,14 +167,14 @@ class OnboardingBaseCLIHandler(ABC):
         )
 
     def _build_deploy_params_schema(self, schema_properties):
-        """ 
+        """
         Build the schema for deployParameters.json
         """
         schema_contents = {
             "$schema": "https://json-schema.org/draft-07/schema#",
             "title": "DeployParametersSchema",
             "type": "object",
-            "properties" : {}
+            "properties": {},
         }
         schema_contents["properties"] = schema_properties
         return schema_contents

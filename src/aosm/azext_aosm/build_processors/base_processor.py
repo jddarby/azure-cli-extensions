@@ -15,6 +15,7 @@ from azext_aosm.vendored_sdks.models import (
     ResourceElementTemplate,
 )
 
+
 @dataclass
 class BaseBuildProcessor(ABC):
     """Base class for build processors."""
@@ -41,6 +42,6 @@ class BaseBuildProcessor(ABC):
     def generate_resource_element_template(self) -> ResourceElementTemplate:
         """Generate the resource element template."""
         raise NotImplementedError
-    
+
     # @abstractmethod
     # def generate_params_schema(self) -> Dict[str,Any]:

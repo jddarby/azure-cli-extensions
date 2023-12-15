@@ -55,7 +55,9 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
             )
         ]
 
-    def get_artifact_details(self) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
+    def get_artifact_details(
+        self,
+    ) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
         return (
             [
@@ -127,7 +129,7 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
 
 
 class NexusArmBuildProcessor(BaseArmBuildProcessor):
-    """ Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus."""
+    """Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus."""
 
     def generate_nfvi_specific_nf_application(self):
         return NotImplementedError

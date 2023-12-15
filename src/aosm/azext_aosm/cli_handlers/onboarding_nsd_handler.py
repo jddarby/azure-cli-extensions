@@ -3,12 +3,12 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from .onboarding_nfd_base_handler import OnboardingBaseCLIHandler
+
+from azext_aosm.configuration_models.onboarding_nsd_input_config import \
+    OnboardingNSDInputConfig
 from azext_aosm.vendored_sdks.models import ManifestArtifactFormat
-from azext_aosm.configuration_models.onboarding_nsd_input_config import (
-    NetworkFunctionPropertiesConfig,
-    OnboardingNSDInputConfig,
-)
+
+from .onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 
 
 class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
@@ -41,8 +41,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 # # Add artifacts to a list of unique artifacts
                 # if artifacts not in artifact_list:
                 #   artifact_list.append(artifacts)
-                
-                # Mocking NSD artifact for testing 
+
+                # Mocking NSD artifact for testing
                 artifact_list.append(
                     ManifestArtifactFormat(
                         artifact_name=resource_element.properties.artifact_name,
@@ -52,7 +52,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 )
 
         template_path = self._get_template_path("nsdartifactmanifest.bicep.j2")
-        bicep_contents = self._render_manifest_bicep_contents(template_path, artifact_list)
+        bicep_contents = self._render_manifest_bicep_contents(
+            template_path, artifact_list
+        )
         print(bicep_contents)
         return bicep_contents
 

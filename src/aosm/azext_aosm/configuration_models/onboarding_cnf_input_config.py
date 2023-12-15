@@ -34,7 +34,7 @@ class ImageSourceConfig:
                 "Leave blank if the image is in the root namespace or you have set source_local_docker_image.\n"
                 "See https://learn.microsoft.com/en-us/azure/container-registry/"
                 "container-registry-best-practices#repository-namespaces for further details."
-                )
+            )
         },
     )
     source_local_docker_image: str = field(
@@ -71,9 +71,7 @@ class ImageSourceConfig:
 class HelmPackageConfig:
     """Helm package configuration."""
 
-    name: str = field(
-        default="",
-        metadata={"comment": "The name of the Helm package."})
+    name: str = field(default="", metadata={"comment": "The name of the Helm package."})
     path_to_chart: str = field(
         default="",
         metadata={
@@ -113,7 +111,8 @@ class HelmPackageConfig:
             raise ValidationError("path_to_chart must be set for your helm package")
         if not self.path_to_mappings:
             raise ValidationError("path_to_mappings must be set for your helm package")
-        
+
+
 @dataclass
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
