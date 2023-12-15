@@ -8,7 +8,7 @@ class BaseInput(ABC):
 
     artifact_name: str
     artifact_version: str
-    default_config: Optional[Dict[str, Any]] = None
+    default_config: Optional[Dict[str, Any]]
 
     @abstractmethod
     def get_defaults(self):

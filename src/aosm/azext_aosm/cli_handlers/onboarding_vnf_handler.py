@@ -58,7 +58,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                default_config=None,
                 template_path=Path(arm_template.file_path),
             )
             # TODO: generalise for nexus in nexus ready stories
@@ -172,7 +171,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                artifact_path=arm_template.file_path,
+                template_path=arm_template.file_path,
             )
             # TODO: generalise for nexus in nexus ready stories
             arm_processor = AzureCoreArmBuildProcessor(
