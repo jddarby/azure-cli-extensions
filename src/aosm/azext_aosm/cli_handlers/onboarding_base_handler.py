@@ -18,6 +18,8 @@ from azext_aosm.configuration_models.onboarding_base_input_config import \
 from azext_aosm.definition_folder.builder.definition_folder_builder import \
     DefinitionFolderBuilder
 
+from azext_aosm.vendored_sdks.models import AzureCoreNetworkFunctionVhdApplication
+
 logger = get_logger(__name__)
 
 
@@ -121,7 +123,7 @@ class OnboardingBaseCLIHandler(ABC):
         self,
         template_path: Path,
         acr_nf_application: list,
-        sa_nf_application: list = None,
+        sa_nf_application: AzureCoreNetworkFunctionVhdApplication = None,
     ):
         """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
@@ -131,7 +133,7 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            acr_nf_applications=acr_nf_application, sa_nf_applications=sa_nf_application
+            acr_nf_applications=acr_nf_application, sa_nf_application=sa_nf_application
         )
         return bicep_contents
 

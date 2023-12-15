@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+from __future__ import annotations
 from dataclasses import dataclass, field
 from azure.cli.core.azclierror import ValidationError
 from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
@@ -81,7 +81,7 @@ class HelmPackageConfig:
             )
         },
     )
-    path_to_mappings: str = field(
+    path_to_mappings: str | None = field(
         default="",
         metadata={
             "comment": (
@@ -108,9 +108,7 @@ class HelmPackageConfig:
         if not self.name:
             raise ValidationError("nf_name must be set for your helm package")
         if not self.path_to_chart:
-            raise ValidationError("path_to_chart must be set for your helm package")
-        if not self.path_to_mappings:
-            raise ValidationError("path_to_mappings must be set for your helm package")
+            raise ValidationError("path_to_chart must be set for your helm package")    raise ValidationError("path_to_mappings must be set for your helm package")
 
 
 @dataclass

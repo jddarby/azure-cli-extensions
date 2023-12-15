@@ -52,15 +52,14 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
     networkFunctionTemplate: {
       nfviType: 'AzureCore'
       networkFunctionApplications: [
-      {%- for configuration in sa_nf_applications %}
         {
           artifactType: 'VhdImageFile'
           name: '${nfName}Image'
           dependsOnProfile: null
           artifactProfile: {
             vhdArtifactProfile: {
-              vhdName: '{{ configuration.artifact_profile.vhd_artifact_profile.vhd_name }}'
-              vhdVersion: '{{ configuration.artifact_profile.vhd_artifact_profile.vhd_version }}'
+              vhdName: '{{ sa_nf_application.artifact_profile.vhd_artifact_profile.vhd_name }}'
+              vhdVersion: '{{ sa_nf_application.artifact_profile.vhd_artifact_profile.vhd_version }}'
             }
             artifactStore: {
               id: saArtifactStore.id
@@ -75,7 +74,6 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
             applicationEnablement: 'Unknown'
           }
         },
-      {%- endfor %}
       {%- for configuration in acr_nf_applications %}
         {
           artifactType: 'ArmTemplate'

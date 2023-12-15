@@ -55,7 +55,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
         acr_artifact_list = []
-        sa_artifact_list = []
 
         # For each arm template, get list of artifacts and combine
         for arm_template in self.config.arm_templates:
@@ -71,22 +70,20 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
             acr_artifact_list.extend(arm_processor.get_artifact_manifest_list())
 
-        # TODO: remove multiple vhd       
-        # For each vhd template, get list of artifacts and combine
-        for vhd in self.config.vhd:
-            if not vhd.artifact_name:
-                vhd.artifact_name = self.config.nf_name + "-vhd"
-            vhd_processor = VHDProcessor(
-                name=vhd.artifact_name,
-                input_artifact=VHDFile(
-                    artifact_name=vhd.artifact_name,
-                    artifact_version=vhd.version,
-                    default_config=self._get_default_config(vhd),
-                    file_path=vhd.file_path,
-                    blob_sas_uri=vhd.blob_sas_url,
-                ),
-            )
-            sa_artifact_list.extend(vhd_processor.get_artifact_manifest_list())
+        # Get list of vhd artifacts and combine
+        if not self.config.vhd.artifact_name:
+            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
+        vhd_processor = VHDProcessor(
+            name=self.config.vhd.artifact_name,
+            input_artifact=VHDFile(
+                artifact_name=self.config.vhd.artifact_name,
+                artifact_version=self.config.vhd.version,
+                default_config=self._get_default_config(self.config.vhd),
+                file_path=self.config.vhd.file_path,
+                blob_sas_uri=self.config.vhd.blob_sas_url,
+            ),
+        )
+        sa_artifact_list = vhd_processor.get_artifact_manifest_list()
 
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path("vnf", VNF_MANIFEST_TEMPLATE_FILENAME)
@@ -122,24 +119,23 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
 
-        # For each vhd image, get list of artifacts and combine
-        for vhd in self.config.vhd:
-            if not vhd.artifact_name:
-                vhd.artifact_name = self.config.nf_name + "-vhd"
+        # Get list of vhd artifacts and combine
+        if not self.config.vhd.artifact_name:
+            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
 
-            vhd_processor = VHDProcessor(
-                name=vhd.artifact_name,
-                input_artifact=VHDFile(
-                    artifact_name=vhd.artifact_name,
-                    artifact_version=vhd.version,
-                    default_config=self._get_default_config(vhd),
-                    file_path=vhd.file_path,
-                    blob_sas_uri=vhd.blob_sas_url,
-                ),
-            )
-            (artifacts, files) = vhd_processor.get_artifact_details()
-            if artifacts not in artifact_list:
-                artifact_list.extend(artifacts)
+        vhd_processor = VHDProcessor(
+            name=self.config.vhd.artifact_name,
+            input_artifact=VHDFile(
+                artifact_name=self.config.vhd.artifact_name,
+                artifact_version=self.config.vhd.version,
+                default_config=self._get_default_config(self.config.vhd),
+                file_path=self.config.vhd.file_path,
+                blob_sas_uri=self.config.vhd.blob_sas_url,
+            ),
+        )
+        (artifacts, files) = vhd_processor.get_artifact_details()
+        if artifacts not in artifact_list:
+            artifact_list.extend(artifacts)
 
         # Generate Artifact Element with artifact list (of arm template and vhd images)
         return ArtifactDefinitionElementBuilder(
@@ -182,40 +178,38 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
             supporting_files.append(template_parameters_file)
 
-        # For each vhd image, generate nf application
-        for vhd in self.config.vhd:
-            if not vhd.artifact_name:
-                vhd.artifact_name = self.config.nf_name + "-vhd"
-            vhd_processor = VHDProcessor(
-                name=vhd.artifact_name,
-                input_artifact=VHDFile(
-                    artifact_name=vhd.artifact_name,
-                    artifact_version=vhd.version,
-                    file_path=vhd.file_path,
-                    default_config=self._get_default_config(vhd),
-                    blob_sas_uri=vhd.blob_sas_url,
-                ),
-            )
-            # Generate NF Application and append to list of nf applications
-            nf_application = vhd_processor.generate_nf_application()
-            sa_nf_application_list.append(nf_application)
+        # For vhd image, generate nf application
+        if not self.config.vhd.artifact_name:
+            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
+        vhd_processor = VHDProcessor(
+            name=self.config.vhd.artifact_name,
+            input_artifact=VHDFile(
+                artifact_name=self.config.vhd.artifact_name,
+                artifact_version=self.config.vhd.version,
+                file_path=self.config.vhd.file_path,
+                default_config=self._get_default_config(self.config.vhd),
+                blob_sas_uri=self.config.vhd.blob_sas_url,
+            ),
+        )
+        # Generate NF Application and append to list of nf applications
+        nf_application = vhd_processor.generate_nf_application()
 
-            # Generate local file for vhd_parameters
-            vhd_params = nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
-            vhd_params_file = LocalFileBuilder(
-                Path(
-                    VNF_OUTPUT_FOLDER_FILENAME,
-                    NF_DEFINITION_FOLDER_NAME,
-                    "vhdParameters.json",
-                ),
-                vhd_params,
-            )
-            supporting_files.append(vhd_params_file)
+        # Generate local file for vhd_parameters
+        vhd_params = nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
+        vhd_params_file = LocalFileBuilder(
+            Path(
+                VNF_OUTPUT_FOLDER_FILENAME,
+                NF_DEFINITION_FOLDER_NAME,
+                "vhdParameters.json",
+            ),
+            vhd_params,
+        )
+        supporting_files.append(vhd_params_file)
 
         # Create bicep contents using vnf defintion j2 template
         template_path = self._get_template_path("vnf", VNF_DEFINITION_TEMPLATE_FILENAME)
         bicep_contents = self._write_definition_bicep_file(
-            template_path, acr_nf_application_list, sa_nf_application_list
+            template_path, acr_nf_application_list, nf_application
         )
 
         # Create a bicep element + add its supporting files (deploymentParameters, vhdParameters and templateParameters)
