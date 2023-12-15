@@ -208,7 +208,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Create bicep contents using vnf defintion j2 template
         template_path = self._get_template_path("vnf", VNF_DEFINITION_TEMPLATE_FILENAME)
-        bicep_contents = self._write_definition_bicep_file(
+        bicep_contents = self._render_definition_bicep_contents(
             template_path, acr_nf_application_list, nf_application
         )
 

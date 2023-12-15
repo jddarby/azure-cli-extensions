@@ -8,6 +8,9 @@ import json
 from pathlib import Path
 
 from azext_aosm.common.artifact import LocalFileACRArtifact
+from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
+from azext_aosm.inputs.helm_chart_input import HelmChart
+from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          CNF_DEFINITION_TEMPLATE_FILENAME,
                                          CNF_MANIFEST_TEMPLATE_FILENAME,
@@ -51,35 +54,40 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
-        # TODO: Implement
+        # TODO: Implement + remove test code
         artifact_list = []
         # Jordan: Logic when HelmChartProcessor is implemented
+        # TODO: check defualy config here? default to not for now
         # for helm_package in self.config.helm_packages:
+        #     helm_input = HelmChart(
+        #         artifact_name=helm_package.name,
+        #         artifact_version=self.config.version,
+        #         chart_path=Path(helm_package.path_to_chart),
+        #         default_config=None
+        #     )
         #     processed_helm = HelmChartProcessor(
         #         helm_package.name,
-        #         self.config.acr_artifact_store_name,
-        #         helm_package,
+        #         helm_input
         #     )
         #     artifacts = processed_helm.get_artifact_manifest_list()
-        ## TODO: make artifact_list a set, then convert back to list
-        ## TODO: add to util, compare properly the artifacts
+        # # TODO: make artifact_list a set, then convert back to list
+        # # TODO: add to util, compare properly the artifacts
         # # Add artifacts to a list of unique artifacts
         #     if artifacts not in artifact_list:
-        #         artifact_list.append(artifacts)
+        #         artifact_list.extend(artifacts)
 
-        # Jordan: For testing write manifest bicep. THIS IS THE RIGHT TEST
-        test_base_artifact = ManifestArtifactFormat(
-            artifact_name="test",
-            artifact_type="OCIArtifact",
-            artifact_version="4.1.0-12-rel-4-1-0",
-        )
-        artifact_list.append(test_base_artifact)
+        # # # Jordan: For testing write manifest bicep. THIS IS THE RIGHT TEST
+        # # test_base_artifact = ManifestArtifactFormat(
+        # #     artifact_name="test",
+        # #     artifact_type="OCIArtifact",
+        # #     artifact_version="4.1.0-12-rel-4-1-0",
+        # # )
+        # # artifact_list.append(test_base_artifact)
 
         template_path = self._get_template_path("cnf", CNF_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
-        # print(bicep_contents)
 
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
@@ -134,23 +142,22 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         #     nf_application = processed_helm.generate_nf_application()
         #     nf_application_list.append(nf_application)
 
-        #     # # params_schema = processed_helm.generate_params_schema()
-        #     # complete_params_schema.update(params_schema)
-        #     # example params_schema "nf_app_name": <SCHEMA>
+        #     params_schema = processed_helm.generate_params_schema()
+        #     complete_params_schema.update(params_schema)
 
-        #     # Adding supporting file: config mappings
-        # deploy_values = (
-        #     nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-        # )
-        # mapping_file = LocalFileBuilder(
-        #     Path(
-        #         CNF_OUTPUT_FOLDER_FILENAME,
-        #         NF_DEFINITION_FOLDER_NAME,
-        #         nf_application.name + "-mappings.json",
-        #     ),
-        #     deploy_values,
-        # )
-        # supporting_files.append(mapping_file)
+            # # Adding supporting file: config mappings
+            # deploy_values = (
+            #     nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
+            # )
+            # mapping_file = LocalFileBuilder(
+            #     Path(
+            #         CNF_OUTPUT_FOLDER_FILENAME,
+            #         NF_DEFINITION_FOLDER_NAME,
+            #         nf_application.name + "-mappings.json",
+            #     ),
+            #     deploy_values,
+            # )
+            # supporting_files.append(mapping_file)
 
         # Jordan: mocked nf applicaton
         test_nf_application = AzureArcKubernetesHelmApplication(
@@ -204,7 +211,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # End testing
 
         template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
-        bicep_contents = self._write_definition_bicep_file(
+        bicep_contents = self._render_definition_bicep_contents(
             template_path, nf_application_list
         )
 

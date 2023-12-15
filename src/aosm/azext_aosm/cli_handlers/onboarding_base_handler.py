@@ -119,7 +119,7 @@ class OnboardingBaseCLIHandler(ABC):
 
         return config_dict
 
-    def _write_definition_bicep_file(
+    def _render_definition_bicep_contents(
         self,
         template_path: Path,
         acr_nf_application: list,
