@@ -5,7 +5,7 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, final, List, Tuple
+from typing import Any, Dict, List, Tuple, final
 
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
@@ -13,17 +13,11 @@ from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 
 from ..vendored_sdks.models import (
-    DependsOnProfile,
-    ResourceElementTemplate,
-    ReferencedResource,
-    ManifestArtifactFormat,
-    NetworkFunctionApplication,
     ArmResourceDefinitionResourceElementTemplateDetails,
-    AzureCoreNetworkFunctionArmTemplateApplication,
-    AzureCoreArtifactType,
-    AzureCoreArmTemplateArtifactProfile,
-    ArmTemplateArtifactProfile,
-)
+    ArmTemplateArtifactProfile, AzureCoreArmTemplateArtifactProfile,
+    AzureCoreArtifactType, AzureCoreNetworkFunctionArmTemplateApplication,
+    DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication,
+    ReferencedResource, ResourceElementTemplate)
 
 
 @dataclass

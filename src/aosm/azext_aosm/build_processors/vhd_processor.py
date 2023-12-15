@@ -5,28 +5,20 @@
 
 import json
 from typing import List, Tuple
+
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import (
-    BaseStorageAccountArtifact,
-    BlobStorageAccountArtifact,
-    LocalFileStorageAccountArtifact,
-)
+from azext_aosm.common.artifact import (BaseStorageAccountArtifact,
+                                        BlobStorageAccountArtifact,
+                                        LocalFileStorageAccountArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import snake_case_to_camel_case
 from azext_aosm.inputs.vhd_file_input import VHDFile
 from azext_aosm.vendored_sdks.models import (
-    ArtifactType,
-    ApplicationEnablement,
-    AzureCoreNetworkFunctionVhdApplication,
-    AzureCoreVhdImageArtifactProfile,
-    AzureCoreVhdImageDeployMappingRuleProfile,
-    DependsOnProfile,
-    ReferencedResource,
-    ResourceElementTemplate,
-    ManifestArtifactFormat,
-    VhdImageMappingRuleProfile,
-    VhdImageArtifactProfile,
-)
+    ApplicationEnablement, ArtifactType,
+    AzureCoreNetworkFunctionVhdApplication, AzureCoreVhdImageArtifactProfile,
+    AzureCoreVhdImageDeployMappingRuleProfile, DependsOnProfile,
+    ManifestArtifactFormat, ReferencedResource, ResourceElementTemplate,
+    VhdImageArtifactProfile, VhdImageMappingRuleProfile)
 
 
 class VHDProcessor(BaseBuildProcessor):

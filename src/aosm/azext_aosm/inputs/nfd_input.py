@@ -4,9 +4,10 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict
+
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 

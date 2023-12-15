@@ -6,14 +6,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Tuple
-from azext_aosm.inputs.base_input import BaseInput
+
 from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.vendored_sdks.models import (
-    ManifestArtifactFormat,
-    NetworkFunctionApplication,
-    ResourceElementTemplate,
-)
+from azext_aosm.inputs.base_input import BaseInput
+from azext_aosm.vendored_sdks.models import (ManifestArtifactFormat,
+                                             NetworkFunctionApplication,
+                                             ResourceElementTemplate)
 
 
 @dataclass

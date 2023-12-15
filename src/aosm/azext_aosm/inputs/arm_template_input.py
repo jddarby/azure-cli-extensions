@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict
 
@@ -16,7 +16,7 @@ class ArmTemplateInput(BaseInput):
 
     def get_schema(self) -> Dict[str, Any]:
         # For ARM templates, the schema is defined by the parameters section
-        with open(self.artifact_path, "r", encoding="utf-8") as _file:
+        with open(self.template_path, "r", encoding="utf-8") as _file:
             data = json.load(_file)
             if "parameters" in data:
                 parameters: Dict[str, Any] = data["parameters"]

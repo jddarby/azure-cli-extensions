@@ -5,22 +5,20 @@
 
 import json
 from typing import List, Tuple
+
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import generate_values_mappings
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
-    ArmResourceDefinitionResourceElementTemplate,
-    ArtifactType,
-    DependsOnProfile,
-    NetworkFunctionApplication,
-    NetworkFunctionDefinitionResourceElementTemplateDetails as NFDResourceElementTemplate,
-    NSDArtifactProfile,
-    ReferencedResource,
-    ManifestArtifactFormat,
-    TemplateType,
-)
+    ArmResourceDefinitionResourceElementTemplate, ArtifactType,
+    DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication)
+from azext_aosm.vendored_sdks.models import \
+    NetworkFunctionDefinitionResourceElementTemplateDetails as \
+    NFDResourceElementTemplate
+from azext_aosm.vendored_sdks.models import (NSDArtifactProfile,
+                                             ReferencedResource, TemplateType)
 
 
 class NFDProcessor(BaseBuildProcessor):
