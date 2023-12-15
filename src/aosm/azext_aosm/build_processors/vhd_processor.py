@@ -55,8 +55,6 @@ class VHDProcessor(BaseBuildProcessor):
             artifact_version=self.input_artifact.artifact_version,
         )
 
-        self.input_artifact = VHDFile(**self.input_artifact)
-
         if self.input_artifact.file_path:
             artifacts.append(
                 LocalFileStorageAccountArtifact(
@@ -101,11 +99,8 @@ class VHDProcessor(BaseBuildProcessor):
             vhd_artifact_profile=artifact_profile,
         )
 
-    def _generate_mapping_rule_profile(
-        self,
-    ) -> AzureCoreVhdImageDeployMappingRuleProfile:
+    def _generate_mapping_rule_profile(self) -> AzureCoreVhdImageDeployMappingRuleProfile:
         """Generate the mapping rule profile."""
-
         user_configuration = {
             "imageName": self.input_artifact.artifact_name,
             **{

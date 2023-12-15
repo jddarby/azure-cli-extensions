@@ -23,6 +23,8 @@ from ..vendored_sdks.models import (
     AzureCoreArtifactType,
     AzureCoreArmTemplateArtifactProfile,
     ArmTemplateArtifactProfile,
+    AzureCoreArmTemplateDeployMappingRuleProfile,
+    ArmTemplateMappingRuleProfile,
 )
 
 
@@ -67,7 +69,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
                         artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
                         artifact_version=self.input_artifact.artifact_version,
                     ),
-                    file_path=self.input_artifact.artifact_path,
+                    file_path=self.input_artifact.template_path,
                 )
             ],
             [],
@@ -89,7 +91,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         # TODO: Document that the parameters are no longer ordered, and create story to reimplement ordering
         for key in vm_parameters:
             template_parameters[key] = f"{{deployParameters.{key}}}"
-
         return template_parameters
 
     # @abstractmethod?
@@ -124,7 +125,11 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
             depends_on_profile=DependsOnProfile(),
             artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
             artifact_profile=self.generate_artifact_profile(),
-            deploy_parameters_mapping_rule_profile=self.generate_mappings(),
+            deploy_parameters_mapping_rule_profile=AzureCoreArmTemplateDeployMappingRuleProfile(
+                template_mapping_rule_profile=ArmTemplateMappingRuleProfile(
+                    template_parameters=self.generate_mappings()
+                )
+            ),
         )
 
 
