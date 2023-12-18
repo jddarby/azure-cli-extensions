@@ -20,20 +20,6 @@ class BaseArtifact(ABC):
     def __init__(self, artifact_manifest: ManifestArtifactFormat):
         self.artifact_manifest = artifact_manifest
 
-    @classmethod
-    def from_dict(cls, input_dict: dict) -> "BaseArtifact":
-        """Create an instance of the class from a dict."""
-        dict_copy = input_dict.copy()
-        # Remove the type as we don't need it anymore.
-        dict_copy.pop("type")
-        manifest = ManifestArtifactFormat(
-            artifact_name=dict_copy.pop("artifact_name"),
-            artifact_type=dict_copy.pop("artifact_type"),
-            artifact_version=dict_copy.pop("artifact_version"),
-        )
-        dict_copy["artifact_manifest"] = manifest
-        return cls(**dict_copy)
-
     def to_dict(self) -> dict:
         """Convert an instance to a dict."""
         # Flatten the artifact manifest into the dict and add type.
