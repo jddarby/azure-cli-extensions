@@ -67,13 +67,13 @@ class DefinitionFolder:
             )
         return parsed_elements
 
-    def deploy(self):
+    def deploy(self, resource_client):
         """Deploy the resources defined in the folder."""
         for element in self.elements:
-            element.deploy()
+            element.deploy(resource_client)
 
-    def delete(self, clean: bool = False):
+    def delete(self, resource_client, clean: bool = False):
         """Delete the definition folder."""
         for element in reversed(self.elements):
             if clean or not element.only_delete_on_clean:
-                element.delete()
+                element.delete(resource_client)
