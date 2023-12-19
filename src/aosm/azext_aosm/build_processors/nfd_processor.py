@@ -21,16 +21,20 @@ from azext_aosm.vendored_sdks.models import (
     ManifestArtifactFormat,
     TemplateType,
 )
-
+from typing import Optional
 
 class NFDProcessor(BaseBuildProcessor):
     """Base class for build processors."""
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
+        # Create artifact name
+        arm_template_name = f"{self.input_artifact.artifact_name}_nf_artifact"
+        # The artifact version to be the same as the NSD version, so that they
+        # don't get over written when a new NSD is published.
         return [
             ManifestArtifactFormat(
-                artifact_name=self.input_artifact.artifact_name,
+                artifact_name=arm_template_name,
                 artifact_type=ArtifactType.OCI_ARTIFACT,
                 artifact_version=self.input_artifact.artifact_version,
             )

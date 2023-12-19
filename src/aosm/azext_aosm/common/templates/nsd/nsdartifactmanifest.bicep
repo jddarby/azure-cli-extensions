@@ -23,19 +23,17 @@ resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@202
   name: acrArtifactStoreName
 }
 
-resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/artifactManifests@2023-09-01' = {
+resource acrArtifactManifests 'Microsoft.Hybridnetwork/publishers/artifactStores/artifactManifests@2023-09-01' = [for (values, i) in armTemplateNames: {
   parent: acrArtifactStore
-  name: acrManifestName
+  name: acrManifestNames[i]
   location: location
   properties: {
     artifacts: [
-    {%- for artifact in acr_artifacts %}
       {
-        artifactName: '{{ artifact.artifact_name }}'
+        artifactName: armTemplateNames[i]
         artifactType: 'ArmTemplate'
-        artifactVersion: '{{ artifact.artifact_version }}'
+        artifactVersion: armTemplateVersion
       }
-    {%- endfor %}
     ]
   }
-}
+}]

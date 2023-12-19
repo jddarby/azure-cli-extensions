@@ -29,7 +29,7 @@ from azext_aosm.vendored_sdks.models import (
     HelmArtifactProfile,
     ManifestArtifactFormat,
 )
-
+from azext_aosm.common.utils import get_all_values
 VALUE_PATH_REGEX = (
     r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
 )

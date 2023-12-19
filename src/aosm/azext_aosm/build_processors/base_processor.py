@@ -15,6 +15,8 @@ from azext_aosm.vendored_sdks.models import (
     ResourceElementTemplate,
 )
 
+from typing import Dict, Any
+
 
 @dataclass
 class BaseBuildProcessor(ABC):
@@ -43,5 +45,62 @@ class BaseBuildProcessor(ABC):
         """Generate the resource element template."""
         raise NotImplementedError
 
-    # @abstractmethod
-    # def generate_params_schema(self) -> Dict[str,Any]:
+    def generate_params_schema(
+        self, schema: Dict[str, Any], values: Dict[str, Any], is_nsd: bool = False
+    ) -> Dict[str, Any]:
+        """Generate the parameter schema"""
+
+        # Loop through each property in the schema.
+        for k, v in schema["properties"].items():
+            # If the property is not in the values, and is required, add it to the values.
+            if "required" in schema and k not in values and k in schema["required"]:
+                print(f"Adding {k} to values")
+                if v["type"] == "object":
+                    values[k] = self.generate_params_schema()
+                else:
+                    values[k] = (
+                        f"{{configurationparameters('{self.name}').{k}}}"
+                        if is_nsd
+                        else f"{{deployParameters.{self.name}.{k}}}"
+                    )
+            # If the property is in the values, and is an object, generate the values mappings
+            # for the subschema.
+            if k in values and v["type"] == "object" and values[k]:
+                values[k] = self.generate_params_schema(self.name, v, {}, is_nsd)
+        return values
+
+    def generate_values_mappings(
+        self,
+        schema: Dict[str, Any],
+        values: Dict[str, Any],
+        is_nsd: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Generate values mappings for a Helm chart.
+
+        Args:
+            schema (Dict[str, Any]): The schema of the Helm chart.
+            values (Dict[str, Any]): The values of the Helm chart.
+
+        Returns:
+            Dict[str, Any]: The value mappings for the Helm chart.
+        """
+
+        # Loop through each property in the schema.
+        for k, v in schema["properties"].items():
+            # If the property is not in the values, and is required, add it to the values.
+            if "required" in schema and k not in values and k in schema["required"]:
+                print(f"Adding {k} to values")
+                if v["type"] == "object":
+                    values[k] = self.generate_values_mappings(self.name, v, {}, is_nsd)
+                else:
+                    values[k] = (
+                        f"{{configurationparameters('{self.name}').{k}}}"
+                        if is_nsd
+                        else f"{{deployParameters.{self.name}.{k}}}"
+                    )
+            # If the property is in the values, and is an object, generate the values mappings
+            # for the subschema.
+            if k in values and v["type"] == "object" and values[k]:
+                values[k] = self.generate_values_mappings(self.name, v, {}, is_nsd)
+        return values

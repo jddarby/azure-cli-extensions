@@ -14,7 +14,7 @@ from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 @dataclass
 class NFDInput(BaseInput):
     """
-    A utility class for working with VHD files.
+    A utility class for working with NFD files.
     """
 
     network_function_definition: NetworkFunctionDefinitionVersion
