@@ -51,7 +51,6 @@ class OnboardingBaseCLIHandler(ABC):
             self.config = self._get_config(config_dict)
         except Exception as e:
             raise UnclassifiedUserFault("Invalid configuration file") from e
-        # TODO: generate custom directory name
         self.definition_folder_builder = DefinitionFolderBuilder(
             Path.cwd() / self.output_folder_file_name
         )

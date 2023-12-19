@@ -58,23 +58,19 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list = []
         # Jordan: Logic when HelmChartProcessor is implemented
         # TODO: check defualy config here? default to not for now
-        # for helm_package in self.config.helm_packages:
-        #     helm_input = HelmChart(
-        #         artifact_name=helm_package.name,
-        #         artifact_version=self.config.version,
-        #         chart_path=Path(helm_package.path_to_chart),
-        #         default_config=None
-        #     )
-        #     processed_helm = HelmChartProcessor(
-        #         helm_package.name,
-        #         helm_input
-        #     )
-        #     artifacts = processed_helm.get_artifact_manifest_list()
-        # # TODO: make artifact_list a set, then convert back to list
-        # # TODO: add to util, compare properly the artifacts
-        # # Add artifacts to a list of unique artifacts
-        #     if artifacts not in artifact_list:
-        #         artifact_list.extend(artifacts)
+        for helm_package in self.config.helm_packages:
+            helm_input = HelmChart.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                helm_input,
+                self.config.acr_artifact_store_name
+            )
+            artifacts = processed_helm.get_artifact_manifest_list()
+        # TODO: make artifact_list a set, then convert back to list
+        # TODO: add to util, compare properly the artifacts
+        # Add artifacts to a list of unique artifacts
+            if artifacts not in artifact_list:
+                artifact_list.extend(artifacts)
 
         # # # Jordan: For testing write manifest bicep. THIS IS THE RIGHT TEST
         # # test_base_artifact = ManifestArtifactFormat(
@@ -101,27 +97,21 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list = []
         # TODO: Test with processor
 
-        # for helm_package in self.config.helm_packages:
-        #     processed_helm = HelmChartProcessor(
-        #         helm_package.name,
-        #         self.config.acr_artifact_store_name,
-        #         helm_package,
-        #     )
-        #     (artifacts, files) = processed_helm.get_artifact_details()
-        #     if artifacts not in artifact_list:
-        #         artifact_list.append(artifacts)
+        for helm_package in self.config.helm_packages:
+            helm_input = HelmChart.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            if self.config.images.source_registry_namespace:
+                remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
+            else:
+                remote_image_source = self.config.acr_artifact_store_name
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                helm_input,
+                remote_image_source
+            )
+            (artifacts, files) = processed_helm.get_artifact_details()
+            if artifacts not in artifact_list:
+                artifact_list.extend(artifacts)
 
-        # # For testing artifact builder works
-        test_base_artifact = LocalFileACRArtifact(
-            artifact_manifest=ManifestArtifactFormat(
-                artifact_name="test",
-                artifact_type="OCIArtifact",
-                artifact_version="4.1.0-12-rel-4-1-0",
-            ),
-            file_path=Path("test"),
-        )
-        artifact_list.append(test_base_artifact)
-        # print(artifact_list)
         return ArtifactDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
@@ -131,84 +121,38 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # TODO: Implement
         nf_application_list = []
         supporting_files = []
-        complete_params_schema = {}
+        schema_properties = {}
         # For each helm package, generate nf application, generate mappings profile
-        # for helm_package in self.config.helm_packages:
-        #     processed_helm = HelmChartProcessor(
-        #         helm_package.name,
-        #         self.config.acr_artifact_store_name,
-        #         helm_package,
-        #     )
-        #     nf_application = processed_helm.generate_nf_application()
-        #     nf_application_list.append(nf_application)
+        for helm_package in self.config.helm_packages:
+            helm_input = HelmChart.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            if self.config.images.source_registry_namespace:
+                remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
+            else:
+                remote_image_source = self.config.acr_artifact_store_name
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                helm_input,
+                remote_image_source
+            )
+            nf_application = processed_helm.generate_nf_application()
+            nf_application_list.append(nf_application)
 
-        #     params_schema = processed_helm.generate_params_schema()
-        #     complete_params_schema.update(params_schema)
+            params_schema = processed_helm.generate_params_schema()
+            schema_properties.update(params_schema)
 
-            # # Adding supporting file: config mappings
-            # deploy_values = (
-            #     nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-            # )
-            # mapping_file = LocalFileBuilder(
-            #     Path(
-            #         CNF_OUTPUT_FOLDER_FILENAME,
-            #         NF_DEFINITION_FOLDER_NAME,
-            #         nf_application.name + "-mappings.json",
-            #     ),
-            #     deploy_values,
-            # )
-            # supporting_files.append(mapping_file)
-
-        # Jordan: mocked nf applicaton
-        test_nf_application = AzureArcKubernetesHelmApplication(
-            name="testNFApplication",
-            depends_on_profile=[],
-            artifact_profile=AzureArcKubernetesArtifactProfile(
-                artifact_store="testArtifactStore",
-                helm_artifact_profile=HelmArtifactProfile(
-                    helm_package_name="testHelmPackage",
-                    helm_package_version_range="1.0.0",
-                    registry_values_paths=["testPath1", "testPath2"],
-                    image_pull_secrets_values_paths=["testPath3", "testPath4"],
-                ),
-            ),
-            deploy_parameters_mapping_rule_profile=AzureArcKubernetesDeployMappingRuleProfile(
-                application_enablement="testApplicationEnablement",
-                helm_mapping_rule_profile=HelmMappingRuleProfile(
-                    release_namespace="testReleaseNamespace",
-                    release_name="testReleaseName",
-                    helm_package_version="1.0.0",
-                    values="testValues",
-                    options=None,
-                ),
-            ),
-        )
-        deploy_values = (
-            test_nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-        )
-        supporting_files.append(
-            LocalFileBuilder(
+            # Adding supporting file: config mappings
+            deploy_values = (
+                nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
+            )
+            mapping_file = LocalFileBuilder(
                 Path(
                     CNF_OUTPUT_FOLDER_FILENAME,
                     NF_DEFINITION_FOLDER_NAME,
-                    test_nf_application.name + "-mappings.json",
+                    nf_application.name + "-mappings.json",
                 ),
                 deploy_values,
             )
-        )
-        nf_application_list.append(test_nf_application)
-        complete_params_schema.update(
-            {
-                test_nf_application.name: {
-                    "type": "object",
-                    "properties": {
-                        "test1": {"type": "string"},
-                        "test2": {"type": "string"},
-                    },
-                }
-            }
-        )
-        # End testing
+            supporting_files.append(mapping_file)
 
         template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
         bicep_contents = self._render_definition_bicep_contents(
@@ -227,7 +171,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Add the deployParameters schema
         bicep_file.add_supporting_file(
-            self._render_deploy_params_schema(complete_params_schema)
+            self._render_deploy_params_schema(schema_properties)
         )
         return bicep_file
 

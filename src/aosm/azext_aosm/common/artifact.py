@@ -126,14 +126,12 @@ class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
 
     acr_name: str
-    namespace: str
 
     def __init__(
-        self, artifact_manifest: ManifestArtifactFormat, acr_name: str, namespace: str
+        self, artifact_manifest: ManifestArtifactFormat, acr_name: str
     ):
         super().__init__(artifact_manifest)
         self.acr_name = acr_name
-        self.namespace = namespace
 
     # TODO: Implement
     def upload(self):

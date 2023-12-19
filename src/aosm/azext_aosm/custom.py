@@ -59,7 +59,7 @@ def onboard_nfd_delete(definition_type: str, config_file: str):
 
 
 def onboard_nsd_generate_config(output_file: str | None):
-    handler = OnboardingNSDCLIHandler()
+    handler = OnboardingNSDCLIHandler(output_file)
     handler.generate_config(output_file)
 
 

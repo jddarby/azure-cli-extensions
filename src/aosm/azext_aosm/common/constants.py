@@ -35,8 +35,11 @@ class SkipSteps(Enum):
 ARTIFACT_LIST_FILENAME = "artifacts"
 MANIFEST_FOLDER_NAME = "artifactManifest"
 NF_DEFINITION_FOLDER_NAME = "nfDefinition"
+
+
 # TODO: add for nsd
 
+## OLD CONSTANTS
 NF_TEMPLATE_JINJA2_SOURCE_TEMPLATE = "nf_template.bicep.j2"
 NF_DEFINITION_JSON_FILENAME = "nf_definition.json"
 NF_DEFINITION_OUTPUT_BICEP_PREFIX = "nfd-bicep-"
@@ -46,6 +49,11 @@ NSD_OUTPUT_BICEP_PREFIX = "nsd-bicep-templates"
 NSD_ARTIFACT_MANIFEST_BICEP_FILENAME = "artifact_manifest.bicep"
 NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME = "artifact_manifest_template.bicep"
 
+
+NSD_OUTPUT_FOLDER_FILENAME = "nsd-cli-output"
+NSD_MANIFEST_TEMPLATE_FILENAME = "nsdartifactmanifest.bicep.j2"
+NSD_DEFINITION_FOLDER_NAME = "nsd"
+
 VNF_OUTPUT_FOLDER_FILENAME = "vnf-cli-output"
 VNF_DEFINITION_TEMPLATE_FILENAME = "vnfdefinition.bicep.j2"
 VNF_MANIFEST_TEMPLATE_FILENAME = "vnfartifactmanifest.bicep.j2"
@@ -53,15 +61,13 @@ VNF_MANIFEST_TEMPLATE_FILENAME = "vnfartifactmanifest.bicep.j2"
 CNF_OUTPUT_FOLDER_FILENAME = "cnf-cli-output"
 CNF_DEFINITION_TEMPLATE_FILENAME = "cnfdefinition.bicep.j2"
 CNF_MANIFEST_TEMPLATE_FILENAME = "cnfartifactmanifest.bicep.j2"
-# CNF_DEFINITION_BICEP_TEMPLATE_FILENAME = "cnfdefinition.bicep"
-# CNF_MANIFEST_BICEP_TEMPLATE_FILENAME = "cnfartifactmanifest.bicep"
 CNF_VALUES_SCHEMA_FILENAME = "values.schema.json"
 
 
 # Names of directories used in the repo
-CONFIG_MAPPINGS_DIR_NAME = "configMappings"
-SCHEMAS_DIR_NAME = "schemas"
-TEMPLATES_DIR_NAME = "templates"
+# CONFIG_MAPPINGS_DIR_NAME = "configMappings"
+# SCHEMAS_DIR_NAME = "schemas"
+# TEMPLATES_DIR_NAME = "templates"
 GENERATED_VALUES_MAPPINGS_DIR_NAME = "generatedValuesMappings"
 
 # Items used when building NFDs/NSDs

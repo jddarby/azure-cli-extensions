@@ -45,13 +45,11 @@ class HelmChart(BaseInput):
         artifact_name: str,
         artifact_version: str,
         chart_path: Path,
-        image_source_acr: str,
         default_config: Optional[Dict[str, Any]] = None,
     ):
         """Initialize the HelmChart class."""
         super().__init__(artifact_name, artifact_version, default_config)
         self.chart_path = chart_path
-        self.image_source_acr = image_source_acr
         self._temp_dir_path = Path(tempfile.mkdtemp())
         if chart_path.is_dir():
             self._chart_dir = chart_path
@@ -68,11 +66,11 @@ class HelmChart(BaseInput):
         temp_dir = Path(tempfile.mkdtemp())
 
         if chart_path.is_dir():
-            chart_path = extract_tarfile(chart_path, temp_dir)
+            unpacked_chart_path = Path(chart_path)
         else:
-            chart_path = Path(chart_path)
+            unpacked_chart_path = extract_tarfile(chart_path, temp_dir)
 
-        name, version = HelmChart._get_name_and_version(chart_path)
+        name, version = HelmChart._get_name_and_version(unpacked_chart_path)
 
         shutil.rmtree(temp_dir)
 

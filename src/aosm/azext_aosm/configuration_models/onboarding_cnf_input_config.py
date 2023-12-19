@@ -108,9 +108,7 @@ class HelmPackageConfig:
         if not self.name:
             raise ValidationError("nf_name must be set for your helm package")
         if not self.path_to_chart:
-            raise ValidationError("path_to_chart must be set for your helm package")    raise ValidationError("path_to_mappings must be set for your helm package")
-
-
+            raise ValidationError("path_to_chart must be set for your helm package")
 @dataclass
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
