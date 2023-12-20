@@ -4,12 +4,15 @@
 # --------------------------------------------------------------------------------------------
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
+
 from azure.cli.core.azclierror import ValidationError
-from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
-from azext_aosm.configuration_models.onboarding_base_input_config import (
-    OnboardingBaseInputConfig,
-)
+
+from azext_aosm.configuration_models.common_input import \
+    ArmTemplatePropertiesConfig
+from azext_aosm.configuration_models.onboarding_base_input_config import \
+    OnboardingBaseInputConfig
 
 
 @dataclass

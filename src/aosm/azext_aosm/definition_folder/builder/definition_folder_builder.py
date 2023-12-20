@@ -5,15 +5,12 @@
 
 import json
 from pathlib import Path
-
-from azext_aosm.definition_folder.builder.base_builder import (
-    BaseDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder,
-)
-
 from typing import List
+
+from azext_aosm.definition_folder.builder.base_builder import \
+    BaseDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.bicep_builder import \
+    BicepDefinitionElementBuilder
 
 
 class DefinitionFolderBuilder:

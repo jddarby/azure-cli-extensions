@@ -5,12 +5,11 @@
 
 import json
 from pathlib import Path
-
-from .base_builder import BaseDefinitionElementBuilder
+from typing import List
 
 from azext_aosm.common.artifact import BaseArtifact
 
-from typing import List
+from .base_builder import BaseDefinitionElementBuilder
 
 
 class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):

@@ -5,7 +5,8 @@
 
 from pathlib import Path
 
-from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
+from azext_aosm.definition_folder.reader.base_definition import \
+    BaseDefinitionElement
 
 
 class BicepDefinitionElement(BaseDefinitionElement):
