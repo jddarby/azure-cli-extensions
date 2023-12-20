@@ -4,10 +4,11 @@
 # --------------------------------------------------------------------------------------------
 
 from dataclasses import dataclass, field
-from azure.cli.core.azclierror import ValidationError
-from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
-
 from typing import List
+
+from azure.cli.core.azclierror import ValidationError
+
+from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
 
 @dataclass

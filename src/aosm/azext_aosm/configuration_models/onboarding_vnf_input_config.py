@@ -3,12 +3,14 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from azure.cli.core.azclierror import ValidationError
-from dataclasses import dataclass, field
-from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
-from .common_input import ArmTemplatePropertiesConfig
 
+from dataclasses import dataclass, field
 from typing import List
+
+from azure.cli.core.azclierror import ValidationError
+
+from .common_input import ArmTemplatePropertiesConfig
+from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
 
 @dataclass

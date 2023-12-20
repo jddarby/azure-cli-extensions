@@ -4,8 +4,11 @@
 # --------------------------------------------------------------------------------------------
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
+
 from azure.cli.core.azclierror import ValidationError
+
 from .common_input import ArmTemplatePropertiesConfig
 from .onboarding_base_input_config import OnboardingBaseInputConfig
 

@@ -4,8 +4,10 @@
 # --------------------------------------------------------------------------------------------
 
 from __future__ import annotations
+
 from abc import ABC
 from dataclasses import dataclass, field
+
 from azure.cli.core.azclierror import ValidationError
 
 
