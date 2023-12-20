@@ -7,7 +7,7 @@ from azext_aosm.common.artifact import (BaseACRArtifact, LocalFileACRArtifact,
                                         RemoteACRArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import generate_values_mappings
-from azext_aosm.inputs.helm_chart_input import HelmChart
+from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement, ArtifactType, AzureArcKubernetesArtifactProfile,
     AzureArcKubernetesDeployMappingRuleProfile,
@@ -54,7 +54,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         self,
     ) -> Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        assert isinstance(self.input_artifact, HelmChart)
+        assert isinstance(self.input_artifact, HelmChartInput)
         artifact_details = []
         helm_chart_details = LocalFileACRArtifact(
             ManifestArtifactFormat(
@@ -126,7 +126,7 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         return images
 
-    def _find_image_lines(self, chart: HelmChart, image_lines: Set[str]) -> None:
+    def _find_image_lines(self, chart: HelmChartInput, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 
@@ -174,7 +174,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         Find image pull secrets values paths in the Helm chart templates.
 
         Args:
-            chart (HelmChart): The Helm chart to search for image pull secrets
+            chart (HelmChartInput): The Helm chart to search for image pull secrets
             values paths.
             matches (Set[str]): A set of image pull secrets parameters found so far.
 
@@ -214,7 +214,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         Find registry values paths in the Helm chart templates.
 
         Args:
-            chart (HelmChart): The Helm chart to search for registry values paths.
+            chart (HelmChartInput): The Helm chart to search for registry values paths.
             matches (Set[str]): A set of registry values paths found so far.
 
         Returns:
@@ -237,7 +237,7 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         Args:
             name (str): The name of the Helm release.
-            chart (HelmChart): The Helm chart object.
+            chart (HelmChartInput): The Helm chart object.
             values_to_remove (Set[str]): The values to remove from the values mappings.
 
         Returns:

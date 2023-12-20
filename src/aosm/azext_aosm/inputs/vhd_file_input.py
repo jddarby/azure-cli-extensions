@@ -12,7 +12,7 @@ from azext_aosm.inputs.base_input import BaseInput
 
 
 @dataclass
-class VHDFile(BaseInput):
+class VHDFileInput(BaseInput):
     """
     A utility class for working with VHD files.
     """
@@ -26,7 +26,9 @@ class VHDFile(BaseInput):
         Returns:
             A dictionary containing the default values.
         """
-        return self.default_config
+        if self.default_config:
+            return self.default_config
+        return {}
 
     def get_schema(self) -> Dict[str, Any]:
         """
@@ -58,10 +60,9 @@ class VHDFile(BaseInput):
                 "apiVersion": {
                     "type": "string"
                 }
-            }
+            },
             "required": [
-                "imageName",
-                "azureDeployLocation"
+                "imageName"
             ]
         }
         """
