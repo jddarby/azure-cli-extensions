@@ -33,10 +33,7 @@ class ArmTemplateInput(BaseInput):
             data = json.load(_file)
 
         if "parameters" in data:
-            for key, value in data["parameters"].items():
-                arm_template_schema["properties"][key] = {"type": value["type"]}
-                if "defaultValue" not in value:
-                    arm_template_schema["required"].append(key)
+            self._generate_schema_from_params(arm_template_schema, data["parameters"])
         else:
             print(
                 "No parameters found in the template provided. "
@@ -44,3 +41,23 @@ class ArmTemplateInput(BaseInput):
             )
 
         return arm_template_schema
+
+    def _generate_schema_from_params(
+        self, schema: Dict[str, Any], parameters: Dict[str, Any]
+    ) -> None:
+        """Generate the schema from the parameters."""
+        for key, value in parameters.items():
+            if "defaultValue" not in value:
+                schema["required"].append(key)
+            if value["type"] in ("object", "secureObject"):
+                schema["properties"][key] = {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                }
+                if "properties" in value:
+                    self._generate_schema_from_params(
+                        schema["properties"][key], value["properties"]
+                    )
+            else:
+                schema["properties"][key] = {"type": value["type"]}

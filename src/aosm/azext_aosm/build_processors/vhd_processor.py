@@ -11,7 +11,6 @@ from azext_aosm.common.artifact import (BaseStorageAccountArtifact,
                                         BlobStorageAccountArtifact,
                                         LocalFileStorageAccountArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.common.utils import snake_case_to_camel_case
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement, ArtifactType,
@@ -38,8 +37,8 @@ class VHDProcessor(BaseBuildProcessor):
         self,
     ) -> Tuple[List[BaseStorageAccountArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        artifacts = []
-        file_builders = []
+        artifacts: List[BaseStorageAccountArtifact] = []
+        file_builders: List[LocalFileBuilder] = []
 
         artifact_manifest = ManifestArtifactFormat(
             artifact_name=self.input_artifact.artifact_name,
@@ -47,7 +46,7 @@ class VHDProcessor(BaseBuildProcessor):
             artifact_version=self.input_artifact.artifact_version,
         )
 
-        self.input_artifact = VHDFileInput(**self.input_artifact)
+        self.input_artifact: VHDFileInput = self.input_artifact
 
         if self.input_artifact.file_path:
             artifacts.append(
@@ -64,7 +63,9 @@ class VHDProcessor(BaseBuildProcessor):
                 )
             )
         else:
-            raise ValueError("VHDFileInput must have either a file path or a blob SAS URI.")
+            raise ValueError(
+                "VHDFileInput must have either a file path or a blob SAS URI."
+            )
 
         return artifacts, file_builders
 
@@ -97,15 +98,9 @@ class VHDProcessor(BaseBuildProcessor):
         self,
     ) -> AzureCoreVhdImageDeployMappingRuleProfile:
         """Generate the mapping rule profile."""
-
-        user_configuration = {
-            "imageName": self.input_artifact.artifact_name,
-            **{
-                snake_case_to_camel_case(key): value
-                for key, value in self.input_artifact.get_defaults().items()
-                if value is not None
-            },
-        }
+        user_configuration = self.generate_values_mappings(
+            self.input_artifact.get_schema(), self.input_artifact.get_defaults()
+        )
 
         mapping = VhdImageMappingRuleProfile(
             user_configuration=json.dumps(user_configuration),
