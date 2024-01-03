@@ -58,7 +58,8 @@ class BaseBuildProcessor(ABC):
         )
 
         params_schema = json.loads(base_params_schema)
-
+        # print(json.dumps(self.input_artifact.get_schema(), indent=4))
+        # print(json.dumps(self.input_artifact.get_defaults(), indent=4))
         self._generate_schema(
             params_schema[self.name],
             self.input_artifact.get_schema(),
@@ -80,6 +81,7 @@ class BaseBuildProcessor(ABC):
     ) -> None:
         """Generate the parameter schema"""
         # Loop through each property in the schema.
+        print(json.dumps(source_schema, indent=4))
         for k, v in source_schema["properties"].items():
             # If the property is not in the values, and is required, add it to the values.
             if (
@@ -88,6 +90,7 @@ class BaseBuildProcessor(ABC):
                 and k in source_schema["required"]
             ):
                 if v["type"] == "object":
+                    print(f"Resolving object {k} for schema")
                     self._generate_schema(schema, v, {})
                 else:
                     schema["required"].append(k)

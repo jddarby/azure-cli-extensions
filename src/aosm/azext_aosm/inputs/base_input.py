@@ -11,9 +11,9 @@ class BaseInput(ABC):
     default_config: Optional[Dict[str, Any]]
 
     @abstractmethod
-    def get_defaults(self):
+    def get_defaults(self) -> Dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_schema(self):
+    def get_schema(self) -> Dict[str, Any]:
         pass

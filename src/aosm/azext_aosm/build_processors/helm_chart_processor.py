@@ -1,5 +1,6 @@
 import json
 import re
+from dataclasses import dataclass
 from typing import Any, Dict, List, Set, Tuple
 
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
@@ -18,8 +19,9 @@ from azext_aosm.vendored_sdks.models import (
 VALUE_PATH_REGEX = (
     r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
 )
+IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<tag>[^\s)\"}]*)"
 
-
+@dataclass
 class HelmChartProcessor(BaseBuildProcessor):
     """
     A template processor for Helm charts.
@@ -27,6 +29,8 @@ class HelmChartProcessor(BaseBuildProcessor):
     This class provides methods to generate resource element templates and network function applications
     for Helm charts.
     """
+
+    image_source_acr: str
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
@@ -74,7 +78,7 @@ class HelmChartProcessor(BaseBuildProcessor):
                         artifact_type=ArtifactType.OCI_ARTIFACT,
                         artifact_version=image_version,
                     ),
-                    self.input_artifact.image_source_acr,
+                    self.image_source_acr,
                 )
             )
 
@@ -118,15 +122,16 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         images: List[Tuple[str, str]] = []
         for line in image_lines:
-            # Images are specified in the format <registry>/<image>:<tag>
-            # so we split the line on '/' and then split the second element
-            # of the resulting list on ':' to get the image name and tag.
-            name_and_tag = line.split("/")[1].split(":")
-            images.append((name_and_tag[0], name_and_tag[1]))
+            name_and_tag = re.search(IMAGE_NAME_AND_VERSION_REGEX, line)
+            if name_and_tag and len(name_and_tag.groups()) == 2:
+                images.append((name_and_tag.group("name"), name_and_tag.group("tag")))
+            else:
+                # TODO: Raise better error to represent the name and tag being in wrong format
+                raise ValueError
 
         return images
 
-    def _find_image_lines(self, chart: HelmChartInput, image_lines: Set[str]) -> None:
+    def _find_image_lines(self, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 
@@ -136,12 +141,12 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             None
         """
-        for template in chart.get_templates():
+        for template in self.input_artifact.get_templates():
             for line in template.data:
                 if "image:" in line:
                     image_lines.add(line.replace("image:", "").strip())
 
-        for dep in chart.get_dependencies():
+        for dep in self.input_artifact.get_dependencies():
             self._find_image_lines(dep, image_lines)
 
     def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:
@@ -221,7 +226,9 @@ class HelmChartProcessor(BaseBuildProcessor):
             None
         """
         image_lines: Set[str] = set()
-        for line in self._find_image_lines(image_lines):
+        self._find_image_lines(image_lines)
+
+        for line in image_lines:
             # Images are specified in the format <registry>/<image>:<tag>
             # so we split the line on '/' and then find the value path
             # in the first element of the resulting list.
