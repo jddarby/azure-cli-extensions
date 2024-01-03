@@ -3,29 +3,23 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import json
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, final, List, Tuple
+from typing import List, Tuple, final
 
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
-
-from ..vendored_sdks.models import (
-    DependsOnProfile,
-    ResourceElementTemplate,
-    ReferencedResource,
-    ManifestArtifactFormat,
-    NetworkFunctionApplication,
-    ArmResourceDefinitionResourceElementTemplateDetails,
-    AzureCoreNetworkFunctionArmTemplateApplication,
-    AzureCoreArtifactType,
+from azext_aosm.vendored_sdks.models import (
+    ApplicationEnablement, ArmResourceDefinitionResourceElementTemplateDetails,
+    ArmTemplateArtifactProfile, ArmTemplateMappingRuleProfile,
     AzureCoreArmTemplateArtifactProfile,
-    ArmTemplateArtifactProfile,
-    AzureCoreArmTemplateDeployMappingRuleProfile,
-    ArmTemplateMappingRuleProfile,
-)
+    AzureCoreArmTemplateDeployMappingRuleProfile, AzureCoreArtifactType,
+    AzureCoreNetworkFunctionArmTemplateApplication, DependsOnProfile,
+    ManifestArtifactFormat, NetworkFunctionApplication, ReferencedResource,
+    ResourceElementTemplate)
 
 
 @dataclass
@@ -44,7 +38,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
 
     """
 
-    name: str
     input_artifact: ArmTemplateInput
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -79,21 +72,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
     def generate_nf_application(self) -> NetworkFunctionApplication:
         return self.generate_nfvi_specific_nf_application()
 
-    # TODO: Should this actually be a cached property?
-    def generate_schema(self) -> Dict[str, Any]:
-        return self.input_artifact.get_schema()
-
-    def generate_mappings(self) -> Dict[str, str]:
-        template_parameters = {}
-        vm_parameters = self.generate_schema()
-
-        # TODO: Document that this no longer appends "Image" to the image name supplied by user in input.jsonc
-        # TODO: Document that the parameters are no longer ordered, and create story to reimplement ordering
-        for key in vm_parameters:
-            template_parameters[key] = f"{{deployParameters.{key}}}"
-        return template_parameters
-
-    # @abstractmethod?
     def generate_artifact_profile(self) -> AzureCoreArmTemplateArtifactProfile:
         artifact_profile = ArmTemplateArtifactProfile(
             template_name=self.input_artifact.artifact_name,
@@ -125,16 +103,30 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
             depends_on_profile=DependsOnProfile(),
             artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
             artifact_profile=self.generate_artifact_profile(),
-            deploy_parameters_mapping_rule_profile=AzureCoreArmTemplateDeployMappingRuleProfile(
-                template_mapping_rule_profile=ArmTemplateMappingRuleProfile(
-                    template_parameters=self.generate_mappings()
-                )
-            ),
+            deploy_parameters_mapping_rule_profile=self._generate_mapping_rule_profile(),
+        )
+
+    def _generate_mapping_rule_profile(
+        self,
+    ) -> AzureCoreArmTemplateDeployMappingRuleProfile:
+        template_parameters = self.generate_values_mappings(
+            self.input_artifact.get_schema(), self.input_artifact.get_defaults()
+        )
+
+        mapping_profile = ArmTemplateMappingRuleProfile(
+            template_parameters=json.dumps(template_parameters)
+        )
+
+        return AzureCoreArmTemplateDeployMappingRuleProfile(
+            application_enablement=ApplicationEnablement.ENABLED,
+            template_mapping_rule_profile=mapping_profile,
         )
 
 
 class NexusArmBuildProcessor(BaseArmBuildProcessor):
-    """Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus."""
+    """
+    Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus.
+    """
 
     def generate_nfvi_specific_nf_application(self):
         return NotImplementedError

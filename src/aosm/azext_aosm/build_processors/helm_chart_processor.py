@@ -1,35 +1,21 @@
-# --------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See License.txt in the project root for license information.
-# --------------------------------------------------------------------------------------------
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, Set, List, Tuple
+from typing import Any, Dict, List, Set, Tuple
+
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import (
-    BaseACRArtifact,
-    LocalFileACRArtifact,
-    RemoteACRArtifact,
-    LocalDockerACRArtifact
-)
+from azext_aosm.common.artifact import (BaseACRArtifact, LocalFileACRArtifact,
+                                        RemoteACRArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import generate_values_mappings
-from azext_aosm.inputs.helm_chart_input import HelmChart
+from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.vendored_sdks.models import (
-    ArtifactType,
-    ApplicationEnablement,
-    AzureArcKubernetesArtifactProfile,
+    ApplicationEnablement, ArtifactType, AzureArcKubernetesArtifactProfile,
     AzureArcKubernetesDeployMappingRuleProfile,
-    # DependsOnProfile,
-    HelmMappingRuleProfile,
-    ReferencedResource,
-    ResourceElementTemplate,
-    AzureArcKubernetesHelmApplication,
-    HelmArtifactProfile,
-    ManifestArtifactFormat,
-)
-from azext_aosm.common.utils import get_all_values
+    AzureArcKubernetesHelmApplication, DependsOnProfile, HelmArtifactProfile,
+    HelmMappingRuleProfile, ManifestArtifactFormat, ReferencedResource,
+    ResourceElementTemplate)
+
 VALUE_PATH_REGEX = (
     r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
 )
@@ -43,8 +29,9 @@ class HelmChartProcessor(BaseBuildProcessor):
     This class provides methods to generate resource element templates and network function applications
     for Helm charts.
     """
+
     image_source_acr: str
-    
+
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
         artifact_manifest_list = []
@@ -71,7 +58,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         self,
     ) -> Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        assert isinstance(self.input_artifact, HelmChart)
+        assert isinstance(self.input_artifact, HelmChartInput)
         artifact_details = []
         helm_chart_details = LocalFileACRArtifact(
             ManifestArtifactFormat(
@@ -94,7 +81,6 @@ class HelmChartProcessor(BaseBuildProcessor):
                     self.image_source_acr,
                 )
             )
-            # TODO: support public docker registry artifact
 
         return artifact_details, []
 
@@ -119,8 +105,7 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,
-            # depends_on_profile=DependsOnProfile(),
-            depends_on_profile=[],
+            depends_on_profile=DependsOnProfile(),
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )
@@ -137,9 +122,6 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         images: List[Tuple[str, str]] = []
         for line in image_lines:
-            # Images are specified in the format <registry>/<image>:<tag>
-            # so we split the line on '/' and then split the second element
-            # of the resulting list on ':' to get the image name and tag.
             name_and_tag = re.search(IMAGE_NAME_AND_VERSION_REGEX, line)
             if name_and_tag and len(name_and_tag.groups()) == 2:
                 images.append((name_and_tag.group("name"), name_and_tag.group("tag")))
@@ -159,7 +141,6 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             None
         """
-        assert isinstance(self.input_artifact, HelmChart)
         for template in self.input_artifact.get_templates():
             for line in template.data:
                 if "image:" in line:
@@ -198,16 +179,14 @@ class HelmChartProcessor(BaseBuildProcessor):
         Find image pull secrets values paths in the Helm chart templates.
 
         Args:
-            chart (HelmChart): The Helm chart to search for image pull secrets
+            chart (HelmChartInput): The Helm chart to search for image pull secrets
             values paths.
             matches (Set[str]): A set of image pull secrets parameters found so far.
 
         Returns:
             None
         """
-        assert isinstance(self.input_artifact, HelmChart)
         for template in self.input_artifact.get_templates():
-
             # Loop through each line in the template.
             for index in range(len(template.data)):
                 count = 0
@@ -240,7 +219,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         Find registry values paths in the Helm chart templates.
 
         Args:
-            chart (HelmChart): The Helm chart to search for registry values paths.
+            chart (HelmChartInput): The Helm chart to search for registry values paths.
             matches (Set[str]): A set of registry values paths found so far.
 
         Returns:
@@ -248,6 +227,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         """
         image_lines: Set[str] = set()
         self._find_image_lines(image_lines)
+
         for line in image_lines:
             # Images are specified in the format <registry>/<image>:<tag>
             # so we split the line on '/' and then find the value path
@@ -264,7 +244,7 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         Args:
             name (str): The name of the Helm release.
-            chart (HelmChart): The Helm chart object.
+            chart (HelmChartInput): The Helm chart object.
             values_to_remove (Set[str]): The values to remove from the values mappings.
 
         Returns:

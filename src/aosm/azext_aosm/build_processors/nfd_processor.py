@@ -5,36 +5,30 @@
 
 import json
 from typing import List, Tuple
+
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.common.utils import generate_values_mappings
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
-    ArmResourceDefinitionResourceElementTemplate,
-    ArtifactType,
-    DependsOnProfile,
-    NetworkFunctionApplication,
-    NetworkFunctionDefinitionResourceElementTemplateDetails as NFDResourceElementTemplate,
-    NSDArtifactProfile,
-    ReferencedResource,
-    ManifestArtifactFormat,
-    TemplateType,
-)
-from typing import Optional
+    ArmResourceDefinitionResourceElementTemplate, ArtifactType,
+    DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication)
+from azext_aosm.vendored_sdks.models import \
+    NetworkFunctionDefinitionResourceElementTemplateDetails as \
+    NFDResourceElementTemplate
+from azext_aosm.vendored_sdks.models import (NSDArtifactProfile,
+                                             ReferencedResource, TemplateType)
+
 
 class NFDProcessor(BaseBuildProcessor):
     """Base class for build processors."""
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
-        # Create artifact name
-        arm_template_name = f"{self.input_artifact.artifact_name}_nf_artifact"
-        # The artifact version to be the same as the NSD version, so that they
-        # don't get over written when a new NSD is published.
         return [
             ManifestArtifactFormat(
-                artifact_name=arm_template_name,
+                artifact_name=self.input_artifact.artifact_name,
                 artifact_type=ArtifactType.OCI_ARTIFACT,
                 artifact_version=self.input_artifact.artifact_version,
             )

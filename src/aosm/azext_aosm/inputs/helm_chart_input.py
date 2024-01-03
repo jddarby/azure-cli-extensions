@@ -8,15 +8,14 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional, Tuple
 
 import genson
 import yaml
-from azext_aosm.common.exceptions import (
-    DefaultValuesNotFoundError,
-    MissingChartDependencyError,
-    SchemaGetOrGenerateError,
-)
+
+from azext_aosm.common.exceptions import (DefaultValuesNotFoundError,
+                                          MissingChartDependencyError,
+                                          SchemaGetOrGenerateError)
 from azext_aosm.common.utils import extract_tarfile
 from azext_aosm.inputs.base_input import BaseInput
 
@@ -25,7 +24,7 @@ from azext_aosm.inputs.base_input import BaseInput
 class HelmChartMetadata:
     name: str
     version: str
-    dependencies: List[str] = None
+    dependencies: List[str]
 
 
 @dataclass
@@ -35,7 +34,7 @@ class HelmChartTemplate:
 
 
 @dataclass
-class HelmChart(BaseInput):
+class HelmChartInput(BaseInput):
     """
     A utility class for working with Helm charts.
     """
@@ -47,7 +46,7 @@ class HelmChart(BaseInput):
         chart_path: Path,
         default_config: Optional[Dict[str, Any]] = None,
     ):
-        """Initialize the HelmChart class."""
+        """Initialize the HelmChartInput class."""
         super().__init__(artifact_name, artifact_version, default_config)
         self.chart_path = chart_path
         self._temp_dir_path = Path(tempfile.mkdtemp())
@@ -61,8 +60,8 @@ class HelmChart(BaseInput):
     @staticmethod
     def from_chart_path(
         chart_path: Path, default_config: Optional[Dict[str, Any]]
-    ) -> "HelmChart":
-        """Create a HelmChart object from a HelmPackageConfig object."""
+    ) -> "HelmChartInput":
+        """Create a HelmChartInput object from a HelmPackageConfig object."""
         temp_dir = Path(tempfile.mkdtemp())
 
         if chart_path.is_dir():
@@ -70,11 +69,11 @@ class HelmChart(BaseInput):
         else:
             unpacked_chart_path = extract_tarfile(chart_path, temp_dir)
 
-        name, version = HelmChart._get_name_and_version(unpacked_chart_path)
+        name, version = HelmChartInput._get_name_and_version(unpacked_chart_path)
 
         shutil.rmtree(temp_dir)
 
-        return HelmChart(
+        return HelmChartInput(
             artifact_name=name,
             artifact_version=version,
             chart_path=chart_path,
@@ -132,12 +131,12 @@ class HelmChart(BaseInput):
                 f" retrieve the helm chart values schema:\n{error}"
             ) from error
 
-    def get_dependencies(self) -> List["HelmChart"]:
+    def get_dependencies(self) -> List["HelmChartInput"]:
         """
         Get the dependency charts for the Helm chart.
 
         Returns:
-            List["HelmChart"]: The dependency charts for the Helm chart.
+            List["HelmChartInput"]: The dependency charts for the Helm chart.
 
         Raises:
             MissingChartDependencyError: If the Helm chart has a dependency on a chart
@@ -150,9 +149,9 @@ class HelmChart(BaseInput):
             assert len(self.metadata.dependencies) == 0
             return []
 
-        # For each chart in the charts directory, create a HelmChart object.
+        # For each chart in the charts directory, create a HelmChartInput object.
         dependency_charts = [
-            HelmChart.from_chart_path(Path(chart_dir), None)
+            HelmChartInput.from_chart_path(Path(chart_dir), None)
             for chart_dir in dependency_chart_dir.iterdir()
         ]
 
@@ -197,7 +196,7 @@ class HelmChart(BaseInput):
         return templates
 
     @staticmethod
-    def _get_name_and_version(chart_dir: Path) -> (str, str):
+    def _get_name_and_version(chart_dir: Path) -> Tuple[str, str]:
         """
         Retrieves the name and version of the Helm chart.
 

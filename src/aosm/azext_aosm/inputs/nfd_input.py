@@ -4,9 +4,10 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict
+
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 
@@ -14,7 +15,7 @@ from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 @dataclass
 class NFDInput(BaseInput):
     """
-    A utility class for working with NFD files.
+    A utility class for working with VHD files.
     """
 
     network_function_definition: NetworkFunctionDefinitionVersion
@@ -26,7 +27,9 @@ class NFDInput(BaseInput):
         Returns:
             A dictionary containing the default values.
         """
-        return self.default_config
+        if self.default_config:
+            return self.default_config
+        return {}
 
     def get_schema(self) -> Dict[str, Any]:
         """
@@ -34,4 +37,8 @@ class NFDInput(BaseInput):
         Returns:
             A dictionary containing the schema.
         """
-        return json.loads(self.network_function_definition.properties.deploy_parameters)
+
+        nfdv_properties = self.network_function_definition.properties
+        if nfdv_properties and nfdv_properties.deploy_parameters:
+            return json.loads(nfdv_properties.deploy_parameters)
+        raise ValueError("No properties found in the network function definition.")
