@@ -20,6 +20,7 @@ VALUE_PATH_REGEX = (
 )
 IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<tag>[^\s)\"}]*)"
 
+
 @dataclass
 class HelmChartProcessor(BaseBuildProcessor):
     """

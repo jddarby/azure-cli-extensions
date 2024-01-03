@@ -13,13 +13,14 @@ from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.vendored_sdks.models import (
-    ApplicationEnablement, ArmResourceDefinitionResourceElementTemplate,ArmResourceDefinitionResourceElementTemplateDetails,
+    ApplicationEnablement, ArmResourceDefinitionResourceElementTemplate,
+    ArmResourceDefinitionResourceElementTemplateDetails,
     ArmTemplateArtifactProfile, ArmTemplateMappingRuleProfile,
     AzureCoreArmTemplateArtifactProfile,
     AzureCoreArmTemplateDeployMappingRuleProfile, AzureCoreArtifactType,
     AzureCoreNetworkFunctionArmTemplateApplication, DependsOnProfile,
-    ManifestArtifactFormat, NetworkFunctionApplication, NSDArtifactProfile, ReferencedResource,
-    ResourceElementTemplate, TemplateType)
+    ManifestArtifactFormat, NetworkFunctionApplication, NSDArtifactProfile,
+    ReferencedResource, ResourceElementTemplate, TemplateType)
 
 
 @dataclass
@@ -104,8 +105,8 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
             configuration=ArmResourceDefinitionResourceElementTemplate(
                 template_type=TemplateType.ARM_TEMPLATE,
                 parameter_values=json.dumps(parameter_values),
-                artifact_profile=artifact_profile
-            )
+                artifact_profile=artifact_profile,
+            ),
         )
 
 
