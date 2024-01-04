@@ -46,7 +46,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
+                artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         ]
@@ -60,7 +60,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
                 LocalFileACRArtifact(
                     artifact_manifest=ManifestArtifactFormat(
                         artifact_name=self.input_artifact.artifact_name,
-                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
+                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
                         artifact_version=self.input_artifact.artifact_version,
                     ),
                     file_path=self.input_artifact.template_path,
@@ -103,7 +103,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
             name=self.name,
             depends_on_profile=DependsOnProfile(),
             configuration=ArmResourceDefinitionResourceElementTemplate(
-                template_type=TemplateType.ARM_TEMPLATE,
+                template_type=TemplateType.ARM_TEMPLATE.value,
                 parameter_values=json.dumps(parameter_values),
                 artifact_profile=artifact_profile,
             ),

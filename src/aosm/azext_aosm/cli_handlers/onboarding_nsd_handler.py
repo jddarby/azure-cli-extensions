@@ -79,7 +79,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         """
         # Build artifact list for ArmTemplates
         artifact_list = []
-        RET_artifact_list = []
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "ArmTemplate":
                 arm_input = ArmTemplateInput(
@@ -95,7 +94,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 artifact_list.extend(arm_processor.get_artifact_manifest_list())
             # TODO: add this for artifact manifest and go to j2 template
             if resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
                     artifact_version=self.config.nsd_version,
@@ -108,8 +107,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     arm_template_output_path=Path("test"),
                 )
                 nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
-                RET_artifact_list.extend(nfd_processor.get_artifact_manifest_list())
-        # TODO: one artifact manifest
+                artifact_list.extend(nfd_processor.get_artifact_manifest_list())
         template_path = self._get_template_path("nsd", NSD_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
@@ -154,7 +152,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 arm_template_names.append(
                     f"{resource_element.properties.name}_nf_artifact"
                 )
-                print("arm", arm_template_names)
                 sanitised_nf_name = (
                     f"{resource_element.properties.name.lower().replace('_','-')}"
                 )

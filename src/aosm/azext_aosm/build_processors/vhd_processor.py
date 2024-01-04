@@ -28,7 +28,7 @@ class VHDProcessor(BaseBuildProcessor):
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.VHD_IMAGE_FILE,
+                artifact_type=ArtifactType.VHD_IMAGE_FILE.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         ]
@@ -42,7 +42,7 @@ class VHDProcessor(BaseBuildProcessor):
 
         artifact_manifest = ManifestArtifactFormat(
             artifact_name=self.input_artifact.artifact_name,
-            artifact_type=ArtifactType.VHD_IMAGE_FILE,
+            artifact_type=ArtifactType.VHD_IMAGE_FILE.value,
             artifact_version=self.input_artifact.artifact_version,
         )
 

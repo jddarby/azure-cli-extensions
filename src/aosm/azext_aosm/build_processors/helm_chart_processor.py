@@ -38,7 +38,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         artifact_manifest_list.append(
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         )
@@ -47,7 +47,7 @@ class HelmChartProcessor(BaseBuildProcessor):
             artifact_manifest_list.append(
                 ManifestArtifactFormat(
                     artifact_name=image_name,
-                    artifact_type=ArtifactType.OCI_ARTIFACT,
+                    artifact_type=ArtifactType.OCI_ARTIFACT.value,
                     artifact_version=image_version,
                 )
             )
@@ -63,7 +63,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         helm_chart_details = LocalFileACRArtifact(
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             ),
             self.input_artifact.chart_path,
@@ -75,7 +75,7 @@ class HelmChartProcessor(BaseBuildProcessor):
                 RemoteACRArtifact(
                     ManifestArtifactFormat(
                         artifact_name=image_name,
-                        artifact_type=ArtifactType.OCI_ARTIFACT,
+                        artifact_type=ArtifactType.OCI_ARTIFACT.value,
                         artifact_version=image_version,
                     ),
                     self.image_source_acr,

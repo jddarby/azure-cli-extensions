@@ -28,7 +28,7 @@ class NFDProcessor(BaseBuildProcessor):
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         ]
@@ -41,7 +41,7 @@ class NFDProcessor(BaseBuildProcessor):
         artifact_details = LocalFileACRArtifact(
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             ),
             self.input_artifact.arm_template_output_path,
