@@ -129,7 +129,45 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # same for arm templates as before
         # use nfd processor.get_Artifact_details
         
-        raise NotImplementedError
+        # Build artifact list for ArmTemplates
+        artifact_list = []
+        for resource_element in self.config.resource_element_templates:
+            if resource_element.resource_element_type == "ArmTemplate":
+                arm_input = ArmTemplateInput(
+                    artifact_name=resource_element.properties.artifact_name,
+                    artifact_version=resource_element.properties.version,
+                    default_config=None,
+                    template_path=Path(resource_element.properties.file_path),
+                )
+                # TODO: generalise for nexus in nexus ready stories
+                arm_processor = AzureCoreArmBuildProcessor(
+                    arm_input.artifact_name, arm_input
+                )
+                (artifacts, files) = arm_processor.get_artifact_details()
+                if artifacts not in artifact_list:
+                    artifact_list.extend(artifacts)
+            if resource_element.resource_element_type == "NF":
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                nfd_input = NFDInput(
+                    artifact_name=self.config.nsd_name,
+                    artifact_version=self.config.nsd_version,
+                    default_config=None,
+                    network_function_definition=NetworkFunctionDefinitionVersion(
+                        location="test",
+                        tags=None,
+                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(description="test", deploy_parameters="wherefrom?"),
+                    ),
+                    arm_template_output_path=Path("test"),
+                )
+                nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
+                (artifacts,files) = nfd_processor.get_artifact_details()
+
+                if artifacts not in artifact_list:
+                    artifact_list.extend(artifacts)
+        # Generate Artifact Element with artifact list (of arm template and vhd images)
+        return ArtifactDefinitionElementBuilder(
+            Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
+        )
 
     def build_resource_bicep(self):
         """Build the resource bicep file."""
@@ -165,12 +203,14 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
             "contentVersion": "1.0.0.0",
-            "location": {"value": self.config.location},
-            "publisherName": {"value": self.config.publisher_name},
-            "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-            "acrManifestNames": {"value": artifact_manifest_names},
-            "armTemplateNames": {"value": arm_template_names},
-            "armTemplateVersion": {"value": self.config.nsd_version},
+            "parameters": {
+                "location": {"value": self.config.location},
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "acrManifestName": {"value": self.config.acr_artifact_store_name + '-manifest'},
+                "armTemplateVersion": {"value": self.config.nsd_version},
+            },
+
         }
 
         print(params_content)

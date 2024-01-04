@@ -146,7 +146,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def build_resource_bicep(self):
         """Build the resource bicep file."""
         acr_nf_application_list = []
-        sa_nf_application_list = []
         supporting_files = []
         schema_properties = {}
 
