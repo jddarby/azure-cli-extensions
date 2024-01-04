@@ -197,7 +197,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 blob_sas_uri=self.config.vhd.blob_sas_url,
             ),
         )
-        # Generate NF Application and append to list of nf applications
+        # Generate NF Application
         nf_application = vhd_processor.generate_nf_application()
 
         # Generate local file for vhd_parameters

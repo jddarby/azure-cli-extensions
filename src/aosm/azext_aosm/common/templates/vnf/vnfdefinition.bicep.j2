@@ -54,7 +54,7 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
       networkFunctionApplications: [
         {
           artifactType: 'VhdImageFile'
-          name: '${nfName}Image'
+          name: '{{ sa_nf_application.artifact_profile.vhd_artifact_profile.vhd_name }}'
           dependsOnProfile: null
           artifactProfile: {
             vhdArtifactProfile: {
