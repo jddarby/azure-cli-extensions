@@ -97,15 +97,14 @@ class HelmChartProcessor(BaseBuildProcessor):
         artifact_profile = self._generate_artifact_profile()
         # We want to remove the registry values paths and image pull secrets values paths from the values mappings
         # as these values are supplied by NFM when it installs the chart.
-        values_to_remove = (
-            artifact_profile.helm_artifact_profile.registry_values_paths
-            | artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
-        )
+        values_to_remove = artifact_profile.helm_artifact_profile.registry_values_paths + artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
+        
         mapping_rule_profile = self._generate_mapping_rule_profile(values_to_remove)
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            # Current implementation is set all depends on profiles to empty lists
+            depends_on_profile=DependsOnProfile(install_depends_on=[],uninstall_depends_on=[],update_depends_on=[]),
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )
@@ -165,8 +164,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         chart_profile = HelmArtifactProfile(
             helm_package_name=self.input_artifact.artifact_name,
             helm_package_version_range=self.input_artifact.artifact_version,
-            registry_values_paths=registry_values_paths,
-            image_pull_secrets_values_paths=image_pull_secrets_values_paths,
+            registry_values_paths=list(registry_values_paths),
+            image_pull_secrets_values_paths=list(image_pull_secrets_values_paths),
         )
 
         return AzureArcKubernetesArtifactProfile(
@@ -237,7 +236,7 @@ class HelmChartProcessor(BaseBuildProcessor):
                 matches.update(new_matches)
 
     def _generate_mapping_rule_profile(
-        self, values_to_remove: Set[str]
+        self, values_to_remove: List[str]
     ) -> AzureArcKubernetesDeployMappingRuleProfile:
         """
         Generate the mappings for a Helm chart.

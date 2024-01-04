@@ -149,11 +149,11 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 helm_input,
                 remote_image_source
             )
-            
+
             # Generate nf application
             nf_application = processed_helm.generate_nf_application()
             nf_application_list.append(nf_application)
-            
+
             # Generate deploymentParameters schema properties
             params_schema = processed_helm.generate_params_schema()
             schema_properties.update(params_schema)
