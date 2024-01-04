@@ -148,6 +148,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         acr_nf_application_list = []
         sa_nf_application_list = []
         supporting_files = []
+        schema_properties = {}
 
         # For each arm template, generate nf application
         for arm_template in self.config.arm_templates:
@@ -165,6 +166,10 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             nf_application = arm_processor.generate_nf_application()
             acr_nf_application_list.append(nf_application)
 
+            # Generate deploymentParameters schema properties
+            params_schema = arm_processor.generate_params_schema()
+            schema_properties.update(params_schema)
+            
             # Generate local file for template_parameters + add to supporting files list
             template_params = (
                 nf_application.deploy_parameters_mapping_rule_profile.template_mapping_rule_profile.template_parameters
@@ -224,6 +229,10 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # Add the accompanying parameters.json
         bicep_file.add_supporting_file(self._render_definition_parameters_contents())
 
+        # Add the deploymentParameters schema file
+        bicep_file.add_supporting_file(
+            self._render_deployment_params_schema(schema_properties, VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
+        )
         return bicep_file
 
     def _render_manifest_parameters_contents(self):

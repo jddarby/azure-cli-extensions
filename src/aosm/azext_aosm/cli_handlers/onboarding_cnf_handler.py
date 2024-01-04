@@ -6,9 +6,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-
+from azure.cli.core.azclierror import UnclassifiedUserFault
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
+from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
@@ -67,8 +68,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 self.config.acr_artifact_store_name
             )
             artifacts = processed_helm.get_artifact_manifest_list()
-        # TODO: make artifact_list a set, then convert back to list
-        # TODO: add to util, compare properly the artifacts
+        # TODO: future work: make artifact_list a set, then convert back to list
+        # TODO: future work: add to util, compare properly the artifacts
         # Add artifacts to a list of unique artifacts
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
@@ -121,23 +122,39 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Build the resource bicep file."""
         # TODO: Implement
         nf_application_list = []
-        supporting_files = []
+        mappings_files = []
         schema_properties = {}
         # For each helm package, generate nf application, generate mappings profile
         for helm_package in self.config.helm_packages:
-            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            
+            # Check if any default config has been provided in the input file
+            if helm_package.path_to_mappings:
+                if Path.exists(Path(helm_package.path_to_mappings)):
+                    provided_config = json.load(open(helm_package.path_to_mappings))
+                else: 
+                    raise UnclassifiedUserFault("There is no file at the path provided for the mappings file.")
+            else:
+                provided_config = None
+
+            # Create HelmChartInput object from chart path provided in input file
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=provided_config)
             if self.config.images.source_registry_namespace:
                 remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
             else:
                 remote_image_source = self.config.acr_artifact_store_name
+
+            # Create HelmChartProcessor object from HelmChartInput object
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
                 remote_image_source
             )
+            
+            # Generate nf application
             nf_application = processed_helm.generate_nf_application()
             nf_application_list.append(nf_application)
-
+            
+            # Generate deploymentParameters schema properties
             params_schema = processed_helm.generate_params_schema()
             schema_properties.update(params_schema)
 
@@ -153,40 +170,28 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 ),
                 deploy_values,
             )
-            supporting_files.append(mapping_file)
+            mappings_files.append(mapping_file)
 
         template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
         bicep_contents = self._render_definition_bicep_contents(
             template_path, nf_application_list
         )
 
-        # Create a bicep element + add its supporting files (mappings + schema)
+        # Create a bicep element + add its supporting mapping files
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME), bicep_contents
         )
-        for mappings_file in supporting_files:
+        for mappings_file in mappings_files:
             bicep_file.add_supporting_file(mappings_file)
 
         # Add the accompanying parameters.json
         bicep_file.add_supporting_file(self._render_definition_parameters_contents())
 
-        # Add the deployParameters schema
+        # Add the deploymentParameters schema file
         bicep_file.add_supporting_file(
-            self._render_deploy_params_schema(schema_properties)
+            self._render_deployment_params_schema(schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
         )
         return bicep_file
-
-    def _render_deploy_params_schema(self, complete_params_schema):
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                NF_DEFINITION_FOLDER_NAME,
-                "deploymentParameters.json",
-            ),
-            json.dumps(
-                self._build_deploy_params_schema(complete_params_schema), indent=4
-            ),
-        )
 
     def _render_manifest_parameters_contents(self):
         params_content = {

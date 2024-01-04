@@ -8,7 +8,6 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
-
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
@@ -166,19 +165,6 @@ class OnboardingBaseCLIHandler(ABC):
             / definition_type
             / template_name
         )
-
-    def _build_deploy_params_schema(self, schema_properties):
-        """
-        Build the schema for deployParameters.json
-        """
-        schema_contents = {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "DeployParametersSchema",
-            "type": "object",
-            "properties": {},
-        }
-        schema_contents["properties"] = schema_properties
-        return schema_contents
 
     def _serialize(self, dataclass, indent_count=1):
         """
