@@ -7,7 +7,6 @@ from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import (BaseACRArtifact, LocalFileACRArtifact,
                                         RemoteACRArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.common.utils import generate_values_mappings
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement, ArtifactType, AzureArcKubernetesArtifactProfile,
@@ -20,6 +19,7 @@ VALUE_PATH_REGEX = (
     r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
 )
 IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<tag>[^\s)\"}]*)"
+
 
 @dataclass
 class HelmChartProcessor(BaseBuildProcessor):
@@ -251,8 +251,7 @@ class HelmChartProcessor(BaseBuildProcessor):
             AzureArcKubernetesDeployMappingRuleProfile: The mapping rule profile for Azure Arc Kubernetes deployment.
         """
         # Generate the values mappings for the Helm chart.
-        values_mappings = generate_values_mappings(
-            self.name,
+        values_mappings = self.generate_values_mappings(
             self.input_artifact.get_schema(),
             self.input_artifact.get_defaults(),
         )

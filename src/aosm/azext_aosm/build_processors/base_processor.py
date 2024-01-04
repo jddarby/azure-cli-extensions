@@ -80,8 +80,10 @@ class BaseBuildProcessor(ABC):
         values: Dict[str, Any],
     ) -> None:
         """Generate the parameter schema"""
+        if "properties" not in source_schema.keys():
+            return
+
         # Loop through each property in the schema.
-        print(json.dumps(source_schema, indent=4))
         for k, v in source_schema["properties"].items():
             # If the property is not in the values, and is required, add it to the values.
             if (
@@ -114,6 +116,9 @@ class BaseBuildProcessor(ABC):
         Returns:
             Dict[str, Any]: The value mappings for the Helm chart.
         """
+        # If there are no properties in the schema for the object, return the values.
+        if "properties" not in schema.keys():
+            return values
 
         # Loop through each property in the schema.
         for k, v in schema["properties"].items():

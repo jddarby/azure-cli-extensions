@@ -13,13 +13,14 @@ from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.vendored_sdks.models import (
-    ApplicationEnablement, ArmResourceDefinitionResourceElementTemplateDetails,
+    ApplicationEnablement, ArmResourceDefinitionResourceElementTemplate,
+    ArmResourceDefinitionResourceElementTemplateDetails,
     ArmTemplateArtifactProfile, ArmTemplateMappingRuleProfile,
     AzureCoreArmTemplateArtifactProfile,
     AzureCoreArmTemplateDeployMappingRuleProfile, AzureCoreArtifactType,
     AzureCoreNetworkFunctionArmTemplateApplication, DependsOnProfile,
-    ManifestArtifactFormat, NetworkFunctionApplication, ReferencedResource,
-    ResourceElementTemplate)
+    ManifestArtifactFormat, NetworkFunctionApplication, NSDArtifactProfile,
+    ReferencedResource, ResourceElementTemplate, TemplateType)
 
 
 @dataclass
@@ -87,7 +88,26 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         pass
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
-        return ArmResourceDefinitionResourceElementTemplateDetails()
+        """Generate the resource element template."""
+        parameter_values = self.generate_values_mappings(
+            self.input_artifact.get_schema(), self.input_artifact.get_defaults(), True
+        )
+
+        artifact_profile = NSDArtifactProfile(
+            artifact_store_reference=ReferencedResource(id=""),
+            artifact_name=self.input_artifact.artifact_name,
+            artifact_version=self.input_artifact.artifact_version,
+        )
+
+        return ArmResourceDefinitionResourceElementTemplateDetails(
+            name=self.name,
+            depends_on_profile=DependsOnProfile(),
+            configuration=ArmResourceDefinitionResourceElementTemplate(
+                template_type=TemplateType.ARM_TEMPLATE,
+                parameter_values=json.dumps(parameter_values),
+                artifact_profile=artifact_profile,
+            ),
+        )
 
 
 class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
