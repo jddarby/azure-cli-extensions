@@ -9,12 +9,13 @@ from pathlib import Path
 
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
-from azext_aosm.inputs.helm_chart_input import HelmChart
+from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          CNF_DEFINITION_TEMPLATE_FILENAME,
                                          CNF_MANIFEST_TEMPLATE_FILENAME,
                                          CNF_OUTPUT_FOLDER_FILENAME,
+                                         CNF_INPUT_FILENAME,
                                          MANIFEST_FOLDER_NAME,
                                          NF_DEFINITION_FOLDER_NAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
@@ -39,7 +40,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
-        return "cnf-input.jsonc"
+        return CNF_INPUT_FILENAME
 
     @property
     def output_folder_file_name(self) -> str:
@@ -59,7 +60,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # Jordan: Logic when HelmChartProcessor is implemented
         # TODO: check defualy config here? default to not for now
         for helm_package in self.config.helm_packages:
-            helm_input = HelmChart.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
@@ -98,7 +99,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # TODO: Test with processor
 
         for helm_package in self.config.helm_packages:
-            helm_input = HelmChart.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
             if self.config.images.source_registry_namespace:
                 remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
             else:
@@ -124,7 +125,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         schema_properties = {}
         # For each helm package, generate nf application, generate mappings profile
         for helm_package in self.config.helm_packages:
-            helm_input = HelmChart.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
             if self.config.images.source_registry_namespace:
                 remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
             else:

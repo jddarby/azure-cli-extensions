@@ -51,14 +51,17 @@ NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME = "artifact_manifest_template.bic
 
 
 NSD_OUTPUT_FOLDER_FILENAME = "nsd-cli-output"
+NSD_INPUT_FILENAME = "nsd-input.jsonc"
 NSD_MANIFEST_TEMPLATE_FILENAME = "nsdartifactmanifest.bicep.j2"
 NSD_DEFINITION_FOLDER_NAME = "nsd"
 
 VNF_OUTPUT_FOLDER_FILENAME = "vnf-cli-output"
+VNF_INPUT_FILENAME = "vnf-input.jsonc"
 VNF_DEFINITION_TEMPLATE_FILENAME = "vnfdefinition.bicep.j2"
 VNF_MANIFEST_TEMPLATE_FILENAME = "vnfartifactmanifest.bicep.j2"
 
 CNF_OUTPUT_FOLDER_FILENAME = "cnf-cli-output"
+CNF_INPUT_FILENAME = "cnf-input.jsonc"
 CNF_DEFINITION_TEMPLATE_FILENAME = "cnfdefinition.bicep.j2"
 CNF_MANIFEST_TEMPLATE_FILENAME = "cnfartifactmanifest.bicep.j2"
 CNF_VALUES_SCHEMA_FILENAME = "values.schema.json"

@@ -14,6 +14,7 @@ from azext_aosm.common.constants import (
     VNF_DEFINITION_TEMPLATE_FILENAME,
     VNF_MANIFEST_TEMPLATE_FILENAME,
     VNF_OUTPUT_FOLDER_FILENAME,
+    VNF_INPUT_FILENAME
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
@@ -26,7 +27,7 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
-from azext_aosm.inputs.vhd_file_input import VHDFile
+from azext_aosm.inputs.vhd_file_input import VHDFileInput
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
@@ -39,7 +40,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
-        return "vnf-input.jsonc"
+        return VNF_INPUT_FILENAME
 
     @property
     def output_folder_file_name(self) -> str:
@@ -56,7 +57,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Build the manifest bicep file."""
         acr_artifact_list = []
 
-        # For each arm template, get list of artifacts and combine
+        # For each arm template, get list of artifacts
         for arm_template in self.config.arm_templates:
             arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
@@ -70,12 +71,12 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
             acr_artifact_list.extend(arm_processor.get_artifact_manifest_list())
 
-        # Get list of vhd artifacts and combine
+        # Get list of vhd artifacts
         if not self.config.vhd.artifact_name:
             self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
         vhd_processor = VHDProcessor(
             name=self.config.vhd.artifact_name,
-            input_artifact=VHDFile(
+            input_artifact=VHDFileInput(
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 default_config=self._get_default_config(self.config.vhd),
@@ -125,7 +126,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         vhd_processor = VHDProcessor(
             name=self.config.vhd.artifact_name,
-            input_artifact=VHDFile(
+            input_artifact=VHDFileInput(
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 default_config=self._get_default_config(self.config.vhd),
@@ -183,7 +184,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
         vhd_processor = VHDProcessor(
             name=self.config.vhd.artifact_name,
-            input_artifact=VHDFile(
+            input_artifact=VHDFileInput(
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 file_path=self.config.vhd.file_path,

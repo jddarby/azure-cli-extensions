@@ -29,6 +29,7 @@ from azext_aosm.common.constants import (
     NSD_MANIFEST_TEMPLATE_FILENAME,
     NSD_OUTPUT_FOLDER_FILENAME,
     NSD_MANIFEST_TEMPLATE_FILENAME,
+    NSD_INPUT_FILENAME
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_nsd_input_config import (
@@ -50,7 +51,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
-        return "nsd-input.jsonc"
+        return NSD_INPUT_FILENAME
 
     @property
     def output_folder_file_name(self) -> str:
@@ -94,6 +95,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 artifact_list.extend(arm_processor.get_artifact_manifest_list())
             # TODO: add this for artifact manifest and go to j2 template
             if resource_element.resource_element_type == "NF":
+                # TODO: change artifact name and version to the nfd name and version
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
                     artifact_version=self.config.nsd_version,
@@ -107,7 +109,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 )
                 nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
                 RET_artifact_list.extend(nfd_processor.get_artifact_manifest_list())
-
+        # TODO: one artifact manifest
         template_path = self._get_template_path("nsd", NSD_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
@@ -125,6 +127,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def build_artifact_list(self):
         """Build the artifact list."""
         # TODO: Implement
+        # keep ordering, turn config into processor objects
+        # same for arm templates as before
+        # use nfd processor.get_Artifact_details
+        
         raise NotImplementedError
 
     def build_resource_bicep(self):
@@ -132,9 +138,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # TODO: Implement
 
         # Add config group schema logic (from nsd_generator) as supporting file
-        # Write config mappings for each NF
-        # write the nf bicep file (nf template j2)
-        # write nsd bicep
+        # mappings like elsewhere? nsd has single schema for each RET deploys, 
+        # Write config mappings for each NF (processor.generateRET)
+        # write the nf bicep file (nf template j2) - not ready, need to discuss w Jacob
+        # write nsd bicep (contain cgs, nsdv)
         raise NotImplementedError
 
     def _render_manifest_parameters_contents(self):
