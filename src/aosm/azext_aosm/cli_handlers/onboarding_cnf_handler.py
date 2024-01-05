@@ -84,7 +84,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
-                self.config.acr_artifact_store_name
+                self.config.images.source_registry,
+                self.config.images.source_registry_namespace
             )
             artifacts = processed_helm.get_artifact_manifest_list()
         # TODO: future work: make artifact_list a set, then convert back to list
@@ -113,17 +114,15 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         # For each helm package, get list of artifacts and combine
         for helm_package in self.config.helm_packages:
             helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
-            # TODO: add comment why this is needed
-            if self.config.images.source_registry_namespace:
-                remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
-            else:
-                remote_image_source = self.config.acr_artifact_store_name
+
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
-                remote_image_source
+                self.config.images.source_registry,
+                self.config.images.source_registry_namespace
             )
             (artifacts, files) = processed_helm.get_artifact_details()
+            print(artifacts)
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
 
@@ -150,16 +149,13 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
             # Create HelmChartInput object from chart path provided in input file
             helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=provided_config)
-            if self.config.images.source_registry_namespace:
-                remote_image_source = f"{self.config.acr_artifact_store_name}/{self.config.images.source_registry_namespace}"
-            else:
-                remote_image_source = self.config.acr_artifact_store_name
 
             # Create HelmChartProcessor object from HelmChartInput object
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
-                remote_image_source
+                self.config.images.source_registry,
+                self.config.images.source_registry_namespace
             )
 
             # Generate nf application

@@ -76,28 +76,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
 
     def __init__(self, artifact_manifest: ManifestArtifactFormat, file_path: Path):
         super().__init__(artifact_manifest)
-        self.file_path = file_path
-
-    def to_dict(self) -> dict:
-        """Convert an instance to a dict."""
-        # Flatten the artifact manifest into the dict and add type.
-        output_dict = {
-            "type": ARTIFACT_CLASS_TO_TYPE[type(self)],
-            "artifact_name": self.artifact_manifest.artifact_name,
-            "artifact_type": self.artifact_manifest.artifact_type,
-            "artifact_version": self.artifact_manifest.artifact_version,
-            "file_path": str(self.file_path),
-        }
-
-        # Pull in all the fields from the class that aren't the artifact manifest
-        output_dict.update(
-            {
-                k: vars(self)[k]
-                for k in vars(self)
-                if k != "artifact_manifest" and k != "file_path"
-            }
-        )
-        return output_dict
+        self.file_path = str(file_path)
 
     # TODO: Implement
     def upload(self):
@@ -125,13 +104,16 @@ class LocalDockerACRArtifact(BaseACRArtifact):
 class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
 
-    acr_name: str
+    source_registry: str
+    source_registry_namespace: str
 
     def __init__(
-        self, artifact_manifest: ManifestArtifactFormat, acr_name: str
+        self, artifact_manifest: ManifestArtifactFormat,
+        source_registry: str, source_registry_namespace: str
     ):
         super().__init__(artifact_manifest)
-        self.acr_name = acr_name
+        self.source_registry = source_registry
+        self.source_registry_namespace = source_registry_namespace
 
     # TODO: Implement
     def upload(self):
@@ -155,28 +137,7 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
 
     def __init__(self, artifact_manifest: ManifestArtifactFormat, file_path: Path):
         super().__init__(artifact_manifest)
-        self.file_path = file_path
-
-    def to_dict(self) -> dict:
-        """Convert an instance to a dict."""
-        # Flatten the artifact manifest into the dict and add type.
-        output_dict = {
-            "type": ARTIFACT_CLASS_TO_TYPE[type(self)],
-            "artifact_name": self.artifact_manifest.artifact_name,
-            "artifact_type": self.artifact_manifest.artifact_type,
-            "artifact_version": self.artifact_manifest.artifact_version,
-            "file_path": str(self.file_path),
-        }
-
-        # Pull in all the fields from the class that aren't the artifact manifest
-        output_dict.update(
-            {
-                k: vars(self)[k]
-                for k in vars(self)
-                if k != "artifact_manifest" and k != "file_path"
-            }
-        )
-        return output_dict
+        self.file_path = str(file_path)
 
     # TODO: Implement
     def upload(self):

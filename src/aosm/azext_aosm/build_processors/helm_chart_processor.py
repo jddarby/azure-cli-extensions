@@ -30,7 +30,8 @@ class HelmChartProcessor(BaseBuildProcessor):
     for Helm charts.
     """
 
-    image_source_acr: str
+    source_registry: str
+    source_registry_namespace: str
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
@@ -78,7 +79,8 @@ class HelmChartProcessor(BaseBuildProcessor):
                         artifact_type=ArtifactType.OCI_ARTIFACT.value,
                         artifact_version=image_version,
                     ),
-                    self.image_source_acr,
+                    self.source_registry,
+                    self.source_registry_namespace
                 )
             )
 
