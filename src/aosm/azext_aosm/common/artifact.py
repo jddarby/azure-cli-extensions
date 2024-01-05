@@ -48,7 +48,7 @@ class BaseArtifact(ABC):
             {
                 k: vars(self)[k]
                 for k in vars(self)
-                if k != "artifact_manifest" and k != "file_path"
+                if k != "artifact_manifest"
             }
         )
         return output_dict
@@ -156,6 +156,27 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
     def __init__(self, artifact_manifest: ManifestArtifactFormat, file_path: Path):
         super().__init__(artifact_manifest)
         self.file_path = file_path
+
+    def to_dict(self) -> dict:
+        """Convert an instance to a dict."""
+        # Flatten the artifact manifest into the dict and add type.
+        output_dict = {
+            "type": ARTIFACT_CLASS_TO_TYPE[type(self)],
+            "artifact_name": self.artifact_manifest.artifact_name,
+            "artifact_type": self.artifact_manifest.artifact_type,
+            "artifact_version": self.artifact_manifest.artifact_version,
+            "file_path": str(self.file_path),
+        }
+
+        # Pull in all the fields from the class that aren't the artifact manifest
+        output_dict.update(
+            {
+                k: vars(self)[k]
+                for k in vars(self)
+                if k != "artifact_manifest" and k != "file_path"
+            }
+        )
+        return output_dict
 
     # TODO: Implement
     def upload(self):
