@@ -9,12 +9,14 @@ param acrArtifactStoreName string
 @description('Name of the manifest to deploy for the ACR-backed Artifact Store')
 param acrManifestName string
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName

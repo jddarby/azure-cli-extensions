@@ -26,10 +26,11 @@ from azext_aosm.common.constants import (
     NSD_DEFINITION_FOLDER_NAME,
     NSD_OUTPUT_FOLDER_FILENAME,
     # NSD_DEFINITION_TEMPLATE_FILENAME,
-    NSD_MANIFEST_TEMPLATE_FILENAME,
     NSD_OUTPUT_FOLDER_FILENAME,
     NSD_MANIFEST_TEMPLATE_FILENAME,
-    NSD_INPUT_FILENAME
+    NSD_INPUT_FILENAME,
+    BASE_FOLDER_NAME,
+    NSD_BASE_TEMPLATE_FILENAME
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_nsd_input_config import (
@@ -66,8 +67,19 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     def build_base_bicep(self):
         """Build the base bicep file."""
-        # TODO: Implement
-        raise NotImplementedError
+        
+        # Build base bicep contents, with bicep template
+        template_path = self._get_template_path(NSD_DEFINITION_FOLDER_NAME, NSD_BASE_TEMPLATE_FILENAME)
+        bicep_contents = self._render_base_bicep_contents(
+            template_path
+        )
+        # Create Bicep element with manifest contents
+        bicep_file = BicepDefinitionElementBuilder(
+            Path(NSD_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
+        )
+        # Add the accompanying parameters.json
+        bicep_file.add_supporting_file(self._render_base_parameters_contents())
+        return bicep_file
 
     def build_manifest_bicep(self):
         """Build the manifest bicep file.
@@ -108,7 +120,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 )
                 nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
                 artifact_list.extend(nfd_processor.get_artifact_manifest_list())
-        template_path = self._get_template_path("nsd", NSD_MANIFEST_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(NSD_DEFINITION_FOLDER_NAME, NSD_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
@@ -123,12 +135,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         return bicep_file
 
     def build_artifact_list(self):
-        """Build the artifact list."""
-        # TODO: Implement
-        # keep ordering, turn config into processor objects
-        # same for arm templates as before
-        # use nfd processor.get_Artifact_details
-        
+        """Build the artifact list."""     
         # Build artifact list for ArmTemplates
         artifact_list = []
         for resource_element in self.config.resource_element_templates:
@@ -153,6 +160,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     artifact_version=self.config.nsd_version,
                     default_config=None,
                     network_function_definition=NetworkFunctionDefinitionVersion(
+                        # TODO: is location the location of the nf (if this how do we get it?) or nsd?
                         location="test",
                         tags=None,
                         properties=NetworkFunctionDefinitionVersionPropertiesFormat(description="test", deploy_parameters="wherefrom?"),
@@ -160,7 +168,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     arm_template_output_path=Path("test"),
                 )
                 nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
-                (artifacts,files) = nfd_processor.get_artifact_details()
+                (artifacts, files) = nfd_processor.get_artifact_details()
 
                 if artifacts not in artifact_list:
                     artifact_list.extend(artifacts)
@@ -179,6 +187,27 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # write the nf bicep file (nf template j2) - not ready, need to discuss w Jacob
         # write nsd bicep (contain cgs, nsdv)
         raise NotImplementedError
+
+    def _render_base_parameters_contents(self):
+        params_content = {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "location": {"value": self.config.location},
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "nsDesignGroup": {"value": self.config.nsd_name}
+            },
+        }
+
+        return LocalFileBuilder(
+            Path(
+                NSD_OUTPUT_FOLDER_FILENAME,
+                BASE_FOLDER_NAME,
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
 
     def _render_manifest_parameters_contents(self):
         arm_template_names = []
@@ -231,5 +260,5 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # "type": "object",
             # "properties": properties,
             # "required": required,
-            }
+        }
         return cgs_contents

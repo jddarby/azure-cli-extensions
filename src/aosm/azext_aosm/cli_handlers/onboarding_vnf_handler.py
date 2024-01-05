@@ -14,7 +14,8 @@ from azext_aosm.common.constants import (
     VNF_DEFINITION_TEMPLATE_FILENAME,
     VNF_MANIFEST_TEMPLATE_FILENAME,
     VNF_OUTPUT_FOLDER_FILENAME,
-    VNF_INPUT_FILENAME
+    VNF_INPUT_FILENAME, VNF_DEFINITION_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME,
+    BASE_FOLDER_NAME
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
@@ -53,6 +54,22 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             input_config = {}
         return OnboardingVNFInputConfig(**input_config)
 
+    def build_base_bicep(self):
+        """ Build the base bicep file."""
+
+        # Build manifest bicep contents, with j2 template
+        template_path = self._get_template_path(VNF_DEFINITION_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME)
+        bicep_contents = self._render_base_bicep_contents(
+            template_path
+        )
+        # Create Bicep element with manifest contents
+        bicep_file = BicepDefinitionElementBuilder(
+            Path(VNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
+        )
+        # Add the accompanying parameters.json
+        bicep_file.add_supporting_file(self._render_base_parameters_contents())
+        return bicep_file
+
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
         acr_artifact_list = []
@@ -87,7 +104,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         sa_artifact_list = vhd_processor.get_artifact_manifest_list()
 
         # Build manifest bicep contents, with j2 template
-        template_path = self._get_template_path("vnf", VNF_MANIFEST_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(VNF_DEFINITION_FOLDER_NAME, VNF_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, acr_artifact_list, sa_artifact_list
         )
@@ -212,7 +229,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         supporting_files.append(vhd_params_file)
 
         # Create bicep contents using vnf defintion j2 template
-        template_path = self._get_template_path("vnf", VNF_DEFINITION_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(VNF_DEFINITION_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME)
         bicep_contents = self._render_definition_bicep_contents(
             template_path, acr_nf_application_list, nf_application
         )
@@ -233,6 +250,28 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             self._render_deployment_params_schema(schema_properties, VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
         )
         return bicep_file
+
+    def _render_base_parameters_contents(self):
+        params_content = {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "location": {"value": self.config.location},
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
+                "nfDefinitionGroup": {"value": self.config.nf_name}
+            },
+        }
+
+        return LocalFileBuilder(
+            Path(
+                VNF_OUTPUT_FOLDER_FILENAME,
+                BASE_FOLDER_NAME,
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
 
     def _render_manifest_parameters_contents(self):
         params_content = {

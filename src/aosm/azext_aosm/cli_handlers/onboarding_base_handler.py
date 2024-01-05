@@ -68,6 +68,7 @@ class OnboardingBaseCLIHandler(ABC):
     def build(self):
         """Build the definition."""
         self.config.validate()
+        self.definition_folder_builder.add_element(self.build_base_bicep())
         self.definition_folder_builder.add_element(self.build_manifest_bicep())
         self.definition_folder_builder.add_element(self.build_artifact_list())
         self.definition_folder_builder.add_element(self.build_resource_bicep())
@@ -89,6 +90,9 @@ class OnboardingBaseCLIHandler(ABC):
         #    - Do element.delete()
         # TODO: Implement
 
+    @abstractmethod
+    def build_base_bicep(self):
+        """ Build bicep file for underlying resources"""
     @abstractmethod
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
@@ -116,6 +120,17 @@ class OnboardingBaseCLIHandler(ABC):
         config_dict = json.loads("".join(lines))
 
         return config_dict
+
+    def _render_base_bicep_contents(self, template_path):
+        """Write the base bicep file from given template."""
+        with open(template_path, "r", encoding="UTF-8") as f:
+            template: Template = Template(
+                f.read(),
+                undefined=StrictUndefined,
+            )
+
+        bicep_contents: str = template.render()
+        return bicep_contents
 
     def _render_definition_bicep_contents(
         self,

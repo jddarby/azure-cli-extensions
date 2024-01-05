@@ -12,10 +12,13 @@ from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          CNF_DEFINITION_TEMPLATE_FILENAME,
                                          CNF_MANIFEST_TEMPLATE_FILENAME,
+                                         CNF_BASE_TEMPLATE_FILENAME,
+                                         CNF_DEFINITION_FOLDER_NAME,
                                          CNF_OUTPUT_FOLDER_FILENAME,
                                          CNF_INPUT_FILENAME,
                                          MANIFEST_FOLDER_NAME,
-                                         NF_DEFINITION_FOLDER_NAME)
+                                         NF_DEFINITION_FOLDER_NAME,
+                                         BASE_FOLDER_NAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_cnf_input_config import \
     OnboardingCNFInputConfig
@@ -44,6 +47,22 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         if input_config is None:
             input_config = {}
         return OnboardingCNFInputConfig(**input_config)
+
+    def build_base_bicep(self):
+        """ Build the base bicep file."""
+
+        # Build manifest bicep contents, with j2 template
+        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME)
+        bicep_contents = self._render_base_bicep_contents(
+            template_path
+        )
+        # Create Bicep element with manifest contents
+        bicep_file = BicepDefinitionElementBuilder(
+            Path(CNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
+        )
+        # Add the accompanying parameters.json
+        bicep_file.add_supporting_file(self._render_base_parameters_contents())
+        return bicep_file
 
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
@@ -75,7 +94,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 artifact_list.extend(artifacts)
 
         # Build manifest bicep contents, with j2 template
-        template_path = self._get_template_path("cnf", CNF_MANIFEST_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
@@ -165,7 +184,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
             mappings_files.append(mapping_file)
 
-        template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME)
         bicep_contents = self._render_definition_bicep_contents(
             template_path, nf_application_list
         )
@@ -185,6 +204,27 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             self._render_deployment_params_schema(schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
         )
         return bicep_file
+
+    def _render_base_parameters_contents(self):
+        params_content = {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "location": {"value": self.config.location},
+                "publisherName": {"value": self.config.publisher_name},
+                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "nfDefinitionGroup": {"value": self.config.nf_name}
+            },
+        }
+
+        return LocalFileBuilder(
+            Path(
+                CNF_OUTPUT_FOLDER_FILENAME,
+                BASE_FOLDER_NAME,
+                "deploy.parameters.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
 
     def _render_manifest_parameters_contents(self):
         params_content = {

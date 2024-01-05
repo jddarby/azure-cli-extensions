@@ -11,18 +11,21 @@ param nfDefinitionGroup string
 @description('The version of the NFDV you want to deploy, in format A.B.C')
 param nfDefinitionVersion string
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName
   location: location
 }
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
   parent: publisher
   name: nfDefinitionGroup

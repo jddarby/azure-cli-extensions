@@ -8,14 +8,14 @@ param publisherName string
 param acrArtifactStoreName string
 @description('Name of the Artifact Manifest to create')
 param acrManifestName string
-@description('Version of the ARM Template artifact to use. By default, this is set to the NSD version, so it is not overwritten when a new NSD is published')
-param armTemplateVersion string
 
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
   name: publisherName
   scope: resourceGroup()
 }
 
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
@@ -32,11 +32,7 @@ resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/
       {
         artifactName: '{{ artifact.artifact_name }}'
         artifactType: '{{ artifact.artifact_type }}'
-        {%- if artifact.artifact_type == 'ArmTemplate' %}
-        artifactVersion: armTemplateVersion
-        {%- else %}
         artifactVersion: '{{ artifact.artifact_version }}'
-        {%- endif %}
       }
     {%- endfor %}
     ]
