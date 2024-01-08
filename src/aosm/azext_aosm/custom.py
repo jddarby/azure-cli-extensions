@@ -8,7 +8,8 @@ from __future__ import annotations
 from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
-
+from azext_aosm.common.command_context import CommandContext
+from azure.cli.core.commands import AzCliCommand
 
 def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
     if definition_type == "cnf":
@@ -63,9 +64,10 @@ def onboard_nsd_generate_config(output_file: str | None):
     handler.generate_config(output_file)
 
 
-def onboard_nsd_build(config_file: str):
+def onboard_nsd_build(config_file: str, cmd: AzCliCommand):
+    command_context = CommandContext(cli_ctx=cmd.cli_ctx)
     handler = OnboardingNSDCLIHandler(config_file)
-    handler.build()
+    handler.build(command_context.aosm_client)
 
 
 def onboard_nsd_publish(config_file: str):

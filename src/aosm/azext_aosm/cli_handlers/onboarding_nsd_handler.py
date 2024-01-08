@@ -30,7 +30,7 @@ from azext_aosm.common.constants import (
     NSD_MANIFEST_TEMPLATE_FILENAME,
     NSD_INPUT_FILENAME,
     BASE_FOLDER_NAME,
-    NSD_BASE_TEMPLATE_FILENAME
+    NSD_BASE_TEMPLATE_FILENAME,
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_nsd_input_config import (
@@ -59,7 +59,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         """Get the output folder file name."""
         return NSD_OUTPUT_FOLDER_FILENAME
 
-    def _get_config(self, input_config: dict = None) -> OnboardingNSDInputConfig:
+    def _get_input_config(self, input_config: dict = None) -> OnboardingNSDInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -67,12 +67,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     def build_base_bicep(self):
         """Build the base bicep file."""
-        
+
         # Build base bicep contents, with bicep template
-        template_path = self._get_template_path(NSD_DEFINITION_FOLDER_NAME, NSD_BASE_TEMPLATE_FILENAME)
-        bicep_contents = self._render_base_bicep_contents(
-            template_path
+        template_path = self._get_template_path(
+            NSD_DEFINITION_FOLDER_NAME, NSD_BASE_TEMPLATE_FILENAME
         )
+        bicep_contents = self._render_base_bicep_contents(template_path)
         # Create Bicep element with manifest contents
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
@@ -114,17 +114,23 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     network_function_definition=NetworkFunctionDefinitionVersion(
                         location="test",
                         tags=None,
-                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(description="test", deploy_parameters="wherefrom?"),
+                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(
+                            description="test", deploy_parameters=None
+                        ),
                     ),
                     arm_template_output_path=Path("test"),
                 )
-                nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
+                nfd_processor = NFDProcessor(
+                    name=self.config.nsd_name, input_artifact=nfd_input
+                )
                 artifact_list.extend(nfd_processor.get_artifact_manifest_list())
-        template_path = self._get_template_path(NSD_DEFINITION_FOLDER_NAME, NSD_MANIFEST_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(
+            NSD_DEFINITION_FOLDER_NAME, NSD_MANIFEST_TEMPLATE_FILENAME
+        )
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
-        print(bicep_contents)
+        # print(bicep_contents)
 
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
@@ -135,7 +141,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         return bicep_file
 
     def build_artifact_list(self):
-        """Build the artifact list."""     
+        """Build the artifact list."""
         # Build artifact list for ArmTemplates
         artifact_list = []
         for resource_element in self.config.resource_element_templates:
@@ -163,11 +169,15 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                         # TODO: is location the location of the nf (if this how do we get it?) or nsd?
                         location="test",
                         tags=None,
-                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(description="test", deploy_parameters="wherefrom?"),
+                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(
+                            description="test", deploy_parameters=None
+                        ),
                     ),
                     arm_template_output_path=Path("test"),
                 )
-                nfd_processor = NFDProcessor(name=self.config.nsd_name, input_artifact=nfd_input)
+                nfd_processor = NFDProcessor(
+                    name=self.config.nsd_name, input_artifact=nfd_input
+                )
                 (artifacts, files) = nfd_processor.get_artifact_details()
 
                 if artifacts not in artifact_list:
@@ -177,16 +187,71 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
 
-    def build_resource_bicep(self):
+    def build_resource_bicep(self, aosm_client):
         """Build the resource bicep file."""
         # TODO: Implement
 
-        # Add config group schema logic (from nsd_generator) as supporting file
-        # mappings like elsewhere? nsd has single schema for each RET deploys, 
-        # Write config mappings for each NF (processor.generateRET)
-        # write the nf bicep file (nf template j2) - not ready, need to discuss w Jacob
-        # write nsd bicep (contain cgs, nsdv)
-        raise NotImplementedError
+        bicep_contents = {}
+        schema_properties = {}
+        nf_names = []
+        print(bicep_contents)
+
+        for resource_element in self.config.resource_element_templates:
+            if resource_element.resource_element_type == "NF":
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                
+                # Get nfdv information from azure using config from input file
+                nfdv_object = self._get_nfdv(aosm_client, resource_element.properties)
+                print("nfdv", nfdv_object)
+                nfd_input = NFDInput(
+                    artifact_name=self.config.nsd_name,
+                    artifact_version=self.config.nsd_version,
+                    default_config=None,
+                    network_function_definition=NetworkFunctionDefinitionVersion(
+                        # TODO: is location the location of the nf (if this how do we get it?) or nsd?
+                        location="test",
+                        tags=None,
+                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(
+                            description="test", deploy_parameters=None
+                        ),
+                    ),
+                    arm_template_output_path=Path("test"),
+                )
+                nfd_processor = NFDProcessor(
+                    name=resource_element.properties.name, input_artifact=nfd_input
+                )
+                
+                # Generate RET
+                nf_ret = nfd_processor.generate_resource_element_template()
+                # nf_ret.configuration.
+    
+                # Generate deploymentParameters schema properties
+                # JORDAN TODO: check this includes the name of the deploymentParams too?
+                # TODO: test this
+                params_schema = nfd_processor.generate_params_schema()
+                schema_properties.update(params_schema)
+
+                # List of NF RET names, for adding to required part of CGS
+                nf_names.append(resource_element.properties.name)
+
+
+        # Generate the nsd bicep file
+        bicep_file = BicepDefinitionElementBuilder(
+            Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
+        )
+        # Add the accompanying cgs
+        bicep_file.add_supporting_file(self._render_config_group_schema_contents(schema_properties, nf_names))
+
+        # Add the accomanying NF biceps
+        # for files in nf_files:
+        #    bicep_file.add_supporting_file()
+        return bicep_file
+
+        # 1.Add config group schema logic (from nsd_generator) as supporting file
+        # mappings like elsewhere? nsd has single schema for each RET deploys,
+        # 2.Write config mappings for each NF (processor.generateRET)
+        # 3.write the nf bicep file (nf template j2) - not ready, need to discuss w Jacob
+        # 4.write nsd bicep (contain cgs, nsdv)
 
     def _render_base_parameters_contents(self):
         params_content = {
@@ -196,7 +261,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "nsDesignGroup": {"value": self.config.nsd_name}
+                "nsDesignGroup": {"value": self.config.nsd_name},
             },
         }
 
@@ -209,10 +274,35 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             json.dumps(params_content, indent=4),
         )
 
+    def _render_config_group_schema_contents(self, complete_schema, nf_names):
+        params_content = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "title": "ubuntu_ConfigGroupSchema",
+            "type": "object",
+            "properties": complete_schema,
+            "managedIdentity": {
+                "type": "string",
+                "description": "The managed identity to use to deploy NFs within this SNS.  \
+                    This should be of the form '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}. \
+                    If you wish to use a system assigned identity, set this to a blank string.",
+            },
+            # TODO: add names of the schemas ie ubuntu-vm-nfdg
+            "required": [nf_names, "managedIdentity"],
+        }
+        print(params_content)
+        return LocalFileBuilder(
+            Path(
+                NSD_OUTPUT_FOLDER_FILENAME,
+                NSD_DEFINITION_FOLDER_NAME,
+                "test-cgs.json",
+            ),
+            json.dumps(params_content, indent=4),
+        )
+
     def _render_manifest_parameters_contents(self):
         arm_template_names = []
         artifact_manifest_names = []
-
+        # TODO: change manifest name
         # For each NF, create an arm template name and manifest name
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "NF":
@@ -236,13 +326,14 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {"value": self.config.acr_artifact_store_name + '-manifest'},
+                "acrManifestName": {
+                    "value": self.config.acr_artifact_store_name + "-manifest"
+                },
                 "armTemplateVersion": {"value": self.config.nsd_version},
             },
-
         }
 
-        print(params_content)
+        # print(params_content)
         return LocalFileBuilder(
             Path(
                 NSD_OUTPUT_FOLDER_FILENAME,
@@ -253,7 +344,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         )
 
     def _render_config_schema_contents(self):
-
         cgs_contents = {
             "$schema": "https://json-schema.org/draft-07/schema#",
             # "title": self.config.cg_schema_name,
@@ -262,3 +352,16 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # "required": required,
         }
         return cgs_contents
+    
+    def _get_nfdv(self, aosm_client, nf_properties) -> NetworkFunctionDefinitionVersion:
+        """Get the existing NFDV resource object."""
+        print(
+            f"Reading existing NFDV resource object {nf_properties.version} from group {nf_properties.name}"
+        )
+        nfdv_object = aosm_client.network_function_definition_versions.get(
+            resource_group_name=nf_properties.publisher_resource_group,
+            publisher_name=nf_properties.publisher,
+            network_function_definition_group_name=nf_properties.name,
+            network_function_definition_version_name=nf_properties.version,
+        )
+        return nfdv_object
