@@ -12,15 +12,25 @@ from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
-    ArmResourceDefinitionResourceElementTemplate, ArtifactType,
-    DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication)
-from azext_aosm.vendored_sdks.models import \
-    NetworkFunctionDefinitionResourceElementTemplateDetails as \
-    NFDResourceElementTemplate
-from azext_aosm.vendored_sdks.models import (NSDArtifactProfile,
-                                             ReferencedResource, TemplateType)
+    ArmResourceDefinitionResourceElementTemplate,
+    ArtifactType,
+    DependsOnProfile,
+    ManifestArtifactFormat,
+    NetworkFunctionApplication,
+)
+from azext_aosm.vendored_sdks.models import (
+    NetworkFunctionDefinitionResourceElementTemplateDetails as NFDResourceElementTemplate,
+)
+from azext_aosm.vendored_sdks.models import (
+    NSDArtifactProfile,
+    ReferencedResource,
+    TemplateType,
+)
 
-NF_BICEP_TEMPLATE_PATH = Path(__file__).parent.parent / "common" / "templates" / "nf_template.bicep"
+NF_BICEP_TEMPLATE_PATH = (
+    Path(__file__).parent.parent / "common" / "templates" / "nf_template.bicep"
+)
+
 
 class NFDProcessor(BaseBuildProcessor):
     """Base class for build processors."""

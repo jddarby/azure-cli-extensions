@@ -3,15 +3,14 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-import genson
 import json
 from dataclasses import dataclass
-from jinja2 import StrictUndefined, Template
 from pathlib import Path
 from typing import Any, Dict
 
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
+
 
 @dataclass
 class NFDInput(BaseInput):
@@ -38,11 +37,14 @@ class NFDInput(BaseInput):
                 "publisherName": publisher_name,
                 "nfdgName": nfdg_name,
                 "nfdvName": self.network_function_definition.name,
-                "publisherResourceGroup": publisher_resource_group
+                "publisherResourceGroup": publisher_resource_group,
             }
         }
 
-        if self.network_function_definition.properties.network_function_type == "VirtualNetworkFunction":
+        if (
+            self.network_function_definition.properties.network_function_type
+            == "VirtualNetworkFunction"
+        ):
             base_defaults["configObject"]["customLocationId"] = ""
 
         return base_defaults
@@ -112,9 +114,9 @@ class NFDInput(BaseInput):
         nfdv_properties = self.network_function_definition.properties
 
         if nfdv_properties and nfdv_properties.deploy_parameters:
+            schema["properties"]["configObject"]["properties"]["deploymentParameters"][
+                "items"
+            ] = json.loads(nfdv_properties.deploy_parameters)
 
-            schema["properties"]["configObject"]["properties"]["deploymentParameters"]["items"] = json.loads(nfdv_properties.deploy_parameters)
-            builder = genson.SchemaBuilder()
-            builder.add_schema(schema)
-            return builder.to_schema()
+            return schema
         raise ValueError("No properties found in the network function definition.")
