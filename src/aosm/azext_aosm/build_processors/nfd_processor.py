@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 import json
+from pathlib import Path
 from typing import List, Tuple
 
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
@@ -19,6 +20,7 @@ from azext_aosm.vendored_sdks.models import \
 from azext_aosm.vendored_sdks.models import (NSDArtifactProfile,
                                              ReferencedResource, TemplateType)
 
+NF_BICEP_TEMPLATE_PATH = Path(__file__).parent.parent / "common" / "templates" / "nf_template.bicep"
 
 class NFDProcessor(BaseBuildProcessor):
     """Base class for build processors."""
@@ -49,7 +51,7 @@ class NFDProcessor(BaseBuildProcessor):
 
         file_builder = LocalFileBuilder(
             self.input_artifact.arm_template_output_path,
-            "",
+            NF_BICEP_TEMPLATE_PATH.read_text(),
         )
 
         return [artifact_details], [file_builder]
