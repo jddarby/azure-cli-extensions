@@ -11,9 +11,11 @@ from pathlib import Path
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
-
+from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.onboarding_base_input_config import \
     OnboardingBaseInputConfig
+from azext_aosm.configuration_models.common_parameters_config import \
+    BaseCommonParametersConfig
 from azext_aosm.definition_folder.builder.definition_folder_builder import \
     DefinitionFolderBuilder
 
@@ -25,7 +27,6 @@ logger = get_logger(__name__)
 class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
-    config: OnboardingBaseInputConfig
 
     @property
     @abstractmethod
@@ -42,14 +43,21 @@ class OnboardingBaseCLIHandler(ABC):
     def __init__(self, input_json: str | None = None):
         # Config may be optional (to generate blank config file)
         input_json_path = Path(input_json) if input_json else None
-        config_dict = (
-            self._read_config_from_file(input_json_path) if input_json_path else {}
-        )
+        print(input_json_path)
         # Ensure config is of correct type
         try:
-            self.config = self._get_config(config_dict)
+            if input_json_path.suffix == '.jsonc':
+                config_dict = (
+                    self._read_config_from_file(input_json_path) if input_json_path else {}
+                )
+                self.config = self._get_input_config(config_dict)
+            elif input_json_path.suffix == '.json':
+                config_dict = self._read_params_config_from_file(input_json_path) if input_json_path else {}
+                print(config_dict)
+                self.config = self._get_params_config(config_dict)
         except Exception as e:
-            raise UnclassifiedUserFault("Invalid configuration file") from e
+            raise UnclassifiedUserFault("Invalid input") from e
+
         self.definition_folder_builder = DefinitionFolderBuilder(
             Path.cwd() / self.output_folder_file_name
         )
@@ -65,16 +73,17 @@ class OnboardingBaseCLIHandler(ABC):
         self._check_for_overwrite(output_path)
         self._write_config_to_file(output_path)
 
-    def build(self):
+    def build(self, aosm_client=None):
         """Build the definition."""
         self.config.validate()
         self.definition_folder_builder.add_element(self.build_base_bicep())
         self.definition_folder_builder.add_element(self.build_manifest_bicep())
         self.definition_folder_builder.add_element(self.build_artifact_list())
-        self.definition_folder_builder.add_element(self.build_resource_bicep())
+        self.definition_folder_builder.add_element(self.build_resource_bicep(aosm_client))
+        self.definition_folder_builder.add_element(self.build_common_parameters_json())
         self.definition_folder_builder.write()
 
-    def publish(self, input_json_path: str):
+    def publish(self):
         """Publish the definition."""
         # Takes folder, deploys to Azure
         #  - Read folder/ create folder object
@@ -82,7 +91,7 @@ class OnboardingBaseCLIHandler(ABC):
         #    - Do element.deploy()
         # TODO: Implement
 
-    def delete(self, input_json_path: str):
+    def delete(self):
         """Delete the definition."""
         # Takes folder, deletes to Azure
         #  - Read folder/ create folder object
@@ -104,13 +113,23 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def build_resource_bicep(self):
+    def build_resource_bicep(self, aosm_client=None):
         """Build the resource bicep file."""
         raise NotImplementedError
 
     @abstractmethod
-    def _get_config(self, input_config: dict = None) -> OnboardingBaseInputConfig:
+    def build_common_parameters_json(self):
+        """ Build common parameters.json file """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _get_input_config(self, input_config: dict = None) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def _get_params_config(self, params_config: dict = None) -> BaseCommonParametersConfig:
+        """ Get the parameters config for publish/delete """
         raise NotImplementedError
 
     def _read_config_from_file(self, input_json_path: Path) -> dict:
@@ -120,6 +139,19 @@ class OnboardingBaseCLIHandler(ABC):
         config_dict = json.loads("".join(lines))
 
         return config_dict
+
+    def _read_params_config_from_file(self, input_json_path) -> dict:
+        """ Reads input file, takes only the {parameters:values} + returns config as dictionary"""
+        with open(input_json_path, "r", encoding="utf-8") as _file:
+            params_schema = json.load(_file)
+
+        santised_schema = {}
+        for param in params_schema["parameters"]:
+            sanitised_param = ''.join(['_' + i.lower() if i.isupper()
+                                       else i for i in param]).lstrip('_')
+            santised_schema[sanitised_param] = params_schema["parameters"][param]["value"]
+        print(santised_schema)
+        return santised_schema
 
     def _render_base_bicep_contents(self, template_path):
         """Write the base bicep file from given template."""

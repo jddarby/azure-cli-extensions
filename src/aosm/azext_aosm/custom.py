@@ -34,12 +34,12 @@ def onboard_nfd_build(definition_type: str, config_file: str):
         raise Exception("Invalid definition type")
 
 
-def onboard_nfd_publish(definition_type: str, config_file: str):
+def onboard_nfd_publish(definition_type: str, output_folder_path: str):
     if definition_type == "cnf":
-        handler = OnboardingCNFCLIHandler(config_file)
+        handler = OnboardingCNFCLIHandler(output_folder_path + '/common_deploy.parameters.json')
         handler.publish()
     elif definition_type == "vnf":
-        handler = OnboardingVNFCLIHandler(config_file)
+        handler = OnboardingVNFCLIHandler(output_folder_path + '/common_deploy.parameters.json')
         handler.publish()
     else:
         # TODO: better error

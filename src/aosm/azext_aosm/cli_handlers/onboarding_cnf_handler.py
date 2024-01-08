@@ -42,7 +42,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return CNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_config(self, input_config: dict = None) -> OnboardingCNFInputConfig:
+    def _get_input_config(self, input_config: dict = None) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
