@@ -27,7 +27,6 @@ logger = get_logger(__name__)
 class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
-
     @property
     @abstractmethod
     def default_config_file_name(self) -> str:
@@ -40,24 +39,28 @@ class OnboardingBaseCLIHandler(ABC):
         """Get the output folder file name."""
         raise NotImplementedError
 
-    def __init__(self, input_json: str | None = None):
-        # Config may be optional (to generate blank config file)
-        input_json_path = Path(input_json) if input_json else None
-        print(input_json_path)
-        # Ensure config is of correct type
-        try:
-            if input_json_path.suffix == '.jsonc':
-                config_dict = (
-                    self._read_config_from_file(input_json_path) if input_json_path else {}
-                )
-                self.config = self._get_input_config(config_dict)
-            elif input_json_path.suffix == '.json':
-                config_dict = self._read_params_config_from_file(input_json_path) if input_json_path else {}
-                print(config_dict)
-                self.config = self._get_params_config(config_dict)
-        except Exception as e:
-            raise UnclassifiedUserFault("Invalid input") from e
-
+    def __init__(self, config_file: str | None = None):
+        # If config file provided (for build, publish and delete)
+        if config_file:
+            config_file_path = Path(config_file)
+            print(config_file_path)
+            try:
+                # If config file is the input.jsonc for build command
+                if config_file_path.suffix == '.jsonc':
+                    config_dict = (
+                        self._read_input_config_from_file(config_file_path)
+                    )
+                    self.config = self._get_input_config(config_dict)
+                # If config file is the all parameters json file for publish/delete
+                elif config_file_path.suffix == '.json':
+                    config_dict = self._read_params_config_from_file(config_file_path)
+                    print(config_dict)
+                    self.config = self._get_params_config(config_dict)
+            except Exception as e:
+                raise UnclassifiedUserFault("Invalid input") from e
+        # If no config file provided (for generate-config)
+        else:
+            self.config = self._get_input_config()
         self.definition_folder_builder = DefinitionFolderBuilder(
             Path.cwd() / self.output_folder_file_name
         )
@@ -132,7 +135,7 @@ class OnboardingBaseCLIHandler(ABC):
         """ Get the parameters config for publish/delete """
         raise NotImplementedError
 
-    def _read_config_from_file(self, input_json_path: Path) -> dict:
+    def _read_input_config_from_file(self, input_json_path: Path) -> dict:
         """Reads the input JSONC file, removes comments + returns config as dictionary."""
         lines = input_json_path.read_text().splitlines()
         lines = [line for line in lines if not line.strip().startswith("//")]

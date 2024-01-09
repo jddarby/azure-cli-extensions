@@ -2,7 +2,7 @@ from pathlib import Path
 from azext_aosm.definition_folder.builder.base_builder import (
     BaseDefinitionElementBuilder,
 )
-
+from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME
 
 class JSONDefinitionElementBuilder(BaseDefinitionElementBuilder):
     """Bicep definition element builder."""
@@ -18,4 +18,4 @@ class JSONDefinitionElementBuilder(BaseDefinitionElementBuilder):
     def write(self):
         """Write the definition element to disk."""
         self.path.mkdir(exist_ok=True)
-        (self.path / "common_deploy.parameters.json").write_text(self.json_content)
+        (self.path / ALL_PARAMETERS_FILE_NAME).write_text(self.json_content)

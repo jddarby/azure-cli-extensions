@@ -22,10 +22,12 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_cnf_input_config import \
     OnboardingCNFInputConfig
+from azext_aosm.configuration_models.common_parameters_config import CNFCommonParametersConfig
 from azext_aosm.definition_folder.builder.artifact_builder import \
     ArtifactDefinitionElementBuilder
 from azext_aosm.definition_folder.builder.bicep_builder import \
     BicepDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.json_builder import JSONDefinitionElementBuilder
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 
@@ -48,6 +50,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             input_config = {}
         return OnboardingCNFInputConfig(**input_config)
 
+    def _get_params_config(self, params_config: dict = None) -> CNFCommonParametersConfig:
+        """Get the configuration for the command."""
+        if params_config is None:
+            params_config = {}
+        return CNFCommonParametersConfig(**params_config)
+
     def build_base_bicep(self):
         """ Build the base bicep file."""
 
@@ -60,8 +68,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
         )
-        # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_base_parameters_contents())
         return bicep_file
 
     def build_manifest_bicep(self):
@@ -103,8 +109,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
         )
-        # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_manifest_parameters_contents())
 
         return bicep_file
 
@@ -131,7 +135,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(CNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
 
-    def build_resource_bicep(self):
+    def build_resource_bicep(self, aosm_client=None):
         """Build the resource bicep file."""
         nf_application_list = []
         mappings_files = []
@@ -192,77 +196,32 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for mappings_file in mappings_files:
             bicep_file.add_supporting_file(mappings_file)
 
-        # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_definition_parameters_contents())
-
         # Add the deploymentParameters schema file
         bicep_file.add_supporting_file(
             self._render_deployment_params_schema(schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
         )
         return bicep_file
 
-    def _render_base_parameters_contents(self):
+    def build_common_parameters_json(self):
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "nfDefinitionGroup": {"value": self.config.nf_name}
-            },
-        }
-
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                BASE_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
-        )
-
-    def _render_manifest_parameters_contents(self):
-        params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
+                "publisherResourceGroupName": {
+                    "value": self.config.publisher_resource_group_name
+                },
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "acrManifestName": {
                     "value": self.config.acr_artifact_store_name + "-manifest"
                 },
-            },
-        }
-
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                MANIFEST_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
-        )
-
-    def _render_definition_parameters_contents(self):
-        params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "nfDefinitionGroup": {"value": self.config.nf_name},
                 "nfDefinitionVersion": {"value": self.config.version},
             },
         }
 
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                NF_DEFINITION_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
+        base_file = JSONDefinitionElementBuilder(
+            Path(CNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
+        return base_file

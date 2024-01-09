@@ -80,8 +80,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         bicep_file = BicepDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
         )
-        # # Add the accompanying parameters.json
-        # bicep_file.add_supporting_file(self._render_base_parameters_contents())
         return bicep_file
 
     def build_manifest_bicep(self):
@@ -137,8 +135,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(VNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME),
             bicep_contents,
         )
-        # # Add the accompanying parameters.json
-        # bicep_file.add_supporting_file(self._render_manifest_parameters_contents())
 
         logger.info("Created artifact manifest bicep element")
         return bicep_file
@@ -286,9 +282,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for supporting_file in supporting_files:
             bicep_file.add_supporting_file(supporting_file)
 
-        # # Add the accompanying parameters.json
-        # bicep_file.add_supporting_file(self._render_definition_parameters_contents())
-
         # Add the deploymentParameters schema file
         bicep_file.add_supporting_file(
             self._render_deployment_params_schema(
@@ -324,86 +317,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
         return base_file
-
-    # def _render_base_parameters_contents(self):
-    #     params_content = {
-    #         "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    #         "contentVersion": "1.0.0.0",
-    #         "parameters": {
-    #             "location": {"value": self.config.location},
-    #             "publisherResourceGroupName": {"value": self.config.publisher_resource_group_name},
-    #             "publisherName": {"value": self.config.publisher_name},
-    #             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-    #             "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
-
-    #             "acrManifestName": {
-    #                 "value": self.config.acr_artifact_store_name + "-manifest"
-    #             },
-    #             "saManifestName": {
-    #                 "value": self.config.blob_artifact_store_name + "-manifest"
-    #             },
-    #             "nfDefinitionGroup": {"value": self.config.nf_name},
-    #             "nfDefinitionVersion": {"value": self.config.version},
-    #         },
-    #     }
-
-    #     return LocalFileBuilder(
-    #         Path(
-    #             VNF_OUTPUT_FOLDER_FILENAME,
-    #             BASE_FOLDER_NAME,
-    #             "deploy.parameters.json",
-    #         ),
-    #         json.dumps(params_content, indent=4),
-    #     )
-
-    # def _render_manifest_parameters_contents(self):
-    #     params_content = {
-    #         "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    #         "contentVersion": "1.0.0.0",
-    #         "parameters": {
-    #             "location": {"value": self.config.location},
-    #             "publisherName": {"value": self.config.publisher_name},
-    #             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-    #             "acrManifestName": {
-    #                 "value": self.config.acr_artifact_store_name + "-manifest"
-    #             },
-    #             "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
-    #             "saManifestName": {
-    #                 "value": self.config.blob_artifact_store_name + "-manifest"
-    #             },
-    #         },
-    #     }
-
-    #     return LocalFileBuilder(
-    #         Path(
-    #             VNF_OUTPUT_FOLDER_FILENAME,
-    #             MANIFEST_FOLDER_NAME,
-    #             "deploy.parameters.json",
-    #         ),
-    #         json.dumps(params_content, indent=4),
-    #     )
-
-    # def _render_definition_parameters_contents(self):
-    #     params_content = {
-    #         "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    #         "contentVersion": "1.0.0.0",
-    #         "parameters": {
-    #             "location": {"value": self.config.location},
-    #             "publisherName": {"value": self.config.publisher_name},
-    #             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-    #             "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
-    #             "nfDefinitionGroup": {"value": self.config.nf_name},
-    #             "nfDefinitionVersion": {"value": self.config.version},
-    #         },
-    #     }
-    #     return LocalFileBuilder(
-    #         Path(
-    #             VNF_OUTPUT_FOLDER_FILENAME,
-    #             NF_DEFINITION_FOLDER_NAME,
-    #             "deploy.parameters.json",
-    #         ),
-    #         json.dumps(params_content, indent=4),
-    #     )
 
     def _get_default_config(self, vhd):
         default_config = {}

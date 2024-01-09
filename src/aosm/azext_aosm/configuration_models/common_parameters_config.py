@@ -32,3 +32,8 @@ class VNFCommonParametersConfig(NFDCommonParametersConfig):
 
     sa_artifact_store_name: str
     sa_manifest_name: str
+
+
+@dataclass
+class CNFCommonParametersConfig(NFDCommonParametersConfig):
+    """Common parameters configuration for VNFs."""
