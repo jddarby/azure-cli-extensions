@@ -12,18 +12,30 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import genson
 import yaml
+from knack.log import get_logger
 
-from azext_aosm.common.exceptions import (
-    DefaultValuesNotFoundError,
-    MissingChartDependencyError,
-    SchemaGetOrGenerateError,
-)
+from azext_aosm.common.exceptions import (DefaultValuesNotFoundError,
+                                          MissingChartDependencyError,
+                                          SchemaGetOrGenerateError)
 from azext_aosm.common.utils import extract_tarfile
 from azext_aosm.inputs.base_input import BaseInput
+
+logger = get_logger(__name__)
 
 
 @dataclass
 class HelmChartMetadata:
+    """
+    Represents the metadata of a Helm chart.
+
+    :param name: The name of the Helm chart.
+    :type name: str
+    :param version: The version of the Helm chart.
+    :type version: str
+    :param dependencies: The dependencies of the Helm chart.
+    :type dependencies: List[str]
+    """
+
     name: str
     version: str
     dependencies: List[str]
@@ -31,14 +43,31 @@ class HelmChartMetadata:
 
 @dataclass
 class HelmChartTemplate:
+    """
+    Represents a template in a Helm chart.
+
+    :param name: The name of the template.
+    :type name: str
+    :param data: The data of the template.
+    :type data: List[str]
+    """
+
     name: str
     data: List[str]
 
 
-@dataclass
 class HelmChartInput(BaseInput):
     """
-    A utility class for working with Helm charts.
+    A utility class for working with Helm chart inputs.
+
+    :param artifact_name: The name of the artifact.
+    :type artifact_name: str
+    :param artifact_version: The version of the artifact.
+    :type artifact_version: str
+    :param chart_path: The path to the Helm chart.
+    :type chart_path: Path
+    :param default_config: The default configuration.
+    :type default_config: Optional[Dict[str, Any]]
     """
 
     def __init__(
@@ -48,7 +77,6 @@ class HelmChartInput(BaseInput):
         chart_path: Path,
         default_config: Optional[Dict[str, Any]] = None,
     ):
-        """Initialize the HelmChartInput class."""
         super().__init__(artifact_name, artifact_version, default_config)
         self.chart_path = chart_path
         self._temp_dir_path = Path(tempfile.mkdtemp())
@@ -63,8 +91,20 @@ class HelmChartInput(BaseInput):
     def from_chart_path(
         chart_path: Path, default_config: Optional[Dict[str, Any]]
     ) -> "HelmChartInput":
-        """Create a HelmChartInput object from a HelmPackageConfig object."""
+        """
+        Creates a HelmChartInput object from a path to a Helm chart.
+
+        :param chart_path: The path to the Helm chart. This should eith be a path to a folder or a tar file.
+        :type chart_path: Path
+        :param default_config: The default configuration.
+        :type default_config: Optional[Dict[str, Any]]
+        :return: A HelmChartInput object.
+        :rtype: HelmChartInput
+        """
+        logger.info("Creating Helm chart input from chart path")
         temp_dir = Path(tempfile.mkdtemp())
+
+        logger.debug("Unpacking Helm chart to %s", temp_dir)
 
         if chart_path.is_dir():
             unpacked_chart_path = Path(chart_path)
@@ -75,6 +115,8 @@ class HelmChartInput(BaseInput):
 
         shutil.rmtree(temp_dir)
 
+        logger.debug("Deleted temporary directory %s", temp_dir)
+
         return HelmChartInput(
             artifact_name=name,
             artifact_version=version,
@@ -84,18 +126,22 @@ class HelmChartInput(BaseInput):
 
     def get_defaults(self) -> Dict[str, Any]:
         """
-        Retrieves the default values from the values.yaml or values.yml file in the Helm chart directory.
+        Retrieves the default values for the Helm chart.
 
-        Returns:
-            Dict[str, Any]: The default values the Helm chart.
-
-        Raises:
-            DefaultValuesNotFoundError: If no default values file is given by the user or
-            found in the Helm chart directory.
+        :return: The default values for the Helm chart.
+        :rtype: Dict[str, Any]
+        :raises DefaultValuesNotFoundError: If no default values were found for the Helm chart.
         """
+        logger.info("Getting default values for Helm chart input")
         try:
-            return self.default_config or self._read_values_yaml()
+            default_config = self.default_config or self._read_values_yaml()
+            logger.debug(
+                "Default values for Helm chart input: %s",
+                json.dumps(default_config, indent=4),
+            )
+            return default_config
         except FileNotFoundError as error:
+            logger.error("No default values found for Helm chart '%s'", self.chart_path)
             raise DefaultValuesNotFoundError(
                 "ERROR: No default values found for the Helm chart"
                 f" '{self.chart_path}'. Please provide default values"
@@ -106,28 +152,39 @@ class HelmChartInput(BaseInput):
         """
         Retrieves the schema for the Helm chart.
 
-        If a values.schema.json file is present in the chart directory, it is used as the schema.
-        Otherwise, a schema is generated from the values in values.yaml.
+        If the Helm chart contains a values.schema.json file, then that file
+        will be used as the schema. Otherwise, a schema will be generated from
+        the default values in the values.yaml file.
 
-        Returns:
-            Dict[str, Any]: The schema for the Helm chart.
-
-        Raises:
-            SchemaGetOrGenerateError: If the schema cannot be generated or retrieved.
+        :return: The schema for the Helm chart.
+        :rtype: Dict[str, Any]
+        :raises SchemaGetOrGenerateError: If an error occurred while trying to generate or retrieve the schema.
         """
+        logger.info("Getting schema for Helm chart input")
         try:
+            schema = None
             # Use the schema provided in the chart if there is one.
             for file in self._chart_dir.iterdir():
                 if file.name == "values.schema.json":
+                    logger.debug("Using schema from chart %s", file)
                     with file.open(encoding="UTF-8") as schema_file:
                         schema = json.load(schema_file)
-                    return schema
 
-            # Otherwise, generate a schema from the default values in values.yaml.
-            schema = genson.Schema()
-            schema.add_object(self._read_values_yaml())
-            return schema.to_dict()
+            if not schema:
+                # Otherwise, generate a schema from the default values in values.yaml.
+                logger.debug("Generating schema from values.yaml")
+                built_schema = genson.Schema()
+                built_schema.add_object(self._read_values_yaml())
+                schema = built_schema.to_dict()
+
+            logger.debug(
+                "Schema for Helm chart input: %s",
+                json.dumps(schema, indent=4),
+            )
+
+            return schema
         except FileNotFoundError as error:
+            logger.error("No schema found for Helm chart '%s'", self.chart_path)
             raise SchemaGetOrGenerateError(
                 "ERROR: Encountered an error while trying to generate or"
                 f" retrieve the helm chart values schema:\n{error}"
@@ -137,17 +194,17 @@ class HelmChartInput(BaseInput):
         """
         Get the dependency charts for the Helm chart.
 
-        Returns:
-            List["HelmChartInput"]: The dependency charts for the Helm chart.
-
-        Raises:
-            MissingChartDependencyError: If the Helm chart has a dependency on a chart
-            that is not a local dependency.
+        :return: The dependency charts for the Helm chart.
+        :rtype: List[HelmChartInput]
+        :raises MissingChartDependencyError: If a dependency chart is missing.
         """
+        logger.info("Getting dependency charts for Helm chart input")
         # All dependency charts should be located in the charts directory.
         dependency_chart_dir = Path(self._chart_dir, "charts")
 
         if not dependency_chart_dir.exists():
+            # If there is no charts directory, then there are no dependencies.
+            logger.debug("No dependency charts found for Helm chart input")
             assert len(self.metadata.dependencies) == 0
             return []
 
@@ -163,6 +220,11 @@ class HelmChartInput(BaseInput):
             if dependency not in [
                 dependency_chart.metadata.name for dependency_chart in dependency_charts
             ]:
+                logger.error(
+                    "Missing dependency chart '%s' for Helm chart '%s'",
+                    dependency,
+                    self.chart_path,
+                )
                 raise MissingChartDependencyError(
                     f"ERROR: The Helm chart '{self.metadata.name}' has a"
                     f"dependency on the chart '{dependency}' which is not"
@@ -175,16 +237,17 @@ class HelmChartInput(BaseInput):
         """
         Get the templates for the Helm chart.
 
-        Returns:
-            List[HelmChartTemplate]: The templates for the Helm chart.
+        :return: The templates for the Helm chart.
+        :rtype: List[HelmChartTemplate]
         """
+        logger.info("Getting templates for Helm chart input")
+
         # Template files are located in the templates directory.
         template_dir = Path(self._chart_dir, "templates")
         templates: List[HelmChartTemplate] = []
 
-        # TODO: Decide whether to raise an exception if the templates directory
-        # does not exist.
         if not template_dir.exists():
+            logger.debug("No templates found for Helm chart input")
             return templates
 
         for file in template_dir.iterdir():
@@ -202,27 +265,35 @@ class HelmChartInput(BaseInput):
         """
         Retrieves the name and version of the Helm chart.
 
-        Args:
-            chart_dir (Path): The path to the Helm chart directory.
-
-        Returns:
-            (str, str): The name and version of the Helm chart.
+        :param chart_dir: The path to the Helm chart directory.
+        :type chart_dir: Path
+        :return: The name and version of the Helm chart.
+        :rtype: Tuple[str, str]
         """
+        logger.debug("Getting name and version for Helm chart")
         chart_yaml_path = Path(chart_dir, "Chart.yaml")
 
         with chart_yaml_path.open(encoding="UTF-8") as chart_yaml_file:
             chart_yaml = yaml.safe_load(chart_yaml_file)
 
-        return chart_yaml["name"], chart_yaml["version"]
+        chart_name = chart_yaml["name"]
+        chart_version = chart_yaml["version"]
 
-    def _validate(self):
+        logger.debug("Chart name: %s", chart_name)
+        logger.debug("Chart version: %s", chart_version)
+
+        return chart_name, chart_version
+
+    def _validate(self) -> None:
         """
         Validates the Helm chart by checking if the Chart.yaml file exists.
 
-        Raises:
-            FileNotFoundError: If the Chart.yaml file does not exist.
+        :raises FileNotFoundError: If the Chart.yaml file does not exist.
         """
         if not Path(self._chart_dir, "Chart.yaml").exists():
+            logger.error(
+                "Chart.yaml file not found in Helm chart '%s'", self.chart_path
+            )
             raise FileNotFoundError(
                 f"ERROR: The Helm chart '{self.chart_path}' does not contain"
                 "a Chart.yaml file."
@@ -232,9 +303,10 @@ class HelmChartInput(BaseInput):
         """
         Retrieves the metadata of the Helm chart.
 
-        Returns:
-            HelmChartMetadata: The metadata of the Helm chart.
+        :return: The metadata of the Helm chart.
+        :rtype: HelmChartMetadata
         """
+        logger.debug("Getting metadata for Helm chart input")
         # The metadata is stored in the Chart.yaml file.
         chart_yaml_path = Path(self._chart_dir, "Chart.yaml")
 
@@ -256,18 +328,18 @@ class HelmChartInput(BaseInput):
         """
         Reads the values.yaml file in the Helm chart directory.
 
-        Returns:
-            Dict[str, Any]: The values in the values.yaml file.
-
-        Raises:
-            FileNotFoundError: If no values file was found in the Helm chart directory.
+        :return: The contents of the values.yaml file.
+        :rtype: Dict[str, Any]
+        :raises FileNotFoundError: If the values.yaml file does not exist.
         """
+        logger.debug("Reading values.yaml file")
         for file in self._chart_dir.iterdir():
             if file.name.endswith(("values.yaml", "values.yml")):
                 with file.open(encoding="UTF-8") as f:
                     content = yaml.safe_load(f)
                 return content
 
+        logger.error("No values.yaml file found in Helm chart '%s'", self.chart_path)
         raise FileNotFoundError(
             f"ERROR: No values file was found in the Helm chart"
             f" '{self.chart_path}'."
