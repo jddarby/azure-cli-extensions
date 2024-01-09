@@ -4,8 +4,9 @@ from azext_aosm.definition_folder.builder.base_builder import (
 )
 from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME
 
+
 class JSONDefinitionElementBuilder(BaseDefinitionElementBuilder):
-    """Bicep definition element builder."""
+    """JSON definition element builder."""
 
     json_content: str
 

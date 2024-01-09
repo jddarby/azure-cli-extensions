@@ -312,7 +312,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 "nfDefinitionVersion": {"value": self.config.version},
             },
         }
-        print(params_content)
         base_file = JSONDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )

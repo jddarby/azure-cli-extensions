@@ -126,7 +126,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 self.config.images.source_registry_namespace
             )
             (artifacts, files) = processed_helm.get_artifact_details()
-            print(artifacts)
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
 

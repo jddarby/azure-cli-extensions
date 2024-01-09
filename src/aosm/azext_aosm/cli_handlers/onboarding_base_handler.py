@@ -43,7 +43,6 @@ class OnboardingBaseCLIHandler(ABC):
         # If config file provided (for build, publish and delete)
         if config_file:
             config_file_path = Path(config_file)
-            print(config_file_path)
             try:
                 # If config file is the input.jsonc for build command
                 if config_file_path.suffix == '.jsonc':
@@ -54,7 +53,6 @@ class OnboardingBaseCLIHandler(ABC):
                 # If config file is the all parameters json file for publish/delete
                 elif config_file_path.suffix == '.json':
                     config_dict = self._read_params_config_from_file(config_file_path)
-                    print(config_dict)
                     self.config = self._get_params_config(config_dict)
             except Exception as e:
                 raise UnclassifiedUserFault("Invalid input") from e
@@ -144,17 +142,24 @@ class OnboardingBaseCLIHandler(ABC):
         return config_dict
 
     def _read_params_config_from_file(self, input_json_path) -> dict:
-        """ Reads input file, takes only the {parameters:values} + returns config as dictionary"""
+        """ Reads input file, takes only the {parameters:values} + returns config as dictionary
+
+            For example,
+            {'location': {'value': 'test'} is added to the schema as
+            {'location': 'test'}
+
+        """
         with open(input_json_path, "r", encoding="utf-8") as _file:
             params_schema = json.load(_file)
 
-        santised_schema = {}
+        sanitised_schema = {}
         for param in params_schema["parameters"]:
+            # Converting camel case to snake case, so armTemplate becomes arm_template
             sanitised_param = ''.join(['_' + i.lower() if i.isupper()
                                        else i for i in param]).lstrip('_')
-            santised_schema[sanitised_param] = params_schema["parameters"][param]["value"]
-        print(santised_schema)
-        return santised_schema
+            # Add sanitised param as key and the param["value"] as the value
+            sanitised_schema[sanitised_param] = params_schema["parameters"][param]["value"]
+        return sanitised_schema
 
     def _render_base_bicep_contents(self, template_path):
         """Write the base bicep file from given template."""
