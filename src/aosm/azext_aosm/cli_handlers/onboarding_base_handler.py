@@ -155,10 +155,10 @@ class OnboardingBaseCLIHandler(ABC):
         sanitised_schema = {}
         for param in params_schema["parameters"]:
             # Converting camel case to snake case, so armTemplate becomes arm_template
-            sanitised_param = ''.join(['_' + i.lower() if i.isupper()
-                                       else i for i in param]).lstrip('_')
-            # Add sanitised param as key and the param["value"] as the value
-            sanitised_schema[sanitised_param] = params_schema["parameters"][param]["value"]
+            snake_case_param = ''.join(['_' + char.lower() if char.isupper()
+                                       else char for char in param]).lstrip('_')
+            # Add formatted param as key and the param["value"] as the value
+            sanitised_schema[snake_case_param] = params_schema["parameters"][param]["value"]
         return sanitised_schema
 
     def _render_base_bicep_contents(self, template_path):
