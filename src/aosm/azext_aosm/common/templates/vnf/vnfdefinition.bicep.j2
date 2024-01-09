@@ -13,24 +13,28 @@ param nfDefinitionGroup string
 @description('The version of the NFDV you want to deploy, in format A.B.C')
 param nfDefinitionVersion string
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName
   location: location
 }
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: saArtifactStoreName
   location: location
 }
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
   parent: publisher
   name: nfDefinitionGroup
@@ -47,20 +51,19 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
     {#- Note that all paths in bicep must be specified using the forward slash #}
     {#-  (/) character even if running on Windows. #}
     {#- See https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules#local-file #}
-    deployParameters: string(loadJsonContent('schemas/deploymentParameters.json'))
+    deployParameters: string(loadJsonContent('deploymentParameters.json'))
     networkFunctionType: 'VirtualNetworkFunction'
     networkFunctionTemplate: {
       nfviType: 'AzureCore'
       networkFunctionApplications: [
-      {%- for configuration in sa_nf_applications %}
         {
           artifactType: 'VhdImageFile'
-          name: '${nfName}Image'
+          name: '{{ sa_nf_application.artifact_profile.vhd_artifact_profile.vhd_name }}'
           dependsOnProfile: null
           artifactProfile: {
             vhdArtifactProfile: {
-              vhdName: '{{ configuration.vhd_artifact_profile.vhd_name }}'
-              vhdVersion: '{{ configuration.vhd_artifact_profile.vhd_version }}'
+              vhdName: '{{ sa_nf_application.artifact_profile.vhd_artifact_profile.vhd_name }}'
+              vhdVersion: '{{ sa_nf_application.artifact_profile.vhd_artifact_profile.vhd_version }}'
             }
             artifactStore: {
               id: saArtifactStore.id
@@ -69,17 +72,16 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
           // mapping deploy param vals to vals required by this network function application object
           deployParametersMappingRuleProfile: {
             vhdImageMappingRuleProfile: {
-              userConfiguration: string(loadJsonContent('configMappings/vhdParameters.json'))
+              userConfiguration: string(loadJsonContent('vhdParameters.json'))
             }
             // ??
             applicationEnablement: 'Unknown'
           }
-        }
-      {%- endfor %}
+        },
       {%- for configuration in acr_nf_applications %}
         {
           artifactType: 'ArmTemplate'
-          name: '{{ configuration.name }}
+          name: '{{ configuration.name }}'
           dependsOnProfile: null
           artifactProfile: {
             templateArtifactProfile: {
@@ -92,7 +94,7 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
           }
           deployParametersMappingRuleProfile: {
             templateMappingRuleProfile: {
-              templateParameters: string(loadJsonContent('configMappings/templateParameters.json'))
+              templateParameters: string(loadJsonContent('templateParameters.json'))
             }
             applicationEnablement: 'Unknown'
           }

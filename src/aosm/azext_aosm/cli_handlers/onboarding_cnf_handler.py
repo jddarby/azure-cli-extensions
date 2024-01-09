@@ -6,27 +6,28 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-
-from azext_aosm.common.artifact import LocalFileACRArtifact
+from azure.cli.core.azclierror import UnclassifiedUserFault
+from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
+from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          CNF_DEFINITION_TEMPLATE_FILENAME,
                                          CNF_MANIFEST_TEMPLATE_FILENAME,
+                                         CNF_BASE_TEMPLATE_FILENAME,
+                                         CNF_DEFINITION_FOLDER_NAME,
                                          CNF_OUTPUT_FOLDER_FILENAME,
+                                         CNF_INPUT_FILENAME,
                                          MANIFEST_FOLDER_NAME,
-                                         NF_DEFINITION_FOLDER_NAME)
+                                         NF_DEFINITION_FOLDER_NAME,
+                                         BASE_FOLDER_NAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_cnf_input_config import \
     OnboardingCNFInputConfig
+from azext_aosm.configuration_models.common_parameters_config import CNFCommonParametersConfig
 from azext_aosm.definition_folder.builder.artifact_builder import \
     ArtifactDefinitionElementBuilder
 from azext_aosm.definition_folder.builder.bicep_builder import \
     BicepDefinitionElementBuilder
-from azext_aosm.vendored_sdks.models import (
-    AzureArcKubernetesArtifactProfile,
-    AzureArcKubernetesDeployMappingRuleProfile,
-    AzureArcKubernetesHelmApplication, HelmArtifactProfile,
-    HelmMappingRuleProfile, ManifestArtifactFormat)
-
+from azext_aosm.definition_folder.builder.json_builder import JSONDefinitionElementBuilder
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 
@@ -36,247 +37,190 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
-        return "cnf-input.jsonc"
+        return CNF_INPUT_FILENAME
 
     @property
     def output_folder_file_name(self) -> str:
         """Get the output folder file name."""
         return CNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_config(self, input_config: dict = None) -> OnboardingCNFInputConfig:
+    def _get_input_config(self, input_config: dict = None) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
         return OnboardingCNFInputConfig(**input_config)
 
+    def _get_params_config(self, params_config: dict = None) -> CNFCommonParametersConfig:
+        """Get the configuration for the command."""
+        if params_config is None:
+            params_config = {}
+        return CNFCommonParametersConfig(**params_config)
+
+    def build_base_bicep(self):
+        """ Build the base bicep file."""
+
+        # Build manifest bicep contents, with j2 template
+        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME)
+        bicep_contents = self._render_base_bicep_contents(
+            template_path
+        )
+        # Create Bicep element with manifest contents
+        bicep_file = BicepDefinitionElementBuilder(
+            Path(CNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
+        )
+        return bicep_file
+
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
-        # TODO: Implement
         artifact_list = []
-        # Jordan: Logic when HelmChartProcessor is implemented
-        # for helm_package in self.config.helm_packages:
-        #     processed_helm = HelmChartProcessor(
-        #         helm_package.name,
-        #         self.config.acr_artifact_store_name,
-        #         helm_package,
-        #     )
-        #     artifacts = processed_helm.get_artifact_manifest_list()
-        ## TODO: make artifact_list a set, then convert back to list
-        ## TODO: add to util, compare properly the artifacts
-        # # Add artifacts to a list of unique artifacts
-        #     if artifacts not in artifact_list:
-        #         artifact_list.append(artifacts)
 
-        # Jordan: For testing write manifest bicep. THIS IS THE RIGHT TEST
-        test_base_artifact = ManifestArtifactFormat(
-            artifact_name="test",
-            artifact_type="OCIArtifact",
-            artifact_version="4.1.0-12-rel-4-1-0",
-        )
-        artifact_list.append(test_base_artifact)
+        # For each helm package, get list of artifacts
+        for helm_package in self.config.helm_packages:
+            # TODO: check if we can just default to None in build manifest (does it matter?)
+            # Check if any default config has been provided in the input file
+            if helm_package.path_to_mappings:
+                if Path.exists(Path(helm_package.path_to_mappings)):
+                    provided_config = json.load(open(helm_package.path_to_mappings))
+                else:
+                    raise UnclassifiedUserFault("There is no file at the path provided for the mappings file.")
+            else:
+                provided_config = None
 
-        template_path = self._get_template_path("cnf", CNF_MANIFEST_TEMPLATE_FILENAME)
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=provided_config)
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                helm_input,
+                self.config.images.source_registry,
+                self.config.images.source_registry_namespace
+            )
+            artifacts = processed_helm.get_artifact_manifest_list()
+        # TODO: future work: make artifact_list a set, then convert back to list
+        # TODO: future work: add to util, compare properly the artifacts
+        # Add artifacts to a list of unique artifacts
+            if artifacts not in artifact_list:
+                artifact_list.extend(artifacts)
+
+        # Build manifest bicep contents, with j2 template
+        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME)
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
-        # print(bicep_contents)
-
+        # Create Bicep element with manifest contents
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
         )
-        # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_manifest_parameters_contents())
+
         return bicep_file
 
     def build_artifact_list(self):
         """Build the artifact list."""
         artifact_list = []
-        # TODO: Test with processor
+        # For each helm package, get list of artifacts and combine
+        for helm_package in self.config.helm_packages:
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
 
-        # for helm_package in self.config.helm_packages:
-        #     processed_helm = HelmChartProcessor(
-        #         helm_package.name,
-        #         self.config.acr_artifact_store_name,
-        #         helm_package,
-        #     )
-        #     (artifacts, files) = processed_helm.get_artifact_details()
-        #     if artifacts not in artifact_list:
-        #         artifact_list.append(artifacts)
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                helm_input,
+                self.config.images.source_registry,
+                self.config.images.source_registry_namespace
+            )
+            (artifacts, files) = processed_helm.get_artifact_details()
+            if artifacts not in artifact_list:
+                artifact_list.extend(artifacts)
 
-        # # For testing artifact builder works
-        test_base_artifact = LocalFileACRArtifact(
-            artifact_manifest=ManifestArtifactFormat(
-                artifact_name="test",
-                artifact_type="OCIArtifact",
-                artifact_version="4.1.0-12-rel-4-1-0",
-            ),
-            file_path=Path("test"),
-        )
-        artifact_list.append(test_base_artifact)
-        # print(artifact_list)
+        # Generate Artifact Element with artifact list
         return ArtifactDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
 
-    def build_resource_bicep(self):
+    def build_resource_bicep(self, aosm_client=None):
         """Build the resource bicep file."""
-        # TODO: Implement
         nf_application_list = []
-        supporting_files = []
-        complete_params_schema = {}
+        mappings_files = []
+        schema_properties = {}
         # For each helm package, generate nf application, generate mappings profile
-        # for helm_package in self.config.helm_packages:
-        #     processed_helm = HelmChartProcessor(
-        #         helm_package.name,
-        #         self.config.acr_artifact_store_name,
-        #         helm_package,
-        #     )
-        #     nf_application = processed_helm.generate_nf_application()
-        #     nf_application_list.append(nf_application)
+        for helm_package in self.config.helm_packages:
+            # Check if any default config has been provided in the input file
+            if helm_package.path_to_mappings:
+                if Path.exists(Path(helm_package.path_to_mappings)):
+                    provided_config = json.load(open(helm_package.path_to_mappings))
+                else:
+                    raise UnclassifiedUserFault("There is no file at the path provided for the mappings file.")
+            else:
+                provided_config = None
 
-        #     # # params_schema = processed_helm.generate_params_schema()
-        #     # complete_params_schema.update(params_schema)
-        #     # example params_schema "nf_app_name": <SCHEMA>
+            # Create HelmChartInput object from chart path provided in input file
+            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=provided_config)
 
-        #     # Adding supporting file: config mappings
-        # deploy_values = (
-        #     nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-        # )
-        # mapping_file = LocalFileBuilder(
-        #     Path(
-        #         CNF_OUTPUT_FOLDER_FILENAME,
-        #         NF_DEFINITION_FOLDER_NAME,
-        #         nf_application.name + "-mappings.json",
-        #     ),
-        #     deploy_values,
-        # )
-        # supporting_files.append(mapping_file)
+            # Create HelmChartProcessor object from HelmChartInput object
+            processed_helm = HelmChartProcessor(
+                helm_package.name,
+                helm_input,
+                self.config.images.source_registry,
+                self.config.images.source_registry_namespace
+            )
 
-        # Jordan: mocked nf applicaton
-        test_nf_application = AzureArcKubernetesHelmApplication(
-            name="testNFApplication",
-            depends_on_profile=[],
-            artifact_profile=AzureArcKubernetesArtifactProfile(
-                artifact_store="testArtifactStore",
-                helm_artifact_profile=HelmArtifactProfile(
-                    helm_package_name="testHelmPackage",
-                    helm_package_version_range="1.0.0",
-                    registry_values_paths=["testPath1", "testPath2"],
-                    image_pull_secrets_values_paths=["testPath3", "testPath4"],
-                ),
-            ),
-            deploy_parameters_mapping_rule_profile=AzureArcKubernetesDeployMappingRuleProfile(
-                application_enablement="testApplicationEnablement",
-                helm_mapping_rule_profile=HelmMappingRuleProfile(
-                    release_namespace="testReleaseNamespace",
-                    release_name="testReleaseName",
-                    helm_package_version="1.0.0",
-                    values="testValues",
-                    options=None,
-                ),
-            ),
-        )
-        deploy_values = (
-            test_nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
-        )
-        supporting_files.append(
-            LocalFileBuilder(
+            # Generate nf application
+            nf_application = processed_helm.generate_nf_application()
+            nf_application_list.append(nf_application)
+
+            # Generate deploymentParameters schema properties
+            params_schema = processed_helm.generate_params_schema()
+            schema_properties.update(params_schema)
+
+            # Adding supporting file: config mappings
+            deploy_values = (
+                nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values
+            )
+            mapping_file = LocalFileBuilder(
                 Path(
                     CNF_OUTPUT_FOLDER_FILENAME,
                     NF_DEFINITION_FOLDER_NAME,
-                    test_nf_application.name + "-mappings.json",
+                    nf_application.name + "-mappings.json",
                 ),
                 deploy_values,
             )
-        )
-        nf_application_list.append(test_nf_application)
-        complete_params_schema.update(
-            {
-                test_nf_application.name: {
-                    "type": "object",
-                    "properties": {
-                        "test1": {"type": "string"},
-                        "test2": {"type": "string"},
-                    },
-                }
-            }
-        )
-        # End testing
+            mappings_files.append(mapping_file)
 
-        template_path = self._get_template_path("cnf", CNF_DEFINITION_TEMPLATE_FILENAME)
-        bicep_contents = self._write_definition_bicep_file(
+        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME)
+        bicep_contents = self._render_definition_bicep_contents(
             template_path, nf_application_list
         )
 
-        # Create a bicep element + add its supporting files (mappings + schema)
+        # Create a bicep element + add its supporting mapping files
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME), bicep_contents
         )
-        for mappings_file in supporting_files:
+        for mappings_file in mappings_files:
             bicep_file.add_supporting_file(mappings_file)
 
-        # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_definition_parameters_contents())
-
-        # Add the deployParameters schema
+        # Add the deploymentParameters schema file
         bicep_file.add_supporting_file(
-            self._render_deploy_params_schema(complete_params_schema)
+            self._render_deployment_params_schema(schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
         )
         return bicep_file
 
-    def _render_deploy_params_schema(self, complete_params_schema):
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                NF_DEFINITION_FOLDER_NAME,
-                "deploymentParameters.json",
-            ),
-            json.dumps(
-                self._build_deploy_params_schema(complete_params_schema), indent=4
-            ),
-        )
-
-    def _render_manifest_parameters_contents(self):
+    def build_common_parameters_json(self):
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
+                "publisherResourceGroupName": {
+                    "value": self.config.publisher_resource_group_name
+                },
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "acrManifestName": {
                     "value": self.config.acr_artifact_store_name + "-manifest"
                 },
-            },
-        }
-
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                MANIFEST_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
-        )
-
-    def _render_definition_parameters_contents(self):
-        params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
                 "nfDefinitionGroup": {"value": self.config.nf_name},
                 "nfDefinitionVersion": {"value": self.config.version},
             },
         }
 
-        return LocalFileBuilder(
-            Path(
-                CNF_OUTPUT_FOLDER_FILENAME,
-                NF_DEFINITION_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
+        base_file = JSONDefinitionElementBuilder(
+            Path(CNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
+        return base_file

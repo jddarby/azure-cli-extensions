@@ -120,8 +120,8 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
         metadata={"comment": "ARM template configuration."},
     )
 
-    vhd: List[VhdImageConfig] = field(
-        default_factory=lambda: [VhdImageConfig()],
+    vhd: VhdImageConfig = field(
+        default_factory=VhdImageConfig,
         metadata={"comment": "VHD image configuration."},
     )
 
@@ -134,13 +134,8 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
                 arm_list.append(arm_template)
         self.arm_templates = arm_list
 
-        vhd_list = []
-        for vhd in self.vhd:
-            if vhd and isinstance(vhd, dict):
-                vhd_list.append(VhdImageConfig(**vhd))
-            else:
-                vhd_list.append(vhd)
-        self.vhd = vhd_list
+        if self.vhd and isinstance(self.vhd, dict):
+            self.vhd = VhdImageConfig(**self.vhd)
 
     def validate(self):
         """Validate the configuration."""
@@ -156,5 +151,3 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
             raise ValidationError("You must include at least one arm template")
         for arm_template in self.arm_templates:
             arm_template.validate()
-        for vhd in self.vhd:
-            vhd.validate()

@@ -3,27 +3,24 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import json
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, final, List, Tuple
+from typing import List, Tuple, final
 
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
-
-from ..vendored_sdks.models import (
-    DependsOnProfile,
-    ResourceElementTemplate,
-    ReferencedResource,
-    ManifestArtifactFormat,
-    NetworkFunctionApplication,
+from azext_aosm.vendored_sdks.models import (
+    ApplicationEnablement, ArmResourceDefinitionResourceElementTemplate,
     ArmResourceDefinitionResourceElementTemplateDetails,
-    AzureCoreNetworkFunctionArmTemplateApplication,
-    AzureCoreArtifactType,
+    ArmTemplateArtifactProfile, ArmTemplateMappingRuleProfile,
     AzureCoreArmTemplateArtifactProfile,
-    ArmTemplateArtifactProfile,
-)
+    AzureCoreArmTemplateDeployMappingRuleProfile, AzureCoreArtifactType,
+    AzureCoreNetworkFunctionArmTemplateApplication, DependsOnProfile,
+    ManifestArtifactFormat, NetworkFunctionApplication, NSDArtifactProfile,
+    ReferencedResource, ResourceElementTemplate, TemplateType)
 
 
 @dataclass
@@ -42,7 +39,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
 
     """
 
-    name: str
     input_artifact: ArmTemplateInput
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -50,7 +46,7 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
+                artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         ]
@@ -64,10 +60,10 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
                 LocalFileACRArtifact(
                     artifact_manifest=ManifestArtifactFormat(
                         artifact_name=self.input_artifact.artifact_name,
-                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
+                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
                         artifact_version=self.input_artifact.artifact_version,
                     ),
-                    file_path=self.input_artifact.artifact_path,
+                    file_path=self.input_artifact.template_path,
                 )
             ],
             [],
@@ -77,22 +73,6 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
     def generate_nf_application(self) -> NetworkFunctionApplication:
         return self.generate_nfvi_specific_nf_application()
 
-    # TODO: Should this actually be a cached property?
-    def generate_schema(self) -> Dict[str, Any]:
-        return self.input_artifact.get_schema()
-
-    def generate_mappings(self) -> Dict[str, str]:
-        template_parameters = {}
-        vm_parameters = self.generate_schema()
-
-        # TODO: Document that this no longer appends "Image" to the image name supplied by user in input.jsonc
-        # TODO: Document that the parameters are no longer ordered, and create story to reimplement ordering
-        for key in vm_parameters:
-            template_parameters[key] = f"{{deployParameters.{key}}}"
-
-        return template_parameters
-
-    # @abstractmethod?
     def generate_artifact_profile(self) -> AzureCoreArmTemplateArtifactProfile:
         artifact_profile = ArmTemplateArtifactProfile(
             template_name=self.input_artifact.artifact_name,
@@ -108,7 +88,26 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
         pass
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
-        return ArmResourceDefinitionResourceElementTemplateDetails()
+        """Generate the resource element template."""
+        parameter_values = self.generate_values_mappings(
+            self.input_artifact.get_schema(), self.input_artifact.get_defaults(), True
+        )
+
+        artifact_profile = NSDArtifactProfile(
+            artifact_store_reference=ReferencedResource(id=""),
+            artifact_name=self.input_artifact.artifact_name,
+            artifact_version=self.input_artifact.artifact_version,
+        )
+
+        return ArmResourceDefinitionResourceElementTemplateDetails(
+            name=self.name,
+            depends_on_profile=DependsOnProfile(),
+            configuration=ArmResourceDefinitionResourceElementTemplate(
+                template_type=TemplateType.ARM_TEMPLATE.value,
+                parameter_values=json.dumps(parameter_values),
+                artifact_profile=artifact_profile,
+            ),
+        )
 
 
 class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
@@ -124,12 +123,30 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
             depends_on_profile=DependsOnProfile(),
             artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
             artifact_profile=self.generate_artifact_profile(),
-            deploy_parameters_mapping_rule_profile=self.generate_mappings(),
+            deploy_parameters_mapping_rule_profile=self._generate_mapping_rule_profile(),
+        )
+
+    def _generate_mapping_rule_profile(
+        self,
+    ) -> AzureCoreArmTemplateDeployMappingRuleProfile:
+        template_parameters = self.generate_values_mappings(
+            self.input_artifact.get_schema(), self.input_artifact.get_defaults()
+        )
+
+        mapping_profile = ArmTemplateMappingRuleProfile(
+            template_parameters=json.dumps(template_parameters)
+        )
+
+        return AzureCoreArmTemplateDeployMappingRuleProfile(
+            application_enablement=ApplicationEnablement.ENABLED,
+            template_mapping_rule_profile=mapping_profile,
         )
 
 
 class NexusArmBuildProcessor(BaseArmBuildProcessor):
-    """Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus."""
+    """
+    Not implemented yet. This class represents a processor for generating ARM templates specific to Nexus.
+    """
 
     def generate_nfvi_specific_nf_application(self):
         return NotImplementedError

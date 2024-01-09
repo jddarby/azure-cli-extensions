@@ -2,37 +2,31 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+
 import json
 import re
-from typing import Any, Dict, Set, List, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Set, Tuple
+
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import (
-    BaseACRArtifact,
-    LocalFileACRArtifact,
-    RemoteACRArtifact,
-)
+from azext_aosm.common.artifact import (BaseACRArtifact, LocalFileACRArtifact,
+                                        RemoteACRArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.common.utils import generate_values_mappings
-from azext_aosm.inputs.helm_chart_input import HelmChart
+from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.vendored_sdks.models import (
-    ArtifactType,
-    ApplicationEnablement,
-    AzureArcKubernetesArtifactProfile,
+    ApplicationEnablement, ArtifactType, AzureArcKubernetesArtifactProfile,
     AzureArcKubernetesDeployMappingRuleProfile,
-    # DependsOnProfile,
-    HelmMappingRuleProfile,
-    ReferencedResource,
-    ResourceElementTemplate,
-    AzureArcKubernetesHelmApplication,
-    HelmArtifactProfile,
-    ManifestArtifactFormat,
-)
+    AzureArcKubernetesHelmApplication, DependsOnProfile, HelmArtifactProfile,
+    HelmMappingRuleProfile, ManifestArtifactFormat, ReferencedResource,
+    ResourceElementTemplate)
 
 VALUE_PATH_REGEX = (
     r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
 )
+IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<tag>[^\s)\"}]*)"
 
 
+@dataclass
 class HelmChartProcessor(BaseBuildProcessor):
     """
     A template processor for Helm charts.
@@ -41,13 +35,16 @@ class HelmChartProcessor(BaseBuildProcessor):
     for Helm charts.
     """
 
+    source_registry: str
+    source_registry_namespace: str
+
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """Get the artifact list."""
         artifact_manifest_list = []
         artifact_manifest_list.append(
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         )
@@ -56,7 +53,7 @@ class HelmChartProcessor(BaseBuildProcessor):
             artifact_manifest_list.append(
                 ManifestArtifactFormat(
                     artifact_name=image_name,
-                    artifact_type=ArtifactType.OCI_ARTIFACT,
+                    artifact_type=ArtifactType.OCI_ARTIFACT.value,
                     artifact_version=image_version,
                 )
             )
@@ -67,12 +64,12 @@ class HelmChartProcessor(BaseBuildProcessor):
         self,
     ) -> Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]:
         """Get the artifact details."""
-        assert isinstance(self.input_artifact, HelmChart)
+        assert isinstance(self.input_artifact, HelmChartInput)
         artifact_details = []
         helm_chart_details = LocalFileACRArtifact(
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             ),
             self.input_artifact.chart_path,
@@ -84,10 +81,11 @@ class HelmChartProcessor(BaseBuildProcessor):
                 RemoteACRArtifact(
                     ManifestArtifactFormat(
                         artifact_name=image_name,
-                        artifact_type=ArtifactType.OCI_ARTIFACT,
+                        artifact_type=ArtifactType.OCI_ARTIFACT.value,
                         artifact_version=image_version,
                     ),
-                    self.input_artifact.image_source_acr,
+                    self.source_registry,
+                    self.source_registry_namespace
                 )
             )
 
@@ -114,8 +112,8 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,
-            # depends_on_profile=DependsOnProfile(),
-            depends_on_profile=[],
+            # Current implementation is set all depends on profiles to empty lists
+            depends_on_profile=DependsOnProfile(install_depends_on=[],uninstall_depends_on=[],update_depends_on=[]),
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )
@@ -132,15 +130,16 @@ class HelmChartProcessor(BaseBuildProcessor):
 
         images: List[Tuple[str, str]] = []
         for line in image_lines:
-            # Images are specified in the format <registry>/<image>:<tag>
-            # so we split the line on '/' and then split the second element
-            # of the resulting list on ':' to get the image name and tag.
-            name_and_tag = line.split("/")[1].split(":")
-            images.append((name_and_tag[0], name_and_tag[1]))
+            name_and_tag = re.search(IMAGE_NAME_AND_VERSION_REGEX, line)
+            if name_and_tag and len(name_and_tag.groups()) == 2:
+                images.append((name_and_tag.group("name"), name_and_tag.group("tag")))
+            else:
+                # TODO: Raise better error to represent the name and tag being in wrong format
+                raise ValueError
 
         return images
 
-    def _find_image_lines(self, chart: HelmChart, image_lines: Set[str]) -> None:
+    def _find_image_lines(self, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 
@@ -150,12 +149,12 @@ class HelmChartProcessor(BaseBuildProcessor):
         Returns:
             None
         """
-        for template in chart.get_templates():
+        for template in self.input_artifact.get_templates():
             for line in template.data:
                 if "image:" in line:
                     image_lines.add(line.replace("image:", "").strip())
 
-        for dep in chart.get_dependencies():
+        for dep in self.input_artifact.get_dependencies():
             self._find_image_lines(dep, image_lines)
 
     def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:
@@ -174,8 +173,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         chart_profile = HelmArtifactProfile(
             helm_package_name=self.input_artifact.artifact_name,
             helm_package_version_range=self.input_artifact.artifact_version,
-            registry_values_paths=registry_values_paths,
-            image_pull_secrets_values_paths=image_pull_secrets_values_paths,
+            registry_values_paths=list(registry_values_paths),
+            image_pull_secrets_values_paths=list(image_pull_secrets_values_paths),
         )
 
         return AzureArcKubernetesArtifactProfile(
@@ -188,7 +187,7 @@ class HelmChartProcessor(BaseBuildProcessor):
         Find image pull secrets values paths in the Helm chart templates.
 
         Args:
-            chart (HelmChart): The Helm chart to search for image pull secrets
+            chart (HelmChartInput): The Helm chart to search for image pull secrets
             values paths.
             matches (Set[str]): A set of image pull secrets parameters found so far.
 
@@ -228,14 +227,16 @@ class HelmChartProcessor(BaseBuildProcessor):
         Find registry values paths in the Helm chart templates.
 
         Args:
-            chart (HelmChart): The Helm chart to search for registry values paths.
+            chart (HelmChartInput): The Helm chart to search for registry values paths.
             matches (Set[str]): A set of registry values paths found so far.
 
         Returns:
             None
         """
         image_lines: Set[str] = set()
-        for line in self._find_image_lines(image_lines):
+        self._find_image_lines(image_lines)
+
+        for line in image_lines:
             # Images are specified in the format <registry>/<image>:<tag>
             # so we split the line on '/' and then find the value path
             # in the first element of the resulting list.
@@ -244,22 +245,21 @@ class HelmChartProcessor(BaseBuildProcessor):
                 matches.update(new_matches)
 
     def _generate_mapping_rule_profile(
-        self, values_to_remove: Set[str]
+        self, values_to_remove: List[str]
     ) -> AzureArcKubernetesDeployMappingRuleProfile:
         """
         Generate the mappings for a Helm chart.
 
         Args:
             name (str): The name of the Helm release.
-            chart (HelmChart): The Helm chart object.
+            chart (HelmChartInput): The Helm chart object.
             values_to_remove (Set[str]): The values to remove from the values mappings.
 
         Returns:
             AzureArcKubernetesDeployMappingRuleProfile: The mapping rule profile for Azure Arc Kubernetes deployment.
         """
         # Generate the values mappings for the Helm chart.
-        values_mappings = generate_values_mappings(
-            self.name,
+        values_mappings = self.generate_values_mappings(
             self.input_artifact.get_schema(),
             self.input_artifact.get_defaults(),
         )

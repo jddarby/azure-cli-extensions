@@ -4,22 +4,31 @@
 # --------------------------------------------------------------------------------------------
 
 import json
+from pathlib import Path
 from typing import List, Tuple
+
 from azext_aosm.build_processors.base_processor import BaseBuildProcessor
 from azext_aosm.common.artifact import LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.common.utils import generate_values_mappings
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
     ArmResourceDefinitionResourceElementTemplate,
     ArtifactType,
     DependsOnProfile,
+    ManifestArtifactFormat,
     NetworkFunctionApplication,
+)
+from azext_aosm.vendored_sdks.models import (
     NetworkFunctionDefinitionResourceElementTemplateDetails as NFDResourceElementTemplate,
+)
+from azext_aosm.vendored_sdks.models import (
     NSDArtifactProfile,
     ReferencedResource,
-    ManifestArtifactFormat,
     TemplateType,
+)
+
+NF_BICEP_TEMPLATE_PATH = (
+    Path(__file__).parent.parent / "common" / "templates" / "nf_template.bicep"
 )
 
 
@@ -31,7 +40,7 @@ class NFDProcessor(BaseBuildProcessor):
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             )
         ]
@@ -44,7 +53,7 @@ class NFDProcessor(BaseBuildProcessor):
         artifact_details = LocalFileACRArtifact(
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT,
+                artifact_type=ArtifactType.OCI_ARTIFACT.value,
                 artifact_version=self.input_artifact.artifact_version,
             ),
             self.input_artifact.arm_template_output_path,
@@ -52,7 +61,7 @@ class NFDProcessor(BaseBuildProcessor):
 
         file_builder = LocalFileBuilder(
             self.input_artifact.arm_template_output_path,
-            "",
+            NF_BICEP_TEMPLATE_PATH.read_text(),
         )
 
         return [artifact_details], [file_builder]
@@ -63,11 +72,8 @@ class NFDProcessor(BaseBuildProcessor):
 
     def generate_resource_element_template(self) -> NFDResourceElementTemplate:
         """Generate the resource element template."""
-        parameter_values_dict = generate_values_mappings(
-            schema_name=self.name,
-            schema=self.input_artifact.get_schema(),
-            values=self.input_artifact.get_defaults(),
-            is_nsd=True,
+        parameter_values_dict = self.generate_values_mappings(
+            self.input_artifact.get_schema(), self.input_artifact.get_defaults(), True
         )
 
         configuration = ArmResourceDefinitionResourceElementTemplate(

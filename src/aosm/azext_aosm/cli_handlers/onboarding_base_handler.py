@@ -8,7 +8,6 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
-
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
@@ -21,14 +20,15 @@ from azext_aosm.definition_folder.builder.definition_folder_builder import (
 )
 from azext_aosm.definition_folder.reader.definition_folder import DefinitionFolder
 from azext_aosm.common.command_context import CommandContext
+from azext_aosm.configuration_models.common_parameters_config import \
+    BaseCommonParametersConfig
+from azext_aosm.vendored_sdks.models import AzureCoreNetworkFunctionVhdApplication
 
 logger = get_logger(__name__)
 
 
 class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
-
-    config: OnboardingBaseInputConfig
 
     @property
     @abstractmethod
@@ -42,18 +42,26 @@ class OnboardingBaseCLIHandler(ABC):
         """Get the output folder file name."""
         raise NotImplementedError
 
-    def __init__(self, input_json: str | None = None):
-        # Config may be optional (to generate blank config file)
-        input_json_path = Path(input_json) if input_json else None
-        config_dict = (
-            self._read_config_from_file(input_json_path) if input_json_path else {}
-        )
-        # Ensure config is of correct type
-        try:
-            self.config = self._get_config(config_dict)
-        except Exception as e:
-            raise UnclassifiedUserFault("Invalid configuration file") from e
-        # TODO: generate custom directory name
+    def __init__(self, config_file: str | None = None):
+        # If config file provided (for build, publish and delete)
+        if config_file:
+            config_file_path = Path(config_file)
+            try:
+                # If config file is the input.jsonc for build command
+                if config_file_path.suffix == '.jsonc':
+                    config_dict = (
+                        self._read_input_config_from_file(config_file_path)
+                    )
+                    self.config = self._get_input_config(config_dict)
+                # If config file is the all parameters json file for publish/delete
+                elif config_file_path.suffix == '.json':
+                    config_dict = self._read_params_config_from_file(config_file_path)
+                    self.config = self._get_params_config(config_dict)
+            except Exception as e:
+                raise UnclassifiedUserFault("Invalid input") from e
+        # If no config file provided (for generate-config)
+        else:
+            self.config = self._get_input_config()
         self.definition_folder_builder = DefinitionFolderBuilder(
             Path.cwd() / self.output_folder_file_name
         )
@@ -69,12 +77,14 @@ class OnboardingBaseCLIHandler(ABC):
         self._check_for_overwrite(output_path)
         self._write_config_to_file(output_path)
 
-    def build(self):
+    def build(self, aosm_client=None):
         """Build the definition."""
         self.config.validate()
+        self.definition_folder_builder.add_element(self.build_base_bicep())
         self.definition_folder_builder.add_element(self.build_manifest_bicep())
         self.definition_folder_builder.add_element(self.build_artifact_list())
-        self.definition_folder_builder.add_element(self.build_resource_bicep())
+        self.definition_folder_builder.add_element(self.build_resource_bicep(aosm_client))
+        self.definition_folder_builder.add_element(self.build_common_parameters_json())
         self.definition_folder_builder.write()
 
     def publish(self, command_context: CommandContext):
@@ -100,6 +110,9 @@ class OnboardingBaseCLIHandler(ABC):
         # TODO: Implement
 
     @abstractmethod
+    def build_base_bicep(self):
+        """ Build bicep file for underlying resources"""
+    @abstractmethod
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
         raise NotImplementedError
@@ -110,16 +123,26 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def build_resource_bicep(self):
+    def build_resource_bicep(self, aosm_client=None):
         """Build the resource bicep file."""
         raise NotImplementedError
 
     @abstractmethod
-    def _get_config(self, input_config: dict = None) -> OnboardingBaseInputConfig:
+    def build_common_parameters_json(self):
+        """ Build common parameters.json file """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _get_input_config(self, input_config: dict = None) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
         raise NotImplementedError
 
-    def _read_config_from_file(self, input_json_path: Path) -> dict:
+    @abstractmethod
+    def _get_params_config(self, params_config: dict = None) -> BaseCommonParametersConfig:
+        """ Get the parameters config for publish/delete """
+        raise NotImplementedError
+
+    def _read_input_config_from_file(self, input_json_path: Path) -> dict:
         """Reads the input JSONC file, removes comments + returns config as dictionary."""
         lines = input_json_path.read_text().splitlines()
         lines = [line for line in lines if not line.strip().startswith("//")]
@@ -127,11 +150,42 @@ class OnboardingBaseCLIHandler(ABC):
 
         return config_dict
 
-    def _write_definition_bicep_file(
+    def _read_params_config_from_file(self, input_json_path) -> dict:
+        """ Reads input file, takes only the {parameters:values} + returns config as dictionary
+
+            For example,
+            {'location': {'value': 'test'} is added to the schema as
+            {'location': 'test'}
+
+        """
+        with open(input_json_path, "r", encoding="utf-8") as _file:
+            params_schema = json.load(_file)
+
+        sanitised_schema = {}
+        for param in params_schema["parameters"]:
+            # Converting camel case to snake case, so armTemplate becomes arm_template
+            snake_case_param = ''.join(['_' + char.lower() if char.isupper()
+                                       else char for char in param]).lstrip('_')
+            # Add formatted param as key and the param["value"] as the value
+            sanitised_schema[snake_case_param] = params_schema["parameters"][param]["value"]
+        return sanitised_schema
+
+    def _render_base_bicep_contents(self, template_path):
+        """Write the base bicep file from given template."""
+        with open(template_path, "r", encoding="UTF-8") as f:
+            template: Template = Template(
+                f.read(),
+                undefined=StrictUndefined,
+            )
+
+        bicep_contents: str = template.render()
+        return bicep_contents
+
+    def _render_definition_bicep_contents(
         self,
         template_path: Path,
         acr_nf_application: list,
-        sa_nf_application: list = None,
+        sa_nf_application: AzureCoreNetworkFunctionVhdApplication = None,
     ):
         """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
@@ -141,7 +195,7 @@ class OnboardingBaseCLIHandler(ABC):
             )
 
         bicep_contents: str = template.render(
-            acr_nf_applications=acr_nf_application, sa_nf_applications=sa_nf_application
+            acr_nf_applications=acr_nf_application, sa_nf_application=sa_nf_application
         )
         return bicep_contents
 
@@ -175,19 +229,6 @@ class OnboardingBaseCLIHandler(ABC):
             / definition_type
             / template_name
         )
-
-    def _build_deploy_params_schema(self, schema_properties):
-        """
-        Build the schema for deployParameters.json
-        """
-        schema_contents = {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "DeployParametersSchema",
-            "type": "object",
-            "properties": {},
-        }
-        schema_contents["properties"] = schema_properties
-        return schema_contents
 
     def _serialize(self, dataclass, indent_count=1):
         """

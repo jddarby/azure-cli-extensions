@@ -11,18 +11,21 @@ param nfDefinitionGroup string
 @description('The version of the NFDV you want to deploy, in format A.B.C')
 param nfDefinitionVersion string
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName
   location: location
 }
 
+// If using publish command, this is created from deploying the cnfbase.bicep
 resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
   parent: publisher
   name: nfDefinitionGroup
@@ -39,7 +42,7 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
     {#- Note that all paths in bicep must be specified using the forward slash #}
     {#-  (/) character even if running on Windows. #}
     {#- See https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules#local-file #}
-    deployParameters: string(loadJsonContent('schemas/deploymentParameters.json'))
+    deployParameters: string(loadJsonContent('deploymentParameters.json'))
     networkFunctionType: 'ContainerizedNetworkFunction'
     networkFunctionTemplate: {
       nfviType: 'AzureArcKubernetes'
@@ -49,7 +52,9 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
           artifactType: 'HelmPackage'
           name: '{{ configuration.name }}'
           dependsOnProfile: {
-            installDependsOn: {{ configuration.depends_on_profile }}
+            installDependsOn: {{ configuration.depends_on_profile.install_depends_on }}
+            uninstallDependsOn: {{ configuration.depends_on_profile.uninstall_depends_on }}
+            updateDependsOn: {{ configuration.depends_on_profile.update_depends_on }}
           }
           artifactProfile: {
             artifactStore: {

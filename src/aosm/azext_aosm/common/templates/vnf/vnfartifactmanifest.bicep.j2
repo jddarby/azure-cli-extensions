@@ -13,18 +13,21 @@ param acrManifestName string
 @description('Name of the manifest to deploy for the Storage Account-backed Artifact Store')
 param saManifestName string
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName
   location: location
 }
 
+// If using publish command, this is created from deploying the vnfbase.bicep
 resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: saArtifactStoreName
