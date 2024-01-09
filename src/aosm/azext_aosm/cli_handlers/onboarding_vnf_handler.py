@@ -191,7 +191,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(VNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
 
-    def build_resource_bicep(self, aosm_client=None):
+    def build_resource_bicep(self):
         """Build the resource bicep file."""
         logger.info("Creating artifacts list for artifacts.json")
         acr_nf_application_list = []

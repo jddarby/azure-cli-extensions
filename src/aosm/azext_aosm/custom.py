@@ -67,8 +67,8 @@ def onboard_nsd_generate_config(output_file: str | None):
 
 def onboard_nsd_build(config_file: str, cmd: AzCliCommand):
     command_context = CommandContext(cli_ctx=cmd.cli_ctx)
-    handler = OnboardingNSDCLIHandler(config_file)
-    handler.build(command_context.aosm_client)
+    handler = OnboardingNSDCLIHandler(config_file, command_context.aosm_client)
+    handler.build()
 
 
 def onboard_nsd_publish(output_folder_path: str):

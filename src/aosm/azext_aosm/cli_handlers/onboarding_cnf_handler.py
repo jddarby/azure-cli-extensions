@@ -134,7 +134,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(CNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
 
-    def build_resource_bicep(self, aosm_client=None):
+    def build_resource_bicep(self):
         """Build the resource bicep file."""
         nf_application_list = []
         mappings_files = []

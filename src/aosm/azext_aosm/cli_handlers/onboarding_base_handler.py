@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+from typing import Optional
 from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
@@ -18,7 +19,8 @@ from azext_aosm.configuration_models.common_parameters_config import \
     BaseCommonParametersConfig
 from azext_aosm.definition_folder.builder.definition_folder_builder import \
     DefinitionFolderBuilder
-
+from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.vendored_sdks.models import AzureCoreNetworkFunctionVhdApplication
 
 logger = get_logger(__name__)
@@ -39,7 +41,8 @@ class OnboardingBaseCLIHandler(ABC):
         """Get the output folder file name."""
         raise NotImplementedError
 
-    def __init__(self, config_file: str | None = None):
+    def __init__(self, config_file: str | None = None, aosm_client: Optional[HybridNetworkManagementClient] = None):
+        self.aosm_client = aosm_client
         # If config file provided (for build, publish and delete)
         if config_file:
             config_file_path = Path(config_file)
@@ -74,13 +77,13 @@ class OnboardingBaseCLIHandler(ABC):
         self._check_for_overwrite(output_path)
         self._write_config_to_file(output_path)
 
-    def build(self, aosm_client=None):
+    def build(self):
         """Build the definition."""
         self.config.validate()
         self.definition_folder_builder.add_element(self.build_base_bicep())
         self.definition_folder_builder.add_element(self.build_manifest_bicep())
         self.definition_folder_builder.add_element(self.build_artifact_list())
-        self.definition_folder_builder.add_element(self.build_resource_bicep(aosm_client))
+        self.definition_folder_builder.add_element(self.build_resource_bicep())
         self.definition_folder_builder.add_element(self.build_common_parameters_json())
         self.definition_folder_builder.write()
 
@@ -103,6 +106,8 @@ class OnboardingBaseCLIHandler(ABC):
     @abstractmethod
     def build_base_bicep(self):
         """ Build bicep file for underlying resources"""
+        raise NotImplementedError
+
     @abstractmethod
     def build_manifest_bicep(self):
         """Build the manifest bicep file."""
@@ -114,7 +119,7 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def build_resource_bicep(self, aosm_client=None):
+    def build_resource_bicep(self):
         """Build the resource bicep file."""
         raise NotImplementedError
 
@@ -333,3 +338,28 @@ class OnboardingBaseCLIHandler(ABC):
             )
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
+
+    def _render_deployment_params_schema(self, complete_params_schema, output_folder_name, definition_folder_name):
+        return LocalFileBuilder(
+            Path(
+                output_folder_name,
+                definition_folder_name,
+                "deploymentParameters.json",
+            ),
+            json.dumps(
+                self._build_deploy_params_schema(complete_params_schema), indent=4
+            ),
+        )
+
+    def _build_deploy_params_schema(self, schema_properties):
+        """
+        Build the schema for deployParameters.json
+        """
+        schema_contents = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "title": "DeployParametersSchema",
+            "type": "object",
+            "properties": {},
+        }
+        schema_contents["properties"] = schema_properties
+        return schema_contents

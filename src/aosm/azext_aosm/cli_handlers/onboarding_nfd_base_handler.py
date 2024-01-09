@@ -18,28 +18,3 @@ class OnboardingNFDBaseCLIHandler(OnboardingBaseCLIHandler):
     def build_base_bicep(self):
         # TODO: Implement
         raise NotImplementedError
-
-    def _render_deployment_params_schema(self, complete_params_schema, output_folder_name, definition_folder_name):
-        return LocalFileBuilder(
-            Path(
-                output_folder_name,
-                definition_folder_name,
-                "deploymentParameters.json",
-            ),
-            json.dumps(
-                self._build_deploy_params_schema(complete_params_schema), indent=4
-            ),
-        )
-
-    def _build_deploy_params_schema(self, schema_properties):
-        """
-        Build the schema for deployParameters.json
-        """
-        schema_contents = {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "DeployParametersSchema",
-            "type": "object",
-            "properties": {},
-        }
-        schema_contents["properties"] = schema_properties
-        return schema_contents

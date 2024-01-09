@@ -110,18 +110,13 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # TODO: add this for artifact manifest and go to j2 template
             if resource_element.resource_element_type == "NF":
                 # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
                     artifact_version=self.config.nsd_version,
                     default_config=None,
-                    network_function_definition=NetworkFunctionDefinitionVersion(
-                        location="test",
-                        tags=None,
-                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(
-                            description="test", deploy_parameters=None
-                        ),
-                    ),
-                    arm_template_output_path=Path("test"),
+                    network_function_definition=nfdv_object,
+                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME, resource_element.properties.name + '.bicep')
                 )
                 nfd_processor = NFDProcessor(
                     name=self.config.nsd_name, input_artifact=nfd_input
@@ -143,6 +138,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         """Build the artifact list."""
         # Build artifact list for ArmTemplates
         artifact_list = []
+        nf_files = []
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "ArmTemplate":
                 arm_input = ArmTemplateInput(
@@ -160,61 +156,52 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     artifact_list.extend(artifacts)
             if resource_element.resource_element_type == "NF":
                 # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                # Get nfdv information from azure using config from input file
+                nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
                     artifact_version=self.config.nsd_version,
                     default_config=None,
-                    network_function_definition=NetworkFunctionDefinitionVersion(
-                        # TODO: is location the location of the nf (if this how do we get it?) or nsd?
-                        location="test",
-                        tags=None,
-                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(
-                            description="test", deploy_parameters=None
-                        ),
-                    ),
-                    arm_template_output_path=Path("test"),
+                    network_function_definition=nfdv_object,
+                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME, resource_element.properties.name + '.bicep'),
                 )
                 nfd_processor = NFDProcessor(
                     name=self.config.nsd_name, input_artifact=nfd_input
                 )
                 (artifacts, files) = nfd_processor.get_artifact_details()
-
                 if artifacts not in artifact_list:
                     artifact_list.extend(artifacts)
-        # Generate Artifact Element with artifact list (of arm template and vhd images)
-        return ArtifactDefinitionElementBuilder(
+                nf_files.extend(files)
+
+        artifact_file = ArtifactDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
+        for nf_arm_template in nf_files:
+            artifact_file.add_supporting_file(nf_arm_template)
 
-    def build_resource_bicep(self, aosm_client):
+        return artifact_file
+
+    def build_resource_bicep(self):
         """Build the resource bicep file."""
         # TODO: Implement
 
         bicep_contents = {}
         schema_properties = {}
         nf_names = []
-        print(bicep_contents)
+        # print(bicep_contents)
 
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "NF":
                 # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
 
                 # Get nfdv information from azure using config from input file
-                nfdv_object = self._get_nfdv(aosm_client, resource_element.properties)
-                print("nfdv", nfdv_object)
+                nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
                     artifact_version=self.config.nsd_version,
                     default_config=None,
-                    network_function_definition=NetworkFunctionDefinitionVersion(
-                        # TODO: is location the location of the nf (if this how do we get it?) or nsd?
-                        location="test",
-                        tags=None,
-                        properties=NetworkFunctionDefinitionVersionPropertiesFormat(
-                            description="test", deploy_parameters=None
-                        ),
-                    ),
-                    arm_template_output_path=Path("test"),
+                    network_function_definition=nfdv_object,
+                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME, resource_element.properties.name + '.bicep'),
                 )
                 nfd_processor = NFDProcessor(
                     name=resource_element.properties.name, input_artifact=nfd_input
@@ -223,8 +210,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 # Generate RET
                 nf_ret = nfd_processor.generate_resource_element_template()
                 # nf_ret.configuration.
+                # TODO: create the bicep file from the nsd template
 
                 # Generate deploymentParameters schema properties
+                params_schema = nfd_processor.generate_params_schema()
+                schema_properties.update(params_schema)
+
                 # JORDAN TODO: check this includes the name of the deploymentParams too?
                 # TODO: test this
                 params_schema = nfd_processor.generate_params_schema()
@@ -233,7 +224,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 # List of NF RET names, for adding to required part of CGS
                 nf_names.append(resource_element.properties.name)
 
-
+        # bicep_contents = THE TEMPLATE
         # Generate the nsd bicep file
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
@@ -241,9 +232,11 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # Add the accompanying cgs
         bicep_file.add_supporting_file(self._render_config_group_schema_contents(schema_properties, nf_names))
 
-        # Add the accomanying NF biceps
-        # for files in nf_files:
-        #    bicep_file.add_supporting_file()
+        # Add the deploymentParameters schema file
+        bicep_file.add_supporting_file(
+            self._render_deployment_params_schema(schema_properties, NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME)
+        )
+
         return bicep_file
 
         # 1.Add config group schema logic (from nsd_generator) as supporting file
@@ -354,12 +347,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         }
         return cgs_contents
 
-    def _get_nfdv(self, aosm_client, nf_properties) -> NetworkFunctionDefinitionVersion:
+    def _get_nfdv(self, nf_properties) -> NetworkFunctionDefinitionVersion:
         """Get the existing NFDV resource object."""
         print(
             f"Reading existing NFDV resource object {nf_properties.version} from group {nf_properties.name}"
         )
-        nfdv_object = aosm_client.network_function_definition_versions.get(
+        nfdv_object = self.aosm_client.network_function_definition_versions.get(
             resource_group_name=nf_properties.publisher_resource_group,
             publisher_name=nf_properties.publisher,
             network_function_definition_group_name=nf_properties.name,
