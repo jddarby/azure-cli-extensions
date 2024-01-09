@@ -105,8 +105,8 @@ class HelmChartProcessor(BaseBuildProcessor):
         # We want to remove the registry values paths and image pull secrets values paths from the values mappings
         # as these values are supplied by NFM when it installs the chart.
         values_to_remove = (
-            artifact_profile.helm_artifact_profile.registry_values_paths
-            | artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
+            artifact_profile.helm_artifact_profile.registry_values_paths +
+            artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
         )
         mapping_rule_profile = self._generate_mapping_rule_profile(values_to_remove)
 
