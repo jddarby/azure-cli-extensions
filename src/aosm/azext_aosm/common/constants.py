@@ -36,7 +36,7 @@ BASE_FOLDER_NAME = "base"
 ARTIFACT_LIST_FILENAME = "artifacts"
 MANIFEST_FOLDER_NAME = "artifactManifest"
 NF_DEFINITION_FOLDER_NAME = "nfDefinition"
-
+ALL_PARAMETERS_FILE_NAME = "all_deploy.parameters.json"
 
 # OLD CONSTANTS
 NF_TEMPLATE_JINJA2_SOURCE_TEMPLATE = "nf_template.bicep.j2"
@@ -54,6 +54,7 @@ NSD_INPUT_FILENAME = "nsd-input.jsonc"
 NSD_MANIFEST_TEMPLATE_FILENAME = "nsdartifactmanifest.bicep.j2"
 NSD_BASE_TEMPLATE_FILENAME = "nsdbase.bicep"
 NSD_DEFINITION_FOLDER_NAME = "nsd"
+
 
 VNF_OUTPUT_FOLDER_FILENAME = "vnf-cli-output"
 VNF_INPUT_FILENAME = "vnf-input.jsonc"
