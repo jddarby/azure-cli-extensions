@@ -18,7 +18,7 @@ from azext_aosm.vendored_sdks.models import (
 from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
 
-from .onboarding_nfd_base_handler import OnboardingBaseCLIHandler
+from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.constants import (
     ARTIFACT_LIST_FILENAME,
     MANIFEST_FOLDER_NAME,
@@ -26,24 +26,21 @@ from azext_aosm.common.constants import (
     NSD_DEFINITION_FOLDER_NAME,
     NSD_OUTPUT_FOLDER_FILENAME,
     # NSD_DEFINITION_TEMPLATE_FILENAME,
-    NSD_OUTPUT_FOLDER_FILENAME,
-    NSD_MANIFEST_TEMPLATE_FILENAME,
     NSD_INPUT_FILENAME,
     BASE_FOLDER_NAME,
     NSD_BASE_TEMPLATE_FILENAME,
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.onboarding_nsd_input_config import (
-    OnboardingNSDInputConfig,
-)
 from azext_aosm.definition_folder.builder.artifact_builder import (
     ArtifactDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
+from azext_aosm.definition_folder.builder.json_builder import JSONDefinitionElementBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
+from azext_aosm.configuration_models.common_parameters_config import NSDCommonParametersConfig
 
 
 class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
@@ -65,6 +62,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             input_config = {}
         return OnboardingNSDInputConfig(**input_config)
 
+    def _get_params_config(self, params_config: dict = None) -> NSDCommonParametersConfig:
+        """Get the configuration for the command."""
+        if params_config is None:
+            params_config = {}
+        return NSDCommonParametersConfig(**params_config)
+
     def build_base_bicep(self):
         """Build the base bicep file."""
 
@@ -78,7 +81,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             Path(NSD_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
         )
         # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_base_parameters_contents())
+        # bicep_file.add_supporting_file(self._render_base_parameters_contents())
         return bicep_file
 
     def build_manifest_bicep(self):
@@ -130,14 +133,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
-        # print(bicep_contents)
 
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
         )
-
-        # Add the accompanying parameters.json
-        bicep_file.add_supporting_file(self._render_manifest_parameters_contents())
         return bicep_file
 
     def build_artifact_list(self):
@@ -199,7 +198,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "NF":
                 # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
-                
+
                 # Get nfdv information from azure using config from input file
                 nfdv_object = self._get_nfdv(aosm_client, resource_element.properties)
                 print("nfdv", nfdv_object)
@@ -220,11 +219,11 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 nfd_processor = NFDProcessor(
                     name=resource_element.properties.name, input_artifact=nfd_input
                 )
-                
+
                 # Generate RET
                 nf_ret = nfd_processor.generate_resource_element_template()
                 # nf_ret.configuration.
-    
+
                 # Generate deploymentParameters schema properties
                 # JORDAN TODO: check this includes the name of the deploymentParams too?
                 # TODO: test this
@@ -253,26 +252,29 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # 3.write the nf bicep file (nf template j2) - not ready, need to discuss w Jacob
         # 4.write nsd bicep (contain cgs, nsdv)
 
-    def _render_base_parameters_contents(self):
+    def build_common_parameters_json(self):
+        # TODO: add common params for build resource bicep
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
                 "location": {"value": self.config.location},
                 "publisherName": {"value": self.config.publisher_name},
+                "publisherResourceGroupName": {
+                    "value": self.config.publisher_resource_group_name
+                },
                 "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+                "acrManifestName": {
+                    "value": self.config.acr_artifact_store_name + "-manifest"
+                },
                 "nsDesignGroup": {"value": self.config.nsd_name},
             },
         }
-
-        return LocalFileBuilder(
-            Path(
-                NSD_OUTPUT_FOLDER_FILENAME,
-                BASE_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
+        print(params_content)
+        base_file = JSONDefinitionElementBuilder(
+            Path(NSD_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
+        return base_file
 
     def _render_config_group_schema_contents(self, complete_schema, nf_names):
         params_content = {
@@ -293,56 +295,55 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         return LocalFileBuilder(
             Path(
                 NSD_OUTPUT_FOLDER_FILENAME,
-                NSD_DEFINITION_FOLDER_NAME,
+            NSD_DEFINITION_FOLDER_NAME,
                 "test-cgs.json",
             ),
             json.dumps(params_content, indent=4),
         )
 
-    def _render_manifest_parameters_contents(self):
-        arm_template_names = []
-        artifact_manifest_names = []
-        # TODO: change manifest name
-        # For each NF, create an arm template name and manifest name
-        for resource_element in self.config.resource_element_templates:
-            if resource_element.resource_element_type == "NF":
-                arm_template_names.append(
-                    f"{resource_element.properties.name}_nf_artifact"
-                )
-                sanitised_nf_name = (
-                    f"{resource_element.properties.name.lower().replace('_','-')}"
-                )
-                sanitised_nsd_version = f"{self.config.nsd_version.replace('.', '-')}"
-                artifact_manifest_names.append(
-                    f"{sanitised_nf_name}-nf-acr-manifest-{sanitised_nsd_version}"
-                )
+    # def _render_manifest_parameters_contents(self):
+    #     arm_template_names = []
+    #     artifact_manifest_names = []
+    #     # TODO: change manifest name
+    #     # For each NF, create an arm template name and manifest name
+    #     for resource_element in self.config.resource_element_templates:
+    #         if resource_element.resource_element_type == "NF":
+    #             arm_template_names.append(
+    #                 f"{resource_element.properties.name}_nf_artifact"
+    #             )
+    #             sanitised_nf_name = (
+    #                 f"{resource_element.properties.name.lower().replace('_','-')}"
+    #             )
+    #             sanitised_nsd_version = f"{self.config.nsd_version.replace('.', '-')}"
+    #             artifact_manifest_names.append(
+    #                 f"{sanitised_nf_name}-nf-acr-manifest-{sanitised_nsd_version}"
+    #             )
 
-        # Set the artifact version to be the same as the NSD version, so that they
-        # don't get over written when a new NSD is published.
-        params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "armTemplateVersion": {"value": self.config.nsd_version},
-            },
-        }
+    #     # Set the artifact version to be the same as the NSD version, so that they
+    #     # don't get over written when a new NSD is published.
+    #     params_content = {
+    #         "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    #         "contentVersion": "1.0.0.0",
+    #         "parameters": {
+    #             "location": {"value": self.config.location},
+    #             "publisherName": {"value": self.config.publisher_name},
+    #             "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
+    #             "acrManifestName": {
+    #                 "value": self.config.acr_artifact_store_name + "-manifest"
+    #             },
+    #             "armTemplateVersion": {"value": self.config.nsd_version},
+    #         },
+    #     }
 
-        # print(params_content)
-        return LocalFileBuilder(
-            Path(
-                NSD_OUTPUT_FOLDER_FILENAME,
-                MANIFEST_FOLDER_NAME,
-                "deploy.parameters.json",
-            ),
-            json.dumps(params_content, indent=4),
-        )
-
+    #     # print(params_content)
+    #     return LocalFileBuilder(
+    #         Path(
+    #             NSD_OUTPUT_FOLDER_FILENAME,
+    #             MANIFEST_FOLDER_NAME,
+    #             "deploy.parameters.json",
+    #         ),
+    #         json.dumps(params_content, indent=4),
+    #     )
     def _render_config_schema_contents(self):
         cgs_contents = {
             "$schema": "https://json-schema.org/draft-07/schema#",
@@ -352,7 +353,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # "required": required,
         }
         return cgs_contents
-    
+
     def _get_nfdv(self, aosm_client, nf_properties) -> NetworkFunctionDefinitionVersion:
         """Get the existing NFDV resource object."""
         print(

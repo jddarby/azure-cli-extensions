@@ -37,3 +37,8 @@ class VNFCommonParametersConfig(NFDCommonParametersConfig):
 @dataclass
 class CNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
+
+
+@dataclass
+class NSDCommonParametersConfig(BaseCommonParametersConfig):
+    """ Common parameters configuration for NSDs"""
