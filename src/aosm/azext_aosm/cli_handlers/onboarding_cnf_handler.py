@@ -9,25 +9,34 @@ from pathlib import Path
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
-from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
-                                         CNF_DEFINITION_TEMPLATE_FILENAME,
-                                         CNF_MANIFEST_TEMPLATE_FILENAME,
-                                         CNF_BASE_TEMPLATE_FILENAME,
-                                         CNF_DEFINITION_FOLDER_NAME,
-                                         CNF_OUTPUT_FOLDER_FILENAME,
-                                         CNF_INPUT_FILENAME,
-                                         MANIFEST_FOLDER_NAME,
-                                         NF_DEFINITION_FOLDER_NAME,
-                                         BASE_FOLDER_NAME)
+from azext_aosm.common.constants import (
+    ARTIFACT_LIST_FILENAME,
+    CNF_DEFINITION_TEMPLATE_FILENAME,
+    CNF_MANIFEST_TEMPLATE_FILENAME,
+    CNF_BASE_TEMPLATE_FILENAME,
+    CNF_DEFINITION_FOLDER_NAME,
+    CNF_OUTPUT_FOLDER_FILENAME,
+    CNF_INPUT_FILENAME,
+    MANIFEST_FOLDER_NAME,
+    NF_DEFINITION_FOLDER_NAME,
+    BASE_FOLDER_NAME,
+)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.onboarding_cnf_input_config import \
-    OnboardingCNFInputConfig
-from azext_aosm.configuration_models.common_parameters_config import CNFCommonParametersConfig
-from azext_aosm.definition_folder.builder.artifact_builder import \
-    ArtifactDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.bicep_builder import \
-    BicepDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.json_builder import JSONDefinitionElementBuilder
+from azext_aosm.configuration_models.onboarding_cnf_input_config import (
+    OnboardingCNFInputConfig,
+)
+from azext_aosm.configuration_models.common_parameters_config import (
+    CNFCommonParametersConfig,
+)
+from azext_aosm.definition_folder.builder.artifact_builder import (
+    ArtifactDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
+)
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 
@@ -50,20 +59,22 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             input_config = {}
         return OnboardingCNFInputConfig(**input_config)
 
-    def _get_params_config(self, params_config: dict = None) -> CNFCommonParametersConfig:
+    def _get_params_config(
+        self, params_config: dict = None
+    ) -> CNFCommonParametersConfig:
         """Get the configuration for the command."""
         if params_config is None:
             params_config = {}
         return CNFCommonParametersConfig(**params_config)
 
     def build_base_bicep(self):
-        """ Build the base bicep file."""
+        """Build the base bicep file."""
 
         # Build manifest bicep contents, with j2 template
-        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME)
-        bicep_contents = self._render_base_bicep_contents(
-            template_path
+        template_path = self._get_template_path(
+            CNF_DEFINITION_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME
         )
+        bicep_contents = self._render_base_bicep_contents(template_path)
         # Create Bicep element with manifest contents
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
@@ -82,26 +93,32 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 if Path.exists(Path(helm_package.path_to_mappings)):
                     provided_config = json.load(open(helm_package.path_to_mappings))
                 else:
-                    raise UnclassifiedUserFault("There is no file at the path provided for the mappings file.")
+                    raise UnclassifiedUserFault(
+                        "There is no file at the path provided for the mappings file."
+                    )
             else:
                 provided_config = None
 
-            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=provided_config)
+            helm_input = HelmChartInput.from_chart_path(
+                Path(helm_package.path_to_chart), default_config=provided_config
+            )
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
                 self.config.images.source_registry,
-                self.config.images.source_registry_namespace
+                self.config.images.source_registry_namespace,
             )
             artifacts = processed_helm.get_artifact_manifest_list()
-        # TODO: future work: make artifact_list a set, then convert back to list
-        # TODO: future work: add to util, compare properly the artifacts
-        # Add artifacts to a list of unique artifacts
+            # TODO: future work: make artifact_list a set, then convert back to list
+            # TODO: future work: add to util, compare properly the artifacts
+            # Add artifacts to a list of unique artifacts
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
 
         # Build manifest bicep contents, with j2 template
-        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(
+            CNF_DEFINITION_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME
+        )
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
         )
@@ -117,13 +134,15 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list = []
         # For each helm package, get list of artifacts and combine
         for helm_package in self.config.helm_packages:
-            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=None)
+            helm_input = HelmChartInput.from_chart_path(
+                Path(helm_package.path_to_chart), default_config=None
+            )
 
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
                 self.config.images.source_registry,
-                self.config.images.source_registry_namespace
+                self.config.images.source_registry_namespace,
             )
             (artifacts, files) = processed_helm.get_artifact_details()
             if artifacts not in artifact_list:
@@ -146,19 +165,23 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 if Path.exists(Path(helm_package.path_to_mappings)):
                     provided_config = json.load(open(helm_package.path_to_mappings))
                 else:
-                    raise UnclassifiedUserFault("There is no file at the path provided for the mappings file.")
+                    raise UnclassifiedUserFault(
+                        "There is no file at the path provided for the mappings file."
+                    )
             else:
                 provided_config = None
 
             # Create HelmChartInput object from chart path provided in input file
-            helm_input = HelmChartInput.from_chart_path(Path(helm_package.path_to_chart), default_config=provided_config)
+            helm_input = HelmChartInput.from_chart_path(
+                Path(helm_package.path_to_chart), default_config=provided_config
+            )
 
             # Create HelmChartProcessor object from HelmChartInput object
             processed_helm = HelmChartProcessor(
                 helm_package.name,
                 helm_input,
                 self.config.images.source_registry,
-                self.config.images.source_registry_namespace
+                self.config.images.source_registry_namespace,
             )
 
             # Generate nf application
@@ -179,11 +202,13 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                     NF_DEFINITION_FOLDER_NAME,
                     nf_application.name + "-mappings.json",
                 ),
-                deploy_values,
+                json.dumps(json.loads(deploy_values), indent=4),
             )
             mappings_files.append(mapping_file)
 
-        template_path = self._get_template_path(CNF_DEFINITION_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME)
+        template_path = self._get_template_path(
+            CNF_DEFINITION_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME
+        )
         bicep_contents = self._render_definition_bicep_contents(
             template_path, nf_application_list
         )
@@ -197,7 +222,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Add the deploymentParameters schema file
         bicep_file.add_supporting_file(
-            self._render_deployment_params_schema(schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME)
+            self._render_deployment_params_schema(
+                schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME
+            )
         )
         return bicep_file
 

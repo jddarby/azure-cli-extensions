@@ -23,7 +23,9 @@ from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
     OnboardingVNFInputConfig,
 )
-from azext_aosm.configuration_models.common_parameters_config import VNFCommonParametersConfig
+from azext_aosm.configuration_models.common_parameters_config import (
+    VNFCommonParametersConfig,
+)
 from azext_aosm.definition_folder.builder.artifact_builder import (
     ArtifactDefinitionElementBuilder,
 )
@@ -62,7 +64,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             input_config = {}
         return OnboardingVNFInputConfig(**input_config)
 
-    def _get_params_config(self, params_config: dict = None) -> VNFCommonParametersConfig:
+    def _get_params_config(
+        self, params_config: dict = None
+    ) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
         if params_config is None:
             params_config = {}
@@ -230,7 +234,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                     NF_DEFINITION_FOLDER_NAME,
                     "templateParameters.json",
                 ),
-                json.dumps(template_params, indent=4),
+                json.dumps(json.loads(template_params), indent=4),
             )
             supporting_files.append(template_parameters_file)
             logger.info(
