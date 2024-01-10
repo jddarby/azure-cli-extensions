@@ -82,7 +82,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             processor_list.append(AzureCoreArmBuildProcessor(
                 arm_input.artifact_name, arm_input
             ))
-    
+
         # Instantiate vhd processor
         if not self.config.vhd.artifact_name:
             self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
