@@ -53,6 +53,7 @@ class OnboardingBaseCLIHandler(ABC):
                         self._read_input_config_from_file(config_file_path)
                     )
                     self.config = self._get_input_config(config_dict)
+                    self.processors = self._get_processor_list()
                 # If config file is the all parameters json file for publish/delete
                 elif config_file_path.suffix == '.json':
                     config_dict = self._read_params_config_from_file(config_file_path)
@@ -126,6 +127,11 @@ class OnboardingBaseCLIHandler(ABC):
     @abstractmethod
     def build_common_parameters_json(self):
         """ Build common parameters.json file """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _get_processor_list(self):
+        """ Get list of processors for use in build """
         raise NotImplementedError
 
     @abstractmethod
