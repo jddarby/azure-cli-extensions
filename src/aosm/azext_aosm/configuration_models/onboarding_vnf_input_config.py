@@ -9,6 +9,11 @@ from typing import List
 
 from azure.cli.core.azclierror import ValidationError
 
+from azext_aosm.configuration_models.common_input import \
+    ArmTemplatePropertiesConfig
+from azext_aosm.configuration_models.onboarding_nfd_base_input_config import \
+    OnboardingNFDBaseInputConfig
+
 from .common_input import ArmTemplatePropertiesConfig
 from .onboarding_nfd_base_input_config import OnboardingNFDBaseInputConfig
 
