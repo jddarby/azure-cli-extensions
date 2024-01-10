@@ -6,8 +6,10 @@
 import json
 from typing import List, Tuple
 
-from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import (BaseStorageAccountArtifact,
+from knack.log import get_logger
+
+from azext_aosm.build_processors.base_processor import BaseInputProcessor
+from azext_aosm.common.artifact import (BaseArtifact,
                                         BlobStorageAccountArtifact,
                                         LocalFileStorageAccountArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
@@ -19,12 +21,31 @@ from azext_aosm.vendored_sdks.models import (
     ManifestArtifactFormat, ReferencedResource, ResourceElementTemplate,
     VhdImageArtifactProfile, VhdImageMappingRuleProfile)
 
+logger = get_logger(__name__)
 
-class VHDProcessor(BaseBuildProcessor):
-    """Base class for build processors."""
+
+class VHDProcessor(BaseInputProcessor):
+    """
+    A class for processing VHD inputs.
+
+    :param name: The name of the artifact.
+    :type name: str
+    :param input_artifact: The input artifact.
+    :type input_artifact: VHDFileInput
+    """
+
+    def __init__(self, name: str, input_artifact: VHDFileInput):
+        super().__init__(name, input_artifact)
+        self.input_artifact: VHDFileInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
-        """Get the artifact list."""
+        """
+        Get the list of artifacts for the artifact manifest.
+
+        :return: A list of artifacts for the artifact manifest.
+        :rtype: List[ManifestArtifactFormat]
+        """
+        logger.info("Getting artifact manifest list for VHD input.")
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
@@ -35,9 +56,15 @@ class VHDProcessor(BaseBuildProcessor):
 
     def get_artifact_details(
         self,
-    ) -> Tuple[List[BaseStorageAccountArtifact], List[LocalFileBuilder]]:
-        """Get the artifact details."""
-        artifacts: List[BaseStorageAccountArtifact] = []
+    ) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+        """
+        Get the artifact details for publishing.
+
+        :return: A tuple containing the list of artifacts and the list of local file builders.
+        :rtype: Tuple[List[BaseArtifact], List[LocalFileBuilder]]
+        """
+        logger.info("Getting artifact details for VHD input.")
+        artifacts: List[BaseArtifact] = []
         file_builders: List[LocalFileBuilder] = []
 
         artifact_manifest = ManifestArtifactFormat(
@@ -46,9 +73,10 @@ class VHDProcessor(BaseBuildProcessor):
             artifact_version=self.input_artifact.artifact_version,
         )
 
-        self.input_artifact: VHDFileInput = self.input_artifact
-
         if self.input_artifact.file_path:
+            logger.debug(
+                "VHD input has a file path. Adding LocalFileStorageAccountArtifact."
+            )
             artifacts.append(
                 LocalFileStorageAccountArtifact(
                     artifact_manifest=artifact_manifest,
@@ -56,6 +84,9 @@ class VHDProcessor(BaseBuildProcessor):
                 )
             )
         elif self.input_artifact.blob_sas_uri:
+            logger.debug(
+                "VHD input has a blob SAS URI. Adding BlobStorageAccountArtifact."
+            )
             artifacts.append(
                 BlobStorageAccountArtifact(
                     artifact_manifest=artifact_manifest,
@@ -63,6 +94,7 @@ class VHDProcessor(BaseBuildProcessor):
                 )
             )
         else:
+            logger.error("VHDFileInput must have either a file path or a blob SAS URI.")
             raise ValueError(
                 "VHDFileInput must have either a file path or a blob SAS URI."
             )
@@ -70,7 +102,14 @@ class VHDProcessor(BaseBuildProcessor):
         return artifacts, file_builders
 
     def generate_nf_application(self) -> AzureCoreNetworkFunctionVhdApplication:
-        """Generate the NF application."""
+        """
+        Generate the NF application.
+
+        :return: The NF application.
+        :rtype: AzureCoreNetworkFunctionVhdApplication
+        """
+        logger.info("Generating NF application for VHD input.")
+
         return AzureCoreNetworkFunctionVhdApplication(
             name=self.name,
             depends_on_profile=DependsOnProfile(),
@@ -79,11 +118,21 @@ class VHDProcessor(BaseBuildProcessor):
         )
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
-        """Generate the resource element template."""
+        """
+        Generate the resource element template.
+
+        :raises NotImplementedError: NSDs do not support deployment of VHDs.
+        """
         raise NotImplementedError("NSDs do not support deployment of VHDs.")
 
     def _generate_artifact_profile(self) -> AzureCoreVhdImageArtifactProfile:
-        """Generate the artifact profile."""
+        """
+        Generate the artifact profile.
+
+        :return: The artifact profile.
+        :rtype: AzureCoreVhdImageArtifactProfile
+        """
+        logger.debug("Generating artifact profile for VHD input.")
         artifact_profile = VhdImageArtifactProfile(
             vhd_name=self.input_artifact.artifact_name,
             vhd_version=self.input_artifact.artifact_version,
@@ -97,7 +146,13 @@ class VHDProcessor(BaseBuildProcessor):
     def _generate_mapping_rule_profile(
         self,
     ) -> AzureCoreVhdImageDeployMappingRuleProfile:
-        """Generate the mapping rule profile."""
+        """
+        Generate the mapping rule profile.
+
+        :return: The mapping rule profile.
+        :rtype: AzureCoreVhdImageDeployMappingRuleProfile
+        """
+        logger.debug("Generating mapping rule profile for VHD input.")
         user_configuration = self.generate_values_mappings(
             self.input_artifact.get_schema(), self.input_artifact.get_defaults()
         )
