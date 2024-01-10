@@ -5,15 +5,16 @@
 
 import json
 from pathlib import Path
+import shutil
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from azext_aosm.definition_folder.builder.base_builder import (
     BaseDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder
+    BicepDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.json_builder import (
-    JSONDefinitionElementBuilder
+    JSONDefinitionElementBuilder,
 )
 
 from typing import List
@@ -36,7 +37,9 @@ class DefinitionFolderBuilder:
     def write(self):
         """Write the definition folder."""
         self._check_for_overwrite()
-        self.path.mkdir(exist_ok=True)
+        if self.path.exists():
+            shutil.rmtree(self.path)
+        self.path.mkdir()
         for element in self.elements:
             element.write()
         index_json = []
