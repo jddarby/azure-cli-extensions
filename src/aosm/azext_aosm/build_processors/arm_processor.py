@@ -5,10 +5,6 @@
 
 import json
 from abc import abstractmethod
-<<<<<<< HEAD
-from dataclasses import dataclass
-=======
->>>>>>> origin/jdarby/add-build-processors
 from typing import List, Tuple, final
 
 from knack.log import get_logger
