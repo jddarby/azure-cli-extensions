@@ -15,7 +15,7 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          MANIFEST_FOLDER_NAME,
                                          NF_DEFINITION_FOLDER_NAME,
                                          VNF_BASE_TEMPLATE_FILENAME,
-                                         VNF_DEFINITION_FOLDER_NAME,
+                                         VNF_TEMPLATE_FOLDER_NAME,
                                          VNF_DEFINITION_TEMPLATE_FILENAME,
                                          VNF_INPUT_FILENAME,
                                          VNF_MANIFEST_TEMPLATE_FILENAME,
@@ -104,7 +104,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
-            VNF_DEFINITION_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME
+            VNF_TEMPLATE_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_base_bicep_contents(template_path)
         # Create Bicep element with manifest contents
@@ -136,7 +136,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
-            VNF_DEFINITION_FOLDER_NAME, VNF_MANIFEST_TEMPLATE_FILENAME
+            VNF_TEMPLATE_FOLDER_NAME, VNF_MANIFEST_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, acr_artifact_list, sa_artifact_list
@@ -224,7 +224,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Create bicep contents using vnf defintion j2 template
         template_path = self._get_template_path(
-            VNF_DEFINITION_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME
+            VNF_TEMPLATE_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_definition_bicep_contents(
             template_path, acr_nf_application_list, nf_application

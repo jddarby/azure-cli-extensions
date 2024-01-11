@@ -34,7 +34,7 @@ class ArmTemplateInput(BaseInput):
         super().__init__(artifact_name, artifact_version, default_config)
         self.template_path = template_path
 
-    def get_defaults(self):
+    def get_defaults(self) -> Dict[str, Any]:
         """
         Gets the default values for configuring the input.
 
@@ -47,6 +47,8 @@ class ArmTemplateInput(BaseInput):
             "Default values for ARM template input: %s",
             json.dumps(default_config, indent=4),
         )
+
+        return default_config
 
     def get_schema(self) -> Dict[str, Any]:
         """

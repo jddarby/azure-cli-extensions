@@ -14,7 +14,7 @@ from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          BASE_FOLDER_NAME,
                                          CNF_BASE_TEMPLATE_FILENAME,
-                                         CNF_DEFINITION_FOLDER_NAME,
+                                         CNF_TEMPLATE_FOLDER_NAME,
                                          CNF_DEFINITION_TEMPLATE_FILENAME,
                                          CNF_INPUT_FILENAME,
                                          CNF_MANIFEST_TEMPLATE_FILENAME,
@@ -98,7 +98,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
-            CNF_DEFINITION_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME
+            CNF_TEMPLATE_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_base_bicep_contents(template_path)
         # Create Bicep element with manifest contents
@@ -125,7 +125,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
-            CNF_DEFINITION_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME
+            CNF_TEMPLATE_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, artifact_list
@@ -188,7 +188,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         # Create bicep contents using cnf defintion j2 template
         template_path = self._get_template_path(
-            CNF_DEFINITION_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME
+            CNF_TEMPLATE_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_definition_bicep_contents(
             template_path, nf_application_list

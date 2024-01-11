@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Highly Confidential Material
+//
+// Bicep template to create an Artifact Manifest, Config Group Schema and NSDV.
+//
+// Requires an existing NFDV from which the values will be populated.
+
+param location string
+@description('Name of an existing publisher, expected to be in the resource group where you deploy the template')
+param publisherName string
+@description('Name of an existing ACR-backed Artifact Store, deployed under the publisher.')
+param acrArtifactStoreName string
+@description('Name of an existing Network Service Design Group')
+param nsDesignGroup string
+@description('The version of the NSDV you want to create, in format A.B.C')
+param nsDesignVersion string
