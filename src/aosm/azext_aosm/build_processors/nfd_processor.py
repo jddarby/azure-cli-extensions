@@ -119,7 +119,7 @@ class NFDProcessor(BaseInputProcessor):
         )
 
         configuration = ArmResourceDefinitionResourceElementTemplate(
-            template_type=TemplateType.ARM_TEMPLATE,
+            template_type=TemplateType.ARM_TEMPLATE.value,
             artifact_profile=artifact_profile,
             parameter_values=json.dumps(parameter_values_dict),
         )
