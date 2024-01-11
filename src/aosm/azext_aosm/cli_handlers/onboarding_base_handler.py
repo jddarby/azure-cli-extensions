@@ -5,23 +5,25 @@
 from __future__ import annotations
 
 import json
-from typing import Optional
 from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
+from typing import Optional
+
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
-from azext_aosm.common.command_context import CommandContext
-from azext_aosm.configuration_models.onboarding_base_input_config import \
-    OnboardingBaseInputConfig
+
+from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.common_parameters_config import \
     BaseCommonParametersConfig
+from azext_aosm.configuration_models.onboarding_base_input_config import \
+    OnboardingBaseInputConfig
 from azext_aosm.definition_folder.builder.definition_folder_builder import \
     DefinitionFolderBuilder
-from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm.vendored_sdks.models import AzureCoreNetworkFunctionVhdApplication
+from azext_aosm.vendored_sdks.models import \
+    AzureCoreNetworkFunctionVhdApplication
 
 logger = get_logger(__name__)
 
@@ -41,21 +43,23 @@ class OnboardingBaseCLIHandler(ABC):
         """Get the output folder file name."""
         raise NotImplementedError
 
-    def __init__(self, config_file: str | None = None, aosm_client: Optional[HybridNetworkManagementClient] = None):
+    def __init__(
+        self,
+        config_file: str | None = None,
+        aosm_client: Optional[HybridNetworkManagementClient] = None,
+    ):
         self.aosm_client = aosm_client
         # If config file provided (for build, publish and delete)
         if config_file:
             config_file_path = Path(config_file)
             try:
                 # If config file is the input.jsonc for build command
-                if config_file_path.suffix == '.jsonc':
-                    config_dict = (
-                        self._read_input_config_from_file(config_file_path)
-                    )
+                if config_file_path.suffix == ".jsonc":
+                    config_dict = self._read_input_config_from_file(config_file_path)
                     self.config = self._get_input_config(config_dict)
                     self.processors = self._get_processor_list()
                 # If config file is the all parameters json file for publish/delete
-                elif config_file_path.suffix == '.json':
+                elif config_file_path.suffix == ".json":
                     config_dict = self._read_params_config_from_file(config_file_path)
                     self.config = self._get_params_config(config_dict)
             except Exception as e:
@@ -106,7 +110,7 @@ class OnboardingBaseCLIHandler(ABC):
 
     @abstractmethod
     def build_base_bicep(self):
-        """ Build bicep file for underlying resources"""
+        """Build bicep file for underlying resources"""
         raise NotImplementedError
 
     @abstractmethod
@@ -126,12 +130,12 @@ class OnboardingBaseCLIHandler(ABC):
 
     @abstractmethod
     def build_common_parameters_json(self):
-        """ Build common parameters.json file """
+        """Build common parameters.json file"""
         raise NotImplementedError
 
     @abstractmethod
     def _get_processor_list(self):
-        """ Get list of processors for use in build """
+        """Get list of processors for use in build"""
         raise NotImplementedError
 
     @abstractmethod
@@ -140,8 +144,10 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_params_config(self, params_config: dict = None) -> BaseCommonParametersConfig:
-        """ Get the parameters config for publish/delete """
+    def _get_params_config(
+        self, params_config: dict = None
+    ) -> BaseCommonParametersConfig:
+        """Get the parameters config for publish/delete"""
         raise NotImplementedError
 
     def _read_input_config_from_file(self, input_json_path: Path) -> dict:
@@ -153,11 +159,11 @@ class OnboardingBaseCLIHandler(ABC):
         return config_dict
 
     def _read_params_config_from_file(self, input_json_path) -> dict:
-        """ Reads input file, takes only the {parameters:values} + returns config as dictionary
+        """Reads input file, takes only the {parameters:values} + returns config as dictionary
 
-            For example,
-            {'location': {'value': 'test'} is added to the schema as
-            {'location': 'test'}
+        For example,
+        {'location': {'value': 'test'} is added to the schema as
+        {'location': 'test'}
 
         """
         with open(input_json_path, "r", encoding="utf-8") as _file:
@@ -166,10 +172,13 @@ class OnboardingBaseCLIHandler(ABC):
         sanitised_schema = {}
         for param in params_schema["parameters"]:
             # Converting camel case to snake case, so armTemplate becomes arm_template
-            snake_case_param = ''.join(['_' + char.lower() if char.isupper()
-                                       else char for char in param]).lstrip('_')
+            snake_case_param = "".join(
+                ["_" + char.lower() if char.isupper() else char for char in param]
+            ).lstrip("_")
             # Add formatted param as key and the param["value"] as the value
-            sanitised_schema[snake_case_param] = params_schema["parameters"][param]["value"]
+            sanitised_schema[snake_case_param] = params_schema["parameters"][param][
+                "value"
+            ]
         return sanitised_schema
 
     def _render_base_bicep_contents(self, template_path):
@@ -345,7 +354,9 @@ class OnboardingBaseCLIHandler(ABC):
             if carry_on != "y":
                 raise UnclassifiedUserFault("User aborted!")
 
-    def _render_deployment_params_schema(self, complete_params_schema, output_folder_name, definition_folder_name):
+    def _render_deployment_params_schema(
+        self, complete_params_schema, output_folder_name, definition_folder_name
+    ):
         return LocalFileBuilder(
             Path(
                 output_folder_name,

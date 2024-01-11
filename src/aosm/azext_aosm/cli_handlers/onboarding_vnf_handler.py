@@ -4,35 +4,33 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
+
 from knack.log import get_logger
-from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor, BaseArmBuildProcessor
+
+from azext_aosm.build_processors.arm_processor import (
+    AzureCoreArmBuildProcessor, BaseArmBuildProcessor)
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
-from azext_aosm.common.constants import (
-    ARTIFACT_LIST_FILENAME,
-    MANIFEST_FOLDER_NAME,
-    NF_DEFINITION_FOLDER_NAME,
-    VNF_DEFINITION_TEMPLATE_FILENAME,
-    VNF_MANIFEST_TEMPLATE_FILENAME,
-    VNF_OUTPUT_FOLDER_FILENAME,
-    VNF_INPUT_FILENAME,
-    VNF_DEFINITION_FOLDER_NAME,
-    VNF_BASE_TEMPLATE_FILENAME,
-    BASE_FOLDER_NAME,
-)
+from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
+                                         BASE_FOLDER_NAME,
+                                         MANIFEST_FOLDER_NAME,
+                                         NF_DEFINITION_FOLDER_NAME,
+                                         VNF_BASE_TEMPLATE_FILENAME,
+                                         VNF_DEFINITION_FOLDER_NAME,
+                                         VNF_DEFINITION_TEMPLATE_FILENAME,
+                                         VNF_INPUT_FILENAME,
+                                         VNF_MANIFEST_TEMPLATE_FILENAME,
+                                         VNF_OUTPUT_FOLDER_FILENAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.onboarding_vnf_input_config import (
-    OnboardingVNFInputConfig,
-)
-from azext_aosm.configuration_models.common_parameters_config import VNFCommonParametersConfig
-from azext_aosm.definition_folder.builder.artifact_builder import (
-    ArtifactDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.json_builder import (
-    JSONDefinitionElementBuilder,
-)
+from azext_aosm.configuration_models.common_parameters_config import \
+    VNFCommonParametersConfig
+from azext_aosm.configuration_models.onboarding_vnf_input_config import \
+    OnboardingVNFInputConfig
+from azext_aosm.definition_folder.builder.artifact_builder import \
+    ArtifactDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.bicep_builder import \
+    BicepDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.json_builder import \
+    JSONDefinitionElementBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
 
@@ -62,7 +60,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             input_config = {}
         return OnboardingVNFInputConfig(**input_config)
 
-    def _get_params_config(self, params_config: dict = None) -> VNFCommonParametersConfig:
+    def _get_params_config(
+        self, params_config: dict = None
+    ) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
         if params_config is None:
             params_config = {}
@@ -79,9 +79,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 template_path=Path(arm_template.file_path),
             )
             # TODO: generalise for nexus in nexus ready stories
-            processor_list.append(AzureCoreArmBuildProcessor(
-                arm_input.artifact_name, arm_input
-            ))
+            processor_list.append(
+                AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+            )
 
         # Instantiate vhd processor
         if not self.config.vhd.artifact_name:
@@ -130,7 +130,8 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             elif isinstance(processor, VHDProcessor):
                 sa_artifact_list = processor.get_artifact_manifest_list()
                 logger.debug(
-                    "Created list of artifacts from vhd image provided: %s", sa_artifact_list
+                    "Created list of artifacts from vhd image provided: %s",
+                    sa_artifact_list,
                 )
 
         # Build manifest bicep contents, with j2 template
@@ -155,7 +156,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         artifact_list = []
         # For each arm template, get list of artifacts and combine
         for processor in self.processors:
-            (artifacts, files) = processor.get_artifact_details()
+            (artifacts, _) = processor.get_artifact_details()
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
         logger.debug(

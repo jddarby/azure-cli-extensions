@@ -5,16 +5,15 @@
 
 import json
 from pathlib import Path
+
 from azure.cli.core.azclierror import UnclassifiedUserFault
-from azext_aosm.definition_folder.builder.base_builder import (
-    BaseDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.bicep_builder import (
+
+from azext_aosm.definition_folder.builder.base_builder import \
+    BaseDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.bicep_builder import \
     BicepDefinitionElementBuilder
-)
-from azext_aosm.definition_folder.builder.json_builder import (
+from azext_aosm.definition_folder.builder.json_builder import \
     JSONDefinitionElementBuilder
-)
 
 
 class DefinitionFolderBuilder:

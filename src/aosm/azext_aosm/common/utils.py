@@ -6,6 +6,7 @@
 import os
 import tarfile
 from pathlib import Path
+
 from azext_aosm.common.exceptions import InvalidFileTypeError
 
 

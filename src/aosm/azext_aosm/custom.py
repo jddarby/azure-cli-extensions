@@ -12,6 +12,7 @@ from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME
 from azure.cli.core.commands import AzCliCommand
 
+
 def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
     if definition_type == "cnf":
         handler = OnboardingCNFCLIHandler()
@@ -38,10 +39,14 @@ def onboard_nfd_build(definition_type: str, config_file: str):
 
 def onboard_nfd_publish(definition_type: str, output_folder_path: str):
     if definition_type == "cnf":
-        handler = OnboardingCNFCLIHandler(output_folder_path + '/' + ALL_PARAMETERS_FILE_NAME)
+        handler = OnboardingCNFCLIHandler(
+            output_folder_path + "/" + ALL_PARAMETERS_FILE_NAME
+        )
         handler.publish()
     elif definition_type == "vnf":
-        handler = OnboardingVNFCLIHandler(output_folder_path + '/' + ALL_PARAMETERS_FILE_NAME)
+        handler = OnboardingVNFCLIHandler(
+            output_folder_path + "/" + ALL_PARAMETERS_FILE_NAME
+        )
         handler.publish()
     else:
         # TODO: better error
@@ -72,7 +77,9 @@ def onboard_nsd_build(config_file: str, cmd: AzCliCommand):
 
 
 def onboard_nsd_publish(output_folder_path: str):
-    handler = OnboardingNSDCLIHandler(output_folder_path + '/' + ALL_PARAMETERS_FILE_NAME)
+    handler = OnboardingNSDCLIHandler(
+        output_folder_path + "/" + ALL_PARAMETERS_FILE_NAME
+    )
     handler.publish()
 
 
