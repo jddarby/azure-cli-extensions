@@ -24,7 +24,7 @@ from azext_aosm.definition_folder.builder.definition_folder_builder import \
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.vendored_sdks.models import \
     AzureCoreNetworkFunctionVhdApplication
-
+from azext_aosm.common.constants import DEPLOYMENT_PARAMETERS_FILENAME
 logger = get_logger(__name__)
 
 
@@ -195,8 +195,7 @@ class OnboardingBaseCLIHandler(ABC):
     def _render_definition_bicep_contents(
         self,
         template_path: Path,
-        acr_nf_application: list,
-        sa_nf_application: AzureCoreNetworkFunctionVhdApplication = None,
+        params
     ):
         """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
@@ -205,9 +204,7 @@ class OnboardingBaseCLIHandler(ABC):
                 undefined=StrictUndefined,
             )
 
-        bicep_contents: str = template.render(
-            acr_nf_applications=acr_nf_application, sa_nf_application=sa_nf_application
-        )
+        bicep_contents: str = template.render(params)
         return bicep_contents
 
     def _render_manifest_bicep_contents(
@@ -361,7 +358,7 @@ class OnboardingBaseCLIHandler(ABC):
             Path(
                 output_folder_name,
                 definition_folder_name,
-                "deploymentParameters.json",
+                DEPLOYMENT_PARAMETERS_FILENAME,
             ),
             json.dumps(
                 self._build_deploy_params_schema(complete_params_schema), indent=4

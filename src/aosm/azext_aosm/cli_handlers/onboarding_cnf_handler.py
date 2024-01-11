@@ -20,7 +20,8 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          CNF_MANIFEST_TEMPLATE_FILENAME,
                                          CNF_OUTPUT_FOLDER_FILENAME,
                                          MANIFEST_FOLDER_NAME,
-                                         NF_DEFINITION_FOLDER_NAME)
+                                         NF_DEFINITION_FOLDER_NAME,
+                                         DEPLOYMENT_PARAMETERS_FILENAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.common_parameters_config import \
     CNFCommonParametersConfig
@@ -190,8 +191,13 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         template_path = self._get_template_path(
             CNF_TEMPLATE_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME
         )
+        
+        params = {
+            "acr_nf_applications": nf_application_list,
+            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME
+        }
         bicep_contents = self._render_definition_bicep_contents(
-            template_path, nf_application_list
+            template_path, params
         )
 
         # Create a bicep element + add its supporting mapping files

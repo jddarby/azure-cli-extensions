@@ -19,7 +19,10 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          VNF_DEFINITION_TEMPLATE_FILENAME,
                                          VNF_INPUT_FILENAME,
                                          VNF_MANIFEST_TEMPLATE_FILENAME,
-                                         VNF_OUTPUT_FOLDER_FILENAME)
+                                         VNF_OUTPUT_FOLDER_FILENAME,
+                                         DEPLOYMENT_PARAMETERS_FILENAME,
+                                         VHD_PARAMETERS_FILENAME,
+                                         TEMPLATE_PARAMETERS_FILENAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.common_parameters_config import \
     VNFCommonParametersConfig
@@ -196,7 +199,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                     Path(
                         VNF_OUTPUT_FOLDER_FILENAME,
                         NF_DEFINITION_FOLDER_NAME,
-                        "templateParameters.json",
+                        TEMPLATE_PARAMETERS_FILENAME,
                     ),
                     json.dumps(template_params, indent=4),
                 )
@@ -216,7 +219,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                     Path(
                         VNF_OUTPUT_FOLDER_FILENAME,
                         NF_DEFINITION_FOLDER_NAME,
-                        "vhdParameters.json",
+                        VHD_PARAMETERS_FILENAME,
                     ),
                     vhd_params,
                 )
@@ -226,8 +229,16 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         template_path = self._get_template_path(
             VNF_TEMPLATE_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME
         )
+        
+        params = {
+            "acr_nf_applications": acr_nf_application_list,
+            "sa_nf_application": nf_application,
+            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "vhd_parameters_file": VHD_PARAMETERS_FILENAME,
+            "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME
+        }
         bicep_contents = self._render_definition_bicep_contents(
-            template_path, acr_nf_application_list, nf_application
+            template_path, params
         )
 
         # Create a bicep element

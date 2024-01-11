@@ -39,16 +39,9 @@ MANIFEST_FOLDER_NAME = "artifactManifest"
 NF_DEFINITION_FOLDER_NAME = "nfDefinition"
 ALL_PARAMETERS_FILE_NAME = "all_deploy.parameters.json"
 CGS_FILENAME = "config_group_schema.json"
-# OLD CONSTANTS
-NF_TEMPLATE_JINJA2_SOURCE_TEMPLATE = "nf_template.bicep.j2"
-NF_DEFINITION_JSON_FILENAME = "nf_definition.json"
-NF_DEFINITION_OUTPUT_BICEP_PREFIX = "nfd-bicep-"
-NSD_DEFINITION_JINJA2_SOURCE_TEMPLATE = "nsd_template.bicep.j2"
-NSD_BICEP_FILENAME = "nsd_definition.bicep"
-NSD_OUTPUT_BICEP_PREFIX = "nsd-bicep-templates"
-NSD_ARTIFACT_MANIFEST_BICEP_FILENAME = "artifact_manifest.bicep"
-NSD_ARTIFACT_MANIFEST_SOURCE_TEMPLATE_FILENAME = "artifact_manifest_template.bicep"
-
+DEPLOYMENT_PARAMETERS_FILENAME = "deploymentParameters.json"
+TEMPLATE_PARAMETERS_FILENAME = "templateParameters.json"
+VHD_PARAMETERS_FILENAME = "vhdParameters.json"
 
 NSD_OUTPUT_FOLDER_FILENAME = "nsd-cli-output"
 NSD_INPUT_FILENAME = "nsd-input.jsonc"
@@ -73,6 +66,10 @@ CNF_BASE_TEMPLATE_FILENAME = "cnfbase.bicep"
 CNF_VALUES_SCHEMA_FILENAME = "values.schema.json"
 CNF_TEMPLATE_FOLDER_NAME = "cnf"
 
+#################
+# OLD CONSTANTS #
+#################
+
 # Names of directories used in the repo
 # CONFIG_MAPPINGS_DIR_NAME = "configMappings"
 # SCHEMAS_DIR_NAME = "schemas"
@@ -80,10 +77,8 @@ CNF_TEMPLATE_FOLDER_NAME = "cnf"
 GENERATED_VALUES_MAPPINGS_DIR_NAME = "generatedValuesMappings"
 
 # Items used when building NFDs/NSDs
-DEPLOYMENT_PARAMETERS_FILENAME = "deploymentParameters.json"
 OPTIONAL_DEPLOYMENT_PARAMETERS_FILENAME = "optionalDeploymentParameters.txt"
-TEMPLATE_PARAMETERS_FILENAME = "templateParameters.json"
-VHD_PARAMETERS_FILENAME = "vhdParameters.json"
+
 OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING = (
     "# The following parameters are optional as they have default values.\n"
     "# If you do not wish to expose them in the NFD, find and remove them from both\n"
