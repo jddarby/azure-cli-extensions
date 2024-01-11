@@ -4,67 +4,83 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from knack.log import get_logger
+
+from azext_aosm.common.constants import BASE_SCHEMA
 from azext_aosm.inputs.base_input import BaseInput
 
+logger = get_logger(__name__)
 
-@dataclass
+
 class VHDFileInput(BaseInput):
     """
-    A utility class for working with VHD files.
+    A utility class for working with VHD file inputs.
+
+    :param artifact_name: The name of the artifact.
+    :type artifact_name: str
+    :param artifact_version: The version of the artifact.
+    :type artifact_version: str
+    :param file_path: The path to the VHD file.
+    :type file_path: Path
+    :param default_config: The default configuration.
+    :type default_config: Optional[Dict[str, Any]]
+    :param blob_sas_uri: The blob SAS URI.
+    :type blob_sas_uri: Optional[str]
     """
 
-    file_path: Optional[Path] = None
-    blob_sas_uri: Optional[str] = None
+    def __init__(
+        self,
+        artifact_name: str,
+        artifact_version: str,
+        file_path: Optional[Path] = None,
+        blob_sas_uri: Optional[str] = None,
+        default_config: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(artifact_name, artifact_version, default_config)
+        self.file_path = file_path
+        self.blob_sas_uri = blob_sas_uri
 
     def get_defaults(self) -> Dict[str, Any]:
         """
-        Abstract method to get the default values for configuring the artifact.
-        Returns:
-            A dictionary containing the default values.
+        Gets the default values for configuring the input.
+
+        :return: A dictionary containing the default values.
+        :rtype: Dict[str, Any]
         """
-        if self.default_config:
-            return self.default_config
-        return {}
+        logger.info("Getting default values for VHD file input")
+        default_config = self.default_config or {}
+        logger.debug(
+            "Default values for VHD file Input: %s",
+            json.dumps(default_config, indent=4),
+        )
+
+        return default_config
 
     def get_schema(self) -> Dict[str, Any]:
         """
-        Abstract method to get the schema for configuring the artifact.
-        Returns:
-            A dictionary containing the schema.
-        """
-        vhd_schema = """
-        {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "vhdImageSchema",
-            "type": "object",
-            "properties": {
-                "imageName": {
-                    "type": "string"
-                },
-                "azureDeployLocation": {
-                    "type": "string"
-                },
-                "imageDiskSizeGB": {
-                    "type": "integer"
-                },
-                "imageOsState": {
-                    "type": "string"
-                },
-                "imageHyperVGeneration": {
-                    "type": "string"
-                },
-                "apiVersion": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "imageName"
-            ]
-        }
-        """
+        Gets the schema for the VHD file input.
 
-        return json.loads(vhd_schema)
+        :return: A dictionary containing the schema.
+        :rtype: Dict[str, Any]
+        """
+        logger.info("Getting schema for VHD file input")
+        vhd_properties = {
+            "imageName": {"type": "string"},
+            "azureDeployLocation": {"type": "string"},
+            "imageDiskSizeGB": {"type": "integer"},
+            "imageOsState": {"type": "string"},
+            "imageHyperVGeneration": {"type": "string"},
+            "apiVersion": {"type": "string"},
+        }
+        vhd_required = ["imageName"]
+
+        schema = BASE_SCHEMA.copy()
+        schema["properties"].update(vhd_properties)
+        schema["required"] += vhd_required
+
+        logger.debug("Schema for VHD file input: %s", json.dumps(schema, indent=4))
+
+        return schema

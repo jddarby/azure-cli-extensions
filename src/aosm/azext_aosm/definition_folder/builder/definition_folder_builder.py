@@ -16,8 +16,6 @@ from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder
 )
 
-from typing import List
-
 
 class DefinitionFolderBuilder:
     """Builds and writes out a definition folder for an NFD or NSD."""

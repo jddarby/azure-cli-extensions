@@ -5,6 +5,7 @@
 """Constants used across aosm cli extension."""
 
 from enum import Enum
+from typing import Any, Dict
 
 # The types of definition that can be generated
 VNF = "vnf"
@@ -140,3 +141,10 @@ AOSM_FEATURE_NAMESPACE = "Microsoft.HybridNetwork"
 AOSM_REQUIRED_FEATURES = [
     "Allow-Publisher",
 ]
+
+BASE_SCHEMA: Dict[str, Any] = {
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {},
+    "required": []
+}

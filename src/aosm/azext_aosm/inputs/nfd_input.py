@@ -4,33 +4,60 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from knack.log import get_logger
+
+from azext_aosm.common.constants import BASE_SCHEMA
 from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 
+logger = get_logger(__name__)
 
-@dataclass
+
 class NFDInput(BaseInput):
     """
-    A utility class for working with VHD files.
+    A utility class for working with Network Function Definition inputs.
+
+    :param artifact_name: The name of the artifact.
+    :type artifact_name: str
+    :param artifact_version: The version of the artifact.
+    :type artifact_version: str
+    :param network_function_definition: The network function definition.
+    :type network_function_definition: NetworkFunctionDefinitionVersion
+    :param arm_template_output_path: The path to the ARM template output.
+    :type arm_template_output_path: Path
+    :param default_config: The default configuration.
+    :type default_config: Optional[Dict[str, Any]]
     """
 
-    network_function_definition: NetworkFunctionDefinitionVersion
-    arm_template_output_path: Path
+    def __init__(
+        self,
+        artifact_name: str,
+        artifact_version: str,
+        network_function_definition: NetworkFunctionDefinitionVersion,
+        arm_template_output_path: Path,
+        default_config: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(artifact_name, artifact_version, default_config)
+        self.network_function_definition = network_function_definition
+        self.arm_template_output_path = arm_template_output_path
 
     def get_defaults(self) -> Dict[str, Any]:
         """
-        Abstract method to get the default values for configuring the artifact.
-        Returns:
-            A dictionary containing the default values.
+        Gets the default values for configuring the input.
+
+        :return: A dictionary containing the default values.
+        :rtype: Dict[str, Any]
         """
-        split_id = self.network_function_definition.id.split("/")
-        publisher_name = split_id[8]
-        nfdg_name = split_id[10]
-        publisher_resource_group = split_id[4]
+        if self.network_function_definition.id:
+            split_id = self.network_function_definition.id.split("/")
+            publisher_name: str = split_id[8]
+            nfdg_name: str = split_id[10]
+            publisher_resource_group: str = split_id[4]
+
+        logger.info("Getting default values for NFD Input")
 
         base_defaults = {
             "configObject": {
@@ -41,76 +68,62 @@ class NFDInput(BaseInput):
             }
         }
 
-        if (
+        if self.network_function_definition.properties and (
             self.network_function_definition.properties.network_function_type
             == "VirtualNetworkFunction"
         ):
             base_defaults["configObject"]["customLocationId"] = ""
 
+        logger.debug(
+            "Default values for NFD Input: %s", json.dumps(base_defaults, indent=4)
+        )
+
         return base_defaults
 
     def get_schema(self) -> Dict[str, Any]:
         """
-        Abstract method to get the schema for configuring the artifact.
-        Returns:
-            A dictionary containing the schema.
-        """
-        base_schema = """
-        {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "nfDeploySchema",
-            "type": "object",
-            "properties": {
-                "configObject": {
-                    "type": "object",
-                    "properties": {
-                        "publisherName": {
-                            "type": "string"
-                        },
-                        "nfdgName": {
-                            "type": "string"
-                        },
-                        "nfdvName": {
-                            "type": "string"
-                        },
-                        "publisherResourceGroup": {
-                            "type": "string"
-                        },
-                        "location": {
-                            "type": "string"
-                        },
-                        "deploymentParameters": {
-                            "type": "array",
-                            "items": {
-                                "type": "object"
-                            }
-                        },
-                        "customLocationId": {
-                            "type": "string"
-                        },
-                        "managedIdentityId": {
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "publisherName",
-                        "nfdgName",
-                        "nfdvName",
-                        "publisherResourceGroup",
-                        "location",
-                        "deploymentParameters",
-                        "customLocationId",
-                        "managedIdentityId"
-                    ]
-                }
-            },
-            "required": [
-                "configObject"
-            ]
-        }
-        """
+        Gets the parameter schema for configuring the input.
 
-        schema = json.loads(base_schema)
+        :return: A dictionary containing the schema.
+        :rtype: Dict[str, Any]
+        :raises ValueError: If no deployment parameters schema is found on the network function definition version.
+        """
+        logger.info("Getting schema for NFD Input")
+        schema_properties = {
+            "configObject": {
+                "type": "object",
+                "properties": {
+                    "publisherName": {"type": "string"},
+                    "nfdgName": {"type": "string"},
+                    "nfdvName": {"type": "string"},
+                    "publisherResourceGroup": {"type": "string"},
+                    "location": {"type": "string"},
+                    "deploymentParameters": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                    },
+                    "customLocationId": {"type": "string"},
+                    "managedIdentityId": {"type": "string"},
+                },
+                "required": [
+                    "publisherName",
+                    "nfdgName",
+                    "nfdvName",
+                    "publisherResourceGroup",
+                    "location",
+                    "deploymentParameters",
+                    "customLocationId",
+                    "managedIdentityId",
+                ],
+            }
+        }
+
+        schema_required_properties = ["configObject"]
+
+        schema = BASE_SCHEMA.copy()
+        schema["properties"] = schema_properties
+        schema["required"] = schema_required_properties
+
         nfdv_properties = self.network_function_definition.properties
 
         if nfdv_properties and nfdv_properties.deploy_parameters:
@@ -118,5 +131,13 @@ class NFDInput(BaseInput):
                 "items"
             ] = json.loads(nfdv_properties.deploy_parameters)
 
+            logger.debug("Schema for NFD Input: %s", json.dumps(schema, indent=4))
+
             return schema
-        raise ValueError("No properties found in the network function definition.")
+
+        logger.error(
+            "No deployment parameters schema found on the network function definition version."
+        )
+        raise ValueError(
+            "No deployment parameters schema found on the network function definition version."
+        )
