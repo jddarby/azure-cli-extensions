@@ -14,6 +14,8 @@ param acrArtifactStoreName string
 param nsDesignGroup string
 @description('The version of the NSDV you want to create, in format A.B.C')
 param nsDesignVersion string
+@description('Name of the nfvi site')
+param nfviSiteName string = '{{nfvi_site_name}}'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created.
@@ -40,7 +42,7 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
 // The operator will create a config group values object that will satisfy this schema.
 resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
   parent: publisher
-  name: 'ConfigGroupSchema'
+  name: '{{cgs_name}}'
   location: location
   properties: {
     schemaDefinition: string(loadJsonContent('{{cgs_file}}'))
@@ -54,14 +56,14 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
   name: nsDesignVersion
   location: location
   properties: {
-    description: 'TEMP'
+    description: '{{nsdv_description}}'
     // The version state can be Preview, Active or Deprecated.
     // Once in an Active state, the NSDV becomes immutable.
     versionState: 'Preview'
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
-      'ConfigGroupSchema': {
+      {{cgs_name}}: {
         id: cgSchema.id
       }
     }

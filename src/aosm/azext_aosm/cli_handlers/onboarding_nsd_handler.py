@@ -52,6 +52,16 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         """Get the output folder file name."""
         return NSD_OUTPUT_FOLDER_FILENAME
 
+    @property
+    def nfvi_site_name(self) -> str:
+        """Return the name of the NFVI used for the NSDV."""
+        return f"{self.config.nsd_name}_NFVI"
+
+    @property
+    def cg_schema_name(self) -> str:
+        """Return the name of the Configuration Schema used for the NSDV."""
+        return f"{self.config.nsd_name.replace('-', '_')}_ConfigGroupSchema"
+
     def _get_input_config(self, input_config: dict = None) -> OnboardingNSDInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
@@ -213,7 +223,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         )
 
         params = {
-            "arm_rets": arm_ret_list,
+            "nsdv_description": self.config.nsdv_description,
+            "cgs_name": self.cg_schema_name,
+            "nfvi_site_name": self.nfvi_site_name,
             "nf_rets": ret_list,
             "cgs_file": CGS_FILENAME,
             "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
