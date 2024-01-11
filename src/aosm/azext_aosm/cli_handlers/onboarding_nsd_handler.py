@@ -5,7 +5,7 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-
+from knack.log import get_logger
 from azext_aosm.configuration_models.onboarding_nsd_input_config import (
     OnboardingNSDInputConfig,
 )
@@ -15,7 +15,7 @@ from azext_aosm.vendored_sdks.models import (
     NetworkFunctionDefinitionVersionPropertiesFormat,
 )
 
-from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
+from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor, BaseArmBuildProcessor
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
 
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
@@ -41,7 +41,7 @@ from azext_aosm.definition_folder.builder.json_builder import JSONDefinitionElem
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.configuration_models.common_parameters_config import NSDCommonParametersConfig
-
+logger = get_logger(__name__)
 
 class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for publishing NFDs."""
@@ -67,6 +67,37 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         if params_config is None:
             params_config = {}
         return NSDCommonParametersConfig(**params_config)
+
+    def _get_processor_list(self):
+        processor_list = []
+        # for each resource element template, instantiate processor
+        for resource_element in self.config.resource_element_templates:
+            if resource_element.resource_element_type == "ArmTemplate":
+                arm_input = ArmTemplateInput(
+                    artifact_name=resource_element.properties.artifact_name,
+                    artifact_version=resource_element.properties.version,
+                    default_config=None,
+                    template_path=Path(resource_element.properties.file_path),
+                )
+                # TODO: generalise for nexus in nexus ready stories
+                processor_list.append(AzureCoreArmBuildProcessor(
+                    arm_input.artifact_name, arm_input
+                ))
+            if resource_element.resource_element_type == "NF":
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                nfdv_object = self._get_nfdv(resource_element.properties)
+                nfd_input = NFDInput(
+                    artifact_name=self.config.nsd_name,
+                    artifact_version=self.config.nsd_version,
+                    default_config=None,
+                    network_function_definition=nfdv_object,
+                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME, resource_element.properties.name + '.bicep')
+                )
+                nfd_processor = NFDProcessor(
+                    name=self.config.nsd_name, input_artifact=nfd_input
+                )
+                processor_list.append(nfd_processor)
+        return processor_list
 
     def build_base_bicep(self):
         """Build the base bicep file."""
@@ -94,34 +125,11 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         """
         # Build artifact list for ArmTemplates
         artifact_list = []
-        for resource_element in self.config.resource_element_templates:
-            if resource_element.resource_element_type == "ArmTemplate":
-                arm_input = ArmTemplateInput(
-                    artifact_name=resource_element.properties.artifact_name,
-                    artifact_version=resource_element.properties.version,
-                    default_config=None,
-                    template_path=Path(resource_element.properties.file_path),
-                )
-                # TODO: generalise for nexus in nexus ready stories
-                arm_processor = AzureCoreArmBuildProcessor(
-                    arm_input.artifact_name, arm_input
-                )
-                artifact_list.extend(arm_processor.get_artifact_manifest_list())
-            # TODO: add this for artifact manifest and go to j2 template
-            if resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
-                nfdv_object = self._get_nfdv(resource_element.properties)
-                nfd_input = NFDInput(
-                    artifact_name=self.config.nsd_name,
-                    artifact_version=self.config.nsd_version,
-                    default_config=None,
-                    network_function_definition=nfdv_object,
-                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME, resource_element.properties.name + '.bicep')
-                )
-                nfd_processor = NFDProcessor(
-                    name=self.config.nsd_name, input_artifact=nfd_input
-                )
-                artifact_list.extend(nfd_processor.get_artifact_manifest_list())
+        for processor in self.processors:
+            artifact_list.extend(processor.get_artifact_manifest_list())
+        logger.debug(
+            "Created list of artifacts from resource element(s) provided: %s", artifact_list
+        )
         template_path = self._get_template_path(
             NSD_DEFINITION_FOLDER_NAME, NSD_MANIFEST_TEMPLATE_FILENAME
         )
@@ -139,38 +147,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # Build artifact list for ArmTemplates
         artifact_list = []
         nf_files = []
-        for resource_element in self.config.resource_element_templates:
-            if resource_element.resource_element_type == "ArmTemplate":
-                arm_input = ArmTemplateInput(
-                    artifact_name=resource_element.properties.artifact_name,
-                    artifact_version=resource_element.properties.version,
-                    default_config=None,
-                    template_path=Path(resource_element.properties.file_path),
-                )
-                # TODO: generalise for nexus in nexus ready stories
-                arm_processor = AzureCoreArmBuildProcessor(
-                    arm_input.artifact_name, arm_input
-                )
-                (artifacts, files) = arm_processor.get_artifact_details()
-                if artifacts not in artifact_list:
-                    artifact_list.extend(artifacts)
-            if resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
-                # Get nfdv information from azure using config from input file
-                nfdv_object = self._get_nfdv(resource_element.properties)
-                nfd_input = NFDInput(
-                    artifact_name=self.config.nsd_name,
-                    artifact_version=self.config.nsd_version,
-                    default_config=None,
-                    network_function_definition=nfdv_object,
-                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME, resource_element.properties.name + '.bicep'),
-                )
-                nfd_processor = NFDProcessor(
-                    name=self.config.nsd_name, input_artifact=nfd_input
-                )
-                (artifacts, files) = nfd_processor.get_artifact_details()
-                if artifacts not in artifact_list:
-                    artifact_list.extend(artifacts)
+        for processor in self.processors:
+            (artifacts, files) = processor.get_artifact_details()
+            if artifacts not in artifact_list:
+                artifact_list.extend(artifacts)
+            # If NF, add the accompanying file
+            if isinstance(processor, NFDProcessor):
                 nf_files.extend(files)
 
         artifact_file = ArtifactDefinitionElementBuilder(
@@ -190,39 +172,41 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         nf_names = []
         # print(bicep_contents)
 
-        for resource_element in self.config.resource_element_templates:
-            if resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+        # for resource_element in self.config.resource_element_templates:
+        #     if resource_element.resource_element_type == "NF":
+        #         # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
 
-                # Get nfdv information from azure using config from input file
-                nfdv_object = self._get_nfdv(resource_element.properties)
-                nfd_input = NFDInput(
-                    artifact_name=self.config.nsd_name,
-                    artifact_version=self.config.nsd_version,
-                    default_config=None,
-                    network_function_definition=nfdv_object,
-                    arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME, resource_element.properties.name + '.bicep'),
-                )
-                nfd_processor = NFDProcessor(
-                    name=resource_element.properties.name, input_artifact=nfd_input
-                )
-
+        #         # Get nfdv information from azure using config from input file
+        #         nfdv_object = self._get_nfdv(resource_element.properties)
+        #         nfd_input = NFDInput(
+        #             artifact_name=self.config.nsd_name,
+        #             artifact_version=self.config.nsd_version,
+        #             default_config=None,
+        #             network_function_definition=nfdv_object,
+        #             arm_template_output_path=Path(NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME, resource_element.properties.name + '.bicep'),
+        #         )
+        #         nfd_processor = NFDProcessor(
+        #             name=resource_element.properties.name, input_artifact=nfd_input
+        #         )
+        # For each arm template, generate nf application
+        for processor in self.processors:
+            if isinstance(processor, NFDProcessor):
                 # Generate RET
-                nf_ret = nfd_processor.generate_resource_element_template()
+                nf_ret = processor.generate_resource_element_template()
                 # nf_ret.configuration.
                 # TODO: create the bicep file from the nsd template
 
                 # Generate deploymentParameters schema properties
-                params_schema = nfd_processor.generate_params_schema()
+                params_schema = processor.generate_params_schema()
                 schema_properties.update(params_schema)
 
                 # JORDAN TODO: check this includes the name of the deploymentParams too?
                 # TODO: test this
-                params_schema = nfd_processor.generate_params_schema()
+                params_schema = processor.generate_params_schema()
                 schema_properties.update(params_schema)
 
                 # List of NF RET names, for adding to required part of CGS
-                nf_names.append(resource_element.properties.name)
+                # nf_names.append(resource_element.properties.name)
 
         # bicep_contents = THE TEMPLATE
         # Generate the nsd bicep file
