@@ -137,6 +137,12 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
         if self.vhd and isinstance(self.vhd, dict):
             self.vhd = VhdImageConfig(**self.vhd)
 
+    @property
+    def sa_manifest_name(self) -> str:
+        """Return the Storage account manifest name from the NFD name."""
+        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
+        return f"{sanitized_nf_name}-sa-manifest-{self.version.replace('.', '-')}"
+
     def validate(self):
         """Validate the configuration."""
         super().validate()

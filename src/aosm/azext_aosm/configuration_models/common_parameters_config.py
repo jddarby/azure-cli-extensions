@@ -13,25 +13,25 @@ class BaseCommonParametersConfig(ABC):
     """Base common parameters configuration."""
 
     location: str
-    publisher_name: str
-    publisher_resource_group_name: str
-    acr_artifact_store_name: str
-    acr_manifest_name: str
+    publisherName: str
+    publisherResourceGroupName: str
+    acrArtifactStoreName: str
+    acrManifestName: str
 
 
 @dataclass
 class NFDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NFs."""
-    nf_definition_group: str
-    nf_definition_version: str
+    nfDefinitionGroup: str
+    nfDefinitionVersion: str
 
 
 @dataclass
 class VNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
 
-    sa_artifact_store_name: str
-    sa_manifest_name: str
+    saArtifactStoreName: str
+    saManifestName: str
 
 
 @dataclass

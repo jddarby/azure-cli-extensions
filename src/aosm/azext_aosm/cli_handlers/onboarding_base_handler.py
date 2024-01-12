@@ -99,7 +99,7 @@ class OnboardingBaseCLIHandler(ABC):
                 command_context.cli_options["definition_folder"]
             )
         # TODO: else logic for finding VNF_OUTPUT_FOLDER_FILENAME, etc., assuming command run from same directory as build.
-        definition_folder.deploy(command_context.resources_client)
+        definition_folder.deploy(config=self.config, command_context=command_context)
 
     def delete(self, command_context: CommandContext):
         """Delete the definition."""
@@ -154,21 +154,14 @@ class OnboardingBaseCLIHandler(ABC):
         """ Reads input file, takes only the {parameters:values} + returns config as dictionary
 
             For example,
-            {'location': {'value': 'test'} is added to the schema as
+            {'location': {'value': 'test'} is returned as
             {'location': 'test'}
 
         """
         with open(input_json_path, "r", encoding="utf-8") as _file:
             params_schema = json.load(_file)
-
-        sanitised_schema = {}
-        for param in params_schema["parameters"]:
-            # Converting camel case to snake case, so armTemplate becomes arm_template
-            snake_case_param = ''.join(['_' + char.lower() if char.isupper()
-                                       else char for char in param]).lstrip('_')
-            # Add formatted param as key and the param["value"] as the value
-            sanitised_schema[snake_case_param] = params_schema["parameters"][param]["value"]
-        return sanitised_schema
+        params = params_schema["parameters"]
+        return {param: params[param]["value"] for param in params}
 
     def _render_base_bicep_contents(self, template_path):
         """Write the base bicep file from given template."""

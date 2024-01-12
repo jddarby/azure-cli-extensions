@@ -30,6 +30,12 @@ class SkipSteps(Enum):
     IMAGE_UPLOAD = IMAGE_UPLOAD
 
 
+class ManifestsExist(str, Enum):
+    ALL = "all"
+    NONE = "none"
+    SOME = "some"
+
+
 # Names of files used in the repo
 # TODO: remove unused constants
 BASE_FOLDER_NAME = "base"

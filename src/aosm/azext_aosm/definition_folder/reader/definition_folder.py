@@ -5,28 +5,29 @@
 import json
 from pathlib import Path
 
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+)
 from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
 from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
 from azext_aosm.definition_folder.reader.artifact_definition import (
     ArtifactDefinitionElement,
 )
+from azure.mgmt.resource import ResourceManagementClient
+from azext_aosm.common.command_context import CommandContext
 
 from typing import Any, Dict, List
 
 
 class DefinitionFolder:
     """Represents a definition folder for an NFD or NSD."""
-
-    path: Path
-    elements: List[BaseDefinitionElement]
-
     def __init__(self, path: Path):
         self.path = path
         try:
             index = self._parse_index_file((path / "index.json").read_text())
         except Exception as e:
             raise ValueError(f"Error parsing index file - {e}")
-        self.elements = []
+        self.elements: List[BaseDefinitionElement] = []
         for element in index:
             if element["type"] == "bicep":
                 self.elements.append(
@@ -67,12 +68,13 @@ class DefinitionFolder:
             )
         return parsed_elements
 
-    def deploy(self, resource_client):
+    def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Deploy the resources defined in the folder."""
         for element in self.elements:
-            element.deploy(resource_client)
+            print(f"AC4: Element {element.path} of type ", type(element))
+            element.deploy(config=config, command_context=command_context)
 
-    def delete(self, resource_client, clean: bool = False):
+    def delete(self, resource_client: ResourceManagementClient, clean: bool = False):
         """Delete the definition folder."""
         for element in reversed(self.elements):
             if clean or not element.only_delete_on_clean:

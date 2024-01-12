@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azure.cli.core.commands.client_factory import get_mgmt_service_client

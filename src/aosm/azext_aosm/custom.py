@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-# from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
@@ -42,7 +41,7 @@ def onboard_nfd_build(definition_type: str, config_file: str):
 def onboard_nfd_publish(
     cmd: AzCliCommand,
     definition_type: str,
-    output_folder_path: str,
+    build_output_folder: str,
     no_subscription_permissions: bool = False,
 ):
     # TODO: doc string for use with --help (_params file)
@@ -50,14 +49,14 @@ def onboard_nfd_publish(
         cli_ctx=cmd.cli_ctx,
         cli_options={
             "no_subscription_permissions": no_subscription_permissions,
-            "definition_folder": Path(output_folder_path) if output_folder_path else None,
+            "definition_folder": Path(build_output_folder) if build_output_folder else None,
         },
     )
     if definition_type == "cnf":
-        handler = OnboardingCNFCLIHandler(output_folder_path + '/' + ALL_PARAMETERS_FILE_NAME)
+        handler = OnboardingCNFCLIHandler(build_output_folder + '/' + ALL_PARAMETERS_FILE_NAME)
         handler.publish(command_context=command_context)
     elif definition_type == "vnf":
-        handler = OnboardingVNFCLIHandler(output_folder_path + '/' + ALL_PARAMETERS_FILE_NAME)
+        handler = OnboardingVNFCLIHandler(build_output_folder + '/' + ALL_PARAMETERS_FILE_NAME)
         handler.publish(command_context=command_context)
     else:
         # TODO: better error
