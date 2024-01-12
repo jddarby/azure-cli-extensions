@@ -19,19 +19,21 @@ param nfviSiteName string = '{{nfvi_site_name}}'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
   name: publisherName
   scope: resourceGroup()
 }
 
 // The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
-// The artifact store is created by the az aosm CLI before this template is deployed.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
 }
 
-// Created up-front, the NSD Group is the parent resource under which all NSD versions will be created.
+// The NSD Group is the parent resource under which all NSD versions will be created.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2023-09-01' existing = {
   parent: publisher
   name: nsDesignGroup

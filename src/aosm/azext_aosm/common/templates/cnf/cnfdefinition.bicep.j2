@@ -23,6 +23,9 @@ resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@202
   parent: publisher
   name: acrArtifactStoreName
   location: location
+  properties: {
+    storeType: 'AzureContainerRegistry'
+  }
 }
 
 // If using publish command, this is created from deploying the cnfbase.bicep

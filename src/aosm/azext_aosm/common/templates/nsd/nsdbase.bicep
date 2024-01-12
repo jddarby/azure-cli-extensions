@@ -18,6 +18,9 @@ resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@202
   parent: publisher
   name: acrArtifactStoreName
   location: location
+  properties: {
+    storeType: 'AzureContainerRegistry'
+  }
 }
 
 resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2023-09-01' = {

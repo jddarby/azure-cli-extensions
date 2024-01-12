@@ -25,6 +25,9 @@ resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@202
   parent: publisher
   name: acrArtifactStoreName
   location: location
+  properties: {
+    storeType: 'AzureContainerRegistry'
+  }
 }
 
 // If using publish command, this is created from deploying the vnfbase.bicep
@@ -32,6 +35,9 @@ resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023
   parent: publisher
   name: saArtifactStoreName
   location: location
+  properties: {
+    storeType: 'AzureStorageAccount'
+  }
 }
 
 // If using publish command, this is created from deploying the vnfbase.bicep
