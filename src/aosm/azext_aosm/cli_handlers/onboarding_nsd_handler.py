@@ -87,7 +87,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 processor_list.append(
                     AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
                 )
-            if resource_element.resource_element_type == "NF":
+            elif resource_element.resource_element_type == "NF":
                 # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
                 nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
@@ -105,11 +105,13 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     name=self.config.nsd_name, input_artifact=nfd_input
                 )
                 processor_list.append(nfd_processor)
+            else:
+                # TODO: raise more specific error
+                raise ValueError(f"Invalid resource element type: {resource_element.resource_element_type}")
         return processor_list
 
     def build_base_bicep(self):
         """Build the base bicep file."""
-
         # Build base bicep contents, with bicep template
         template_path = self._get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_BASE_TEMPLATE_FILENAME
@@ -119,19 +121,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
         )
-        # Add the accompanying parameters.json
-        # bicep_file.add_supporting_file(self._render_base_parameters_contents())
         return bicep_file
 
     def build_manifest_bicep(self):
-        """Build the manifest bicep file.
-
-        Create ARM Template manifest as expected, but behaves differently for NFs:
-        For each NF, we create one manifest per artifact
-        and do not populate these manifests until publish, based on the params file
-
-        """
-        # Build artifact list for ArmTemplates
+        """Build the manifest bicep file."""
         artifact_list = []
         for processor in self.processors:
             artifact_list.extend(processor.get_artifact_manifest_list())
@@ -160,9 +153,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             (artifacts, files) = processor.get_artifact_details()
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
-            # If NF, add the accompanying file
-            if isinstance(processor, NFDProcessor):
-                nf_files.extend(files)
+            # If NF, file is local file builder, if ARM, file is empty
+            nf_files.extend(files)
 
         artifact_file = ArtifactDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
@@ -174,7 +166,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     def build_resource_bicep(self):
         """Build the resource bicep file."""
-
         bicep_contents = {}
         schema_properties = {}
         nf_names = []
@@ -205,11 +196,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             params_schema = processor.generate_params_schema()
             schema_properties.update(params_schema)
 
-            # JORDAN TODO: check this includes the name of the deploymentParams too?
-            # TODO: test this
-            params_schema = processor.generate_params_schema()
-            schema_properties.update(params_schema)
-
             # List of NF RET names, for adding to required part of CGS
             nf_names.append(processor.name)
 
@@ -226,7 +212,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
         }
-        # TODO: fix template
+
         bicep_contents = self._render_definition_bicep_contents(
             template_path, params
         )
@@ -245,12 +231,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         )
 
         return bicep_file
-
-        # 1.Add config group schema logic (from nsd_generator) as supporting file
-        # mappings like elsewhere? nsd has single schema for each RET deploys,
-        # 2.Write config mappings for each NF (processor.generateRET)
-        # 3.write the nf bicep file (nf template j2) - not ready, need to discuss w Jacob
-        # 4.write nsd bicep (contain cgs, nsdv)
 
     def build_common_parameters_json(self):
         # TODO: add common params for build resource bicep

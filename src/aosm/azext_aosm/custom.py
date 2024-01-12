@@ -5,6 +5,7 @@
 
 # from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from __future__ import annotations
+from pathlib import Path
 from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
@@ -70,7 +71,7 @@ def onboard_nsd_generate_config(output_file: str | None):
     handler.generate_config(output_file)
 
 
-def onboard_nsd_build(config_file: str, cmd: AzCliCommand):
+def onboard_nsd_build(config_file: Path, cmd: AzCliCommand):
     command_context = CommandContext(cli_ctx=cmd.cli_ctx)
     handler = OnboardingNSDCLIHandler(config_file, command_context.aosm_client)
     handler.build()

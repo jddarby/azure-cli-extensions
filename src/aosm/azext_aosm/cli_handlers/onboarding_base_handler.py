@@ -31,18 +31,6 @@ logger = get_logger(__name__)
 class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
-    @property
-    @abstractmethod
-    def default_config_file_name(self) -> str:
-        """Get the default configuration file name."""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def output_folder_file_name(self) -> str:
-        """Get the output folder file name."""
-        raise NotImplementedError
-
     def __init__(
         self,
         config_file: str | None = None,
@@ -70,6 +58,18 @@ class OnboardingBaseCLIHandler(ABC):
         self.definition_folder_builder = DefinitionFolderBuilder(
             Path.cwd() / self.output_folder_file_name
         )
+
+    @property
+    @abstractmethod
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def output_folder_file_name(self) -> str:
+        """Get the output folder file name."""
+        raise NotImplementedError
 
     def generate_config(self, output_file: str | None = None):
         """Generate the configuration file for the command."""
@@ -240,6 +240,7 @@ class OnboardingBaseCLIHandler(ABC):
 
     def _serialize(self, dataclass, indent_count=1):
         """
+
         Convert a dataclass instance to a JSONC string.
         This function recursively iterates over the fields of the dataclass and serializes them.
 
@@ -366,9 +367,7 @@ class OnboardingBaseCLIHandler(ABC):
         )
 
     def _build_deploy_params_schema(self, schema_properties):
-        """
-        Build the schema for deployParameters.json
-        """
+        """Build the schema for deployParameters.json."""
         schema_contents = {
             "$schema": "https://json-schema.org/draft-07/schema#",
             "title": "DeployParametersSchema",

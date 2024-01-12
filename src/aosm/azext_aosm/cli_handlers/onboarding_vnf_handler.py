@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
-
+from typing import Dict, Any
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import (
@@ -50,8 +50,6 @@ logger = get_logger(__name__)
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
-    # config: OnboardingVNFInputConfig
-
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
@@ -62,7 +60,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return VNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_input_config(self, input_config: dict = None) -> OnboardingVNFInputConfig:
+    def _get_input_config(self, input_config: Dict[str, Any] = None) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -109,7 +107,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def build_base_bicep(self):
         """Build the base bicep file."""
-
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
             VNF_TEMPLATE_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME
@@ -182,62 +179,61 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Build the resource bicep file."""
         logger.info("Creating artifacts list for artifacts.json")
         acr_nf_application_list = []
+        sa_nf_application_list = []
         supporting_files = []
         schema_properties = {}
 
-        # For each arm template, generate nf application
         for processor in self.processors:
-            if isinstance(processor, BaseArmBuildProcessor):
-                nf_application = processor.generate_nf_application()
-                acr_nf_application_list.append(nf_application)
-                logger.debug("Created nf application %s", nf_application.name)
+            nf_application = processor.generate_nf_application()
+            logger.debug("Created nf application %s", nf_application.name)
 
-                # Generate deploymentParameters schema properties
-                params_schema = processor.generate_params_schema()
-                schema_properties.update(params_schema)
+            # Generate deploymentParameters schema properties
+            params_schema = processor.generate_params_schema()
+            schema_properties.update(params_schema)
+
+            # For each arm template, generate nf application
+            if isinstance(processor, BaseArmBuildProcessor):
+
+                acr_nf_application_list.append(nf_application)
 
                 # Generate local file for template_parameters + add to supporting files list
-                template_params = (
+                params = (
                     nf_application.deploy_parameters_mapping_rule_profile.template_mapping_rule_profile.template_parameters
                 )
-                template_parameters_file = LocalFileBuilder(
-                    Path(
-                        VNF_OUTPUT_FOLDER_FILENAME,
-                        NF_DEFINITION_FOLDER_NAME,
-                        TEMPLATE_PARAMETERS_FILENAME,
-                    ),
-                    json.dumps(json.loads(template_params), indent=4),
-                )
-                supporting_files.append(template_parameters_file)
+                template_name = TEMPLATE_PARAMETERS_FILENAME
                 logger.info(
                     "Created templatateParameters as supporting file for nfDefinition bicep"
                 )
             elif isinstance(processor, VHDProcessor):
                 # Generate NF Application
-                nf_application = processor.generate_nf_application()
-
+                # nf_application = processor.generate_nf_application()
+                sa_nf_application_list.append(nf_application)
                 # Generate local file for vhd_parameters
-                vhd_params = (
+                params = (
                     nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
                 )
-                vhd_params_file = LocalFileBuilder(
-                    Path(
-                        VNF_OUTPUT_FOLDER_FILENAME,
-                        NF_DEFINITION_FOLDER_NAME,
-                        VHD_PARAMETERS_FILENAME,
-                    ),
-                    vhd_params,
-                )
-                supporting_files.append(vhd_params_file)
+                template_name = VHD_PARAMETERS_FILENAME
+            else:
+                raise TypeError(f"Type: {type(processor)} is not valid")
+
+            parameters_file = LocalFileBuilder(
+                Path(
+                    VNF_OUTPUT_FOLDER_FILENAME,
+                    NF_DEFINITION_FOLDER_NAME,
+                    template_name,
+                ),
+                json.dumps(json.loads(params), indent=4),
+            )
+            supporting_files.append(parameters_file)
 
         # Create bicep contents using vnf defintion j2 template
         template_path = self._get_template_path(
             VNF_TEMPLATE_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME
         )
-        
+
         params = {
             "acr_nf_applications": acr_nf_application_list,
-            "sa_nf_application": nf_application,
+            "sa_nf_application": sa_nf_application_list[0],
             "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
             "vhd_parameters_file": VHD_PARAMETERS_FILENAME,
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME
@@ -294,13 +290,13 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         default_config = {}
         if vhd.image_disk_size_GB:
             default_config.update({"image_disk_size_GB": vhd.image_disk_size_GB})
-        else:
-            # Default to V1 if not specified
-            default_config.update({"image_disk_size_GB": "V1"})
         if vhd.image_hyper_v_generation:
             default_config.update(
                 {"image_hyper_v_generation": vhd.image_hyper_v_generation}
             )
+        else:
+            # Default to V1 if not specified
+            default_config.update({"image_hyper_v_generation": "V1"})
         if vhd.image_api_version:
             default_config.update({"image_api_version": vhd.image_api_version})
         return default_config

@@ -78,7 +78,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for helm_package in self.config.helm_packages:
             print("helm", helm_package.name)
             if helm_package.path_to_mappings:
-                if Path.exists(Path(helm_package.path_to_mappings)):
+                if Path(helm_package.path_to_mappings).exists():
                     provided_config = json.load(open(helm_package.path_to_mappings))
                 else:
                     raise UnclassifiedUserFault(
@@ -101,13 +101,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def build_base_bicep(self):
         """Build the base bicep file."""
-
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
             CNF_TEMPLATE_FOLDER_NAME, CNF_BASE_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_base_bicep_contents(template_path)
-        # Create Bicep element with manifest contents
+        # Create Bicep element with base contents
         bicep_file = BicepDefinitionElementBuilder(
             Path(CNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
         )
@@ -119,8 +118,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         logger.info("Creating artifact manifest bicep")
         for processor in self.processors:
             artifacts = processor.get_artifact_manifest_list()
-            # TODO: future work: make artifact_list a set, then convert back to list
-            # TODO: future work: add to util, compare properly the artifacts, __eq__ custom equality
+
             # Add artifacts to a list of unique artifacts
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
@@ -196,7 +194,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         template_path = self._get_template_path(
             CNF_TEMPLATE_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME
         )
-        
+
         params = {
             "acr_nf_applications": nf_application_list,
             "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME
