@@ -77,10 +77,10 @@ class VhdImageConfig:
         """Validate the configuration."""
         if not self.version:
             raise ValidationError("Artifact version must be set")
-        if "." not in self.version or "-" in self.version:
+        if "-" not in self.version or "." in self.version:
             raise ValidationError(
                 "Config validation error. VHD image artifact version should be in"
-                " format A.B.C"
+                " format A-B-C"
             )
         if self.blob_sas_url and self.file_path:
             raise ValidationError(
@@ -152,3 +152,5 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
             raise ValidationError("You must include at least one arm template")
         for arm_template in self.arm_templates:
             arm_template.validate()
+        self.vhd.validate()
+

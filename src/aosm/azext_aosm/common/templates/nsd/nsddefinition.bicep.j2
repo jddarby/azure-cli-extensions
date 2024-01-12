@@ -90,7 +90,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
               id: acrArtifactStore.id
             }
             artifactName: '{{ret.configuration.artifact_profile.artifact_name}}'
-            artifactVersion: '{{ret.configuration.artifact_profile.artifact_name}}'
+            artifactVersion: '{{ret.configuration.artifact_profile.artifact_version}}'
           }
           templateType: '{{ret.configuration.template_type}}'
           // The parameter values map values from the CG schema, to values required by the template

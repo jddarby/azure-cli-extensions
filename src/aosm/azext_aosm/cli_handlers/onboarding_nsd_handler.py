@@ -202,7 +202,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     NSD_DEFINITION_FOLDER_NAME,
                     processor.name + "-mappings.json",
                 ),
-                json.dumps(deploy_values, indent=4),
+                json.dumps(json.loads(deploy_values), indent=4),
             )
             supporting_files.append(mapping_file)
 

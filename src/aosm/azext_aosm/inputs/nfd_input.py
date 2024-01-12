@@ -63,7 +63,6 @@ class NFDInput(BaseInput):
             "configObject": {
                 "publisherName": publisher_name,
                 "nfdgName": nfdg_name,
-                "nfdvName": self.network_function_definition.name,
                 "publisherResourceGroup": publisher_resource_group,
             }
         }
@@ -97,7 +96,6 @@ class NFDInput(BaseInput):
                     "nfdgName": {"type": "string"},
                     "nfdvName": {"type": "string"},
                     "publisherResourceGroup": {"type": "string"},
-                    "location": {"type": "string"},
                     "deploymentParameters": {
                         "type": "array",
                         "items": {"type": "object"},
@@ -110,7 +108,6 @@ class NFDInput(BaseInput):
                     "nfdgName",
                     "nfdvName",
                     "publisherResourceGroup",
-                    "location",
                     "deploymentParameters",
                     "customLocationId",
                     "managedIdentityId",
