@@ -11,6 +11,23 @@ from azure.cli.core.azclierror import UnclassifiedUserFault
 from knack.log import get_logger
 
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
+from azext_aosm.inputs.helm_chart_input import HelmChartInput
+from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.configuration_models.onboarding_cnf_input_config import (
+    OnboardingCNFInputConfig,
+)
+from azext_aosm.configuration_models.common_parameters_config import (
+    CNFCommonParametersConfig,
+)
+from azext_aosm.definition_folder.builder.artifact_builder import (
+    ArtifactDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
+)
 from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          BASE_FOLDER_NAME,
                                          CNF_BASE_TEMPLATE_FILENAME,
@@ -22,18 +39,6 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          MANIFEST_FOLDER_NAME,
                                          NF_DEFINITION_FOLDER_NAME,
                                          DEPLOYMENT_PARAMETERS_FILENAME)
-from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.common_parameters_config import \
-    CNFCommonParametersConfig
-from azext_aosm.configuration_models.onboarding_cnf_input_config import \
-    OnboardingCNFInputConfig
-from azext_aosm.definition_folder.builder.artifact_builder import \
-    ArtifactDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.bicep_builder import \
-    BicepDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.json_builder import \
-    JSONDefinitionElementBuilder
-from azext_aosm.inputs.helm_chart_input import HelmChartInput
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
@@ -115,7 +120,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for processor in self.processors:
             artifacts = processor.get_artifact_manifest_list()
             # TODO: future work: make artifact_list a set, then convert back to list
-            # TODO: future work: add to util, compare properly the artifacts
+            # TODO: future work: add to util, compare properly the artifacts, __eq__ custom equality
             # Add artifacts to a list of unique artifacts
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
@@ -183,7 +188,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                     NF_DEFINITION_FOLDER_NAME,
                     nf_application.name + "-mappings.json",
                 ),
-                deploy_values,
+                json.dumps(json.loads(deploy_values), indent=4),
             )
             mappings_files.append(mapping_file)
 

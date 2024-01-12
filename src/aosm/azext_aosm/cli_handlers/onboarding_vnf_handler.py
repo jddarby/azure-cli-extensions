@@ -24,16 +24,21 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
                                          VHD_PARAMETERS_FILENAME,
                                          TEMPLATE_PARAMETERS_FILENAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.common_parameters_config import \
-    VNFCommonParametersConfig
-from azext_aosm.configuration_models.onboarding_vnf_input_config import \
-    OnboardingVNFInputConfig
-from azext_aosm.definition_folder.builder.artifact_builder import \
-    ArtifactDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.bicep_builder import \
-    BicepDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.json_builder import \
-    JSONDefinitionElementBuilder
+from azext_aosm.configuration_models.onboarding_vnf_input_config import (
+    OnboardingVNFInputConfig,
+)
+from azext_aosm.configuration_models.common_parameters_config import (
+    VNFCommonParametersConfig,
+)
+from azext_aosm.definition_folder.builder.artifact_builder import (
+    ArtifactDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
+)
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
 
@@ -201,7 +206,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                         NF_DEFINITION_FOLDER_NAME,
                         TEMPLATE_PARAMETERS_FILENAME,
                     ),
-                    json.dumps(template_params, indent=4),
+                    json.dumps(json.loads(template_params), indent=4),
                 )
                 supporting_files.append(template_parameters_file)
                 logger.info(
