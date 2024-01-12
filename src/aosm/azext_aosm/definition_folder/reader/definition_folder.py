@@ -4,14 +4,14 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
-
-from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
-from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
-from azext_aosm.definition_folder.reader.artifact_definition import (
-    ArtifactDefinitionElement,
-)
-
 from typing import Any, Dict, List
+
+from azext_aosm.definition_folder.reader.artifact_definition import \
+    ArtifactDefinitionElement
+from azext_aosm.definition_folder.reader.base_definition import \
+    BaseDefinitionElement
+from azext_aosm.definition_folder.reader.bicep_definition import \
+    BicepDefinitionElement
 
 
 class DefinitionFolder:

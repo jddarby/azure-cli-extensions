@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 from __future__ import annotations
+
 from abc import ABC
 from dataclasses import dataclass
 
@@ -22,6 +23,7 @@ class BaseCommonParametersConfig(ABC):
 @dataclass
 class NFDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NFs."""
+
     nf_definition_group: str
     nf_definition_version: str
 
@@ -41,4 +43,4 @@ class CNFCommonParametersConfig(NFDCommonParametersConfig):
 
 @dataclass
 class NSDCommonParametersConfig(BaseCommonParametersConfig):
-    """ Common parameters configuration for NSDs"""
+    """Common parameters configuration for NSDs"""

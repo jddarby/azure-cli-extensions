@@ -45,11 +45,7 @@ class BaseArtifact(ABC):
         }
         # Pull in all the fields from the class that aren't the artifact manifest
         output_dict.update(
-            {
-                k: vars(self)[k]
-                for k in vars(self)
-                if k != "artifact_manifest"
-            }
+            {k: vars(self)[k] for k in vars(self) if k != "artifact_manifest"}
         )
         return output_dict
 
@@ -108,8 +104,10 @@ class RemoteACRArtifact(BaseACRArtifact):
     source_registry_namespace: str
 
     def __init__(
-        self, artifact_manifest: ManifestArtifactFormat,
-        source_registry: str, source_registry_namespace: str
+        self,
+        artifact_manifest: ManifestArtifactFormat,
+        source_registry: str,
+        source_registry_namespace: str,
     ):
         super().__init__(artifact_manifest)
         self.source_registry = source_registry
