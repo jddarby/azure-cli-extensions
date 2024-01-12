@@ -206,7 +206,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                         NF_DEFINITION_FOLDER_NAME,
                         TEMPLATE_PARAMETERS_FILENAME,
                     ),
-                    json.dumps(template_params, indent=4),
+                    json.dumps(json.loads(template_params), indent=4),
                 )
                 supporting_files.append(template_parameters_file)
                 logger.info(
