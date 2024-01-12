@@ -10,7 +10,7 @@ from pathlib import Path
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import (
-    AzureCoreArmBuildProcessor, BaseArmBuildProcessor)
+    AzureCoreArmBuildProcessor)
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import \
     OnboardingBaseCLIHandler
@@ -18,7 +18,8 @@ from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
     ARTIFACT_LIST_FILENAME, BASE_FOLDER_NAME, MANIFEST_FOLDER_NAME,
     NSD_BASE_TEMPLATE_FILENAME, NSD_TEMPLATE_FOLDER_NAME, NSD_INPUT_FILENAME,
     NSD_MANIFEST_TEMPLATE_FILENAME, NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_TEMPLATE_FILENAME,
-    CGS_FILENAME, NSD_DEFINITION_FOLDER_NAME, DEPLOYMENT_PARAMETERS_FILENAME, TEMPLATE_PARAMETERS_FILENAME)
+    CGS_FILENAME, NSD_DEFINITION_FOLDER_NAME, DEPLOYMENT_PARAMETERS_FILENAME,
+    TEMPLATE_PARAMETERS_FILENAME, CGS_NAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.common_parameters_config import \
     NSDCommonParametersConfig
@@ -56,11 +57,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def nfvi_site_name(self) -> str:
         """Return the name of the NFVI used for the NSDV."""
         return f"{self.config.nsd_name}_NFVI"
-
-    @property
-    def cg_schema_name(self) -> str:
-        """Return the name of the Configuration Schema used for the NSDV."""
-        return f"{self.config.nsd_name.replace('-', '_')}_ConfigGroupSchema"
 
     def _get_input_config(self, input_config: dict = None) -> OnboardingNSDInputConfig:
         """Get the configuration for the command."""
@@ -178,7 +174,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     def build_resource_bicep(self):
         """Build the resource bicep file."""
-        # TODO: Implement
 
         bicep_contents = {}
         schema_properties = {}
@@ -224,7 +219,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         params = {
             "nsdv_description": self.config.nsdv_description,
-            "cgs_name": self.cg_schema_name,
+            "cgs_name": CGS_NAME,
             "nfvi_site_name": self.nfvi_site_name,
             "nf_rets": ret_list,
             "cgs_file": CGS_FILENAME,
@@ -238,15 +233,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # Generate the nsd bicep file
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME), bicep_contents
-        )
-
-        # Add the deploymentParameters schema file
-        bicep_file.add_supporting_file(
-            self._render_deployment_params_schema(
-                schema_properties,
-                NSD_OUTPUT_FOLDER_FILENAME,
-                NSD_DEFINITION_FOLDER_NAME,
-            )
         )
 
         # Add the config mappings for each nf
@@ -296,7 +282,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "ConfigGroupSchema",
+            "title": f"{CGS_NAME}",
             "type": "object",
             "properties": complete_schema,
             "required": required,
@@ -310,8 +296,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             ),
             json.dumps(params_content, indent=4),
         )
-
-
 
     def _get_nfdv(self, nf_properties) -> NetworkFunctionDefinitionVersion:
         """Get the existing NFDV resource object."""

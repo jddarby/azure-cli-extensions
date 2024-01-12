@@ -15,7 +15,7 @@ from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import (ManifestArtifactFormat,
                                              NetworkFunctionApplication,
                                              ResourceElementTemplate)
-
+from azext_aosm.common.constants import CGS_NAME
 logger = get_logger(__name__)
 
 
@@ -173,8 +173,8 @@ class BaseInputProcessor(ABC):
         :type schema: Dict[str, Any]
         :param values: The values to generate the values mappings from.
         :type values: Dict[str, Any]
-        :param is_nsd: Whether or not the input artifact is being used to generate a resource element template.
-        :type is_nsd: bool
+        :param is_ret: Whether or not the input artifact is being used to generate a resource element template.
+        :type is_ret: bool
         """
         # If there are no properties in the schema for the object, return the values.
         if "properties" not in schema.keys():
@@ -189,7 +189,7 @@ class BaseInputProcessor(ABC):
                     values[k] = self.generate_values_mappings(v, {}, is_ret)
                 else:
                     values[k] = (
-                        f"{{configurationparameters('{self.name}').{k}}}"
+                        f"{{configurationparameters('{CGS_NAME}').{self.name}.{k}}}"
                         if is_ret
                         else f"{{deployParameters.{self.name}.{k}}}"
                     )
