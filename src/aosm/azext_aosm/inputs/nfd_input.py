@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+import copy
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -77,7 +77,7 @@ class NFDInput(BaseInput):
             "Default values for NFD Input: %s", json.dumps(base_defaults, indent=4)
         )
 
-        return base_defaults
+        return copy.deepcopy(base_defaults)
 
     def get_schema(self) -> Dict[str, Any]:
         """
@@ -117,7 +117,7 @@ class NFDInput(BaseInput):
 
         schema_required_properties = ["configObject"]
 
-        schema = BASE_SCHEMA.copy()
+        schema = copy.deepcopy(BASE_SCHEMA)
         schema["properties"] = schema_properties
         schema["required"] = schema_required_properties
 
@@ -130,7 +130,7 @@ class NFDInput(BaseInput):
 
             logger.debug("Schema for NFD Input: %s", json.dumps(schema, indent=4))
 
-            return schema
+            return copy.deepcopy(schema)
 
         logger.error(
             "No deployment parameters schema found on the network function definition version."

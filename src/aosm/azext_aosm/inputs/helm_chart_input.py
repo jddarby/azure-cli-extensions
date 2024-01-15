@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+import copy
 import json
 import shutil
 import tempfile
@@ -139,7 +139,7 @@ class HelmChartInput(BaseInput):
                 "Default values for Helm chart input: %s",
                 json.dumps(default_config, indent=4),
             )
-            return default_config
+            return copy.deepcopy(default_config)
         except FileNotFoundError as error:
             logger.error("No default values found for Helm chart '%s'", self.chart_path)
             raise DefaultValuesNotFoundError(
@@ -182,7 +182,7 @@ class HelmChartInput(BaseInput):
                 json.dumps(schema, indent=4),
             )
 
-            return schema
+            return copy.deepcopy(schema)
         except FileNotFoundError as error:
             logger.error("No schema found for Helm chart '%s'", self.chart_path)
             raise SchemaGetOrGenerateError(

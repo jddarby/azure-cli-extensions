@@ -250,7 +250,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 "nsDesignGroup": {"value": self.config.nsd_name},
             },
         }
-        print(params_content)
         base_file = JSONDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
@@ -267,7 +266,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "properties": complete_schema,
             "required": required,
         }
-        print(params_content)
         return LocalFileBuilder(
             Path(
                 NSD_OUTPUT_FOLDER_FILENAME,

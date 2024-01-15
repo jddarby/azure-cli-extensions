@@ -1,3 +1,4 @@
+import copy
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -48,7 +49,7 @@ class ArmTemplateInput(BaseInput):
             json.dumps(default_config, indent=4),
         )
 
-        return default_config
+        return copy.deepcopy(default_config)
 
     def get_schema(self) -> Dict[str, Any]:
         """
@@ -58,8 +59,7 @@ class ArmTemplateInput(BaseInput):
         :rtype: Dict[str, Any]
         """
         logger.info("Getting schema for ARM template input")
-        arm_template_schema = BASE_SCHEMA.copy()
-
+        arm_template_schema = copy.deepcopy(BASE_SCHEMA)
         with open(self.template_path, "r", encoding="utf-8") as _file:
             data = json.load(_file)
 
@@ -76,7 +76,7 @@ class ArmTemplateInput(BaseInput):
             json.dumps(arm_template_schema, indent=4),
         )
 
-        return arm_template_schema
+        return copy.deepcopy(arm_template_schema)
 
     def _generate_schema_from_params(
         self, schema: Dict[str, Any], parameters: Dict[str, Any]

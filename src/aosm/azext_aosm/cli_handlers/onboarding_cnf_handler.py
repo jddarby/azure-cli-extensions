@@ -76,7 +76,6 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         processor_list = []
         # for each helm package, instantiate helm processor
         for helm_package in self.config.helm_packages:
-            print("helm", helm_package.name)
             if helm_package.path_to_mappings:
                 if Path(helm_package.path_to_mappings).exists():
                     provided_config = json.load(open(helm_package.path_to_mappings))

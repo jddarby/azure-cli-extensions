@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+import copy
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -56,8 +56,7 @@ class VHDFileInput(BaseInput):
             "Default values for VHD file Input: %s",
             json.dumps(default_config, indent=4),
         )
-
-        return default_config
+        return copy.deepcopy(default_config)
 
     def get_schema(self) -> Dict[str, Any]:
         """
@@ -77,10 +76,9 @@ class VHDFileInput(BaseInput):
         }
         vhd_required = ["imageName"]
 
-        schema = BASE_SCHEMA.copy()
+        schema = copy.deepcopy(BASE_SCHEMA)
         schema["properties"].update(vhd_properties)
         schema["required"] += vhd_required
 
         logger.debug("Schema for VHD file input: %s", json.dumps(schema, indent=4))
-
-        return schema
+        return copy.deepcopy(schema)
