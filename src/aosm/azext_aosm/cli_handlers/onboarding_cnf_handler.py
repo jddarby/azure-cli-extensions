@@ -87,7 +87,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 provided_config = None
 
             helm_input = HelmChartInput.from_chart_path(
-                Path(helm_package.path_to_chart), default_config=provided_config
+                Path(helm_package.path_to_chart).absolute(), default_config=provided_config
             )
             helm_processor = HelmChartProcessor(
                 helm_package.name,

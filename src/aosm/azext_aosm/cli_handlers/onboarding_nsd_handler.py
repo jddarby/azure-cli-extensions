@@ -81,14 +81,14 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     artifact_name=resource_element.properties.artifact_name,
                     artifact_version=resource_element.properties.version,
                     default_config=None,
-                    template_path=Path(resource_element.properties.file_path),
+                    template_path=Path(resource_element.properties.file_path).absolute(),
                 )
                 # TODO: generalise for nexus in nexus ready stories
                 processor_list.append(
                     AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
                 )
             elif resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place               
                 nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,

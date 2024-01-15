@@ -82,7 +82,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
                 default_config=None,
-                template_path=Path(arm_template.file_path),
+                template_path=Path(arm_template.file_path).absolute(),
             )
             # TODO: generalise for nexus in nexus ready stories
             processor_list.append(
@@ -98,7 +98,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 default_config=self._get_default_config(self.config.vhd),
-                file_path=self.config.vhd.file_path,
+                file_path=Path(self.config.vhd.file_path).absolute(),
                 blob_sas_uri=self.config.vhd.blob_sas_url,
             ),
         )
