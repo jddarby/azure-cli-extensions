@@ -15,8 +15,11 @@ from azext_aosm.definition_folder.reader.artifact_definition import (
 )
 from azure.mgmt.resource import ResourceManagementClient
 from azext_aosm.common.command_context import CommandContext
+from knack.log import get_logger
 
 from typing import Any, Dict, List
+
+logger = get_logger(__name__)
 
 
 class DefinitionFolder:
@@ -71,7 +74,7 @@ class DefinitionFolder:
     def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Deploy the resources defined in the folder."""
         for element in self.elements:
-            print(f"AC4: Element {element.path} of type ", type(element))
+            logger.debug("Deploying definition element %s of type %s", element.path, type(element))
             element.deploy(config=config, command_context=command_context)
 
     def delete(self, resource_client: ResourceManagementClient, clean: bool = False):

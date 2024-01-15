@@ -44,7 +44,6 @@ def onboard_nfd_publish(
     build_output_folder: str,
     no_subscription_permissions: bool = False,
 ):
-    # TODO: doc string for use with --help (_params file)
     command_context = CommandContext(
         cli_ctx=cmd.cli_ctx,
         cli_options={

@@ -49,7 +49,7 @@ def load_arguments(self: AzCommandsLoader, _):
             help="Also delete artifact stores, NFD Group and Publisher. Use with care.",
         )
         c.argument(
-            "build-output-folder",
+            "build_output_folder",
             options_list=["--build-output-folder", "-b"],
             type=file_type,
             completer=FilesCompleter(allowednames="*.json"),
@@ -57,38 +57,6 @@ def load_arguments(self: AzCommandsLoader, _):
                 "Path to the folder to publish, created by the build command."
             ),
         )
-        # c.argument(
-        #     "parameters_json_file",
-        #     options_list=["--parameters-file", "-p"],
-        #     type=file_type,
-        #     completer=FilesCompleter(allowednames="*.json"),
-        #     help=(
-        #         "Optional path to a parameters file for the bicep definition file. Use"
-        #         " to override publish of the built definition and config with"
-        #         " alternative parameters."
-        #     ),
-        # )
-        # c.argument(
-        #     "manifest_file",
-        #     options_list=["--manifest-file", "-m"],
-        #     type=file_type,
-        #     completer=FilesCompleter(allowednames="*.json"),
-        #     help=(
-        #         "Optional path to a bicep file to publish manifests. Use to override"
-        #         " publish of the built definition with an alternative file."
-        #     ),
-        # )
-        # c.argument(
-        #     "manifest_params_file",
-        #     options_list=["--manifest-params-file"],
-        #     type=file_type,
-        #     completer=FilesCompleter(allowednames="*.json"),
-        #     help=(
-        #         "Optional path to a parameters file for the manifest definition file."
-        #         " Use to override publish of the built definition and config with"
-        #         " alternative parameters."
-        #     ),
-        # )
         c.argument(
             "skip",
             arg_type=nf_skip_steps,

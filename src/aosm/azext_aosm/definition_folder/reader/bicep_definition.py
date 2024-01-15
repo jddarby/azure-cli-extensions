@@ -20,6 +20,9 @@ from azext_aosm.common.constants import ManifestsExist
 from azure.cli.core import AzCli
 from azure.cli.core.azclierror import AzCLIError
 from azure.core import exceptions as azure_exceptions
+from knack.log import get_logger
+
+logger = get_logger(__name__)
 
 
 class BicepDefinitionElement(BaseDefinitionElement):
@@ -149,9 +152,13 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
     def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Deploy the element."""
-        if self.path.name == "base":
-            print("AC4: Temporarily skip base for debugging")
-            return
+        # TODO: Deploying base takes about 4 minutes, even if everything is already deployed.
+        # We should have a check to see if it's already deployed and skip it if so.
+        # The following can be used to speed up testing by skipping base deploy: TODO: remove this
+        # if self.path.name == "base":
+        #     print("Temporarily skip base for debugging")
+        #     return
+
         # artifact manifests return an error if it already exists, so they need special handling.
         # Currently, _only_ manifests are special, but if we need to add any more custom code,
         # breaking this into a separate class (like we do for artifacts) is probably the right
@@ -160,7 +167,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             manifests_exist = self._artifact_manifests_exist(config=config, command_context=command_context)
             if manifests_exist == ManifestsExist.ALL:
                 # The manifest(s) already exist so nothing else to do for this template
-                print("Artifact manifest(s) already exist; skipping deployment.")
+                logger.info("Artifact manifest(s) already exist; skipping deployment.")
                 return
             elif manifests_exist == ManifestsExist.SOME:
                 # We don't know why we're in this state, and the safest thing to do is to delete
@@ -171,22 +178,21 @@ class BicepDefinitionElement(BaseDefinitionElement):
                     "Please delete the NFDV or NSDV (as appropriate) using the "
                     "`az aosm nfd delete` or `az aosm nsd delete` command."
                 )
-            # If none of the manifests exist, we can just go ahead and deploy the template
-            # as normal.
+            else:
+                assert manifests_exist == ManifestsExist.NONE
+                # If none of the manifests exist, we can just go ahead and deploy the template
+                # as normal.
 
         arm_json = convert_bicep_to_arm(self.path / "deploy.bicep")
 
-        print("AC4: arm_json:\n", arm_json)
         # TODO: handle creating the resource group if it doesn't exist
-        # TODO: Potentially we need to deploy the publisher, artifact stores and manifests through API calls (and maybe the NFDG - but maybe that could just move to another bicep file)
 
         # Create the deploy parameters with only the parameters needed by this template
         parameters_in_template = arm_json["parameters"]
         parameters = {k: {"value": v} for (k, v) in asdict(config).items() if k in parameters_in_template}
-        print("AC4 config: ", config)
-        print("AC4: parameters_in_template: ", parameters_in_template)
-        print("AC4: parameters: ", parameters)
-        print("AC4: self.path.name: ", self.path.name)
+        logger.debug("All parameters provided by user: %s", config)
+        logger.debug("Parameters required by %s in built ARM template:%s ", self.path.name, parameters_in_template)
+        logger.debug("Filtered parameters: %s", parameters)
 
         self._validate_and_deploy_arm_template(
             cli_ctx=command_context.cli_ctx,

@@ -14,8 +14,11 @@ from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
 )
 from azext_aosm.common.command_context import CommandContext
+from knack.log import get_logger
 
 from typing import List
+
+logger = get_logger(__name__)
 
 
 class ArtifactDefinitionElement(BaseDefinitionElement):
@@ -23,7 +26,7 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
 
     def __init__(self, path: Path, only_delete_on_clean: bool):
         super().__init__(path, only_delete_on_clean)
-        print("AC4: path: ", path)
+        logger.debug("ArtifactDefinitionElement path: %s", path)
         artifact_list = json.loads((path / "artifacts.json").read_text())
         self.artifacts = [self.create_artifact_object(artifact) for artifact in artifact_list]
 
@@ -36,8 +39,8 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
             raise ValueError("Artifact type is missing or invalid")
         class_sig = inspect.signature(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].__init__)
         class_args = [arg for arg, _ in class_sig.parameters.items() if arg != 'self']
-        print("AC4: artifact: ", artifact)
-        print("AC4: class_args: ", class_args)
+        logger.debug("Artifact configuration from definition folder: %s", artifact)
+        logger.debug("class_args reflection: %s", class_args)
         try:
             filtered_dict = {arg: artifact[arg] for arg in class_args}
         except KeyError as e:
@@ -53,12 +56,8 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
     def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Deploy the element."""
         for artifact in self.artifacts:
-            print(f"AC4: artifact {artifact.artifact_name} of type {type(artifact)}")
-            # TODO: AC4: Remove try/except once all artifact types are implemented.
-            try:
-                artifact.upload(config=config, command_context=command_context)
-            except NotImplementedError:
-                continue
+            logger.info("Deploying artifact %s of type %s", artifact.artifact_name, type(artifact))
+            artifact.upload(config=config, command_context=command_context)
 
     def delete(self):
         """Delete the element."""

@@ -7,8 +7,10 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass
 
-
-@dataclass
+# Config is sometimes used as an argument to cached functions. These
+# arguments must be hashable, so we need to use frozen dataclasses.
+# This is fine because we shouldn't be changing this initial input anyway.
+@dataclass(frozen=True)
 class BaseCommonParametersConfig(ABC):
     """Base common parameters configuration."""
 
@@ -19,14 +21,14 @@ class BaseCommonParametersConfig(ABC):
     acrManifestName: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class NFDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NFs."""
     nfDefinitionGroup: str
     nfDefinitionVersion: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class VNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
 
@@ -34,11 +36,11 @@ class VNFCommonParametersConfig(NFDCommonParametersConfig):
     saManifestName: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class CNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class NSDCommonParametersConfig(BaseCommonParametersConfig):
     """ Common parameters configuration for NSDs"""
