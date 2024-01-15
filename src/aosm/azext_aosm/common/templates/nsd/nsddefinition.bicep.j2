@@ -53,15 +53,13 @@ resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@
 
 
 // The NSD version
+// This will deploy an NSDV in 'Preview' state. It should be changed to 'Active' once it is finalised.
 resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups/networkservicedesignversions@2023-09-01' = {
   parent: nsdGroup
   name: nsDesignVersion
   location: location
   properties: {
     description: '{{nsdv_description}}'
-    // The version state can be Preview, Active or Deprecated.
-    // Once in an Active state, the NSDV becomes immutable.
-    versionState: 'Preview'
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
