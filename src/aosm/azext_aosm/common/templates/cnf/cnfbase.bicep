@@ -9,12 +9,15 @@ param acrArtifactStoreName string
 @description('Name of a Network Function Definition Group')
 param nfDefinitionGroup string
 
+// The publisher resource is the top level AOSM resource under which all other designer resources
+// are created.
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName
@@ -24,6 +27,7 @@ resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@202
   }
 }
 
+// The NFD Group is the parent resource under which all NFD versions will be created.
 resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
   parent: publisher
   name: nfDefinitionGroup

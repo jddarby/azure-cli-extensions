@@ -11,28 +11,25 @@ param nfDefinitionGroup string
 @description('The version of the NFDV you want to deploy, in format A.B.C')
 param nfDefinitionVersion string
 
+// The publisher resource is the top level AOSM resource under which all other designer resources
+// are created.
 // If using publish command, this is created from deploying the cnfbase.bicep
-resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
+resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing =  {
   name: publisherName
-  location: location
-  properties: { scope: 'Private'}
 }
 
+// The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
 // If using publish command, this is created from deploying the cnfbase.bicep
-resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
+resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
-  location: location
-  properties: {
-    storeType: 'AzureContainerRegistry'
-  }
 }
 
+// The NFD Group is the parent resource under which all NFD versions will be created.
 // If using publish command, this is created from deploying the cnfbase.bicep
-resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
+resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' existing = {
   parent: publisher
   name: nfDefinitionGroup
-  location: location
 }
 
 // This will deploy an NFDV in 'Preview' state. It should be changed to 'Active' once it is finalised.
