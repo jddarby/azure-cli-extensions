@@ -3,11 +3,12 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
+from jinja2 import Template
 
 import json
 from pathlib import Path
 
-from azure.cli.core.azclierror import UnclassifiedUserFault
+from azure.cli.core.azclierror import ValidationError, UnclassifiedUserFault
 from knack.log import get_logger
 
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
@@ -28,17 +29,21 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
-from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
-                                         BASE_FOLDER_NAME,
-                                         CNF_BASE_TEMPLATE_FILENAME,
-                                         CNF_TEMPLATE_FOLDER_NAME,
-                                         CNF_DEFINITION_TEMPLATE_FILENAME,
-                                         CNF_INPUT_FILENAME,
-                                         CNF_MANIFEST_TEMPLATE_FILENAME,
-                                         CNF_OUTPUT_FOLDER_FILENAME,
-                                         MANIFEST_FOLDER_NAME,
-                                         NF_DEFINITION_FOLDER_NAME,
-                                         DEPLOYMENT_PARAMETERS_FILENAME)
+from azext_aosm.common.constants import (
+    ARTIFACT_LIST_FILENAME,
+    BASE_FOLDER_NAME,
+    CNF_BASE_TEMPLATE_FILENAME,
+    CNF_TEMPLATE_FOLDER_NAME,
+    CNF_DEFINITION_TEMPLATE_FILENAME,
+    CNF_HELM_VALIDATION_ERRORS_TEMPLATE_FILENAME,
+    CNF_HELM_VALIDATION_ERRORS_FILENAME,
+    CNF_INPUT_FILENAME,
+    CNF_MANIFEST_TEMPLATE_FILENAME,
+    CNF_OUTPUT_FOLDER_FILENAME,
+    MANIFEST_FOLDER_NAME,
+    NF_DEFINITION_FOLDER_NAME,
+    DEPLOYMENT_PARAMETERS_FILENAME,
+)
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
@@ -97,6 +102,55 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             )
             processor_list.append(helm_processor)
         return processor_list
+
+    def _validate_helm_packages(self):
+        """Validate the helm packages."""
+        helm_chart_processors = self._get_processor_list()
+
+        validation_errors = {}
+
+        for helm_processor in helm_chart_processors:
+            validation_output = helm_processor.input_artifact.validate_template()
+
+            if validation_output:
+                validation_errors[
+                    helm_processor.input_artifact.artifact_name
+                ] = validation_output
+
+        if validation_errors:
+            # Create an error file using a j2 template
+            error_file_template_path = self._get_template_path(
+                CNF_TEMPLATE_FOLDER_NAME, CNF_HELM_VALIDATION_ERRORS_TEMPLATE_FILENAME
+            )
+
+            with open(
+                error_file_template_path,
+                "r",
+                encoding="utf-8",
+            ) as file:
+                error_file_template = Template(file.read())
+
+            rendered_error_file_template = error_file_template.render(
+                errors=validation_errors
+            )
+
+            logger.info(rendered_error_file_template)
+
+            with open(
+                CNF_HELM_VALIDATION_ERRORS_FILENAME,
+                "w",
+                encoding="utf-8",
+            ) as error_file:
+                error_file.write(rendered_error_file_template)
+
+            raise ValidationError(
+                f"Could not validate all the provided Helm charts. Please refer to the {CNF_HELM_VALIDATION_ERRORS_FILENAME} file for more information."
+            )
+
+    def pre_validate_build(self):
+        """Run all validation functions required before building the cnf."""
+        logger.debug("Pre-validating build")
+        self._validate_helm_packages()
 
     def build_base_bicep(self):
         """Build the base bicep file."""
@@ -196,11 +250,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         params = {
             "acr_nf_applications": nf_application_list,
-            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME
+            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
         }
-        bicep_contents = self._render_definition_bicep_contents(
-            template_path, params
-        )
+        bicep_contents = self._render_definition_bicep_contents(template_path, params)
 
         # Create a bicep element + add its supporting mapping files
         bicep_file = BicepDefinitionElementBuilder(

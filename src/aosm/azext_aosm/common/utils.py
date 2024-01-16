@@ -6,6 +6,8 @@
 import os
 import tarfile
 from pathlib import Path
+import shutil
+from azure.cli.core.azclierror import UserFault
 
 from azext_aosm.common.exceptions import InvalidFileTypeError
 
@@ -49,3 +51,18 @@ def snake_case_to_camel_case(text):
     """Converts snake case to camel case."""
     components = text.split("_")
     return components[0] + "".join(x[0].upper() + x[1:] for x in components[1:])
+
+
+def check_tool_installed(tool_name: str) -> None:
+    """
+    Check whether a tool such as docker or helm is installed.
+
+    :param tool_name: name of the tool to check, e.g. docker
+    """
+    if shutil.which(tool_name) is None:
+        raise InvalidDependency(f"You must install {tool_name} to use this command.")
+
+
+class InvalidDependency(UserFault):
+    """Error type used when user is trying to use a command that
+    requires a dependency that is not installed."""

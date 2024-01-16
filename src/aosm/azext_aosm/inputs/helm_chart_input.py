@@ -8,16 +8,19 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+import subprocess
 from typing import Any, Dict, List, Optional, Tuple
 
 import genson
 import yaml
 from knack.log import get_logger
 
-from azext_aosm.common.exceptions import (DefaultValuesNotFoundError,
-                                          MissingChartDependencyError,
-                                          SchemaGetOrGenerateError)
-from azext_aosm.common.utils import extract_tarfile
+from azext_aosm.common.exceptions import (
+    DefaultValuesNotFoundError,
+    MissingChartDependencyError,
+    SchemaGetOrGenerateError,
+)
+from azext_aosm.common.utils import extract_tarfile, check_tool_installed
 from azext_aosm.inputs.base_input import BaseInput
 
 logger = get_logger(__name__)
@@ -86,6 +89,7 @@ class HelmChartInput(BaseInput):
             self._chart_dir = extract_tarfile(chart_path, self._temp_dir_path)
         self._validate()
         self.metadata = self._get_metadata()
+        self.helm_template = tempfile.TemporaryFile()
 
     @staticmethod
     def from_chart_path(
@@ -123,6 +127,41 @@ class HelmChartInput(BaseInput):
             chart_path=chart_path,
             default_config=default_config,
         )
+
+    def validate_template(self) -> None:
+        """
+        Perform validation on the Helm chart template by running `helm template` command.
+        """
+        logger.debug("Performing validation on Helm chart %s.", self.artifact_name)
+
+        check_tool_installed("helm")
+
+        cmd = [
+            "helm",
+            "template",
+            self.artifact_name,
+            self.chart_path,
+        ]
+
+        try:
+            result = subprocess.run(cmd, capture_output=True, check=True)
+            helm_template_output = result.stdout
+            self.helm_template.write(helm_template_output)
+
+            logger.debug(
+                "Helm template output for Helm chart %s:\n%s",
+                self.artifact_name,
+                helm_template_output,
+            )
+            return ""
+        except subprocess.CalledProcessError as error:
+            # Return the error message without raising an error.
+            # The errors are going to be collected into a file by the caller of this function.
+            error_message = error.stderr.decode()
+            error_message = error_message.replace(
+                "\nUse --debug flag to render out invalid YAML", ""
+            )
+            return error_message
 
     def get_defaults(self) -> Dict[str, Any]:
         """

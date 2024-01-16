@@ -15,16 +15,19 @@ from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.common_parameters_config import \
-    BaseCommonParametersConfig
-from azext_aosm.configuration_models.onboarding_base_input_config import \
-    OnboardingBaseInputConfig
-from azext_aosm.definition_folder.builder.definition_folder_builder import \
-    DefinitionFolderBuilder
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+)
+from azext_aosm.configuration_models.onboarding_base_input_config import (
+    OnboardingBaseInputConfig,
+)
+from azext_aosm.definition_folder.builder.definition_folder_builder import (
+    DefinitionFolderBuilder,
+)
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm.vendored_sdks.models import \
-    AzureCoreNetworkFunctionVhdApplication
+from azext_aosm.vendored_sdks.models import AzureCoreNetworkFunctionVhdApplication
 from azext_aosm.common.constants import DEPLOYMENT_PARAMETERS_FILENAME
+
 logger = get_logger(__name__)
 
 
@@ -85,6 +88,7 @@ class OnboardingBaseCLIHandler(ABC):
     def build(self):
         """Build the definition."""
         self.config.validate()
+        self.pre_validate_build()
         self.definition_folder_builder.add_element(self.build_base_bicep())
         self.definition_folder_builder.add_element(self.build_manifest_bicep())
         self.definition_folder_builder.add_element(self.build_artifact_list())
@@ -107,6 +111,10 @@ class OnboardingBaseCLIHandler(ABC):
         #  - For each element (reversed):
         #    - Do element.delete()
         # TODO: Implement
+
+    @abstractmethod
+    def pre_validate_build(self):
+        """Perform all validations that need to be done before running the build command."""
 
     @abstractmethod
     def build_base_bicep(self):
@@ -192,11 +200,7 @@ class OnboardingBaseCLIHandler(ABC):
         bicep_contents: str = template.render()
         return bicep_contents
 
-    def _render_definition_bicep_contents(
-        self,
-        template_path: Path,
-        params
-    ):
+    def _render_definition_bicep_contents(self, template_path: Path, params):
         """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
