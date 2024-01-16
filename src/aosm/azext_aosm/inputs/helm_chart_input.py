@@ -182,7 +182,7 @@ class HelmChartInput(BaseInput):
                 json.dumps(schema, indent=4),
             )
 
-            return copy.deepcopy(schema)
+            return schema
         except FileNotFoundError as error:
             logger.error("No schema found for Helm chart '%s'", self.chart_path)
             raise SchemaGetOrGenerateError(

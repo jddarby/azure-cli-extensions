@@ -128,5 +128,6 @@ class NFDProcessor(BaseInputProcessor):
         return NFDResourceElementTemplate(
             name=self.name,
             configuration=configuration,
-            depends_on_profile=DependsOnProfile(),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
         )

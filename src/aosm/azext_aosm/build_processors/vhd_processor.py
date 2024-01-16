@@ -112,7 +112,8 @@ class VHDProcessor(BaseInputProcessor):
 
         return AzureCoreNetworkFunctionVhdApplication(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             artifact_profile=self._generate_artifact_profile(),
             deploy_parameters_mapping_rule_profile=self._generate_mapping_rule_profile(),
         )

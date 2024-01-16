@@ -155,7 +155,8 @@ class HelmChartProcessor(BaseInputProcessor):
         return AzureArcKubernetesHelmApplication(
             name=self.name,
             # Current implementation is set all depends on profiles to empty lists
-            depends_on_profile=DependsOnProfile(install_depends_on=[],uninstall_depends_on=[],update_depends_on=[]),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )

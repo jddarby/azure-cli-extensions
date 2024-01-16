@@ -65,12 +65,14 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         return OnboardingCNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, params_config: dict = None
+        self, config_file: Path = None
     ) -> CNFCommonParametersConfig:
         """Get the configuration for the command."""
-        if params_config is None:
-            params_config = {}
-        return CNFCommonParametersConfig(**params_config)
+        with open(config_file, "r", encoding="utf-8") as _file:
+            params_dict = json.load(_file)
+        if params_dict is None:
+            params_dict = {}
+        return CNFCommonParametersConfig(**params_dict)
 
     def _get_processor_list(self) -> [HelmChartProcessor]:
         processor_list = []
@@ -217,23 +219,16 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
         return bicep_file
 
-    def build_common_parameters_json(self):
+    def build_all_parameters_json(self):
+        """Build the all parameters json file."""
         params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "publisherResourceGroupName": {
-                    "value": self.config.publisher_resource_group_name
-                },
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "nfDefinitionGroup": {"value": self.config.nf_name},
-                "nfDefinitionVersion": {"value": self.config.version},
-            },
+            "location": self.config.location,
+            "publisher_name": self.config.publisher_name,
+            "publisher_resource_group_name": self.config.publisher_resource_group_name,
+            "acr_artifact_store_name": self.config.acr_artifact_store_name,
+            "acr_manifest_name": self.config.acr_artifact_store_name + "-manifest",
+            "nf_definition_group": self.config.nf_name,
+            "nf_definition_version": self.config.version
         }
 
         base_file = JSONDefinitionElementBuilder(
