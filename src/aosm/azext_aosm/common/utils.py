@@ -7,11 +7,15 @@ import os
 import tarfile
 from pathlib import Path
 from typing import Any, Dict, Iterable
-from azext_aosm.common.exceptions import InvalidFileTypeError
 import json
 import shutil
 import subprocess
 import tempfile
+
+from azext_aosm.common.exceptions import InvalidFileTypeError
+from knack.log import get_logger
+
+logger = get_logger(__name__)
 
 
 def convert_bicep_to_arm(bicep_template_path: Path) -> dict:
@@ -25,6 +29,7 @@ def convert_bicep_to_arm(bicep_template_path: Path) -> dict:
         bicep_filename = bicep_template_path.name
         arm_template_name = bicep_filename.replace(".bicep", ".json")
         arm_path = Path(tmpdir) / arm_template_name
+        logger.debug("Converting bicep template %s to ARM.", bicep_template_path,)
 
         try:
             subprocess.run(
@@ -44,6 +49,7 @@ def convert_bicep_to_arm(bicep_template_path: Path) -> dict:
         except subprocess.CalledProcessError:
             raise RuntimeError("Bicep to ARM template compilation failed")
 
+        logger.debug("ARM template:\n%s", arm_path.read_text())
         arm_json = json.loads(arm_path.read_text())
 
     return arm_json
