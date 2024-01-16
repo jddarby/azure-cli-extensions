@@ -19,19 +19,21 @@ param nfviSiteName string = '{{nfvi_site_name}}'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
   name: publisherName
   scope: resourceGroup()
 }
 
 // The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
-// The artifact store is created by the az aosm CLI before this template is deployed.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
 }
 
-// Created up-front, the NSD Group is the parent resource under which all NSD versions will be created.
+// The NSD Group is the parent resource under which all NSD versions will be created.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2023-09-01' existing = {
   parent: publisher
   name: nsDesignGroup
@@ -42,27 +44,26 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
 // The operator will create a config group values object that will satisfy this schema.
 resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
   parent: publisher
-  name: '{{cg_schema_name}}'
+  name: '{{cgs_name}}'
   location: location
   properties: {
-    schemaDefinition: string(loadJsonContent('schemas/{{cg_schema_name}}.json'))
+    schemaDefinition: string(loadJsonContent('{{cgs_file}}'))
   }
 }
 
+
 // The NSD version
+// This will deploy an NSDV in 'Preview' state. It should be changed to 'Active' once it is finalised.
 resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups/networkservicedesignversions@2023-09-01' = {
   parent: nsdGroup
   name: nsDesignVersion
   location: location
   properties: {
     description: '{{nsdv_description}}'
-    // The version state can be Preview, Active or Deprecated.
-    // Once in an Active state, the NSDV becomes immutable.
-    versionState: 'Preview'
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
-      {{cg_schema_name}}: {
+      {{cgs_name}}: {
         id: cgSchema.id
       }
     }
@@ -76,11 +77,11 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     // This field lists the templates that will be deployed by AOSM and the config mappings
     // to the values in the CG schemas.
     resourceElementTemplates: [
-{%- for index in range(nf_count) %}
+{%- for ret in nf_rets %}
       {
-        name: '{{ResourceElementName[index]}}'
+        name: '{{ret.name}}'
         // The type of resource element can be ArmResourceDefinition, ConfigurationDefinition or NetworkFunctionDefinition.
-        type: 'NetworkFunctionDefinition'
+        type: '{{ret.resource_element_type}}'
         // The configuration object may be different for different types of resource element.
         configuration: {
           // This field points AOSM at the artifact in the artifact store.
@@ -88,13 +89,13 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             artifactStoreReference: {
               id: acrArtifactStore.id
             }
-            artifactName: '{{armTemplateNames[index]}}'
-            artifactVersion: '{{armTemplateVersion}}'
+            artifactName: '{{ret.configuration.artifact_profile.artifact_name}}'
+            artifactVersion: '{{ret.configuration.artifact_profile.artifact_version}}'
           }
-          templateType: 'ArmTemplate'
+          templateType: '{{ret.configuration.template_type}}'
           // The parameter values map values from the CG schema, to values required by the template
           // deployed by this resource element.
-          parameterValues: string(loadJsonContent('configMappings/{{configMappingFiles[index]}}'))
+          parameterValues: string(loadJsonContent('{{ret.name}}-mappings.json'))
         }
         dependsOnProfile: {
           installDependsOn: []

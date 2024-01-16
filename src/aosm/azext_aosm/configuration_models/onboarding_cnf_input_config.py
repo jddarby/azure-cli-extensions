@@ -3,12 +3,14 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from azure.cli.core.azclierror import ValidationError
-from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
-    OnboardingNFDBaseInputConfig,
-)
 from typing import List
+
+from azure.cli.core.azclierror import ValidationError
+
+from azext_aosm.configuration_models.onboarding_nfd_base_input_config import \
+    OnboardingNFDBaseInputConfig
 
 
 @dataclass
@@ -109,6 +111,8 @@ class HelmPackageConfig:
             raise ValidationError("nf_name must be set for your helm package")
         if not self.path_to_chart:
             raise ValidationError("path_to_chart must be set for your helm package")
+
+
 @dataclass
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""

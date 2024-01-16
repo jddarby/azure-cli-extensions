@@ -8,18 +8,25 @@ param acrArtifactStoreName string
 @description('Name of an Network Service Design Group')
 param nsDesignGroup string
 
+// The publisher resource is the top level AOSM resource under which all other designer resources
+// are created.
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
   name: publisherName
   location: location
   properties: { scope: 'Private'}
 }
 
+// The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
   parent: publisher
   name: acrArtifactStoreName
   location: location
+  properties: {
+    storeType: 'AzureContainerRegistry'
+  }
 }
 
+// The NSD Group is the parent resource under which all NSD versions will be created.
 resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2023-09-01' = {
   parent: publisher
   name: nsDesignGroup

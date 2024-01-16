@@ -89,14 +89,3 @@ def snake_case_to_camel_case(text):
     """Converts snake case to camel case."""
     components = text.split("_")
     return components[0] + "".join(x[0].upper() + x[1:] for x in components[1:])
-
-
-def get_all_values(d):
-    if isinstance(d, dict):
-        for v in d.values():
-            yield from get_all_values(v)
-    elif isinstance(d, Iterable) and not isinstance(d, str):  # or list, set, ... only
-        for v in d:
-            yield from get_all_values(v)
-    else:
-        yield d

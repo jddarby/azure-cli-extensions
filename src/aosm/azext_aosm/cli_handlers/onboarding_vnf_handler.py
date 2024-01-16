@@ -4,26 +4,32 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
+from typing import Dict, Any
 from knack.log import get_logger
-from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
+
+from azext_aosm.build_processors.arm_processor import (
+    AzureCoreArmBuildProcessor, BaseArmBuildProcessor)
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
-from azext_aosm.common.constants import (
-    ARTIFACT_LIST_FILENAME,
-    MANIFEST_FOLDER_NAME,
-    NF_DEFINITION_FOLDER_NAME,
-    VNF_DEFINITION_TEMPLATE_FILENAME,
-    VNF_MANIFEST_TEMPLATE_FILENAME,
-    VNF_OUTPUT_FOLDER_FILENAME,
-    VNF_INPUT_FILENAME,
-    VNF_DEFINITION_FOLDER_NAME,
-    VNF_BASE_TEMPLATE_FILENAME,
-    BASE_FOLDER_NAME,
-)
+from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
+                                         BASE_FOLDER_NAME,
+                                         MANIFEST_FOLDER_NAME,
+                                         NF_DEFINITION_FOLDER_NAME,
+                                         VNF_BASE_TEMPLATE_FILENAME,
+                                         VNF_TEMPLATE_FOLDER_NAME,
+                                         VNF_DEFINITION_TEMPLATE_FILENAME,
+                                         VNF_INPUT_FILENAME,
+                                         VNF_MANIFEST_TEMPLATE_FILENAME,
+                                         VNF_OUTPUT_FOLDER_FILENAME,
+                                         DEPLOYMENT_PARAMETERS_FILENAME,
+                                         VHD_PARAMETERS_FILENAME,
+                                         TEMPLATE_PARAMETERS_FILENAME)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
     OnboardingVNFInputConfig,
 )
-from azext_aosm.configuration_models.common_parameters_config import VNFCommonParametersConfig
+from azext_aosm.configuration_models.common_parameters_config import (
+    VNFCommonParametersConfig,
+)
 from azext_aosm.definition_folder.builder.artifact_builder import (
     ArtifactDefinitionElementBuilder,
 )
@@ -44,8 +50,6 @@ logger = get_logger(__name__)
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
-    # config: OnboardingVNFInputConfig
-
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
@@ -56,24 +60,56 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return VNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_input_config(self, input_config: dict = None) -> OnboardingVNFInputConfig:
+    def _get_input_config(self, input_config: Dict[str, Any] = None) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
         return OnboardingVNFInputConfig(**input_config)
 
-    def _get_params_config(self, params_config: dict = None) -> VNFCommonParametersConfig:
+    def _get_params_config(
+        self, params_config: dict = None
+    ) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
         if params_config is None:
             params_config = {}
         return VNFCommonParametersConfig(**params_config)
 
+    def _get_processor_list(self):
+        processor_list = []
+        # for each arm template, instantiate arm processor
+        for arm_template in self.config.arm_templates:
+            arm_input = ArmTemplateInput(
+                artifact_name=arm_template.artifact_name,
+                artifact_version=arm_template.version,
+                default_config=None,
+                template_path=Path(arm_template.file_path).absolute(),
+            )
+            # TODO: generalise for nexus in nexus ready stories
+            processor_list.append(
+                AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+            )
+
+        # Instantiate vhd processor
+        if not self.config.vhd.artifact_name:
+            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
+        vhd_processor = VHDProcessor(
+            name=self.config.vhd.artifact_name,
+            input_artifact=VHDFileInput(
+                artifact_name=self.config.vhd.artifact_name,
+                artifact_version=self.config.vhd.version,
+                default_config=self._get_default_config(self.config.vhd),
+                file_path=Path(self.config.vhd.file_path).absolute(),
+                blob_sas_uri=self.config.vhd.blob_sas_url,
+            ),
+        )
+        processor_list.append(vhd_processor)
+        return processor_list
+
     def build_base_bicep(self):
         """Build the base bicep file."""
-
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
-            VNF_DEFINITION_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME
+            VNF_TEMPLATE_FOLDER_NAME, VNF_BASE_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_base_bicep_contents(template_path)
         # Create Bicep element with manifest contents
@@ -87,45 +123,25 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         acr_artifact_list = []
 
         logger.info("Creating artifact manifest bicep")
-        # For each arm template, get list of artifacts
-        for arm_template in self.config.arm_templates:
-            arm_input = ArmTemplateInput(
-                artifact_name=arm_template.artifact_name,
-                artifact_version=arm_template.version,
-                default_config=None,
-                template_path=Path(arm_template.file_path),
-            )
-            # TODO: generalise for nexus in nexus ready stories
-            arm_processor = AzureCoreArmBuildProcessor(
-                arm_input.artifact_name, arm_input
-            )
-            acr_artifact_list.extend(arm_processor.get_artifact_manifest_list())
-        logger.debug(
-            "Created list of artifacts from %s arm template(s) provided: %s",
-            len(self.config.arm_templates),
-            acr_artifact_list,
-        )
-        # Get list of vhd artifacts
-        if not self.config.vhd.artifact_name:
-            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
-        vhd_processor = VHDProcessor(
-            name=self.config.vhd.artifact_name,
-            input_artifact=VHDFileInput(
-                artifact_name=self.config.vhd.artifact_name,
-                artifact_version=self.config.vhd.version,
-                default_config=self._get_default_config(self.config.vhd),
-                file_path=self.config.vhd.file_path,
-                blob_sas_uri=self.config.vhd.blob_sas_url,
-            ),
-        )
-        sa_artifact_list = vhd_processor.get_artifact_manifest_list()
-        logger.debug(
-            "Created list of artifacts from vhd image provided: %s", sa_artifact_list
-        )
+
+        for processor in self.processors:
+            if isinstance(processor, BaseArmBuildProcessor):
+                acr_artifact_list.extend(processor.get_artifact_manifest_list())
+                logger.debug(
+                    "Created list of artifacts from %s arm template(s) provided: %s",
+                    len(self.config.arm_templates),
+                    acr_artifact_list,
+                )
+            elif isinstance(processor, VHDProcessor):
+                sa_artifact_list = processor.get_artifact_manifest_list()
+                logger.debug(
+                    "Created list of artifacts from vhd image provided: %s",
+                    sa_artifact_list,
+                )
 
         # Build manifest bicep contents, with j2 template
         template_path = self._get_template_path(
-            VNF_DEFINITION_FOLDER_NAME, VNF_MANIFEST_TEMPLATE_FILENAME
+            VNF_TEMPLATE_FOLDER_NAME, VNF_MANIFEST_TEMPLATE_FILENAME
         )
         bicep_contents = self._render_manifest_bicep_contents(
             template_path, acr_artifact_list, sa_artifact_list
@@ -144,45 +160,13 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         logger.info("Creating artifacts list for artifacts.json")
         artifact_list = []
         # For each arm template, get list of artifacts and combine
-        for arm_template in self.config.arm_templates:
-            arm_input = ArmTemplateInput(
-                artifact_name=arm_template.artifact_name,
-                artifact_version=arm_template.version,
-                default_config=None,
-                template_path=arm_template.file_path,
-            )
-            # TODO: generalise for nexus in nexus ready stories
-            arm_processor = AzureCoreArmBuildProcessor(
-                arm_input.artifact_name, arm_input
-            )
-            (artifacts, files) = arm_processor.get_artifact_details()
+        for processor in self.processors:
+            (artifacts, _) = processor.get_artifact_details()
             if artifacts not in artifact_list:
                 artifact_list.extend(artifacts)
         logger.debug(
-            "Created list of artifact details from %s arm template(s) provided: %s",
+            "Created list of artifact details from %s arm template(s) and the vhd image provided: %s",
             len(self.config.arm_templates),
-            artifact_list,
-        )
-
-        # Get list of vhd artifacts and combine
-        if not self.config.vhd.artifact_name:
-            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
-
-        vhd_processor = VHDProcessor(
-            name=self.config.vhd.artifact_name,
-            input_artifact=VHDFileInput(
-                artifact_name=self.config.vhd.artifact_name,
-                artifact_version=self.config.vhd.version,
-                default_config=self._get_default_config(self.config.vhd),
-                file_path=self.config.vhd.file_path,
-                blob_sas_uri=self.config.vhd.blob_sas_url,
-            ),
-        )
-        (artifacts, files) = vhd_processor.get_artifact_details()
-        if artifacts not in artifact_list:
-            artifact_list.extend(artifacts)
-        logger.debug(
-            "Created list of artifact details from vhd image provided: %s",
             artifact_list,
         )
 
@@ -191,90 +175,75 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(VNF_OUTPUT_FOLDER_FILENAME, ARTIFACT_LIST_FILENAME), artifact_list
         )
 
-    def build_resource_bicep(self, aosm_client=None):
+    def build_resource_bicep(self):
         """Build the resource bicep file."""
         logger.info("Creating artifacts list for artifacts.json")
         acr_nf_application_list = []
+        sa_nf_application_list = []
         supporting_files = []
         schema_properties = {}
 
-        # For each arm template, generate nf application
-        for arm_template in self.config.arm_templates:
-            arm_input = ArmTemplateInput(
-                artifact_name=arm_template.artifact_name,
-                artifact_version=arm_template.version,
-                default_config=None,
-                template_path=arm_template.file_path,
-            )
-            # TODO: generalise for nexus in nexus ready stories
-            # Generate NF Application and append to list of nf applications
-            arm_processor = AzureCoreArmBuildProcessor(
-                arm_input.artifact_name, arm_input
-            )
-            nf_application = arm_processor.generate_nf_application()
-            acr_nf_application_list.append(nf_application)
-            logger.debug("Created nf application from %s", arm_template.artifact_name)
+        for processor in self.processors:
+            nf_application = processor.generate_nf_application()
+            logger.debug("Created nf application %s", nf_application.name)
 
             # Generate deploymentParameters schema properties
-            params_schema = arm_processor.generate_params_schema()
+            params_schema = processor.generate_params_schema()
             schema_properties.update(params_schema)
 
-            logger.debug("Created nf application from %s", arm_template.artifact_name)
-            # Generate local file for template_parameters + add to supporting files list
-            template_params = (
-                nf_application.deploy_parameters_mapping_rule_profile.template_mapping_rule_profile.template_parameters
-            )
-            template_parameters_file = LocalFileBuilder(
+            # For each arm template, generate nf application
+            if isinstance(processor, BaseArmBuildProcessor):
+
+                acr_nf_application_list.append(nf_application)
+
+                # Generate local file for template_parameters + add to supporting files list
+                params = (
+                    nf_application.deploy_parameters_mapping_rule_profile.template_mapping_rule_profile.template_parameters
+                )
+                template_name = TEMPLATE_PARAMETERS_FILENAME
+                logger.info(
+                    "Created templatateParameters as supporting file for nfDefinition bicep"
+                )
+            elif isinstance(processor, VHDProcessor):
+                # Generate NF Application
+                # nf_application = processor.generate_nf_application()
+                sa_nf_application_list.append(nf_application)
+                # Generate local file for vhd_parameters
+                params = (
+                    nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
+                )
+                template_name = VHD_PARAMETERS_FILENAME
+            else:
+                raise TypeError(f"Type: {type(processor)} is not valid")
+
+            parameters_file = LocalFileBuilder(
                 Path(
                     VNF_OUTPUT_FOLDER_FILENAME,
                     NF_DEFINITION_FOLDER_NAME,
-                    "templateParameters.json",
+                    template_name,
                 ),
-                json.dumps(template_params, indent=4),
+                json.dumps(json.loads(params), indent=4),
             )
-            supporting_files.append(template_parameters_file)
-            logger.info(
-                "Created templatateParameters as supporting file for nfDefinition bicep"
-            )
-        # For vhd image, generate nf application
-        if not self.config.vhd.artifact_name:
-            self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
-        vhd_processor = VHDProcessor(
-            name=self.config.vhd.artifact_name,
-            input_artifact=VHDFileInput(
-                artifact_name=self.config.vhd.artifact_name,
-                artifact_version=self.config.vhd.version,
-                file_path=self.config.vhd.file_path,
-                default_config=self._get_default_config(self.config.vhd),
-                blob_sas_uri=self.config.vhd.blob_sas_url,
-            ),
-        )
-        # Generate NF Application
-        nf_application = vhd_processor.generate_nf_application()
-
-        # Generate local file for vhd_parameters
-        vhd_params = (
-            nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
-        )
-        vhd_params_file = LocalFileBuilder(
-            Path(
-                VNF_OUTPUT_FOLDER_FILENAME,
-                NF_DEFINITION_FOLDER_NAME,
-                "vhdParameters.json",
-            ),
-            vhd_params,
-        )
-        supporting_files.append(vhd_params_file)
+            supporting_files.append(parameters_file)
 
         # Create bicep contents using vnf defintion j2 template
         template_path = self._get_template_path(
-            VNF_DEFINITION_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME
-        )
-        bicep_contents = self._render_definition_bicep_contents(
-            template_path, acr_nf_application_list, nf_application
+            VNF_TEMPLATE_FOLDER_NAME, VNF_DEFINITION_TEMPLATE_FILENAME
         )
 
-        # Create a bicep element + add its supporting files (deploymentParameters, vhdParameters and templateParameters)
+        params = {
+            "acr_nf_applications": acr_nf_application_list,
+            "sa_nf_application": sa_nf_application_list[0],
+            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "vhd_parameters_file": VHD_PARAMETERS_FILENAME,
+            "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME
+        }
+        bicep_contents = self._render_definition_bicep_contents(
+            template_path, params
+        )
+
+        # Create a bicep element
+        # + add its supporting files (deploymentParameters, vhdParameters and templateParameters)
         bicep_file = BicepDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME),
             bicep_contents,
@@ -290,7 +259,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
         return bicep_file
 
-    def build_common_parameters_json(self):
+    def build_all_parameters_json(self):
         params_content = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
             "contentVersion": "1.0.0.0",
@@ -321,13 +290,13 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         default_config = {}
         if vhd.image_disk_size_GB:
             default_config.update({"image_disk_size_GB": vhd.image_disk_size_GB})
-        else:
-            # Default to V1 if not specified
-            default_config.update({"image_disk_size_GB": "V1"})
         if vhd.image_hyper_v_generation:
             default_config.update(
                 {"image_hyper_v_generation": vhd.image_hyper_v_generation}
             )
+        else:
+            # Default to V1 if not specified
+            default_config.update({"image_hyper_v_generation": "V1"})
         if vhd.image_api_version:
             default_config.update({"image_api_version": vhd.image_api_version})
         return default_config

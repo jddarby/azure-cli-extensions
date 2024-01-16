@@ -5,12 +5,11 @@
 
 import json
 from pathlib import Path
-
-from .base_builder import BaseDefinitionElementBuilder
+from typing import List
 
 from azext_aosm.common.artifact import BaseArtifact
 
-from typing import List
+from .base_builder import BaseDefinitionElementBuilder
 
 
 class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
@@ -33,5 +32,6 @@ class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
         artifacts_list = []
         for artifact in self.artifacts:
             artifacts_list.append(artifact.to_dict())
+        print("artifact list", artifacts_list)
         (self.path / "artifacts.json").write_text(json.dumps(artifacts_list, indent=4))
         self._write_supporting_files()

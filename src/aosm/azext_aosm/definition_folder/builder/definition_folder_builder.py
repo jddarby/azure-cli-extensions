@@ -5,12 +5,16 @@
 
 import json
 from pathlib import Path
+import shutil
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from azext_aosm.definition_folder.builder.base_builder import (
     BaseDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
 )
 
 from typing import List
@@ -33,20 +37,23 @@ class DefinitionFolderBuilder:
     def write(self):
         """Write the definition folder."""
         self._check_for_overwrite()
-        self.path.mkdir(exist_ok=True)
+        if self.path.exists():
+            shutil.rmtree(self.path)
+        self.path.mkdir()
         for element in self.elements:
             element.write()
         index_json = []
         for element in self.elements:
-            index_json.append(
-                {
-                    "name": element.path.name,
-                    "type": "bicep"
-                    if isinstance(element, BicepDefinitionElementBuilder)
-                    else "artifact",
-                    "only_delete_on_clean": element.only_delete_on_clean,
-                }
-            )
+            if not isinstance(element, JSONDefinitionElementBuilder):
+                index_json.append(
+                    {
+                        "name": element.path.name,
+                        "type": "bicep"
+                        if isinstance(element, BicepDefinitionElementBuilder)
+                        else "artifact",
+                        "only_delete_on_clean": element.only_delete_on_clean,
+                    }
+                )
         (self.path / "index.json").write_text(json.dumps(index_json, indent=4))
         # TODO: Write some readme file
 

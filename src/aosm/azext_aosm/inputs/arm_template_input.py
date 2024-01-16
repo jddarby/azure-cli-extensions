@@ -1,51 +1,95 @@
+import copy
 import json
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from knack.log import get_logger
+
+from azext_aosm.common.constants import BASE_SCHEMA
 from azext_aosm.inputs.base_input import BaseInput
 
+logger = get_logger(__name__)
 
-@dataclass
+
 class ArmTemplateInput(BaseInput):
+    """
+    A utility class for working with ARM template inputs.
 
-    template_path: Path
+    :param artifact_name: The name of the artifact.
+    :type artifact_name: str
+    :param artifact_version: The version of the artifact.
+    :type artifact_version: str
+    :param template_path: The path to the ARM template file.
+    :type template_path: Path
+    :param default_config: The default configuration.
+    :type default_config: Optional[Dict[str, Any]]
+    """
 
-    def get_defaults(self):
-        if self.default_config:
-            return self.default_config
-        return {}
+    def __init__(
+        self,
+        artifact_name: str,
+        artifact_version: str,
+        template_path: Path,
+        default_config: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(artifact_name, artifact_version, default_config)
+        self.template_path = template_path
+
+    def get_defaults(self) -> Dict[str, Any]:
+        """
+        Gets the default values for configuring the input.
+
+        :return: A dictionary containing the default values.
+        :rtype: Dict[str, Any]
+        """
+        logger.info("Getting default values for ARM template input")
+        default_config = self.default_config or {}
+        logger.debug(
+            "Default values for ARM template input: %s",
+            json.dumps(default_config, indent=4),
+        )
+
+        return copy.deepcopy(default_config)
 
     def get_schema(self) -> Dict[str, Any]:
-        # For ARM templates, the schema is defined by the parameters section
-        base_arm_template_schema = r"""
-        {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": "armTemplateSchema",
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
         """
-        arm_template_schema = json.loads(base_arm_template_schema)
+        Gets the schema for the ARM template input.
 
+        :return: A dictionary containing the schema.
+        :rtype: Dict[str, Any]
+        """
+        logger.info("Getting schema for ARM template input")
+        arm_template_schema = copy.deepcopy(BASE_SCHEMA)
         with open(self.template_path, "r", encoding="utf-8") as _file:
             data = json.load(_file)
 
         if "parameters" in data:
             self._generate_schema_from_params(arm_template_schema, data["parameters"])
         else:
-            print(
+            logger.warning(
                 "No parameters found in the template provided. "
                 "Your NFD will have no deployParameters"
             )
 
-        return arm_template_schema
+        logger.debug(
+            "Schema for ARM template input: %s",
+            json.dumps(arm_template_schema, indent=4),
+        )
+
+        return copy.deepcopy(arm_template_schema)
 
     def _generate_schema_from_params(
         self, schema: Dict[str, Any], parameters: Dict[str, Any]
     ) -> None:
-        """Generate the schema from the parameters."""
+        """
+        Generates the schema from the parameters.
+
+        :param schema: The schema to generate.
+        :type schema: Dict[str, Any]
+        :param parameters: The parameters to generate the schema from.
+        :type parameters: Dict[str, Any]
+        """
+        logger.debug("Generating schema from parameters")
         for key, value in parameters.items():
             if "defaultValue" not in value:
                 schema["required"].append(key)

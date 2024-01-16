@@ -13,45 +13,44 @@ param nfDefinitionGroup string
 @description('The version of the NFDV you want to deploy, in format A.B.C')
 param nfDefinitionVersion string
 
+// The publisher resource is the top level AOSM resource under which all other designer resources
+// are created.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
+resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing =  {
   name: publisherName
-  location: location
-  properties: { scope: 'Private'}
 }
 
+// The artifact store is the resource in which all the artifacts (except VHD images) required to deploy the NF are stored.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
+resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
-  location: location
 }
 
+// The storage account is the resource in which the VHD images are stored.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
+resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: saArtifactStoreName
-  location: location
 }
 
+// The NFD Group is the parent resource under which all NFD versions will be created.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' = {
+resource nfdg 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups@2023-09-01' existing = {
   parent: publisher
   name: nfDefinitionGroup
-  location: location
 }
 
+// This will deploy an NFDV in 'Preview' state. It should be changed to 'Active' once it is finalised.
 resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroups/networkfunctiondefinitionversions@2023-09-01' = {
   parent: nfdg
   name: nfDefinitionVersion
   location: location
   properties: {
-    // versionState should be changed to 'Active' once it is finalized.
-    versionState: 'Preview'
     {#- Note that all paths in bicep must be specified using the forward slash #}
     {#-  (/) character even if running on Windows. #}
     {#- See https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules#local-file #}
-    deployParameters: string(loadJsonContent('deploymentParameters.json'))
+    deployParameters: string(loadJsonContent('{{deployment_parameters_file}}'))
     networkFunctionType: 'VirtualNetworkFunction'
     networkFunctionTemplate: {
       nfviType: 'AzureCore'
@@ -72,12 +71,12 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
           // mapping deploy param vals to vals required by this network function application object
           deployParametersMappingRuleProfile: {
             vhdImageMappingRuleProfile: {
-              userConfiguration: string(loadJsonContent('vhdParameters.json'))
+              userConfiguration: string(loadJsonContent('{{vhd_parameters_file}}'))
             }
             // ??
             applicationEnablement: 'Unknown'
           }
-        },
+        }
       {%- for configuration in acr_nf_applications %}
         {
           artifactType: 'ArmTemplate'
@@ -94,7 +93,7 @@ resource nfdv 'Microsoft.Hybridnetwork/publishers/networkfunctiondefinitiongroup
           }
           deployParametersMappingRuleProfile: {
             templateMappingRuleProfile: {
-              templateParameters: string(loadJsonContent('templateParameters.json'))
+              templateParameters: string(loadJsonContent('{{template_parameters_file}}'))
             }
             applicationEnablement: 'Unknown'
           }

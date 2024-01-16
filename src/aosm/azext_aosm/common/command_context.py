@@ -1,12 +1,12 @@
 from dataclasses import dataclass
+from typing import Dict, Optional
 
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azure.cli.core import AzCli
 from azure.cli.core.commands.client_factory import get_mgmt_service_client
 from azure.cli.core.profiles import ResourceType
 from azure.mgmt.resource import ResourceManagementClient
-from azure.cli.core import AzCli
 
-from typing import Dict, Optional
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
 
 @dataclass

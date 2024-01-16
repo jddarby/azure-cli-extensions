@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 from __future__ import annotations
+
 from abc import ABC
 from dataclasses import dataclass
 
@@ -15,25 +16,26 @@ class BaseCommonParametersConfig(ABC):
     """Base common parameters configuration."""
 
     location: str
-    publisherName: str
-    publisherResourceGroupName: str
-    acrArtifactStoreName: str
-    acrManifestName: str
+    publisher_name: str
+    publisher_resource_group_name: str
+    acr_artifact_store_name: str
+    acr_manifest_name: str
 
 
 @dataclass(frozen=True)
 class NFDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NFs."""
-    nfDefinitionGroup: str
-    nfDefinitionVersion: str
+
+    nf_definition_group: str
+    nf_definition_version: str
 
 
 @dataclass(frozen=True)
 class VNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
 
-    saArtifactStoreName: str
-    saManifestName: str
+    sa_artifact_store_name: str
+    sa_manifest_name: str
 
 
 @dataclass(frozen=True)
@@ -43,4 +45,6 @@ class CNFCommonParametersConfig(NFDCommonParametersConfig):
 
 @dataclass(frozen=True)
 class NSDCommonParametersConfig(BaseCommonParametersConfig):
-    """ Common parameters configuration for NSDs"""
+    """Common parameters configuration for NSDs."""
+
+    ns_definition_group: str
