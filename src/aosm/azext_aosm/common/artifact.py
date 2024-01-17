@@ -165,12 +165,13 @@ class LocalFileACRArtifact(BaseACRArtifact):
             try:
                 oras_client.push(files=[self.file_path], target=target)
                 break
-            except ValueError:
+            except ValueError as error:
                 if retries < 20:
                     logger.info("Retrying pushing local artifact to ACR. Retries so far: %s", retries)
                     retries += 1
                     sleep(3)
                     continue
+                raise error
         logger.info("LocalFileACRArtifact uploaded %s to %s", self.file_path, target)
 
 
