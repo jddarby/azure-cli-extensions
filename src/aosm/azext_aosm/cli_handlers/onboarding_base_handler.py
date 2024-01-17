@@ -50,7 +50,6 @@ class OnboardingBaseCLIHandler(ABC):
             # If config file is the all parameters json file for publish/delete
             elif config_file.suffix == ".json":
                 self.config = self._get_params_config(config_file)
-                print("cnf config", self.config)
             else:
                 raise UnclassifiedUserFault("Invalid input")
                 # TODO: Change this to work with publish?

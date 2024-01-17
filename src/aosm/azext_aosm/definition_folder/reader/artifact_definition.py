@@ -36,7 +36,6 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
         Use the inspect module to identify the artifact class's required fields and
         create an instance of the class using the supplied artifact dict.
         """
-        print("artifact: ", artifact)
         if "type" not in artifact or artifact["type"] not in ARTIFACT_TYPE_TO_CLASS:
             raise ValueError("Artifact type is missing or invalid")
         class_sig = inspect.signature(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].__init__)
