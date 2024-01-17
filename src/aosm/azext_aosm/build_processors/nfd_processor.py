@@ -77,12 +77,10 @@ class NFDProcessor(BaseInputProcessor):
         # The ARM template is written to a local file to be used as the artifact
         # Path is relative to NSD_OUTPUT_FOLDER_FILENAME as this artifact is stored in the NSD output folder
         artifact_details = LocalFileACRArtifact(
-            ManifestArtifactFormat(
-                artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                artifact_version=self.input_artifact.artifact_version,
-            ),
-            self.input_artifact.arm_template_output_path.relative_to(Path(NSD_OUTPUT_FOLDER_FILENAME)),
+            artifact_name=self.input_artifact.artifact_name,
+            artifact_type=ArtifactType.OCI_ARTIFACT.value,
+            artifact_version=self.input_artifact.artifact_version,
+            file_path=self.input_artifact.arm_template_output_path.relative_to(Path(NSD_OUTPUT_FOLDER_FILENAME)),
         )
 
         # Create a local file builder for the ARM template

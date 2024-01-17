@@ -31,6 +31,12 @@ class SkipSteps(Enum):
     IMAGE_UPLOAD = IMAGE_UPLOAD
 
 
+class ManifestsExist(str, Enum):
+    ALL = "all"
+    NONE = "none"
+    SOME = "some"
+
+
 # Names of files used in the repo
 # TODO: remove unused constants
 BASE_FOLDER_NAME = "base"
@@ -85,9 +91,6 @@ OPTIONAL_DEPLOYMENT_PARAMETERS_HEADING = (
     "# If you do not wish to expose them in the NFD, find and remove them from both\n"
     f"# {DEPLOYMENT_PARAMETERS_FILENAME} and {TEMPLATE_PARAMETERS_FILENAME} (and {VHD_PARAMETERS_FILENAME} if\n"
     "they are there)\n"
-    "# You can re-run the build command with the --order-params flag to order those\n"
-    "# files with the optional parameters at the end of the file, and with the \n"
-    "# --interactive flag to interactively choose y/n for each parameter to expose.\n\n"
 )
 
 # Deployment Schema

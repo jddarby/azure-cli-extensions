@@ -13,16 +13,18 @@ from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.configuration_models.onboarding_base_input_config import (
+    OnboardingBaseInputConfig,
+)
+from azext_aosm.definition_folder.builder.definition_folder_builder import (
+    DefinitionFolderBuilder,
+)
+from azext_aosm.definition_folder.reader.definition_folder import DefinitionFolder
+from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.common_parameters_config import \
     BaseCommonParametersConfig
-from azext_aosm.configuration_models.onboarding_base_input_config import \
-    OnboardingBaseInputConfig
-from azext_aosm.definition_folder.builder.definition_folder_builder import \
-    DefinitionFolderBuilder
+from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm.vendored_sdks.models import \
-    AzureCoreNetworkFunctionVhdApplication
 from azext_aosm.common.constants import DEPLOYMENT_PARAMETERS_FILENAME
 logger = get_logger(__name__)
 
@@ -37,6 +39,7 @@ class OnboardingBaseCLIHandler(ABC):
     ):
         """Initialize the CLI handler."""
         self.aosm_client = aosm_client
+        config_file = Path(config_file)
         # If config file provided (for build, publish and delete)
         if config_file:
             # If config file is the input.jsonc for build command
@@ -91,15 +94,21 @@ class OnboardingBaseCLIHandler(ABC):
         self.definition_folder_builder.add_element(self.build_all_parameters_json())
         self.definition_folder_builder.write()
 
-    def publish(self):
+    def publish(self, command_context: CommandContext):
         """Publish the definition."""
         # Takes folder, deploys to Azure
+        #  - Work out where the definition folder is
+        #    - If not specified, use a set path (see constants.py for directory names), and error if not found with option of moving to correct dir, or specifying path
+        #    - If specified, use that path
         #  - Read folder/ create folder object
-        #  - For each step (element):
-        #    - Do element.deploy()
-        # TODO: Implement
+        if command_context.cli_options["definition_folder"]:
+            definition_folder = DefinitionFolder(
+                command_context.cli_options["definition_folder"]
+            )
+        # TODO: else logic for finding VNF_OUTPUT_FOLDER_FILENAME, etc., assuming command run from same directory as build.
+        definition_folder.deploy(config=self.config, command_context=command_context)
 
-    def delete(self):
+    def delete(self, command_context: CommandContext):
         """Delete the definition."""
         # Takes folder, deletes to Azure
         #  - Read folder/ create folder object

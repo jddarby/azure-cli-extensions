@@ -2,9 +2,6 @@
 # If you do not wish to expose them in the NFD, find and remove them from both
 # deploymentParameters.json and templateParameters.json (and vhdParameters.json if
 they are there)
-# You can re-run the build command with the --order-params flag to order those
-# files with the optional parameters at the end of the file, and with the 
-# --interactive flag to interactively choose y/n for each parameter to expose.
 
 {
     "location": {

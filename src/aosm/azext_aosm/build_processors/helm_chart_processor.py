@@ -94,26 +94,21 @@ class HelmChartProcessor(BaseInputProcessor):
 
         # We only support local file artifacts for Helm charts
         helm_chart_details = LocalFileACRArtifact(
-            ManifestArtifactFormat(
-                artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                artifact_version=self.input_artifact.artifact_version,
-            ),
-            self.input_artifact.chart_path,
+            artifact_name=self.input_artifact.artifact_name,
+            artifact_type=ArtifactType.OCI_ARTIFACT.value,
+            artifact_version=self.input_artifact.artifact_version,
+            file_path=self.input_artifact.chart_path,
         )
         artifact_details.append(helm_chart_details)
-
         for image_name, image_version in self._find_chart_images():
             # We only support remote ACR artifacts for container images
             artifact_details.append(
                 RemoteACRArtifact(
-                    ManifestArtifactFormat(
-                        artifact_name=image_name,
-                        artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                        artifact_version=image_version,
-                    ),
-                    self.source_registry,
-                    self.source_registry_namespace,
+                    artifact_name=image_name,
+                    artifact_type=ArtifactType.OCI_ARTIFACT.value,
+                    artifact_version=image_version,
+                    source_registry=self.source_registry,
+                    source_registry_namespace=self.source_registry_namespace,
                 )
             )
 

@@ -81,11 +81,9 @@ class BaseArmBuildProcessor(BaseInputProcessor):
         return (
             [
                 LocalFileACRArtifact(
-                    artifact_manifest=ManifestArtifactFormat(
-                        artifact_name=self.input_artifact.artifact_name,
-                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
-                        artifact_version=self.input_artifact.artifact_version,
-                    ),
+                    artifact_name=self.input_artifact.artifact_name,
+                    artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
+                    artifact_version=self.input_artifact.artifact_version,
                     file_path=self.input_artifact.template_path,
                 )
             ],

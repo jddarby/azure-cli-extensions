@@ -49,75 +49,12 @@ def load_arguments(self: AzCommandsLoader, _):
             help="Also delete artifact stores, NFD Group and Publisher. Use with care.",
         )
         c.argument(
-            "definition_file",
-            options_list=["--definition-file", "-b"],
+            "build_output_folder",
+            options_list=["--build-output-folder", "-b"],
             type=file_type,
             completer=FilesCompleter(allowednames="*.json"),
             help=(
-                "Optional path to a bicep file to publish. Use to override publish of"
-                " the built definition with an alternative file."
-            ),
-        )
-        c.argument(
-            "design_file",
-            options_list=["--design-file", "-b"],
-            type=file_type,
-            completer=FilesCompleter(allowednames="*.bicep"),
-            help=(
-                "Optional path to a bicep file to publish. Use to override publish of"
-                " the built design with an alternative file."
-            ),
-        )
-        c.argument(
-            "order_params",
-            arg_type=get_three_state_flag(),
-            help=(
-                "VNF definition_type only - ignored for CNF. Order deploymentParameters"
-                " schema and configMappings to have the parameters without default"
-                " values at the top and those with default values at the bottom. Can"
-                " make it easier to remove those with defaults which you do not want to"
-                " expose as NFD parameters."
-            ),
-        )
-        c.argument(
-            "interactive",
-            options_list=["--interactive", "-i"],
-            arg_type=get_three_state_flag(),
-            help=(
-                "Prompt user to choose every parameter to expose as an NFD parameter."
-                " Those without defaults are automatically included."
-            ),
-        )
-        c.argument(
-            "parameters_json_file",
-            options_list=["--parameters-file", "-p"],
-            type=file_type,
-            completer=FilesCompleter(allowednames="*.json"),
-            help=(
-                "Optional path to a parameters file for the bicep definition file. Use"
-                " to override publish of the built definition and config with"
-                " alternative parameters."
-            ),
-        )
-        c.argument(
-            "manifest_file",
-            options_list=["--manifest-file", "-m"],
-            type=file_type,
-            completer=FilesCompleter(allowednames="*.json"),
-            help=(
-                "Optional path to a bicep file to publish manifests. Use to override"
-                " publish of the built definition with an alternative file."
-            ),
-        )
-        c.argument(
-            "manifest_params_file",
-            options_list=["--manifest-params-file"],
-            type=file_type,
-            completer=FilesCompleter(allowednames="*.json"),
-            help=(
-                "Optional path to a parameters file for the manifest definition file."
-                " Use to override publish of the built definition and config with"
-                " alternative parameters."
+                "Path to the folder to publish, created by the build command."
             ),
         )
         c.argument(
@@ -135,11 +72,10 @@ def load_arguments(self: AzCommandsLoader, _):
             options_list=["--no-subscription-permissions", "-u"],
             arg_type=get_three_state_flag(),
             help=(
-                "CNF definition_type publish only - ignored for VNF."
-                " Set to True if you do not "
-                "have permission to import to the Publisher subscription (Contributor "
-                "role + AcrPush role, or a custom role that allows the importImage "
-                "action and AcrPush over the "
+                "CNF definition_type publish only - ignored for VNF. "
+                "Pass this flag if you do not have permission to import to the "
+                "Publisher subscription (Contributor role + AcrPush role, or a "
+                "custom role that allows the importImage action and AcrPush over the "
                 "whole subscription). This means that the image artifacts will be "
                 "pulled to your local machine and then pushed to the Artifact Store. "
                 "Requires Docker to be installed locally."

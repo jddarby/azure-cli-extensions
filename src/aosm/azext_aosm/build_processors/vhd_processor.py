@@ -67,19 +67,15 @@ class VHDProcessor(BaseInputProcessor):
         artifacts: List[BaseArtifact] = []
         file_builders: List[LocalFileBuilder] = []
 
-        artifact_manifest = ManifestArtifactFormat(
-            artifact_name=self.input_artifact.artifact_name,
-            artifact_type=ArtifactType.VHD_IMAGE_FILE.value,
-            artifact_version=self.input_artifact.artifact_version,
-        )
-
         if self.input_artifact.file_path:
             logger.debug(
                 "VHD input has a file path. Adding LocalFileStorageAccountArtifact."
             )
             artifacts.append(
                 LocalFileStorageAccountArtifact(
-                    artifact_manifest=artifact_manifest,
+                    artifact_name=self.input_artifact.artifact_name,
+                    artifact_type=ArtifactType.VHD_IMAGE_FILE.value,
+                    artifact_version=self.input_artifact.artifact_version,
                     file_path=self.input_artifact.file_path,
                 )
             )

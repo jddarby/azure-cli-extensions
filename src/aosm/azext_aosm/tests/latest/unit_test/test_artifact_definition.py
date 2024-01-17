@@ -5,13 +5,14 @@
 
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import call, MagicMock, patch
+from unittest.mock import call, MagicMock, patch, create_autospec
 
 from azext_aosm.definition_folder.reader.artifact_definition import ArtifactDefinitionElement
-
+from azext_aosm.common.artifact import LocalFileACRArtifact
 
 class TestArtifactDefinitionElement(TestCase):
     """Test the Artifact definition element."""
+
 
     @patch("pathlib.Path.read_text")
     def test_deploy(self, mock_read_text):
@@ -23,18 +24,20 @@ class TestArtifactDefinitionElement(TestCase):
         [
             {
                 "type": "MockType1",
-                "abc": "def"
+                "artifact_manifest": "def",
+                "file_path": "def"
             },
             {
                 "type": "MockType2",
-                "ghi": "jkl"
+                "artifact_manifest": "jkl",
+                "file_path": "jkl"
             }
         ]
         """
 
         # Create artifact type mocks.
-        mock_type_1 = MagicMock()
-        mock_type_2 = MagicMock()
+        mock_type_1 = LocalFileACRArtifact
+        mock_type_2 = LocalFileACRArtifact
         mock_artifact_type_to_class = {
             "MockType1": mock_type_1,
             "MockType2": mock_type_2,
@@ -54,14 +57,12 @@ class TestArtifactDefinitionElement(TestCase):
         # Check results.
         mock_type_1.assert_has_calls(
             [
-                call.from_dict({"type": "MockType1", "abc": "def"}),
-                call.from_dict().upload(),
+                call.upload(),
             ]
         )
         mock_type_2.assert_has_calls(
             [
-                call.from_dict({"type": "MockType2", "ghi": "jkl"}),
-                call.from_dict().upload(),
+                call.upload(),
             ]
         )
 
@@ -75,18 +76,20 @@ class TestArtifactDefinitionElement(TestCase):
         [
             {
                 "type": "MockType1",
-                "abc": "def"
+                "artifact_manifest": "def",
+                "file_path": "def"
             },
             {
                 "type": "MockType2",
-                "ghi": "jkl"
+                "artifact_manifest": "jkl",
+                "file_path": "jkl"
             }
         ]
         """
 
         # Create artifact type mocks.
-        mock_type_1 = MagicMock()
-        mock_type_2 = MagicMock()
+        mock_type_1 = LocalFileACRArtifact
+        mock_type_2 = LocalFileACRArtifact
         mock_artifact_type_to_class = {
             "MockType1": mock_type_1,
             "MockType2": mock_type_2,
