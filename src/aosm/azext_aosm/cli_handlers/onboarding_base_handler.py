@@ -39,9 +39,9 @@ class OnboardingBaseCLIHandler(ABC):
     ):
         """Initialize the CLI handler."""
         self.aosm_client = aosm_client
-        config_file = Path(config_file)
         # If config file provided (for build, publish and delete)
         if config_file:
+            config_file = Path(config_file)
             # If config file is the input.jsonc for build command
             if config_file.suffix == ".jsonc":
                 config_dict = self._read_input_config_from_file(config_file)
@@ -50,7 +50,6 @@ class OnboardingBaseCLIHandler(ABC):
             # If config file is the all parameters json file for publish/delete
             elif config_file.suffix == ".json":
                 self.config = self._get_params_config(config_file)
-                print("cnf config", self.config)
             else:
                 raise UnclassifiedUserFault("Invalid input")
                 # TODO: Change this to work with publish?

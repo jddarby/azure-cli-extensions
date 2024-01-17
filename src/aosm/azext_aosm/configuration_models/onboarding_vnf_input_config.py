@@ -159,4 +159,3 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
         for arm_template in self.arm_templates:
             arm_template.validate()
         self.vhd.validate()
-

@@ -28,12 +28,12 @@ class OnboardingBaseInputConfig(ABC):
             )
         },
     )
-    publisher_resource_group_name: str | None = field(
+    publisher_resource_group_name: str = field(
         default="",
         metadata={
             "comment": (
-                "Optional. Resource group for the Publisher resource.\n"
-                "Will be created if it does not exist (with a default name if none is supplied)."
+                "Resource group for the Publisher resource.\n"
+                "You should create this before running the publish command"
             )
         },
     )
@@ -53,3 +53,5 @@ class OnboardingBaseInputConfig(ABC):
             raise ValidationError("Location must be set")
         if not self.publisher_name:
             raise ValidationError("Publisher name must be set")
+        if not self.publisher_resource_group_name:
+            raise ValidationError("Publisher resource group name must be set")

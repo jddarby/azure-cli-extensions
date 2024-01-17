@@ -261,25 +261,15 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def build_all_parameters_json(self):
         params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "publisherResourceGroupName": {
-                    "value": self.config.publisher_resource_group_name
-                },
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "saManifestName": {
-                    "value": self.config.blob_artifact_store_name + "-manifest"
-                },
-                "nfDefinitionGroup": {"value": self.config.nf_name},
-                "nfDefinitionVersion": {"value": self.config.version},
-            },
+            "location": self.config.location,
+            "publisherName": self.config.publisher_name,
+            "publisherResourceGroupName": self.config.publisher_resource_group_name,
+            "acrArtifactStoreName": self.config.acr_artifact_store_name,
+            "saArtifactStoreName": self.config.blob_artifact_store_name,
+            "acrManifestName":  self.config.acr_artifact_store_name + "-manifest",
+            "saManifestName": self.config.blob_artifact_store_name + "-manifest",
+            "nfDefinitionGroup": self.config.nf_name,
+            "nfDefinitionVersion": self.config.version
         }
         base_file = JSONDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)

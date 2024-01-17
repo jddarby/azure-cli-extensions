@@ -32,6 +32,5 @@ class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
         artifacts_list = []
         for artifact in self.artifacts:
             artifacts_list.append(artifact.to_dict())
-        print("artifact list", artifacts_list)
         (self.path / "artifacts.json").write_text(json.dumps(artifacts_list, indent=4))
         self._write_supporting_files()
