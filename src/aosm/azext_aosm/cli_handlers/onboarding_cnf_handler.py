@@ -223,12 +223,12 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Build the all parameters json file."""
         params_content = {
             "location": self.config.location,
-            "publisher_name": self.config.publisher_name,
-            "publisher_resource_group_name": self.config.publisher_resource_group_name,
-            "acr_artifact_store_name": self.config.acr_artifact_store_name,
-            "acr_manifest_name": self.config.acr_artifact_store_name + "-manifest",
-            "nf_definition_group": self.config.nf_name,
-            "nf_definition_version": self.config.version
+            "publisherName": self.config.publisher_name,
+            "publisherResourceGroupName": self.config.publisher_resource_group_name,
+            "acrArtifactStoreName": self.config.acr_artifact_store_name,
+            "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
+            "nfDefinitionGroup": self.config.nf_name,
+            "nfDefinitionVersion": self.config.version
         }
 
         base_file = JSONDefinitionElementBuilder(

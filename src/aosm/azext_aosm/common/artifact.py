@@ -32,19 +32,12 @@ class BaseArtifact(ABC):
         self.artifact_name = artifact_name
         self.artifact_type = artifact_type
         self.artifact_version = artifact_version
-        self.artifact_manifest = ManifestArtifactFormat(  # TODO (Rename): rename to artifact_properties
-            artifact_name=artifact_name,
-            artifact_type=artifact_type,
-            artifact_version=artifact_version,
-        )
 
     def to_dict(self) -> dict:
         """Convert an instance to a dict."""
-        # Exclude the artifact manifest as that's represented by the name, type and version
         output_dict = {"type": ARTIFACT_CLASS_TO_TYPE[type(self)]}
-        # Exclude the artifact manifest as that's represented by the name, type and version
         output_dict.update(
-            {k: vars(self)[k] for k in vars(self) if k != "artifact_manifest"}
+            {k: vars(self)[k] for k in vars(self)}
         )
         return output_dict
 

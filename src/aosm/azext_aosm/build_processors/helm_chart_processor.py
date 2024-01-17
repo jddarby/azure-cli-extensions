@@ -100,7 +100,6 @@ class HelmChartProcessor(BaseInputProcessor):
             file_path=self.input_artifact.chart_path,
         )
         artifact_details.append(helm_chart_details)
-        print("artifact_details: ", helm_chart_details.type)
         for image_name, image_version in self._find_chart_images():
             # We only support remote ACR artifacts for container images
             artifact_details.append(
