@@ -17,7 +17,7 @@ class OnboardingBaseInputConfig(ABC):
 
     location: str = field(
         default="",
-        metadata={"comment": "Azure location to use when creating resources."},
+        metadata={"comment": "Azure location to use when creating resources e.g uksouth"},
     )
     publisher_name: str = field(
         default="",
@@ -37,12 +37,12 @@ class OnboardingBaseInputConfig(ABC):
             )
         },
     )
-    acr_artifact_store_name: str | None = field(
+    acr_artifact_store_name: str = field(
         default="",
         metadata={
             "comment": (
-                "Optional. Name of the ACR Artifact Store resource.\n"
-                "Will be created if it does not exist (with a default name if none is supplied)."
+                "Name of the ACR Artifact Store resource.\n"
+                "Will be created if it does not exist."
             )
         },
     )
@@ -55,3 +55,5 @@ class OnboardingBaseInputConfig(ABC):
             raise ValidationError("Publisher name must be set")
         if not self.publisher_resource_group_name:
             raise ValidationError("Publisher resource group name must be set")
+        if not self.acr_artifact_store_name:
+            raise ValidationError("Artifact store name must be set")

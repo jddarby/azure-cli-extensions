@@ -97,7 +97,7 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
 
     # TODO: Add better comment for images as not a list
     images: ImageSourceConfig = field(
-        default_factory=ImageSourceConfig, metadata={"comment": "List of images "}
+        default_factory=ImageSourceConfig, metadata={"comment": "Source of images to be included in the CNF."}
     )
     helm_packages: List[HelmPackageConfig] = field(
         default_factory=lambda: [HelmPackageConfig()],
