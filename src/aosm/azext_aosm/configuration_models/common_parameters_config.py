@@ -47,4 +47,6 @@ class CNFCommonParametersConfig(NFDCommonParametersConfig):
 class NSDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NSDs."""
 
-    nsDefinitionGroup: str
+    nsDesignGroup: str
+    nsDesignVersion: str
+    nfviSiteName: str
