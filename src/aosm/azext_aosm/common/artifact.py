@@ -41,11 +41,12 @@ class BaseArtifact(ABC):
     def to_dict(self) -> dict:
         """Convert an instance to a dict."""
         # Exclude the artifact manifest as that's represented by the name, type and version
-        return {
-            k: vars(self)[k]
-            for k in vars(self)
-            if k != "artifact_manifest"
-        }
+        output_dict = {"type": ARTIFACT_CLASS_TO_TYPE[type(self)]}
+        # Exclude the artifact manifest as that's represented by the name, type and version
+        output_dict.update(
+            {k: vars(self)[k] for k in vars(self) if k != "artifact_manifest"}
+        )
+        return output_dict
 
     @abstractmethod
     def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
