@@ -150,11 +150,13 @@ class LocalFileACRArtifact(BaseACRArtifact):
         self.file_path = str(file_path)  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
     # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
     # This way we can support in-place Bicep artifacts in the folder.
-    def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+
+    def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext, oras_client: OrasClient = None):
         """Upload the artifact."""
         logger.debug("LocalFileACRArtifact config: %s", config)
-        manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
-        oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
+        if not oras_client:
+            manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
+            oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
         target = (
             f"{target_acr}/{self.artifact_name}:{self.artifact_version}"
@@ -166,14 +168,15 @@ class LocalFileACRArtifact(BaseACRArtifact):
                 oras_client.push(files=[self.file_path], target=target)
                 break
             except ValueError as error:
-                if retries < 20:
+                if retries < 50:
                     logger.info("Retrying pushing local artifact to ACR. Retries so far: %s", retries)
                     retries += 1
-                    sleep(3)
+                    sleep(1)
                     continue
                 raise error
         logger.info("LocalFileACRArtifact uploaded %s to %s", self.file_path, target)
 
+        return oras_client
 
 class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
