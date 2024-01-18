@@ -32,25 +32,25 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
 
     def create_artifact_object(self, artifact: dict) -> BaseArtifact:
         """
-        Use the inspect module to identify the artifact class's required fields and
-        create an instance of the class using the supplied artifact dict.
+        Use reflection (via the inspect module) to identify the artifact class's required fields
+        and create an instance of the class using the supplied artifact dict.
         """
         if "type" not in artifact or artifact["type"] not in ARTIFACT_TYPE_TO_CLASS:
-            raise ValueError("Artifact type is missing or invalid")
+            raise ValueError("Artifact type is missing or invalid for artifact {artifact}")
+        # Use reflection to get the required fields for the artifact class
         class_sig = inspect.signature(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].__init__)
         class_args = [arg for arg, _ in class_sig.parameters.items() if arg != 'self']
         logger.debug("Artifact configuration from definition folder: %s", artifact)
-        logger.debug("class_args reflection: %s", class_args)
+        logger.debug("class_args found for artifact type %s: %s", artifact["type"], class_args)
+        # Filter the artifact dict to only include the required fields, erroring if any are missing
         try:
             filtered_dict = {arg: artifact[arg] for arg in class_args}
         except KeyError as e:
             raise ValueError(f"Artifact is missing required field {e}.\n"
                              f"Required fields are: {class_args}.\n"
-                             f"Artifact is: {artifact}")
-        if not all(arg in artifact for arg in class_args):
-            raise ValueError(f"Artifact is missing required fields.\n"
-                             f"Required fields are: {class_args}.\n"
-                             f"Artifact is: {artifact}")
+                             f"Artifact is: {artifact}.\n"
+                             "This is unexpected and most likely comes from manual editing "
+                             "of the definition folder.")
         return ARTIFACT_TYPE_TO_CLASS[artifact["type"]](**filtered_dict)
 
     def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):

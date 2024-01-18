@@ -100,16 +100,13 @@ class BaseACRArtifact(BaseArtifact):
                 called_process.stderr,
             )
         except subprocess.CalledProcessError as error:
-            logger.debug("Failed to run %s with %s", log_cmd, error)
-
             all_output: str = (
                 f"Command: {' '.join(log_cmd)}\n"
                 f"stdout: {error.stdout}\n"
                 f"stderr: {error.stderr}\n"
                 f"Return code: {error.returncode}"
             )
-            logger.debug("All the output:\n%s", all_output)
-
+            logger.debug("The following command failed to run:\n%s", all_output)
             # Raise the error without the original exception, which may contain secrets.
             raise CLIError(all_output) from None
 
