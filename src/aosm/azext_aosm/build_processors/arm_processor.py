@@ -5,11 +5,12 @@
 
 import json
 from abc import abstractmethod
-from dataclasses import dataclass
 from typing import List, Tuple, final
 
-from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import LocalFileACRArtifact
+from knack.log import get_logger
+
+from azext_aosm.build_processors.base_processor import BaseInputProcessor
+from azext_aosm.common.artifact import BaseArtifact, LocalFileACRArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.vendored_sdks.models import (
@@ -22,9 +23,10 @@ from azext_aosm.vendored_sdks.models import (
     ManifestArtifactFormat, NetworkFunctionApplication, NSDArtifactProfile,
     ReferencedResource, ResourceElementTemplate, TemplateType)
 
+logger = get_logger(__name__)
 
-@dataclass
-class BaseArmBuildProcessor(BaseBuildProcessor):
+
+class BaseArmBuildProcessor(BaseInputProcessor):
     """
     Base class for ARM template processors.
 
@@ -37,12 +39,24 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
      - generate_artifact_profile
      - generate_nfvi_specific_nf_application
 
+    :param name: The name of the artifact.
+    :type name: str
+    :param input_artifact: The input artifact.
+    :type input_artifact: ArmTemplateInput
     """
 
-    input_artifact: ArmTemplateInput
+    def __init__(self, name: str, input_artifact: ArmTemplateInput):
+        super().__init__(name, input_artifact)
+        self.input_artifact: ArmTemplateInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
-        """Get the artifact list."""
+        """
+        Get the list of artifacts for the artifact manifest.
+
+        :return: A list of artifacts for the artifact manifest.
+        :rtype: List[ManifestArtifactFormat]
+        """
+        logger.info("Getting artifact manifest list for ARM template input.")
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
@@ -53,16 +67,23 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
 
     def get_artifact_details(
         self,
-    ) -> Tuple[List[LocalFileACRArtifact], List[LocalFileBuilder]]:
-        """Get the artifact details."""
+    ) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+        """
+        Get the artifact details for publishing.
+
+        :return: A tuple containing the list of artifacts and the list of local file builders.
+        :rtype: Tuple[List[BaseArtifact], List[LocalFileBuilder]]
+        """
+        logger.info("Getting artifact details for ARM template input.")
+
+        # We only support local file artifacts for ARM templates and we don't need to build them so
+        # no local file builders are needed.
         return (
             [
                 LocalFileACRArtifact(
-                    artifact_manifest=ManifestArtifactFormat(
-                        artifact_name=self.input_artifact.artifact_name,
-                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
-                        artifact_version=self.input_artifact.artifact_version,
-                    ),
+                    artifact_name=self.input_artifact.artifact_name,
+                    artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
+                    artifact_version=self.input_artifact.artifact_version,
                     file_path=self.input_artifact.template_path,
                 )
             ],
@@ -101,7 +122,8 @@ class BaseArmBuildProcessor(BaseBuildProcessor):
 
         return ArmResourceDefinitionResourceElementTemplateDetails(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             configuration=ArmResourceDefinitionResourceElementTemplate(
                 template_type=TemplateType.ARM_TEMPLATE.value,
                 parameter_values=json.dumps(parameter_values),
@@ -120,7 +142,8 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
     ) -> AzureCoreNetworkFunctionArmTemplateApplication:
         return AzureCoreNetworkFunctionArmTemplateApplication(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
             artifact_profile=self.generate_artifact_profile(),
             deploy_parameters_mapping_rule_profile=self._generate_mapping_rule_profile(),

@@ -5,11 +5,12 @@
 
 import json
 import re
-from dataclasses import dataclass
 from typing import Any, Dict, List, Set, Tuple
 
-from azext_aosm.build_processors.base_processor import BaseBuildProcessor
-from azext_aosm.common.artifact import (BaseACRArtifact, LocalFileACRArtifact,
+from knack.log import get_logger
+
+from azext_aosm.build_processors.base_processor import BaseInputProcessor
+from azext_aosm.common.artifact import (BaseArtifact, LocalFileACRArtifact,
                                         RemoteACRArtifact)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
@@ -20,26 +21,44 @@ from azext_aosm.vendored_sdks.models import (
     HelmMappingRuleProfile, ManifestArtifactFormat, ReferencedResource,
     ResourceElementTemplate)
 
+logger = get_logger(__name__)
+
 VALUE_PATH_REGEX = (
     r".Values\.([^\s})]*)"  # Regex to find values paths in Helm chart templates
 )
 IMAGE_NAME_AND_VERSION_REGEX = r"\/(?P<name>[^\s]*):(?P<tag>[^\s)\"}]*)"
 
 
-@dataclass
-class HelmChartProcessor(BaseBuildProcessor):
+class HelmChartProcessor(BaseInputProcessor):
     """
-    A template processor for Helm charts.
+    A class for processing Helm Chart inputs.
 
-    This class provides methods to generate resource element templates and network function applications
-    for Helm charts.
+    :param name: The name of the artifact.
+    :type name: str
+    :param input_artifact: The input artifact.
+    :type input_artifact: HelmChartInput
     """
 
-    source_registry: str
-    source_registry_namespace: str
+    def __init__(
+        self,
+        name: str,
+        input_artifact: HelmChartInput,
+        source_registry: str,
+        source_registry_namespace: str,
+    ):
+        super().__init__(name, input_artifact)
+        self.source_registry = source_registry
+        self.source_registry_namespace = source_registry_namespace
+        self.input_artifact: HelmChartInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
-        """Get the artifact list."""
+        """
+        Get the list of artifacts for the artifact manifest.
+
+        :return: A list of artifacts for the artifact manifest.
+        :rtype: List[ManifestArtifactFormat]
+        """
+        logger.info("Getting artifact manifest list for Helm chart input.")
         artifact_manifest_list = []
         artifact_manifest_list.append(
             ManifestArtifactFormat(
@@ -49,6 +68,7 @@ class HelmChartProcessor(BaseBuildProcessor):
             )
         )
 
+        # Add an artifact for each image used by the Helm chart
         for image_name, image_version in self._find_chart_images():
             artifact_manifest_list.append(
                 ManifestArtifactFormat(
@@ -62,98 +82,133 @@ class HelmChartProcessor(BaseBuildProcessor):
 
     def get_artifact_details(
         self,
-    ) -> Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]:
-        """Get the artifact details."""
-        assert isinstance(self.input_artifact, HelmChartInput)
-        artifact_details = []
+    ) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
+        """
+        Get the artifact details for publishing.
+
+        :return: A tuple containing the list of artifacts and the list of local file builders.
+        :rtype: Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]
+        """
+        logger.info("Getting artifact details for Helm chart input.")
+        artifact_details: List[BaseArtifact] = []
+
+        # We only support local file artifacts for Helm charts
         helm_chart_details = LocalFileACRArtifact(
-            ManifestArtifactFormat(
-                artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                artifact_version=self.input_artifact.artifact_version,
-            ),
-            self.input_artifact.chart_path,
+            artifact_name=self.input_artifact.artifact_name,
+            artifact_type=ArtifactType.OCI_ARTIFACT.value,
+            artifact_version=self.input_artifact.artifact_version,
+            file_path=self.input_artifact.chart_path,
         )
         artifact_details.append(helm_chart_details)
-
         for image_name, image_version in self._find_chart_images():
+            # We only support remote ACR artifacts for container images
             artifact_details.append(
                 RemoteACRArtifact(
-                    ManifestArtifactFormat(
-                        artifact_name=image_name,
-                        artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                        artifact_version=image_version,
-                    ),
-                    self.source_registry,
-                    self.source_registry_namespace
+                    artifact_name=image_name,
+                    artifact_type=ArtifactType.OCI_ARTIFACT.value,
+                    artifact_version=image_version,
+                    source_registry=self.source_registry,
+                    source_registry_namespace=self.source_registry_namespace,
                 )
             )
 
+        # We do not need to return any local file builders as no artifacts are being built
+        # by the CLI for Helm charts
         return artifact_details, []
 
     def generate_resource_element_template(self) -> ResourceElementTemplate:
+        """
+        Generate the resource element template from the input.
+
+        :raises NotImplementedError: Helm charts do not support resource element templates.
+        """
         raise NotImplementedError("NSDs do not support deployment of Helm charts.")
 
     def generate_nf_application(self) -> AzureArcKubernetesHelmApplication:
         """
-        Generates an Azure Arc Kubernetes Helm application for the given artifact store and Helm chart.
+        Generates an Azure Arc Kubernetes Helm application for the given Helm chart.
 
-        Returns:
-            AzureArcKubernetesHelmApplication: The generated Helm application.
+        :return: The generated Azure Arc Kubernetes Helm application.
+        :rtype: AzureArcKubernetesHelmApplication
         """
+        logger.info("Generating NF application for Helm chart input.")
         artifact_profile = self._generate_artifact_profile()
         # We want to remove the registry values paths and image pull secrets values paths from the values mappings
         # as these values are supplied by NFM when it installs the chart.
-        values_to_remove = (
-            artifact_profile.helm_artifact_profile.registry_values_paths
-            | artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
-        )
-        mapping_rule_profile = self._generate_mapping_rule_profile(values_to_remove)
+        if artifact_profile.helm_artifact_profile:
+            registry_values_paths = (
+                artifact_profile.helm_artifact_profile.registry_values_paths or []
+            )
+            image_pull_secrets_values_paths = (
+                artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
+                or []
+            )
+            mapping_rule_profile = self._generate_mapping_rule_profile(
+                registry_values_paths + image_pull_secrets_values_paths
+            )
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,
             # Current implementation is set all depends on profiles to empty lists
-            depends_on_profile=DependsOnProfile(install_depends_on=[],uninstall_depends_on=[],update_depends_on=[]),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )
 
     def _find_chart_images(self) -> List[Tuple[str, str]]:
         """
-        Find the images used in the Helm chart.
+        Find the images used by the Helm chart.
 
-        Returns:
-            List[Tuple[str, str]]: A list of tuples containing the image registry and image name.
+        :return: A list of tuples containing the image name and version.
+        :rtype: List[Tuple[str, str]]
         """
+        logger.debug("Finding images used by Helm chart %s", self.name)
         image_lines: Set[str] = set()
-        self._find_image_lines(image_lines)
+        self._find_image_lines(self.input_artifact, image_lines)
 
         images: List[Tuple[str, str]] = []
         for line in image_lines:
             name_and_tag = re.search(IMAGE_NAME_AND_VERSION_REGEX, line)
             if name_and_tag and len(name_and_tag.groups()) == 2:
-                images.append((name_and_tag.group("name"), name_and_tag.group("tag")))
+                image_name = name_and_tag.group("name")
+                image_tag = name_and_tag.group("tag")
+                logger.debug(
+                    "Found image %s:%s in Helm chart %s",
+                    image_name,
+                    image_tag,
+                    self.name,
+                )
+                images.append((image_name, image_tag))
             else:
-                # TODO: Raise better error to represent the name and tag being in wrong format
-                raise ValueError
+                logger.warning(
+                    "Could not parse image name and tag in line %s in Helm chart %s",
+                    line,
+                    self.name,
+                )
 
         return images
 
-    def _find_image_lines(self, image_lines: Set[str]) -> None:
+    def _find_image_lines(self, chart: HelmChartInput, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 
-        Args:
-            image_lines (Set[str]): A set to store the found image lines.
-
-        Returns:
-            None
+        :param image_lines: A set of image lines found so far.
+        :type image_lines: Set[str]
         """
-        for template in self.input_artifact.get_templates():
+        logger.debug("Finding image lines in Helm chart %s", chart.artifact_name)
+        # Find the image lines in the current chart
+        for template in chart.get_templates():
             for line in template.data:
                 if "image:" in line:
+                    logger.debug(
+                        "Found image line %s in Helm chart %s",
+                        line,
+                        chart.artifact_name,
+                    )
                     image_lines.add(line.replace("image:", "").strip())
 
+        # Recursively search the dependency charts for image lines
         for dep in self.input_artifact.get_dependencies():
             self._find_image_lines(dep, image_lines)
 
@@ -161,40 +216,49 @@ class HelmChartProcessor(BaseBuildProcessor):
         """
         Generates an Azure Arc Kubernetes artifact profile for the given artifact store and Helm chart.
 
-        Returns:
-            AzureArcKubernetesArtifactProfile: The generated artifact profile.
+        :return: The generated Azure Arc Kubernetes artifact profile.
+        :rtype: AzureArcKubernetesArtifactProfile
         """
+        logger.debug("Generating artifact profile for Helm chart input.")
         image_pull_secrets_values_paths: Set[str] = set()
-        self._find_image_pull_secrets_values_paths(image_pull_secrets_values_paths)
+        self._find_image_pull_secrets_values_paths(
+            self.input_artifact, image_pull_secrets_values_paths
+        )
 
-        registry_values_paths: Set[str] = set()
-        self._find_registry_values_paths(registry_values_paths)
+        registry_values_paths = self._find_registry_values_paths()
 
-        chart_profile = HelmArtifactProfile(
+        helm_artifact_profile = HelmArtifactProfile(
             helm_package_name=self.input_artifact.artifact_name,
             helm_package_version_range=self.input_artifact.artifact_version,
             registry_values_paths=list(registry_values_paths),
             image_pull_secrets_values_paths=list(image_pull_secrets_values_paths),
         )
 
+        # We set the artifact store ID as an empty string as the builder will
+        # set the artifact store ID when it writes the bicep template for the NFD.
         return AzureArcKubernetesArtifactProfile(
             artifact_store=ReferencedResource(id=""),
-            helm_artifact_profile=chart_profile,
+            helm_artifact_profile=helm_artifact_profile,
         )
 
-    def _find_image_pull_secrets_values_paths(self, matches: Set[str]) -> None:
+    def _find_image_pull_secrets_values_paths(
+        self, chart: HelmChartInput, matches: Set[str]
+    ) -> None:
         """
         Find image pull secrets values paths in the Helm chart templates.
 
-        Args:
-            chart (HelmChartInput): The Helm chart to search for image pull secrets
-            values paths.
-            matches (Set[str]): A set of image pull secrets parameters found so far.
+        Recursively searches the dependency charts for image pull secrets values paths and adds them to the matches set.
 
-        Returns:
-            None
+        :param chart: The Helm chart to search.
+        :type chart: HelmChartInput
+        :param matches: A set of image pull secrets values paths found so far.
+        :type matches: Set[str]
         """
-        for template in self.input_artifact.get_templates():
+        logger.debug(
+            "Finding image pull secrets values paths in Helm chart %s",
+            chart.artifact_name,
+        )
+        for template in chart.get_templates():
             # Loop through each line in the template.
             for index in range(len(template.data)):
                 count = 0
@@ -213,36 +277,50 @@ class HelmChartProcessor(BaseBuildProcessor):
                         VALUE_PATH_REGEX, template.data[index + count]
                     )
                     if len(new_matches) != 0:
+                        logger.debug(
+                            "Found image pull secrets values path %s in Helm chart %s",
+                            new_matches,
+                            chart.artifact_name,
+                        )
+                        # Add the new matches to the matches set
                         matches.update(new_matches)
                         break
 
                     count += 1
 
         # Recursively search the dependency charts for image pull secrets parameters
-        for chart in self.input_artifact.get_dependencies():
-            HelmChartProcessor._find_image_pull_secrets_values_paths(chart, matches)
+        for dep in chart.get_dependencies():
+            self._find_image_pull_secrets_values_paths(dep, matches)
 
-    def _find_registry_values_paths(self, matches: Set[str]) -> None:
+    def _find_registry_values_paths(self) -> Set[str]:
         """
         Find registry values paths in the Helm chart templates.
 
-        Args:
-            chart (HelmChartInput): The Helm chart to search for registry values paths.
-            matches (Set[str]): A set of registry values paths found so far.
-
-        Returns:
-            None
+        :return: A set of registry values paths found in the Helm chart templates.
+        :rtype: Set[str]
         """
+        logger.debug("Finding registry values paths in Helm chart %s", self.name)
+        matches: Set[str] = set()
+
         image_lines: Set[str] = set()
-        self._find_image_lines(image_lines)
+        self._find_image_lines(self.input_artifact, image_lines)
 
         for line in image_lines:
-            # Images are specified in the format <registry>/<image>:<tag>
+            # Images are expected to be specified in the format <registry>/<image>:<tag>
             # so we split the line on '/' and then find the value path
-            # in the first element of the resulting list.
+            # in the first element of the resulting list, which corresponds to the <registry>
+            # part of the line.
             new_matches = re.findall(VALUE_PATH_REGEX, line.split("/")[0])
             if len(new_matches) != 0:
+                logger.debug(
+                    "Found registry values path %s in Helm chart %s",
+                    new_matches,
+                    self.name,
+                )
+                # Add the new matches to the matches set
                 matches.update(new_matches)
+
+        return matches
 
     def _generate_mapping_rule_profile(
         self, values_to_remove: List[str]
@@ -250,13 +328,10 @@ class HelmChartProcessor(BaseBuildProcessor):
         """
         Generate the mappings for a Helm chart.
 
-        Args:
-            name (str): The name of the Helm release.
-            chart (HelmChartInput): The Helm chart object.
-            values_to_remove (Set[str]): The values to remove from the values mappings.
-
-        Returns:
-            AzureArcKubernetesDeployMappingRuleProfile: The mapping rule profile for Azure Arc Kubernetes deployment.
+        :param values_to_remove: The values to remove from the generated values mappings.
+        :type values_to_remove: Set[str]
+        :return: The generated mapping rule profile.
+        :rtype: AzureArcKubernetesDeployMappingRuleProfile
         """
         # Generate the values mappings for the Helm chart.
         values_mappings = self.generate_values_mappings(
@@ -264,11 +339,12 @@ class HelmChartProcessor(BaseBuildProcessor):
             self.input_artifact.get_defaults(),
         )
 
-        # Remove the values to remove from the values mappings.
+        # Remove the values from the values mappings.
+        # We want to remove the image registry and image pull secrets values paths from the values mappings
+        # as these values are supplied by NFM when it installs the chart.
         for value_to_remove in values_to_remove:
             self._remove_key_from_dict(values_mappings, value_to_remove)
 
-        # TODO: Should namespace be configurable?
         mapping_rule_profile = HelmMappingRuleProfile(
             release_name=self.name,
             release_namespace=self.name,
@@ -285,12 +361,12 @@ class HelmChartProcessor(BaseBuildProcessor):
         """
         Remove a key from a nested dictionary based on the given path.
 
-        Args:
-            dictionary (Dict[str, Any]): The nested dictionary.
-            path (str): The path to the key in dot notation.
+        The path is in dot notation, e.g. "a.b.c" will remove the key "c" from the dictionary
 
-        Returns:
-            None: This method does not return anything.
+        :param dictionary: The dictionary to remove the key from.
+        :type dictionary: Dict[str, Any]
+        :param path: The path to the key to remove.
+        :type path: str
         """
         # Split the path by the dot character
         keys = path.split(".")

@@ -13,25 +13,25 @@ param acrManifestName string
 @description('Name of the manifest to deploy for the Storage Account-backed Artifact Store')
 param saManifestName string
 
+// The publisher resource is the top level AOSM resource under which all other designer resources
+// are created.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' = {
+resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing =  {
   name: publisherName
-  location: location
-  properties: { scope: 'Private'}
 }
 
+// The artifact store is the resource in which all the artifacts (except VHD images) required to deploy the NF are stored.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
+resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
-  location: location
 }
 
+// The storage account is the resource in which the VHD images are stored.
 // If using publish command, this is created from deploying the vnfbase.bicep
-resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' = {
+resource saArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: saArtifactStoreName
-  location: location
 }
 
 resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/artifactManifests@2023-09-01' = {

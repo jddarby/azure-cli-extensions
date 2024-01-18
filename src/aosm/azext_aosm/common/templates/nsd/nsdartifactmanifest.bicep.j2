@@ -9,12 +9,14 @@ param acrArtifactStoreName string
 @description('Name of the Artifact Manifest to create')
 param acrManifestName string
 
+// The publisher resource is the top level AOSM resource under which all other designer resources
+// are created.
 // If using publish command, this is created from deploying the nsdbase.bicep
-resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
+resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing =  {
   name: publisherName
-  scope: resourceGroup()
 }
 
+// The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
 // If using publish command, this is created from deploying the nsdbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher

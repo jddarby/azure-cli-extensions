@@ -5,8 +5,9 @@
 
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
+
+from knack.log import get_logger
 
 from azext_aosm.common.artifact import BaseArtifact
 from azext_aosm.common.local_file_builder import LocalFileBuilder
@@ -14,37 +15,73 @@ from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.vendored_sdks.models import (ManifestArtifactFormat,
                                              NetworkFunctionApplication,
                                              ResourceElementTemplate)
+from azext_aosm.common.constants import CGS_NAME
+logger = get_logger(__name__)
 
 
-@dataclass
-class BaseBuildProcessor(ABC):
-    """Base class for build processors."""
+class BaseInputProcessor(ABC):
+    """
+    A base class for input processors.
 
-    name: str
-    input_artifact: BaseInput
+    :param name: The name of the artifact.
+    :type name: str
+    :param input_artifact: The input artifact.
+    :type input_artifact: BaseInput
+    """
+
+    def __init__(self, name: str, input_artifact: BaseInput):
+        self.name = name
+        self.input_artifact = input_artifact
 
     @abstractmethod
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
-        """Get the artifact list."""
+        """
+        Get the list of artifacts for the artifact manifest.
+
+        :return: A list of artifacts for the artifact manifest.
+        :rtype: List[ManifestArtifactFormat]
+        """
         raise NotImplementedError
 
     @abstractmethod
     def get_artifact_details(self) -> Tuple[List[BaseArtifact], List[LocalFileBuilder]]:
-        """Get the artifact details."""
+        """
+        Get the artifact details for publishing.
+
+        :return: A tuple containing the list of artifacts and the list of local file builders.
+        :rtype: Tuple[List[BaseArtifact], List[LocalFileBuilder]]
+        """
         raise NotImplementedError
 
     @abstractmethod
     def generate_nf_application(self) -> NetworkFunctionApplication:
-        """Generate the NF application."""
+        """
+        Generate the network function application from the input.
+
+        :return: The network function application.
+        :rtype: NetworkFunctionApplication
+        """
         raise NotImplementedError
 
     @abstractmethod
     def generate_resource_element_template(self) -> ResourceElementTemplate:
-        """Generate the resource element template."""
+        """
+        Generate the resource element template from the input.
+
+        :return: The resource element template.
+        :rtype: ResourceElementTemplate
+        """
         raise NotImplementedError
 
     def generate_params_schema(self) -> Dict[str, Any]:
-        """Generate the parameter schema"""
+        """
+        Generate the parameter schema for configuring the input.
+
+        :return: A dictionary containing the parameter schema.
+        :rtype: Dict[str, Any]
+        """
+        logger.info("Generating parameter schema for %s", self.name)
+
         base_params_schema = """
         {
             "%s": {
@@ -69,7 +106,13 @@ class BaseBuildProcessor(ABC):
         # If there are no properties, return an empty dict as we don't need
         # a schema for this input artifact.
         if not bool(params_schema[self.name]["properties"]):
-            return {}
+            params_schema = {}
+
+        logger.debug(
+            "Parameter schema for %s: %s",
+            self.name,
+            json.dumps(params_schema, indent=4),
+        )
 
         return params_schema
 
@@ -79,7 +122,19 @@ class BaseBuildProcessor(ABC):
         source_schema: Dict[str, Any],
         values: Dict[str, Any],
     ) -> None:
-        """Generate the parameter schema"""
+        """
+        Generate the parameter schema
+
+        This function recursively generates the parameter schema for the input artifact by updating
+        the schema parameter.
+
+        :param schema: The schema to generate.
+        :type schema: Dict[str, Any]
+        :param source_schema: The source schema.
+        :type source_schema: Dict[str, Any]
+        :param values: The values to generate the schema from.
+        :type values: Dict[str, Any]
+        """
         if "properties" not in source_schema.keys():
             return
 
@@ -106,15 +161,20 @@ class BaseBuildProcessor(ABC):
         self,
         schema: Dict[str, Any],
         values: Dict[str, Any],
-        is_nsd: bool = False,
+        is_ret: bool = False,
     ) -> Dict[str, Any]:
         """
-        Generate values mappings for a Helm chart.
-        Args:
-            schema (Dict[str, Any]): The schema of the Helm chart.
-            values (Dict[str, Any]): The values of the Helm chart.
-        Returns:
-            Dict[str, Any]: The value mappings for the Helm chart.
+        Generate the values mappings for the input artifact.
+
+        This function recursively generates the values mappings for the input artifact by updating
+        the values parameter.
+
+        :param schema: The schema to generate the values mappings from.
+        :type schema: Dict[str, Any]
+        :param values: The values to generate the values mappings from.
+        :type values: Dict[str, Any]
+        :param is_ret: Whether or not the input artifact is being used to generate a resource element template.
+        :type is_ret: bool
         """
         # If there are no properties in the schema for the object, return the values.
         if "properties" not in schema.keys():
@@ -126,16 +186,16 @@ class BaseBuildProcessor(ABC):
             if "required" in schema and k not in values and k in schema["required"]:
                 print(f"Adding {k} to values")
                 if v["type"] == "object":
-                    values[k] = self.generate_values_mappings(v, {}, is_nsd)
+                    values[k] = self.generate_values_mappings(v, {}, is_ret)
                 else:
                     values[k] = (
-                        f"{{configurationparameters('{self.name}').{k}}}"
-                        if is_nsd
+                        f"{{configurationparameters('{CGS_NAME}').{self.name}.{k}}}"
+                        if is_ret
                         else f"{{deployParameters.{self.name}.{k}}}"
                     )
             # If the property is in the values, and is an object, generate the values mappings
             # for the subschema.
             if k in values and v["type"] == "object" and values[k]:
-                values[k] = self.generate_values_mappings(v, values[k], is_nsd)
+                values[k] = self.generate_values_mappings(v, values[k], is_ret)
 
         return values
