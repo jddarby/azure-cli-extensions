@@ -61,7 +61,7 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
             logger.info("Deploying artifact %s of type %s", artifact.artifact_name, type(artifact))
             logger.info("Oras client id: %s", id(oras_client))
             if oras_client:
-                artifact.upload(config=config, command_context=command_context, oras_client=oras_client)
+                artifact.upload(config=config, command_context=command_context)
             else:
                 oras_client = artifact.upload(config=config, command_context=command_context)
 

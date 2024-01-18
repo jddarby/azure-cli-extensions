@@ -95,11 +95,6 @@ class OnboardingBaseCLIHandler(ABC):
 
     def publish(self, command_context: CommandContext):
         """Publish the definition."""
-        # Takes folder, deploys to Azure
-        #  - Work out where the definition folder is
-        #    - If not specified, use a set path (see constants.py for directory names), and error if not found with option of moving to correct dir, or specifying path
-        #    - If specified, use that path
-        #  - Read folder/ create folder object
         if command_context.cli_options["definition_folder"]:
             definition_folder = DefinitionFolder(
                 command_context.cli_options["definition_folder"]

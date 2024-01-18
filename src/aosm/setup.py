@@ -54,8 +54,7 @@ setup(
     package_data={
         "azext_aosm": [
             "azext_metadata.json",
-            "generate_nfd/templates/*",
-            "generate_nsd/templates/*",
+            "common/templates/**",
         ]
     },
 )
