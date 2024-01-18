@@ -10,15 +10,15 @@ from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandl
 from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
 from azext_aosm.common.command_context import CommandContext
-from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME
+from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME, CNF, VNF
 from azure.cli.core.commands import AzCliCommand
 
 
 def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
-    if definition_type == "cnf":
+    if definition_type == CNF:
         handler = OnboardingCNFCLIHandler()
         handler.generate_config(output_file)
-    elif definition_type == "vnf":
+    elif definition_type == VNF:
         handler = OnboardingVNFCLIHandler()
         handler.generate_config(output_file)
     else:
@@ -26,11 +26,11 @@ def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
         raise Exception("Invalid definition type")
 
 
-def onboard_nfd_build(definition_type: str, config_file: str):
-    if definition_type == "cnf":
-        handler = OnboardingCNFCLIHandler(config_file)
+def onboard_nfd_build(definition_type: str, config_file: str, skip: str = None):
+    if definition_type == CNF:
+        handler = OnboardingCNFCLIHandler(config_file, skip=skip)
         handler.build()
-    elif definition_type == "vnf":
+    elif definition_type == VNF:
         handler = OnboardingVNFCLIHandler(config_file)
         handler.build()
     else:
@@ -39,12 +39,12 @@ def onboard_nfd_build(definition_type: str, config_file: str):
 
 
 def onboard_nfd_publish(definition_type: str, output_folder_path: str):
-    if definition_type == "cnf":
+    if definition_type == CNF:
         handler = OnboardingCNFCLIHandler(
             output_folder_path + "/" + ALL_PARAMETERS_FILE_NAME
         )
         handler.publish()
-    elif definition_type == "vnf":
+    elif definition_type == VNF:
         handler = OnboardingVNFCLIHandler(
             output_folder_path + "/" + ALL_PARAMETERS_FILE_NAME
         )
@@ -55,10 +55,10 @@ def onboard_nfd_publish(definition_type: str, output_folder_path: str):
 
 
 def onboard_nfd_delete(definition_type: str, config_file: str):
-    if definition_type == "cnf":
+    if definition_type == CNF:
         handler = OnboardingCNFCLIHandler(config_file)
         handler.delete()
-    elif definition_type == "vnf":
+    elif definition_type == VNF:
         handler = OnboardingVNFCLIHandler(config_file)
         handler.delete()
     else:

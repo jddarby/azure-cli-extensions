@@ -7,9 +7,8 @@ import os
 import tarfile
 from pathlib import Path
 import shutil
-from azure.cli.core.azclierror import UserFault
 
-from azext_aosm.common.exceptions import InvalidFileTypeError
+from azext_aosm.common.exceptions import InvalidFileTypeError, MissingDependency
 
 
 def convert_bicep_to_arm():
@@ -60,9 +59,4 @@ def check_tool_installed(tool_name: str) -> None:
     :param tool_name: name of the tool to check, e.g. docker
     """
     if shutil.which(tool_name) is None:
-        raise InvalidDependency(f"You must install {tool_name} to use this command.")
-
-
-class InvalidDependency(UserFault):
-    """Error type used when user is trying to use a command that
-    requires a dependency that is not installed."""
+        raise MissingDependency(f"You must install {tool_name} to use this command.")

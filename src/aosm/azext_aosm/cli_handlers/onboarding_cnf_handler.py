@@ -40,6 +40,7 @@ from azext_aosm.common.constants import (
     CNF_INPUT_FILENAME,
     CNF_MANIFEST_TEMPLATE_FILENAME,
     CNF_OUTPUT_FOLDER_FILENAME,
+    HELM_TEMPLATE,
     MANIFEST_FOLDER_NAME,
     NF_DEFINITION_FOLDER_NAME,
     DEPLOYMENT_PARAMETERS_FILENAME,
@@ -103,7 +104,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             processor_list.append(helm_processor)
         return processor_list
 
-    def _validate_helm_packages(self):
+    def _validate_helm_template(self):
         """Validate the helm packages."""
         helm_chart_processors = self._get_processor_list()
 
@@ -150,7 +151,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def pre_validate_build(self):
         """Run all validation functions required before building the cnf."""
         logger.debug("Pre-validating build")
-        self._validate_helm_packages()
+        if self.skip != HELM_TEMPLATE:
+            self._validate_helm_template()
 
     def build_base_bicep(self):
         """Build the base bicep file."""

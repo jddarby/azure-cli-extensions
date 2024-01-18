@@ -38,8 +38,10 @@ class OnboardingBaseCLIHandler(ABC):
         self,
         config_file: str | None = None,
         aosm_client: Optional[HybridNetworkManagementClient] = None,
+        skip: str = None,
     ):
         self.aosm_client = aosm_client
+        self.skip = skip
         # If config file provided (for build, publish and delete)
         if config_file:
             config_file_path = Path(config_file)

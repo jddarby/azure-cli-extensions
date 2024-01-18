@@ -23,12 +23,14 @@ class DeployableResourceTypes(str, Enum):
 BICEP_PUBLISH = "bicep-publish"
 ARTIFACT_UPLOAD = "artifact-upload"
 IMAGE_UPLOAD = "image-upload"
+HELM_TEMPLATE = "helm-template"
 
 
 class SkipSteps(Enum):
     BICEP_PUBLISH = BICEP_PUBLISH
     ARTIFACT_UPLOAD = ARTIFACT_UPLOAD
     IMAGE_UPLOAD = IMAGE_UPLOAD
+    HELM_TEMPLATE = HELM_TEMPLATE
 
 
 # Names of files used in the repo
