@@ -39,7 +39,6 @@ class OnboardingBaseCLIHandler(ABC):
     ):
         """Initialize the CLI handler."""
         self.aosm_client = aosm_client
-        config_file = Path(config_file)
         # If config file provided (for build, publish and delete)
         if config_file:
             config_file = Path(config_file)
