@@ -209,7 +209,7 @@ class HelmChartProcessor(BaseInputProcessor):
                     image_lines.add(line.replace("image:", "").strip())
 
         # Recursively search the dependency charts for image lines
-        for dep in self.input_artifact.get_dependencies():
+        for dep in chart.get_dependencies():
             self._find_image_lines(dep, image_lines)
 
     def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:

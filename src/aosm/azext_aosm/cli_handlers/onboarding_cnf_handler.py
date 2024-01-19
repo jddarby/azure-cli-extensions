@@ -5,6 +5,9 @@
 from __future__ import annotations
 
 import json
+import ruamel.yaml
+from ruamel.yaml.error import ReusedAnchorWarning
+import warnings
 from pathlib import Path
 
 from azure.cli.core.azclierror import UnclassifiedUserFault
@@ -43,6 +46,7 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 logger = get_logger(__name__)
+warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -80,7 +84,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for helm_package in self.config.helm_packages:
             if helm_package.path_to_mappings:
                 if Path(helm_package.path_to_mappings).exists():
-                    provided_config = json.load(open(helm_package.path_to_mappings))
+                    yaml = ruamel.yaml.YAML(typ='safe')
+                    provided_config = yaml.load(open(helm_package.path_to_mappings))
                 else:
                     raise UnclassifiedUserFault(
                         "There is no file at the path provided for the mappings file."

@@ -67,12 +67,14 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         return OnboardingVNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, params_config: dict = None
+        self, config_file: dict = None
     ) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
-        if params_config is None:
-            params_config = {}
-        return VNFCommonParametersConfig(**params_config)
+        with open(config_file, "r", encoding="utf-8") as _file:
+            params_dict = json.load(_file)
+        if params_dict is None:
+            params_dict = {}
+        return VNFCommonParametersConfig(**params_dict)
 
     def _get_processor_list(self):
         processor_list = []
