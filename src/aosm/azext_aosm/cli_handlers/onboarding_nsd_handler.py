@@ -65,12 +65,14 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         return OnboardingNSDInputConfig(**input_config)
 
     def _get_params_config(
-        self, params_config: dict = None
+        self, config_file: dict = None
     ) -> NSDCommonParametersConfig:
         """Get the configuration for the command."""
-        if params_config is None:
-            params_config = {}
-        return NSDCommonParametersConfig(**params_config)
+        with open(config_file, "r", encoding="utf-8") as _file:
+            params_dict = json.load(_file)
+        if params_dict is None:
+            params_dict = {}
+        return NSDCommonParametersConfig(**params_dict)
 
     def _get_processor_list(self):
         processor_list = []
@@ -81,14 +83,14 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     artifact_name=resource_element.properties.artifact_name,
                     artifact_version=resource_element.properties.version,
                     default_config=None,
-                    template_path=Path(resource_element.properties.file_path),
+                    template_path=Path(resource_element.properties.file_path).absolute(),
                 )
                 # TODO: generalise for nexus in nexus ready stories
                 processor_list.append(
                     AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
                 )
             elif resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place               
                 nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
@@ -232,23 +234,17 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         return bicep_file
 
-    def build_common_parameters_json(self):
+    def build_all_parameters_json(self):
         # TODO: add common params for build resource bicep
         params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "publisherResourceGroupName": {
-                    "value": self.config.publisher_resource_group_name
-                },
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "nsDesignGroup": {"value": self.config.nsd_name},
-            },
+            "location": self.config.location,
+            "publisherName": self.config.publisher_name,
+            "publisherResourceGroupName": self.config.publisher_resource_group_name,
+            "acrArtifactStoreName": self.config.acr_artifact_store_name,
+            "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
+            "nsDesignGroup":self.config.nsd_name,
+            "nsDesignVersion" : self.config.nsd_version,
+            "nfviSiteName": self.nfvi_site_name
         }
         base_file = JSONDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)

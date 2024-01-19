@@ -81,11 +81,9 @@ class BaseArmBuildProcessor(BaseInputProcessor):
         return (
             [
                 LocalFileACRArtifact(
-                    artifact_manifest=ManifestArtifactFormat(
-                        artifact_name=self.input_artifact.artifact_name,
-                        artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
-                        artifact_version=self.input_artifact.artifact_version,
-                    ),
+                    artifact_name=self.input_artifact.artifact_name,
+                    artifact_type=AzureCoreArtifactType.ARM_TEMPLATE.value,
+                    artifact_version=self.input_artifact.artifact_version,
                     file_path=self.input_artifact.template_path,
                 )
             ],
@@ -124,7 +122,8 @@ class BaseArmBuildProcessor(BaseInputProcessor):
 
         return ArmResourceDefinitionResourceElementTemplateDetails(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             configuration=ArmResourceDefinitionResourceElementTemplate(
                 template_type=TemplateType.ARM_TEMPLATE.value,
                 parameter_values=json.dumps(parameter_values),
@@ -143,7 +142,8 @@ class AzureCoreArmBuildProcessor(BaseArmBuildProcessor):
     ) -> AzureCoreNetworkFunctionArmTemplateApplication:
         return AzureCoreNetworkFunctionArmTemplateApplication(
             name=self.name,
-            depends_on_profile=DependsOnProfile(),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             artifact_type=AzureCoreArtifactType.ARM_TEMPLATE,
             artifact_profile=self.generate_artifact_profile(),
             deploy_parameters_mapping_rule_profile=self._generate_mapping_rule_profile(),

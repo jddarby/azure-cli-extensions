@@ -94,26 +94,21 @@ class HelmChartProcessor(BaseInputProcessor):
 
         # We only support local file artifacts for Helm charts
         helm_chart_details = LocalFileACRArtifact(
-            ManifestArtifactFormat(
-                artifact_name=self.input_artifact.artifact_name,
-                artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                artifact_version=self.input_artifact.artifact_version,
-            ),
-            self.input_artifact.chart_path,
+            artifact_name=self.input_artifact.artifact_name,
+            artifact_type=ArtifactType.OCI_ARTIFACT.value,
+            artifact_version=self.input_artifact.artifact_version,
+            file_path=self.input_artifact.chart_path,
         )
         artifact_details.append(helm_chart_details)
-
         for image_name, image_version in self._find_chart_images():
             # We only support remote ACR artifacts for container images
             artifact_details.append(
                 RemoteACRArtifact(
-                    ManifestArtifactFormat(
-                        artifact_name=image_name,
-                        artifact_type=ArtifactType.OCI_ARTIFACT.value,
-                        artifact_version=image_version,
-                    ),
-                    self.source_registry,
-                    self.source_registry_namespace,
+                    artifact_name=image_name,
+                    artifact_type=ArtifactType.OCI_ARTIFACT.value,
+                    artifact_version=image_version,
+                    source_registry=self.source_registry,
+                    source_registry_namespace=self.source_registry_namespace,
                 )
             )
 
@@ -155,7 +150,8 @@ class HelmChartProcessor(BaseInputProcessor):
         return AzureArcKubernetesHelmApplication(
             name=self.name,
             # Current implementation is set all depends on profiles to empty lists
-            depends_on_profile=DependsOnProfile(install_depends_on=[],uninstall_depends_on=[],update_depends_on=[]),
+            depends_on_profile=DependsOnProfile(install_depends_on=[],
+                                                uninstall_depends_on=[], update_depends_on=[]),
             artifact_profile=artifact_profile,
             deploy_parameters_mapping_rule_profile=mapping_rule_profile,
         )
@@ -213,7 +209,7 @@ class HelmChartProcessor(BaseInputProcessor):
                     image_lines.add(line.replace("image:", "").strip())
 
         # Recursively search the dependency charts for image lines
-        for dep in self.input_artifact.get_dependencies():
+        for dep in chart.get_dependencies():
             self._find_image_lines(dep, image_lines)
 
     def _generate_artifact_profile(self) -> AzureArcKubernetesArtifactProfile:

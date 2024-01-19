@@ -6,6 +6,9 @@ from __future__ import annotations
 from jinja2 import Template
 
 import json
+import ruamel.yaml
+from ruamel.yaml.error import ReusedAnchorWarning
+import warnings
 from pathlib import Path
 
 from azure.cli.core.azclierror import ValidationError, UnclassifiedUserFault
@@ -49,6 +52,7 @@ from azext_aosm.common.constants import (
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 logger = get_logger(__name__)
+warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -71,12 +75,14 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         return OnboardingCNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, params_config: dict = None
+        self, config_file: Path = None
     ) -> CNFCommonParametersConfig:
         """Get the configuration for the command."""
-        if params_config is None:
-            params_config = {}
-        return CNFCommonParametersConfig(**params_config)
+        with open(config_file, "r", encoding="utf-8") as _file:
+            params_dict = json.load(_file)
+        if params_dict is None:
+            params_dict = {}
+        return CNFCommonParametersConfig(**params_dict)
 
     def _get_processor_list(self) -> [HelmChartProcessor]:
         processor_list = []
@@ -84,7 +90,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for helm_package in self.config.helm_packages:
             if helm_package.path_to_mappings:
                 if Path(helm_package.path_to_mappings).exists():
-                    provided_config = json.load(open(helm_package.path_to_mappings))
+                    yaml = ruamel.yaml.YAML(typ='safe', pure=True)
+                    provided_config = yaml.load(open(helm_package.path_to_mappings))
                 else:
                     raise UnclassifiedUserFault(
                         "There is no file at the path provided for the mappings file."
@@ -93,7 +100,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 provided_config = None
 
             helm_input = HelmChartInput.from_chart_path(
-                Path(helm_package.path_to_chart), default_config=provided_config
+                Path(helm_package.path_to_chart).absolute(), default_config=provided_config
             )
             helm_processor = HelmChartProcessor(
                 helm_package.name,
@@ -271,23 +278,16 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
         return bicep_file
 
-    def build_common_parameters_json(self):
+    def build_all_parameters_json(self):
+        """Build the all parameters json file."""
         params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "publisherResourceGroupName": {
-                    "value": self.config.publisher_resource_group_name
-                },
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "nfDefinitionGroup": {"value": self.config.nf_name},
-                "nfDefinitionVersion": {"value": self.config.version},
-            },
+            "location": self.config.location,
+            "publisherName": self.config.publisher_name,
+            "publisherResourceGroupName": self.config.publisher_resource_group_name,
+            "acrArtifactStoreName": self.config.acr_artifact_store_name,
+            "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
+            "nfDefinitionGroup": self.config.nf_name,
+            "nfDefinitionVersion": self.config.version
         }
 
         base_file = JSONDefinitionElementBuilder(

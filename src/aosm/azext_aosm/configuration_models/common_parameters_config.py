@@ -9,38 +9,44 @@ from abc import ABC
 from dataclasses import dataclass
 
 
-@dataclass
+# Config is sometimes used as an argument to cached functions. These
+# arguments must be hashable, so we need to use frozen dataclasses.
+# This is fine because we shouldn't be changing this initial input anyway.
+@dataclass(frozen=True)
 class BaseCommonParametersConfig(ABC):
     """Base common parameters configuration."""
 
     location: str
-    publisher_name: str
-    publisher_resource_group_name: str
-    acr_artifact_store_name: str
-    acr_manifest_name: str
+    publisherName: str
+    publisherResourceGroupName: str
+    acrArtifactStoreName: str
+    acrManifestName: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class NFDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NFs."""
 
-    nf_definition_group: str
-    nf_definition_version: str
+    nfDefinitionGroup: str
+    nfDefinitionVersion: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class VNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
 
-    sa_artifact_store_name: str
-    sa_manifest_name: str
+    saArtifactStoreName: str
+    saManifestName: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class CNFCommonParametersConfig(NFDCommonParametersConfig):
     """Common parameters configuration for VNFs."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class NSDCommonParametersConfig(BaseCommonParametersConfig):
-    """Common parameters configuration for NSDs"""
+    """Common parameters configuration for NSDs."""
+    nsDesignGroup: str
+    nsDesignVersion: str
+    nfviSiteName: str

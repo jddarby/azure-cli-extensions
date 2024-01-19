@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, Optional
 
 from azure.cli.core import AzCli
@@ -23,7 +22,3 @@ class CommandContext:
         self.resources_client: ResourceManagementClient = get_mgmt_service_client(
             self.cli_ctx, ResourceType.MGMT_RESOURCE_RESOURCES
         )
-
-        # Old CLI also had a feature client and an ACR registry client, but they don't seem necessary.
-        # Excluding from here for now, but leaving this note as a reminder in case we need to add them later.
-        # TODO: Remove above note if we don't need to add them.

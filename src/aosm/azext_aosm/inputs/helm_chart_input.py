@@ -107,26 +107,26 @@ class HelmChartInput(BaseInput):
         """
         logger.info("Creating Helm chart input from chart path")
         temp_dir = Path(tempfile.mkdtemp())
+        # TODO: raise useful error if no path given?
+        if chart_path.exists():
+            logger.debug("Unpacking Helm chart to %s", temp_dir)
+            if chart_path.is_dir():
+                unpacked_chart_path = Path(chart_path)
+            else:
+                unpacked_chart_path = extract_tarfile(chart_path, temp_dir)
 
-        logger.debug("Unpacking Helm chart to %s", temp_dir)
+            name, version = HelmChartInput._get_name_and_version(unpacked_chart_path)
 
-        if chart_path.is_dir():
-            unpacked_chart_path = Path(chart_path)
-        else:
-            unpacked_chart_path = extract_tarfile(chart_path, temp_dir)
+            shutil.rmtree(temp_dir)
 
-        name, version = HelmChartInput._get_name_and_version(unpacked_chart_path)
+            logger.debug("Deleted temporary directory %s", temp_dir)
 
-        shutil.rmtree(temp_dir)
-
-        logger.debug("Deleted temporary directory %s", temp_dir)
-
-        return HelmChartInput(
-            artifact_name=name,
-            artifact_version=version,
-            chart_path=chart_path,
-            default_config=default_config,
-        )
+            return HelmChartInput(
+                artifact_name=name,
+                artifact_version=version,
+                chart_path=chart_path,
+                default_config=default_config,
+            )
 
     def validate_template(self) -> None:
         """
@@ -221,7 +221,7 @@ class HelmChartInput(BaseInput):
                 json.dumps(schema, indent=4),
             )
 
-            return copy.deepcopy(schema)
+            return schema
         except FileNotFoundError as error:
             logger.error("No schema found for Helm chart '%s'", self.chart_path)
             raise SchemaGetOrGenerateError(

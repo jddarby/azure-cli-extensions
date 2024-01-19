@@ -67,12 +67,14 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         return OnboardingVNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, params_config: dict = None
+        self, config_file: dict = None
     ) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
-        if params_config is None:
-            params_config = {}
-        return VNFCommonParametersConfig(**params_config)
+        with open(config_file, "r", encoding="utf-8") as _file:
+            params_dict = json.load(_file)
+        if params_dict is None:
+            params_dict = {}
+        return VNFCommonParametersConfig(**params_dict)
 
     def _get_processor_list(self):
         processor_list = []
@@ -82,7 +84,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
                 default_config=None,
-                template_path=Path(arm_template.file_path),
+                template_path=Path(arm_template.file_path).absolute(),
             )
             # TODO: generalise for nexus in nexus ready stories
             processor_list.append(
@@ -98,7 +100,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 default_config=self._get_default_config(self.config.vhd),
-                file_path=self.config.vhd.file_path,
+                file_path=Path(self.config.vhd.file_path).absolute(),
                 blob_sas_uri=self.config.vhd.blob_sas_url,
             ),
         )
@@ -259,27 +261,17 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
         return bicep_file
 
-    def build_common_parameters_json(self):
+    def build_all_parameters_json(self):
         params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "publisherResourceGroupName": {
-                    "value": self.config.publisher_resource_group_name
-                },
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "saArtifactStoreName": {"value": self.config.blob_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "saManifestName": {
-                    "value": self.config.blob_artifact_store_name + "-manifest"
-                },
-                "nfDefinitionGroup": {"value": self.config.nf_name},
-                "nfDefinitionVersion": {"value": self.config.version},
-            },
+            "location": self.config.location,
+            "publisherName": self.config.publisher_name,
+            "publisherResourceGroupName": self.config.publisher_resource_group_name,
+            "acrArtifactStoreName": self.config.acr_artifact_store_name,
+            "saArtifactStoreName": self.config.blob_artifact_store_name,
+            "acrManifestName":  self.config.acr_artifact_store_name + "-manifest",
+            "saManifestName": self.config.blob_artifact_store_name + "-manifest",
+            "nfDefinitionGroup": self.config.nf_name,
+            "nfDefinitionVersion": self.config.version
         }
         base_file = JSONDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
