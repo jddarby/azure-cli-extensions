@@ -84,7 +84,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for helm_package in self.config.helm_packages:
             if helm_package.path_to_mappings:
                 if Path(helm_package.path_to_mappings).exists():
-                    yaml = ruamel.yaml.YAML(typ='rt')
+                    yaml = ruamel.yaml.YAML(typ='safe')
                     provided_config = yaml.load(open(helm_package.path_to_mappings))
                 else:
                     raise UnclassifiedUserFault(
