@@ -8,7 +8,6 @@ import json
 import ruamel.yaml
 from ruamel.yaml.error import ReusedAnchorWarning
 import warnings
-warnings.simplefilter("ignore", ReusedAnchorWarning)
 from pathlib import Path
 
 from azure.cli.core.azclierror import UnclassifiedUserFault
@@ -47,6 +46,7 @@ from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 logger = get_logger(__name__)
+warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
