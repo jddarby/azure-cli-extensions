@@ -145,6 +145,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.file_path = str(file_path)  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
+
     # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
     # This way we can support in-place Bicep artifacts in the folder.
     def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):

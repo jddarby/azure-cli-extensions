@@ -235,20 +235,14 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def build_all_parameters_json(self):
         # TODO: add common params for build resource bicep
         params_content = {
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {
-                "location": {"value": self.config.location},
-                "publisherName": {"value": self.config.publisher_name},
-                "publisherResourceGroupName": {
-                    "value": self.config.publisher_resource_group_name
-                },
-                "acrArtifactStoreName": {"value": self.config.acr_artifact_store_name},
-                "acrManifestName": {
-                    "value": self.config.acr_artifact_store_name + "-manifest"
-                },
-                "nsDesignGroup": {"value": self.config.nsd_name},
-            },
+            "location": self.config.location,
+            "publisherName": self.config.publisher_name,
+            "publisherResourceGroupName": self.config.publisher_resource_group_name,
+            "acrArtifactStoreName": self.config.acr_artifact_store_name,
+            "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
+            "nsDesignGroup":self.config.nsd_name,
+            "nsDesignVersion" : self.config.nsd_version,
+            "nfviSiteName": self.nfvi_site_name
         }
         base_file = JSONDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)

@@ -21,51 +21,29 @@ class ImageSourceConfig:
         default="",
         metadata={
             "comment": (
-                "Optional. login server of the source acr registry from which to pull the image(s).\n"
+                "Login server of the source acr registry from which to pull the image(s).\n"
                 "For example sourceacr.azurecr.io. "
-                "Leave blank if you have set source_local_docker_image."
             )
         },
     )
-    source_registry_namespace: str = field(
+    source_registry_namespace: str | None = field(
         default="",
         metadata={
             "comment": (
-                "Optional. namespace of the repository of the source acr registry from which to pull.\n"
+                "Optional. Namespace of the repository of the source acr registry from which to pull.\n"
                 "For example if your repository is samples/prod/nginx then set this to samples/prod.\n"
-                "Leave blank if the image is in the root namespace or you have set source_local_docker_image.\n"
+                "Leave blank if the image is in the root namespace.\n"
                 "See https://learn.microsoft.com/en-us/azure/container-registry/"
                 "container-registry-best-practices#repository-namespaces for further details."
-            )
-        },
-    )
-    source_local_docker_image: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "Optional. The image name of the source docker image from your local machine.\n"
-                "For limited use case where the CNF only requires a single docker image "
-                "that exists in the local docker repository."
             )
         },
     )
 
     def validate(self):
         """Validate the image configuration."""
-        if self.source_registry_namespace and not self.source_registry:
+        if not self.source_registry:
             raise ValidationError(
-                "Config validation error. The image source registry namespace should "
-                "only be configured if a source registry is configured."
-            )
-
-        if self.source_registry and self.source_local_docker_image:
-            raise ValidationError(
-                "Only one of source_registry and source_local_docker_image can be set."
-            )
-
-        if not (self.source_registry or self.source_local_docker_image):
-            raise ValidationError(
-                "One of source_registry or source_local_docker_image must be set."
+                "Source registry must be set"
             )
 
 
@@ -119,7 +97,7 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
 
     # TODO: Add better comment for images as not a list
     images: ImageSourceConfig = field(
-        default_factory=ImageSourceConfig, metadata={"comment": "List of images "}
+        default_factory=ImageSourceConfig, metadata={"comment": "Source of images to be included in the CNF."}
     )
     helm_packages: List[HelmPackageConfig] = field(
         default_factory=lambda: [HelmPackageConfig()],

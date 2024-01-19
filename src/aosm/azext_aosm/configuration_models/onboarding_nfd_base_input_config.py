@@ -18,7 +18,7 @@ class OnboardingNFDBaseInputConfig(OnboardingBaseInputConfig):
     nf_name: str = field(default="", metadata={"comment": "Name of NF definition."})
     version: str = field(
         default="",
-        metadata={"comment": "Version of the NF definition in A.B.C format."},
+        metadata={"comment": "Version of the NF definition in 1.1.1 format."},
     )
 
     def validate(self):
@@ -28,3 +28,8 @@ class OnboardingNFDBaseInputConfig(OnboardingBaseInputConfig):
             raise ValidationError("nf_name must be set")
         if not self.version:
             raise ValidationError("version must be set")
+        if "-" in self.version or not "." in self.version:
+            raise ValidationError(
+                "Config validation error. Version should be in"
+                " format 1.1.1"
+        )

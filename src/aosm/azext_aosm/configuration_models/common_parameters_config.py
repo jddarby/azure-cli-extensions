@@ -8,6 +8,7 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass
 
+
 # Config is sometimes used as an argument to cached functions. These
 # arguments must be hashable, so we need to use frozen dataclasses.
 # This is fine because we shouldn't be changing this initial input anyway.
@@ -46,5 +47,6 @@ class CNFCommonParametersConfig(NFDCommonParametersConfig):
 @dataclass(frozen=True)
 class NSDCommonParametersConfig(BaseCommonParametersConfig):
     """Common parameters configuration for NSDs."""
-
-    nsDefinitionGroup: str
+    nsDesignGroup: str
+    nsDesignVersion: str
+    nfviSiteName: str
