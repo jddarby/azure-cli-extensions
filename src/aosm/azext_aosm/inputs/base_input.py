@@ -10,19 +10,19 @@ class BaseInput(ABC):
     :type artifact_name: str
     :param artifact_version: The version of the artifact.
     :type artifact_version: str
-    :param default_config: The default configuration for the input. Defaults to None.
-    :type default_config: Optional[Dict[str, Any]]
+    :param default_config_path: The path to the default configuration file for the input. Defaults to None.
+    :type default_config_path: Optional[str]
     """
 
     def __init__(
         self,
         artifact_name: str,
         artifact_version: str,
-        default_config: Optional[Dict[str, Any]] = None,
+        default_config_path: Optional[str] = None,
     ):
         self.artifact_name = artifact_name
         self.artifact_version = artifact_version
-        self.default_config = default_config or {}
+        self.default_config_path = default_config_path
 
     @abstractmethod
     def get_defaults(self) -> Dict[str, Any]:

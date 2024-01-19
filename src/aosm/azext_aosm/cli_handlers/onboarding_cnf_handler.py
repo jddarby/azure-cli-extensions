@@ -3,15 +3,13 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-from jinja2 import Template
 
 import json
-import ruamel.yaml
-from ruamel.yaml.error import ReusedAnchorWarning
-import warnings
 from pathlib import Path
 
-from azure.cli.core.azclierror import ValidationError, UnclassifiedUserFault
+from jinja2 import Template
+
+from azure.cli.core.azclierror import ValidationError
 from knack.log import get_logger
 
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
@@ -52,7 +50,6 @@ from azext_aosm.common.constants import (
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 logger = get_logger(__name__)
-warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -74,9 +71,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             input_config = {}
         return OnboardingCNFInputConfig(**input_config)
 
-    def _get_params_config(
-        self, config_file: Path = None
-    ) -> CNFCommonParametersConfig:
+    def _get_params_config(self, config_file: Path = None) -> CNFCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
             params_dict = json.load(_file)
@@ -88,19 +83,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         processor_list = []
         # for each helm package, instantiate helm processor
         for helm_package in self.config.helm_packages:
-            if helm_package.path_to_mappings:
-                if Path(helm_package.path_to_mappings).exists():
-                    yaml = ruamel.yaml.YAML(typ='safe', pure=True)
-                    provided_config = yaml.load(open(helm_package.path_to_mappings))
-                else:
-                    raise UnclassifiedUserFault(
-                        "There is no file at the path provided for the mappings file."
-                    )
-            else:
-                provided_config = None
-
             helm_input = HelmChartInput.from_chart_path(
-                Path(helm_package.path_to_chart).absolute(), default_config=provided_config
+                Path(helm_package.path_to_chart).absolute(),
+                default_config_path=helm_package.default_values,
             )
             helm_processor = HelmChartProcessor(
                 helm_package.name,
@@ -287,7 +272,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             "acrArtifactStoreName": self.config.acr_artifact_store_name,
             "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
             "nfDefinitionGroup": self.config.nf_name,
-            "nfDefinitionVersion": self.config.version
+            "nfDefinitionVersion": self.config.version,
         }
 
         base_file = JSONDefinitionElementBuilder(
