@@ -46,8 +46,8 @@ def convert_bicep_to_arm(bicep_template_path: Path) -> dict:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except subprocess.CalledProcessError:
-            raise RuntimeError("Bicep to ARM template compilation failed")
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(f"Bicep to ARM template compilation failed.\n{error.stderr}")
 
         logger.debug("ARM template:\n%s", arm_path.read_text())
         arm_json = json.loads(arm_path.read_text())

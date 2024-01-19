@@ -10,16 +10,14 @@ from ._client_factory import cf_aosm  # pylint: disable=import-error
 
 
 def load_command_table(self: AzCommandsLoader, _):
-    # TODO: think client_factory can be deleted. The handlers don't use it
-    with self.command_group("aosm nfd", client_factory=cf_aosm) as g:
+    with self.command_group("aosm nfd") as g:
         # Add each command and bind it to a function in custom.py
         g.custom_command("generate-config", "onboard_nfd_generate_config")
         g.custom_command("build", "onboard_nfd_build")
         g.custom_command("publish", "onboard_nfd_publish")
         g.custom_command("delete", "onboard_nfd_delete")
 
-    # TODO: think client_factory can be deleted. The handlers don't use it
-    with self.command_group("aosm nsd", client_factory=cf_aosm) as g:
+    with self.command_group("aosm nsd") as g:
         # Add each command and bind it to a function in custom.py
         g.custom_command("generate-config", "onboard_nsd_generate_config")
         g.custom_command("build", "onboard_nsd_build")

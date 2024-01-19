@@ -49,7 +49,7 @@ def onboard_nfd_publish(
         cli_ctx=cmd.cli_ctx,
         cli_options={
             "no_subscription_permissions": no_subscription_permissions,
-            "definition_folder": Path(build_output_folder) if build_output_folder else None,
+            "definition_folder": Path(build_output_folder),
         },
     )
     if definition_type == "cnf":
