@@ -181,21 +181,23 @@ class BaseInputProcessor(ABC):
             return values
 
         # Loop through each property in the schema.
-        for k, v in schema["properties"].items():
+        for subschema_name, subschema in schema["properties"].items():
             # If the property is not in the values, and is required, add it to the values.
-            if "required" in schema and k not in values and k in schema["required"]:
-                print(f"Adding {k} to values")
-                if v["type"] == "object":
-                    values[k] = self.generate_values_mappings(v, {}, is_ret)
+            if "required" in schema and subschema_name not in values and subschema_name in schema["required"]:
+                print(f"Adding {subschema_name} to values")
+                if subschema["type"] == "object":
+                    values[subschema_name] = self.generate_values_mappings(subschema, {}, is_ret)
                 else:
-                    values[k] = (
-                        f"{{configurationparameters('{CGS_NAME}').{self.name}.{k}}}"
+                    values[subschema_name] = (
+                        f"{{configurationparameters('{CGS_NAME}').{self.name}.{subschema_name}}}"
                         if is_ret
-                        else f"{{deployParameters.{self.name}.{k}}}"
+                        else f"{{deployParameters.{self.name}.{subschema_name}}}"
                     )
             # If the property is in the values, and is an object, generate the values mappings
             # for the subschema.
-            if k in values and v["type"] == "object" and values[k]:
-                values[k] = self.generate_values_mappings(v, values[k], is_ret)
+            if subschema_name in values and subschema["type"] == "object":
+                # Python evaluates {} as False, so we need to explicitly set to {}
+                default_subschema_values = values[subschema_name] or {}
+                values[subschema_name] = self.generate_values_mappings(subschema, default_subschema_values, is_ret)
 
         return values
