@@ -9,9 +9,11 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
+import ruamel.yaml
+from ruamel.yaml.error import ReusedAnchorWarning
+import warnings
 import genson
-import yaml
+
 from knack.log import get_logger
 
 from azext_aosm.common.exceptions import (DefaultValuesNotFoundError,
@@ -21,7 +23,7 @@ from azext_aosm.common.utils import extract_tarfile
 from azext_aosm.inputs.base_input import BaseInput
 
 logger = get_logger(__name__)
-
+warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 @dataclass
 class HelmChartMetadata:
@@ -336,7 +338,8 @@ class HelmChartInput(BaseInput):
         for file in self._chart_dir.iterdir():
             if file.name.endswith(("values.yaml", "values.yml")):
                 with file.open(encoding="UTF-8") as f:
-                    content = yaml.safe_load(f)
+                    yaml = ruamel.yaml.YAML(typ='safe', pure=True)
+                    content = yaml.load(f)
                 return content
 
         logger.error("No values.yaml file found in Helm chart '%s'", self.chart_path)
