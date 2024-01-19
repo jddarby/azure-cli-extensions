@@ -99,7 +99,6 @@ class OnboardingBaseCLIHandler(ABC):
             definition_folder = DefinitionFolder(
                 command_context.cli_options["definition_folder"]
             )
-        # TODO: else logic for finding VNF_OUTPUT_FOLDER_FILENAME, etc., assuming command run from same directory as build.
         definition_folder.deploy(config=self.config, command_context=command_context)
 
     def delete(self, command_context: CommandContext):

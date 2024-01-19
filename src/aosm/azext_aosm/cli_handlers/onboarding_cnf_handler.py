@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import yaml
 from pathlib import Path
 
 from azure.cli.core.azclierror import UnclassifiedUserFault
@@ -80,7 +81,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for helm_package in self.config.helm_packages:
             if helm_package.path_to_mappings:
                 if Path(helm_package.path_to_mappings).exists():
-                    provided_config = json.load(open(helm_package.path_to_mappings))
+                    provided_config = yaml.load(open(helm_package.path_to_mappings), Loader=yaml.FullLoader)
                 else:
                     raise UnclassifiedUserFault(
                         "There is no file at the path provided for the mappings file."
