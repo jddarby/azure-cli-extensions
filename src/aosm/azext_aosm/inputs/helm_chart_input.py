@@ -195,7 +195,7 @@ class HelmChartInput(BaseInput):
         provided_config = None
 
         if self.default_config_path:
-            if self.default_config_path.exists():
+            if Path(self.default_config_path).exists():
                 with open(self.default_config_path, "r") as default_values:
                     provided_config = yaml_processor.load(default_values)
             else:
