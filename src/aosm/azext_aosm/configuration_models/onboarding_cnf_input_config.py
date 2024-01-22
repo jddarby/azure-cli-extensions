@@ -43,9 +43,7 @@ class ImageSourceConfig:
     def validate(self):
         """Validate the image configuration."""
         if not self.source_registry:
-            raise ValidationError(
-                "Source registry must be set"
-            )
+            raise ValidationError("Source registry must be set")
 
 
 @dataclass
@@ -98,7 +96,8 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
 
     # TODO: Add better comment for images as not a list
     images: ImageSourceConfig = field(
-        default_factory=ImageSourceConfig, metadata={"comment": "Source of images to be included in the CNF."}
+        default_factory=ImageSourceConfig,
+        metadata={"comment": "Source of images to be included in the CNF."},
     )
     helm_packages: List[HelmPackageConfig] = field(
         default_factory=lambda: [HelmPackageConfig()],

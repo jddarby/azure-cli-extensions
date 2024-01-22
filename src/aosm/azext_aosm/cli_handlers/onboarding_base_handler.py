@@ -36,7 +36,7 @@ class OnboardingBaseCLIHandler(ABC):
 
     def __init__(
         self,
-        config_file: Optional[Path] = None,
+        provided_input_path: Optional[Path] = None,
         aosm_client: Optional[HybridNetworkManagementClient] = None,
         skip: str = None,
     ):
@@ -44,16 +44,19 @@ class OnboardingBaseCLIHandler(ABC):
         self.aosm_client = aosm_client
         self.skip = skip
         # If config file provided (for build, publish and delete)
-        if config_file:
-            config_file = Path(config_file)
+        if provided_input_path:
+            provided_input_path = Path(provided_input_path)
             # If config file is the input.jsonc for build command
-            if config_file.suffix == ".jsonc":
-                config_dict = self._read_input_config_from_file(config_file)
+            if provided_input_path.suffix == ".jsonc":
+                config_dict = self._read_input_config_from_file(provided_input_path)
                 self.config = self._get_input_config(config_dict)
+                # Validate config before getting processor list,
+                # in case error with input artifacts i.e helm package
+                self.config.validate()
                 self.processors = self._get_processor_list()
             # If config file is the all parameters json file for publish/delete
-            elif config_file.suffix == ".json":
-                self.config = self._get_params_config(config_file)
+            elif provided_input_path.suffix == ".json":
+                self.config = self._get_params_config(provided_input_path)
             else:
                 raise UnclassifiedUserFault("Invalid input")
                 # TODO: Change this to work with publish?

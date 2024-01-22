@@ -62,9 +62,7 @@ def load_arguments(self: AzCommandsLoader, _):
             options_list=["--build-output-folder", "-b"],
             type=file_type,
             completer=FilesCompleter(allowednames="*.json"),
-            help=(
-                "Path to the folder to publish, created by the build command."
-            ),
+            help=("Path to the folder to publish, created by the build command."),
         )
         # This will only ever output one string and will fail if more than one
         # skip steps are provided. It might be good to change that.
