@@ -92,7 +92,6 @@ class OnboardingBaseCLIHandler(ABC):
 
     def build(self):
         """Build the definition."""
-        self.config.validate()
         self.pre_validate_build()
         self.definition_folder_builder.add_element(self.build_base_bicep())
         self.definition_folder_builder.add_element(self.build_manifest_bicep())
