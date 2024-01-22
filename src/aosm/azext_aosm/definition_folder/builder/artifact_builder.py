@@ -30,7 +30,10 @@ class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
         """Write the definition element to disk."""
         self.path.mkdir(exist_ok=True)
         artifacts_list = []
+        # TODO: handle converting path to string
         for artifact in self.artifacts:
+            if artifact.file_path is not None:
+                artifact.file_path = str(artifact.file_path)
             artifacts_list.append(artifact.to_dict())
         (self.path / "artifacts.json").write_text(json.dumps(artifacts_list, indent=4))
         self._write_supporting_files()

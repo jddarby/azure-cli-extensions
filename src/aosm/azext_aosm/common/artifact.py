@@ -144,13 +144,28 @@ class LocalFileACRArtifact(BaseACRArtifact):
 
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
-        self.file_path = str(file_path)  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
-
+        self.file_path = file_path
     # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
     # This way we can support in-place Bicep artifacts in the folder.
     def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Upload the artifact."""
         logger.debug("LocalFileACRArtifact config: %s", config)
+
+        # TODO: remove, this is temporary until we fix in artifact reader
+        self.file_path = Path(self.file_path)
+        # For NSDs, we provide paths relative to the artifacts folder, resolve them to absolute paths
+        if not self.file_path.is_absolute():
+            output_folder_path = command_context.cli_options["definition_folder"]
+            resolved_file_path = output_folder_path.resolve()
+            upload_file_path = resolved_file_path / self.file_path
+            print("nfp", output_folder_path)
+            print("rfp", resolved_file_path)
+            print("ufp", upload_file_path)
+            self.file_path = upload_file_path
+
+        # self.file_path = Path(self.file_path).resolve()
+        print("fp", self.file_path)
+
         manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
