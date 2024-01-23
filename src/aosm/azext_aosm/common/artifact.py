@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import lru_cache
 import json
 import math
@@ -139,20 +140,50 @@ class BaseACRArtifact(BaseArtifact):
         return BaseACRArtifact._clean_name(upload_client.remote.hostname)
 
 
+@dataclass(frozen=True)
+class OrasClientSignature:
+    """Signature of the oras client to allow different clients for different sources."""
+    acr_server_url: str
+    username: str
+
+
+class OrasClientSingletonMeta(type):
+    """Metaclass for OrasClientSingleton."""
+    _instances = {}
+
+    def __call__(cls, manifest_credentials: Dict):
+        oras_client_signature = OrasClientSignature(acr_server_url=manifest_credentials["acr_server_url"], username=manifest_credentials["username"])
+        if oras_client_signature not in cls._instances:
+            cls._instances[oras_client_signature] = BaseACRArtifact._get_oras_client(manifest_credentials=manifest_credentials)
+        return cls._instances[oras_client_signature]
+
+
+class OrasClientSingleton(metaclass=OrasClientSingletonMeta):
+    """
+    Stores instances of the oras client for use by subsequent artifacts.
+
+    We store a separate instance for each combination of acr_server_url and username.
+    """
+    pass
+
+
 class LocalFileACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a local file."""
-
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.file_path = str(file_path)  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
 
-    # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
-    # This way we can support in-place Bicep artifacts in the folder.
+    # TODO (WIBNI): Check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
+    #               This way we can support in-place Bicep artifacts in the folder.
     def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Upload the artifact."""
+        # We've seen problems with the oras_client failing, which seem to be mitigated by using
+        # the same client instance for all uploads. We create the client for the first artifact,
+        # and store it in a singleton for use by subsequent artifacts.
         logger.debug("LocalFileACRArtifact config: %s", config)
         manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
-        oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
+        oras_client = OrasClientSingleton(manifest_credentials=manifest_credentials)
+        logger.warning(f"oras_client id: {id(oras_client)}")
         target_acr = self._get_acr(oras_client)
         target = (
             f"{target_acr}/{self.artifact_name}:{self.artifact_version}"

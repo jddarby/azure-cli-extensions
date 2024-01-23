@@ -185,7 +185,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
         logger.info("Converting bicep to ARM for %s. This can take a few seconds.", self.path.name)
         arm_json = convert_bicep_to_arm(self.path / "deploy.bicep")
-        logger.info("Deploying ARM template for %s" % self.path.name)
+        logger.info("Deploying ARM template for %s", self.path.name)
 
         # TODO: handle creating the resource group if it doesn't exist
 
