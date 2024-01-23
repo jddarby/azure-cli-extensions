@@ -98,7 +98,7 @@ class HelmChartInput(BaseInput):
             self._chart_dir = extract_tarfile(chart_path, self._temp_dir_path)
         self._validate()
         self.metadata = self._get_metadata()
-        self.helm_template = tempfile.TemporaryFile()
+        self.helm_template = None
         self.default_config_path = default_config_path
 
     @staticmethod
@@ -173,7 +173,7 @@ class HelmChartInput(BaseInput):
         try:
             result = subprocess.run(cmd, capture_output=True, check=True)
             helm_template_output = result.stdout
-            self.helm_template.write(helm_template_output)
+            self.helm_template = helm_template_output
 
             logger.debug(
                 "Helm template output for Helm chart %s:\n%s",
