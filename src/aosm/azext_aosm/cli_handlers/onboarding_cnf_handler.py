@@ -112,32 +112,25 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         if validation_errors:
             # Create an error file using a j2 template
-            error_file_template_path = self._get_template_path(
+            error_output_template_path = self._get_template_path(
                 CNF_TEMPLATE_FOLDER_NAME, CNF_HELM_VALIDATION_ERRORS_TEMPLATE_FILENAME
             )
 
             with open(
-                error_file_template_path,
+                error_output_template_path,
                 "r",
                 encoding="utf-8",
             ) as file:
-                error_file_template = Template(file.read())
+                error_output_template = Template(file.read())
 
-            rendered_error_file_template = error_file_template.render(
+            rendered_error_output_template = error_output_template.render(
                 errors=validation_errors
             )
 
-            logger.info(rendered_error_file_template)
-
-            with open(
-                CNF_HELM_VALIDATION_ERRORS_FILENAME,
-                "w",
-                encoding="utf-8",
-            ) as error_file:
-                error_file.write(rendered_error_file_template)
+            logger.info(rendered_error_output_template)
 
             raise ValidationError(
-                f"Could not validate all the provided Helm charts. Please refer to the {CNF_HELM_VALIDATION_ERRORS_FILENAME} file for more information."
+                """Could not validate all the provided Helm charts. Please run the CLI command again with the --verbose flag to see the validation errors."""
             )
 
     def pre_validate_build(self):

@@ -177,6 +177,12 @@ class HelmChartInput(BaseInput):
             # Return the error message without raising an error.
             # The errors are going to be collected into a file by the caller of this function.
             error_message = error.stderr.decode()
+
+            # Remove part of the message of the error. This is because this message will polute
+            # the error file. We are not running the helm command with the --debug flag,
+            # because during testing this flag did not produce any useful output
+            # (the invalid YAML was not printed out). If at a later date we find that this flag
+            # does produce a useful output, we can run the helm command with the --debug flag.
             error_message = error_message.replace(
                 "\nUse --debug flag to render out invalid YAML", ""
             )

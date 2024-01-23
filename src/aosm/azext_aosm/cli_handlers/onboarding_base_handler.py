@@ -115,9 +115,9 @@ class OnboardingBaseCLIHandler(ABC):
         #    - Do element.delete()
         # TODO: Implement
 
-    @abstractmethod
     def pre_validate_build(self):
         """Perform all validations that need to be done before running the build command."""
+        pass
 
     @abstractmethod
     def build_base_bicep(self):
