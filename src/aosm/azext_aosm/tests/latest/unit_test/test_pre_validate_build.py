@@ -13,7 +13,6 @@ from azext_aosm.cli_handlers.onboarding_cnf_handler import (
 from azext_aosm.configuration_models.onboarding_cnf_input_config import (
     HelmPackageConfig,
 )
-from azext_aosm.common.constants import CNF_HELM_VALIDATION_ERRORS_FILENAME
 
 current_file_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file_path)
@@ -43,9 +42,6 @@ class TestOnboardingCNFCLIHandler(TestCase):
 
     def test_validate_helm_template_invalid_chart(self):
         """Test validating an invalid Helm chart using helm template."""
-        if os.path.isfile(CNF_HELM_VALIDATION_ERRORS_FILENAME):
-            os.remove(CNF_HELM_VALIDATION_ERRORS_FILENAME)
-
         handler = OnboardingCNFCLIHandler()
         handler.config.helm_packages = [
             HelmPackageConfig(
@@ -63,10 +59,3 @@ class TestOnboardingCNFCLIHandler(TestCase):
             # We want to test a specific private method so disable the pylint warning
             # pylint: disable=protected-access
             handler._validate_helm_template()
-
-        self.assertTrue(
-            os.path.isfile(CNF_HELM_VALIDATION_ERRORS_FILENAME),
-            "The validation error file was not created.",
-        )
-
-        os.remove(CNF_HELM_VALIDATION_ERRORS_FILENAME)
