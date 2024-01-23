@@ -5,7 +5,10 @@
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
+import ruamel.yaml
+from ruamel.yaml.error import ReusedAnchorWarning
 
 from jinja2 import Template
 
@@ -37,7 +40,6 @@ from azext_aosm.common.constants import (
     CNF_TEMPLATE_FOLDER_NAME,
     CNF_DEFINITION_TEMPLATE_FILENAME,
     CNF_HELM_VALIDATION_ERRORS_TEMPLATE_FILENAME,
-    CNF_HELM_VALIDATION_ERRORS_FILENAME,
     CNF_INPUT_FILENAME,
     CNF_MANIFEST_TEMPLATE_FILENAME,
     CNF_OUTPUT_FOLDER_FILENAME,
@@ -50,6 +52,8 @@ from azext_aosm.common.constants import (
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 
 logger = get_logger(__name__)
+yaml_processor = ruamel.yaml.YAML(typ="safe", pure=True)
+warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 
 class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
@@ -83,8 +87,21 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         processor_list = []
         # for each helm package, instantiate helm processor
         for helm_package in self.config.helm_packages:
+            if helm_package.default_values:
+                if Path(helm_package.default_values).exists():
+                    provided_config = yaml_processor.load(
+                        open(helm_package.default_values)
+                    )
+                else:
+                    raise FileNotFoundError(
+                        "There is no file at the path provided for the mappings file."
+                    )
+            else:
+                provided_config = None
+
             helm_input = HelmChartInput.from_chart_path(
                 Path(helm_package.path_to_chart).absolute(),
+                default_config=provided_config,
                 default_config_path=helm_package.default_values,
             )
             helm_processor = HelmChartProcessor(
@@ -129,9 +146,13 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
             logger.info(rendered_error_output_template)
 
-            raise ValidationError(
-                """Could not validate all the provided Helm charts. Please run the CLI command again with the --verbose flag to see the validation errors."""
+            error_message = (
+                "Could not validate all the provided Helm charts. "
+                "Please run the CLI command again with the --verbose flag "
+                "to see the validation errors."
             )
+
+            raise ValidationError(error_message)
 
     def pre_validate_build(self):
         """Run all validation functions required before building the cnf."""
