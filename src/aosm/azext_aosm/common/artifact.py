@@ -147,8 +147,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.file_path = file_path
-    # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
-    # This way we can support in-place Bicep artifacts in the folder.
+
     def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Upload the artifact."""
         logger.debug("LocalFileACRArtifact config: %s", config)
@@ -173,9 +172,8 @@ class LocalFileACRArtifact(BaseACRArtifact):
             # This does mean we can never have a bicep file as an artifact, but that should be OK
             logger.debug("Converting self.file_path to ARM")
             arm_template = convert_bicep_to_arm(self.file_path)
-            bicep_file_path = self.file_path.with_suffix(".json")
-            json.dump(arm_template, bicep_file_path.open("w"))
-            self.file_path = bicep_file_path
+            self.file_path = self.file_path.with_suffix(".json")
+            json.dump(arm_template, self.file_path.open("w"))
             logger.debug("Converted bicep file to ARM as: %s", self.file_path)
 
         manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
