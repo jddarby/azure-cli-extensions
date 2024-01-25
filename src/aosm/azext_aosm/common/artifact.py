@@ -21,6 +21,8 @@ from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from knack.util import CLIError
 from knack.log import get_logger
 from oras.client import OrasClient
+from common.utils import convert_bicep_to_arm
+
 
 logger = get_logger(__name__)
 
@@ -165,6 +167,16 @@ class LocalFileACRArtifact(BaseACRArtifact):
 
         # self.file_path = Path(self.file_path).resolve()
         print("fp", self.file_path)
+
+        if self.file_path.suffix == ".bicep":
+            # Uploading the nf_template as part of the NSD will use this code path
+            # This does mean we can never have a bicep file as an artifact, but that should be OK
+            logger.debug("Converting self.file_path to ARM")
+            arm_template = convert_bicep_to_arm(self.file_path)
+            bicep_file_path = self.file_path.with_suffix(".json")
+            json.dump(arm_template, bicep_file_path.open("w"))
+            self.file_path = bicep_file_path
+            logger.debug("Converted bicep file to ARM as: %s", self.file_path)
 
         manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
