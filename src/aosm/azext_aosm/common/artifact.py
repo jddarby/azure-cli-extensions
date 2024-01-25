@@ -545,10 +545,9 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
                 blob_type=BlobType.PAGEBLOB,
                 progress_hook=self._vhd_upload_progress_callback,
             )
+
         logger.info(
-            "Successfully uploaded %s to %s",
-            artifact_config.file_path,
-            self.artifact_client.account_name,
+            "Successfully uploaded %s to %s", self.file_path, blob_client.container_name
         )
 
     def _vhd_upload_progress_callback(
