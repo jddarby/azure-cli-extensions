@@ -3,20 +3,23 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from unittest import TestCase
-import os
+from pathlib import Path
 
 from azure.cli.core.azclierror import ValidationError
 
 from azext_aosm.cli_handlers.onboarding_cnf_handler import (
     OnboardingCNFCLIHandler,
 )
-from azext_aosm.configuration_models.onboarding_cnf_input_config import (
-    HelmPackageConfig,
-)
+from azext_aosm.tests.latest.tests_utils import update_input_file, get_tests_path
 
-current_file_path = os.path.abspath(__file__)
-current_directory = os.path.dirname(current_file_path)
-test_charts_directory = os.path.join(current_directory, "../mock_cnf/helm-charts")
+CNF_NF_AGENT_INPUT_TEMPLATE_NAME = "input-nf-agent-cnf-template.jsonc"
+CNF_NF_AGENT_INPUT_FILE_NAME = "test_pre_validate_build_input-nf-agent-cnf.jsonc"
+CNF_NF_AGENT_INVALID_INPUT_TEMPLATE_NAME = (
+    "input-nf-agent-cnf-template-invalid-chart.jsonc"
+)
+CNF_NF_AGENT_INVALID_INPUT_FILE_NAME = (
+    "test_pre_validate_build_input-nf-agent-cnf-invalid.jsonc"
+)
 
 
 class TestOnboardingCNFCLIHandler(TestCase):
@@ -24,37 +27,31 @@ class TestOnboardingCNFCLIHandler(TestCase):
 
     def test_validate_helm_template_valid_chart(self):
         """Test validating a valid Helm chart using helm template."""
+        config_file = update_input_file(
+            CNF_NF_AGENT_INPUT_TEMPLATE_NAME,
+            CNF_NF_AGENT_INPUT_FILE_NAME,
+            params={
+                "tests_directory": get_tests_path(),
+            },
+        )
 
-        handler = OnboardingCNFCLIHandler()
-        handler.config.helm_packages = [
-            HelmPackageConfig(
-                name="nf-agent-cnf-UNIT-TEST",
-                path_to_chart=os.path.join(test_charts_directory, "nf-agent-cnf"),
-                default_values="",
-                depends_on=[],
-            )
-        ]
-        handler.config.images_source_registry = ""
-        handler.config.source_registry_username = ""
+        handler = OnboardingCNFCLIHandler(Path(config_file))
         # We want to test a specific private method so disable the pylint warning
         # pylint: disable=protected-access
         handler._validate_helm_template()
 
     def test_validate_helm_template_invalid_chart(self):
         """Test validating an invalid Helm chart using helm template."""
-        handler = OnboardingCNFCLIHandler()
-        handler.config.helm_packages = [
-            HelmPackageConfig(
-                name="nf-agent-cnf-invalid-UNIT-TEST",
-                path_to_chart=os.path.join(
-                    test_charts_directory, "nf-agent-cnf-invalid"
-                ),
-                default_values="",
-                depends_on=[],
-            )
-        ]
-        handler.config.images_source_registry = ""
-        handler.config.source_registry_username = ""
+        config_file = update_input_file(
+            CNF_NF_AGENT_INVALID_INPUT_TEMPLATE_NAME,
+            CNF_NF_AGENT_INVALID_INPUT_FILE_NAME,
+            params={
+                "tests_directory": get_tests_path(),
+            },
+        )
+
+        handler = OnboardingCNFCLIHandler(Path(config_file))
+
         with self.assertRaises(ValidationError):
             # We want to test a specific private method so disable the pylint warning
             # pylint: disable=protected-access
