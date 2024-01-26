@@ -159,18 +159,30 @@ class LocalFileACRArtifact(BaseACRArtifact):
         )
         logger.debug("Uploading %s to %s", self.file_path, target)
         retries = 0
-        while retries < 20:
+        while True:
             try:
                 oras_client.push(files=[self.file_path], target=target)
                 break
-            except ValueError:
-                logger.info(
-                    "Retrying pushing local artifact to ACR. Retries so far: %s",
-                    retries,
+            except ValueError as error:
+                if retries < 20:
+                    logger.info(
+                        "Retrying pushing local artifact to ACR. Retries so far: %s",
+                        retries,
+                    )
+                    retries += 1
+                    sleep(3)
+                    continue
+
+                logger.error(
+                    "Failed to upload %s to %s. Check if this image exists in the"
+                    " source registry %s.",
+                    self.file_path,
+                    target,
+                    target_acr,
                 )
-                retries += 1
-                sleep(3)
-                continue
+                logger.debug(error, exc_info=True)
+                raise error
+
         logger.info("LocalFileACRArtifact uploaded %s to %s", self.file_path, target)
 
 
