@@ -1,31 +1,38 @@
+import os
 from unittest import TestCase
-from azext_aosm.tests.latest.tests_utils import update_input_file, get_tests_path
-from azext_aosm.cli_handlers.onboarding_cnf_handler import (
-    OnboardingCNFCLIHandler,
+from unittest.mock import Mock
+from azext_aosm.build_processors.helm_chart_processor import (
+    HelmChartProcessor,
 )
 from pathlib import Path
 
-CNF_NF_AGENT_INPUT_TEMPLATE_NAME = "input-nf-agent-cnf-template.jsonc"
-CNF_NF_AGENT_INPUT_FILE_NAME = "test_helm_chart_processor_input-nf-agent-cnf.jsonc"
+code_directory = os.path.dirname(__file__)
+parent_directory = os.path.abspath(os.path.join(code_directory, ".."))
+mock_cnf_directory = os.path.join(parent_directory, "mock_cnf")
+
+HELM_TEMPLATE_MOCK_OUTPUT_FILE = "nf-agent-cnf-helm_template_output.yaml"
 
 
 class TestHelmChartProcessor(TestCase):
     def setUp(self):
-        config_file = update_input_file(
-            CNF_NF_AGENT_INPUT_TEMPLATE_NAME,
-            CNF_NF_AGENT_INPUT_FILE_NAME,
-            params={
-                "tests_directory": get_tests_path(),
-            },
+        self.helm_chart_processor = HelmChartProcessor(
+            name="test-nf-agent-cnf",
+            input_artifact=Mock(),
+            source_registry="",
+            source_registry_namespace="",
         )
 
-        handler = OnboardingCNFCLIHandler(Path(config_file))
-        # We want to test a specific private method so disable the pylint warning
-        # pylint: disable=protected-access
-        handler._validate_helm_template()
-        self.helm_chart_processor = handler.processors[0]
-
     def test_find_chart_images(self):
+        with open(
+            os.path.join(mock_cnf_directory, HELM_TEMPLATE_MOCK_OUTPUT_FILE),
+            "r",
+            encoding="utf-8",
+        ) as file:
+            helm_template_contents = file.read()
+
+        self.helm_chart_processor.input_artifact.helm_template = helm_template_contents
+        self.helm_chart_processor.input_artifact.artifact_name = "test-nf-agent-cnf"
+
         # We want to test a specific private method so disable the pylint warning
         # pylint: disable=protected-access
         collected_images = self.helm_chart_processor._find_chart_images()
