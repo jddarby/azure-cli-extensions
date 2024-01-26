@@ -90,12 +90,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
                 )
             elif resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place               
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
                 nfdv_object = self._get_nfdv(resource_element.properties)
                 nfd_input = NFDInput(
                     artifact_name=self.config.nsd_name,
                     artifact_version=self.config.nsd_version,
-                    default_config=None,
+                    default_config={"location": self.config.location},
                     network_function_definition=nfdv_object,
                     arm_template_output_path=Path(
                         NSD_OUTPUT_FOLDER_FILENAME,
