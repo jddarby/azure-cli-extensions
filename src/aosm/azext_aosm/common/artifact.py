@@ -16,12 +16,13 @@ from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import BlobClient
 from azext_aosm.vendored_sdks.models import ManifestArtifactFormat
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.common.command_context import CommandContext
+from azext_aosm.common.utils import convert_bicep_to_arm
 from azext_aosm.configuration_models.common_parameters_config import BaseCommonParametersConfig, VNFCommonParametersConfig
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from knack.util import CLIError
 from knack.log import get_logger
 from oras.client import OrasClient
-from common.utils import convert_bicep_to_arm
+
 
 
 logger = get_logger(__name__)

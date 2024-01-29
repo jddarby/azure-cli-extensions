@@ -55,8 +55,8 @@ class HelmPackageConfig:
         default="",
         metadata={
             "comment": (
-                "The file path of Helm Chart on the local disk. Accepts .tgz, .tar or .tar.gz.\n"
-                "Use Linux slash (/) file separator even if running on Windows."
+                "The file path to the helm chart on the local disk, relative to the directory from which the command is run.\n"
+                "Accepts .tgz, .tar or .tar.gz, or an unpacked directory. Use Linux slash (/) file separator even if running on Windows."
             )
         },
     )

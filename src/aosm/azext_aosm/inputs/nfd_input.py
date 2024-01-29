@@ -89,7 +89,7 @@ class NFDInput(BaseInput):
         :rtype: Dict[str, Any]
         :raises ValueError: If no deployment parameters schema is found on the network function definition version.
         """
-        logger.info("Getting schema for NFD Input")
+        logger.debug("Getting schema for NFD Input %s.", self.artifact_name)
         schema_properties = {
             "configObject": {
                 "type": "object",

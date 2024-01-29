@@ -54,7 +54,7 @@ class NFDProcessor(BaseInputProcessor):
         :return: A list of artifacts for the artifact manifest.
         :rtype: List[ManifestArtifactFormat]
         """
-        logger.info("Getting artifact manifest list for NFD input.")
+        logger.debug("Getting artifact manifest list for NFD input %s.", self.name)
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
