@@ -121,7 +121,6 @@ class HelmChartInput(BaseInput):
         """
         logger.debug("Creating Helm chart input from chart path '%s'", chart_path)
         temp_dir = Path(tempfile.mkdtemp())
-        # TODO: raise useful error if no path given?
         if not chart_path.exists():
             raise FileNotFoundError(
                 f"ERROR: The Helm chart '{chart_path}' does not exist."

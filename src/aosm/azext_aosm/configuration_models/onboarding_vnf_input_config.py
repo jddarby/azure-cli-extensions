@@ -29,9 +29,9 @@ class VhdImageConfig:
         default="",
         metadata={
             "comment": (
-                "Supply either file_path or blob_sas_url, not both.\n
+                "Supply either file_path or blob_sas_url, not both.\n"
                 "File path (absolute or relative to this configuration file) of the artifact you wish to upload from your local disk.\n"
-                "Delete if not required. Use Linux slash (/) file separator even if running on Windows."
+                "Leave as empty string if not required. Use Linux slash (/) file separator even if running on Windows."
             )
         },
     )
@@ -40,7 +40,7 @@ class VhdImageConfig:
         metadata={
             "comment": (
                 "Supply either file_path or blob_sas_url, not both.\nSAS URL of the blob artifact you wish to copy to your Artifact Store.\n"
-                "Delete if not required. "
+                "Leave as empty string if not required."
                 "Use Linux slash (/) file separator even if running on Windows."
             )
         },
