@@ -220,7 +220,6 @@ class HelmChartInput(BaseInput):
 
         :return: The default values for the Helm chart.
         :rtype: Dict[str, Any]
-        :raises DefaultValuesNotFoundError: If no default values were found for the Helm chart.
         """
         default_config = self.default_config or self._read_values_yaml()
         logger.debug(
@@ -252,7 +251,7 @@ class HelmChartInput(BaseInput):
                         schema = json.load(schema_file)
 
             if not schema:
-                # Otherwise, generate a schema from the default values in values.yaml.
+                # Otherwise, generate a schema from the default values or values in values.yaml.
                 logger.debug("Generating schema from default values")
                 built_schema = genson.Schema()
                 built_schema.add_object(self.get_defaults())
