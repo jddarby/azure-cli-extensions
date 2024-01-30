@@ -9,6 +9,8 @@ Unreleased
 * Changed the name of the `path_to_mappings` parameter in the CNF input file to `default_values`
 * Added a `helm template` validation step to the `az aosm nfd build` command for the `cnf` definition type
 * Added validation of the values file for helm charts when using the `az aosm nfd build` command for the `cnf` definition type
+* Fixed helm chart image parsing in the `az aosm nfd build` command for the `cnf` definition type. This means that the images can now be extracted correctly from the helm chart.
+* Fixed: infinite loop bug when retrying failed artifact uploads to the ACR
 
 1.0.0b4
 ++++++++
