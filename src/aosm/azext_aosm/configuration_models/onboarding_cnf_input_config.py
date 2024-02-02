@@ -27,13 +27,13 @@ class ImageSourceConfig:
             )
         },
     )
-    source_registry_namespace: str | None = field(
+    source_registry_namespace: str = field(
         default="",
         metadata={
             "comment": (
                 "Optional. Namespace of the repository of the source acr registry from which to pull.\n"
                 "For example if your repository is samples/prod/nginx then set this to samples/prod.\n"
-                "Leave blank if the image is in the root namespace.\n"
+                "Leave as empty string if the image is in the root namespace.\n"
                 "See https://learn.microsoft.com/en-us/azure/container-registry/"
                 "container-registry-best-practices#repository-namespaces for further details."
             )

@@ -84,8 +84,8 @@ class DefinitionFolder:
             )
             element.deploy(config=config, command_context=command_context)
 
-    def delete(self, resource_client: ResourceManagementClient, clean: bool = False):
+    def delete(self, config: BaseCommonParametersConfig, command_context: CommandContext, clean: bool = False):
         """Delete the definition folder."""
         for element in reversed(self.elements):
             if clean or not element.only_delete_on_clean:
-                element.delete(resource_client)
+                element.delete(config=config, command_context=command_context)

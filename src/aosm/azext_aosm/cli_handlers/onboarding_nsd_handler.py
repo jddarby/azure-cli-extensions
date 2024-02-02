@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Optional
 
 from knack.log import get_logger
 
@@ -46,6 +47,7 @@ from azext_aosm.definition_folder.builder.json_builder import (
 )
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.vendored_sdks.models import (
     ManifestArtifactFormat,
     NetworkFunctionDefinitionVersion,
@@ -71,15 +73,16 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     @property
     def nfvi_site_name(self) -> str:
         """Return the name of the NFVI used for the NSDV."""
+        assert isinstance(self.config, OnboardingNSDInputConfig)
         return f"{self.config.nsd_name}_NFVI"
 
-    def _get_input_config(self, input_config: dict = None) -> OnboardingNSDInputConfig:
+    def _get_input_config(self, input_config: Optional[dict] = None) -> OnboardingNSDInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
         return OnboardingNSDInputConfig(**input_config)
 
-    def _get_params_config(self, config_file: dict = None) -> NSDCommonParametersConfig:
+    def _get_params_config(self, config_file: Path) -> NSDCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
             params_dict = json.load(_file)
@@ -295,6 +298,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         print(
             f"Reading existing NFDV resource object {nf_properties.version} from group {nf_properties.name}"
         )
+        assert isinstance(self.aosm_client, HybridNetworkManagementClient)
         nfdv_object = self.aosm_client.network_function_definition_versions.get(
             resource_group_name=nf_properties.publisher_resource_group,
             publisher_name=nf_properties.publisher,

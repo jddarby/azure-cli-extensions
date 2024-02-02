@@ -94,7 +94,9 @@ class VHDProcessor(BaseInputProcessor):
             )
             artifacts.append(
                 BlobStorageAccountArtifact(
-                    artifact_manifest=artifact_manifest,
+                    artifact_name=self.input_artifact.artifact_name,
+                    artifact_type=ArtifactType.VHD_IMAGE_FILE.value,
+                    artifact_version=self.input_artifact.artifact_version,
                     blob_sas_uri=self.input_artifact.blob_sas_uri,
                 )
             )

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 from azure.cli.core import AzCli
@@ -12,7 +12,7 @@ from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 @dataclass
 class CommandContext:
     cli_ctx: AzCli
-    cli_options: Optional[Dict] = None
+    cli_options: Dict = field(default_factory=dict)
 
     def __post_init__(self):
         self.aosm_client: HybridNetworkManagementClient = get_mgmt_service_client(

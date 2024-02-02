@@ -8,7 +8,7 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
@@ -38,13 +38,15 @@ class OnboardingBaseCLIHandler(ABC):
         self,
         provided_input_path: Optional[Path] = None,
         aosm_client: Optional[HybridNetworkManagementClient] = None,
-        skip: str = None,
+        skip: Optional[str] = None,
     ):
         """Initialize the CLI handler."""
         self.aosm_client = aosm_client
         self.skip = skip
         # If config file provided (for build, publish and delete)
         if provided_input_path:
+            # Explicitly define types
+            self.config: Union[OnboardingBaseInputConfig, BaseCommonParametersConfig]
             provided_input_path = Path(provided_input_path)
             # If config file is the input.jsonc for build command
             if provided_input_path.suffix == ".jsonc":
@@ -105,6 +107,7 @@ class OnboardingBaseCLIHandler(ABC):
         definition_folder = DefinitionFolder(
             command_context.cli_options["definition_folder"]
         )
+        assert isinstance(self.config, BaseCommonParametersConfig)
         definition_folder.deploy(config=self.config, command_context=command_context)
 
     def delete(self, command_context: CommandContext):
@@ -150,13 +153,13 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_input_config(self, input_config: dict = None) -> OnboardingBaseInputConfig:
+    def _get_input_config(self, input_config: Optional[dict] = None) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
         raise NotImplementedError
 
     @abstractmethod
     def _get_params_config(
-        self, config_file: Path = None
+        self, config_file: Path
     ) -> BaseCommonParametersConfig:
         """Get the parameters config for publish/delete."""
         raise NotImplementedError
@@ -198,7 +201,7 @@ class OnboardingBaseCLIHandler(ABC):
         self,
         template_path: Path,
         acr_artifact_list: list,
-        sa_artifact_list: list = None,
+        sa_artifact_list: Optional[list] = None,
     ):
         """Write the manifest bicep file from given template.
 

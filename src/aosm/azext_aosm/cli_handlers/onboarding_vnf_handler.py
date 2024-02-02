@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import (
@@ -65,14 +65,14 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         return VNF_OUTPUT_FOLDER_FILENAME
 
     def _get_input_config(
-        self, input_config: Dict[str, Any] = None
+        self, input_config: Optional[Dict[str, Any]] = None
     ) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
         return OnboardingVNFInputConfig(**input_config)
 
-    def _get_params_config(self, config_file: dict = None) -> VNFCommonParametersConfig:
+    def _get_params_config(self, config_file: Path) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
             params_dict = json.load(_file)
