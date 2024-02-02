@@ -9,33 +9,48 @@ from pathlib import Path
 
 from knack.log import get_logger
 
-from azext_aosm.build_processors.arm_processor import (
-    AzureCoreArmBuildProcessor)
+from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
-from azext_aosm.cli_handlers.onboarding_nfd_base_handler import \
-    OnboardingBaseCLIHandler
+from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
-    ARTIFACT_LIST_FILENAME, BASE_FOLDER_NAME, MANIFEST_FOLDER_NAME,
-    NSD_BASE_TEMPLATE_FILENAME, NSD_TEMPLATE_FOLDER_NAME, NSD_INPUT_FILENAME,
-    NSD_MANIFEST_TEMPLATE_FILENAME, NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_TEMPLATE_FILENAME,
-    CGS_FILENAME, NSD_DEFINITION_FOLDER_NAME, DEPLOYMENT_PARAMETERS_FILENAME,
-    TEMPLATE_PARAMETERS_FILENAME, CGS_NAME)
+    ARTIFACT_LIST_FILENAME,
+    BASE_FOLDER_NAME,
+    MANIFEST_FOLDER_NAME,
+    NSD_BASE_TEMPLATE_FILENAME,
+    NSD_TEMPLATE_FOLDER_NAME,
+    NSD_INPUT_FILENAME,
+    NSD_MANIFEST_TEMPLATE_FILENAME,
+    NSD_OUTPUT_FOLDER_FILENAME,
+    NSD_DEFINITION_TEMPLATE_FILENAME,
+    CGS_FILENAME,
+    NSD_DEFINITION_FOLDER_NAME,
+    DEPLOYMENT_PARAMETERS_FILENAME,
+    TEMPLATE_PARAMETERS_FILENAME,
+    CGS_NAME,
+)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.common_parameters_config import \
-    NSDCommonParametersConfig
-from azext_aosm.configuration_models.onboarding_nsd_input_config import \
-    OnboardingNSDInputConfig
-from azext_aosm.definition_folder.builder.artifact_builder import \
-    ArtifactDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.bicep_builder import \
-    BicepDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.json_builder import \
-    JSONDefinitionElementBuilder
+from azext_aosm.configuration_models.common_parameters_config import (
+    NSDCommonParametersConfig,
+)
+from azext_aosm.configuration_models.onboarding_nsd_input_config import (
+    OnboardingNSDInputConfig,
+)
+from azext_aosm.definition_folder.builder.artifact_builder import (
+    ArtifactDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
+)
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
-    ManifestArtifactFormat, NetworkFunctionDefinitionVersion,
-    NetworkFunctionDefinitionVersionPropertiesFormat)
+    ManifestArtifactFormat,
+    NetworkFunctionDefinitionVersion,
+    NetworkFunctionDefinitionVersionPropertiesFormat,
+)
 
 logger = get_logger(__name__)
 
@@ -64,9 +79,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             input_config = {}
         return OnboardingNSDInputConfig(**input_config)
 
-    def _get_params_config(
-        self, config_file: dict = None
-    ) -> NSDCommonParametersConfig:
+    def _get_params_config(self, config_file: dict = None) -> NSDCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
             params_dict = json.load(_file)
@@ -83,7 +96,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     artifact_name=resource_element.properties.artifact_name,
                     artifact_version=resource_element.properties.version,
                     default_config=None,
-                    template_path=Path(resource_element.properties.file_path).absolute(),
+                    template_path=Path(
+                        resource_element.properties.file_path
+                    ).absolute(),
                 )
                 # TODO: generalise for nexus in nexus ready stories
                 processor_list.append(
@@ -116,7 +131,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 processor_list.append(nfd_processor)
             else:
                 # TODO: raise more specific error
-                raise ValueError(f"Invalid resource element type: {resource_element.resource_element_type}")
+                raise ValueError(
+                    f"Invalid resource element type: {resource_element.resource_element_type}"
+                )
         return processor_list
 
     def build_base_bicep(self):
@@ -188,9 +205,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             ret_list.append(nf_ret)
 
             # Adding supporting file: config mappings
-            deploy_values = (
-                nf_ret.configuration.parameter_values
-            )
+            deploy_values = nf_ret.configuration.parameter_values
             mapping_file = LocalFileBuilder(
                 Path(
                     NSD_OUTPUT_FOLDER_FILENAME,
@@ -222,9 +237,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
         }
 
-        bicep_contents = self._render_definition_bicep_contents(
-            template_path, params
-        )
+        bicep_contents = self._render_definition_bicep_contents(template_path, params)
         # Generate the nsd bicep file
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME), bicep_contents
@@ -251,7 +264,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
             "nsDesignGroup": self.config.nsd_name,
             "nsDesignVersion": self.config.nsd_version,
-            "nfviSiteName": self.nfvi_site_name
+            "nfviSiteName": self.nfvi_site_name,
         }
         base_file = JSONDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
@@ -259,7 +272,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         return base_file
 
     def _render_config_group_schema_contents(self, complete_schema, nf_names):
-
         required = [nf for nf in nf_names]
 
         params_content = {

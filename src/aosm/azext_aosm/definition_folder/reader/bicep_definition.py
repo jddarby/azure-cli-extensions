@@ -12,10 +12,11 @@ from azure.mgmt.resource.resources.models import DeploymentExtended
 
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.utils import convert_bicep_to_arm
-from azext_aosm.configuration_models.common_parameters_config import \
-    BaseCommonParametersConfig, VNFCommonParametersConfig
-from azext_aosm.definition_folder.reader.base_definition import \
-    BaseDefinitionElement
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+    VNFCommonParametersConfig,
+)
+from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
 from azext_aosm.common.constants import ManifestsExist
 from azure.cli.core import AzCli
 from azure.cli.core.azclierror import AzCLIError
@@ -29,7 +30,12 @@ class BicepDefinitionElement(BaseDefinitionElement):
     """Bicep definition"""
 
     def _validate_and_deploy_arm_template(
-        self, cli_ctx: AzCli, template: Any, parameters: Dict[Any, Any], resource_group: str, resource_client: ResourceManagementClient
+        self,
+        cli_ctx: AzCli,
+        template: Any,
+        parameters: Dict[Any, Any],
+        resource_group: str,
+        resource_client: ResourceManagementClient,
     ) -> Any:
         """
         Validate and deploy an individual ARM template.
@@ -53,18 +59,16 @@ class BicepDefinitionElement(BaseDefinitionElement):
         validation_res = None
         for validation_attempt in range(2):
             try:
-                validation = (
-                    resource_client.deployments.begin_validate(
-                        resource_group_name=resource_group,
-                        deployment_name=deployment_name,
-                        parameters={
-                            "properties": {
-                                "mode": "Incremental",
-                                "template": template,
-                                "parameters": parameters,
-                            }
-                        },
-                    )
+                validation = resource_client.deployments.begin_validate(
+                    resource_group_name=resource_group,
+                    deployment_name=deployment_name,
+                    parameters={
+                        "properties": {
+                            "mode": "Incremental",
+                            "template": template,
+                            "parameters": parameters,
+                        }
+                    },
                 )
                 validation_res = LongRunningOperation(
                     cli_ctx, "Validating ARM template..."
@@ -121,11 +125,11 @@ class BicepDefinitionElement(BaseDefinitionElement):
         """
         try:
             command_context.aosm_client.artifact_manifests.get(
-                    resource_group_name=config.publisherResourceGroupName,
-                    publisher_name=config.publisherName,
-                    artifact_store_name=config.acrArtifactStoreName,
-                    artifact_manifest_name=config.acrManifestName,
-                )
+                resource_group_name=config.publisherResourceGroupName,
+                publisher_name=config.publisherName,
+                artifact_store_name=config.acrArtifactStoreName,
+                artifact_manifest_name=config.acrManifestName,
+            )
             acr_manifest_exists = True
         except azure_exceptions.ResourceNotFoundError:
             acr_manifest_exists = False
@@ -150,7 +154,9 @@ class BicepDefinitionElement(BaseDefinitionElement):
         else:
             return ManifestsExist.NONE
 
-    def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def deploy(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Deploy the element."""
         # TODO: Deploying base takes about 4 minutes, even if everything is already deployed.
         # We should have a check to see if it's already deployed and skip it if so.
@@ -164,7 +170,9 @@ class BicepDefinitionElement(BaseDefinitionElement):
         # breaking this into a separate class (like we do for artifacts) is probably the right
         # thing to do.
         if self.path.name == "artifactManifest":
-            manifests_exist = self._artifact_manifests_exist(config=config, command_context=command_context)
+            manifests_exist = self._artifact_manifests_exist(
+                config=config, command_context=command_context
+            )
             if manifests_exist == ManifestsExist.ALL:
                 # The manifest(s) already exist so nothing else to do for this template
                 logger.info("Artifact manifest(s) already exist; skipping deployment.")
@@ -183,7 +191,10 @@ class BicepDefinitionElement(BaseDefinitionElement):
                 # If none of the manifests exist, we can just go ahead and deploy the template
                 # as normal.
 
-        logger.info("Converting bicep to ARM for '%s' template. This can take a few seconds.", self.path.name)
+        logger.info(
+            "Converting bicep to ARM for '%s' template. This can take a few seconds.",
+            self.path.name,
+        )
         arm_json = convert_bicep_to_arm(self.path / "deploy.bicep")
         logger.info("Deploying ARM template for %s" % self.path.name)
 
@@ -191,9 +202,17 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
         # Create the deploy parameters with only the parameters needed by this template
         parameters_in_template = arm_json["parameters"]
-        parameters = {k: {"value": v} for (k, v) in asdict(config).items() if k in parameters_in_template}
+        parameters = {
+            k: {"value": v}
+            for (k, v) in asdict(config).items()
+            if k in parameters_in_template
+        }
         logger.debug("All parameters provided by user: %s", config)
-        logger.debug("Parameters required by %s in built ARM template:%s ", self.path.name, parameters_in_template)
+        logger.debug(
+            "Parameters required by %s in built ARM template:%s ",
+            self.path.name,
+            parameters_in_template,
+        )
         logger.debug("Filtered parameters: %s", parameters)
 
         self._validate_and_deploy_arm_template(
@@ -204,7 +223,9 @@ class BicepDefinitionElement(BaseDefinitionElement):
             resource_client=command_context.resources_client,
         )
 
-    def delete(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def delete(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Delete the element."""
         # TODO: Implement.
         pass

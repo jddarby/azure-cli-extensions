@@ -14,7 +14,8 @@ class ArmTemplatePropertiesConfig:
     """ARM template configuration."""
 
     artifact_name: str = field(
-        default="", metadata={"comment": "Name of the artifact. Used as internal reference only."}
+        default="",
+        metadata={"comment": "Name of the artifact. Used as internal reference only."},
     )
     version: str = field(
         default="", metadata={"comment": "Version of the artifact in 1.1.1 format."}

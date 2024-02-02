@@ -11,7 +11,6 @@ from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
 @dataclass
 class CommandContext:
-
     cli_ctx: AzCli
     cli_options: Optional[Dict] = None
 

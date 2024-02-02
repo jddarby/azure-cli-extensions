@@ -24,6 +24,7 @@ logger = get_logger(__name__)
 
 class DefinitionFolder:
     """Represents a definition folder for an NFD or NSD."""
+
     def __init__(self, path: Path):
         self.path = path
         try:
@@ -71,10 +72,16 @@ class DefinitionFolder:
             )
         return parsed_elements
 
-    def deploy(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def deploy(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Deploy the resources defined in the folder."""
         for element in self.elements:
-            logger.debug("Deploying definition element %s of type %s", element.path, type(element))
+            logger.debug(
+                "Deploying definition element %s of type %s",
+                element.path,
+                type(element),
+            )
             element.deploy(config=config, command_context=command_context)
 
     def delete(self, resource_client: ResourceManagementClient, clean: bool = False):

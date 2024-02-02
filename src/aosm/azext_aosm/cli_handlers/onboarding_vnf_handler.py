@@ -8,21 +8,25 @@ from typing import Dict, Any
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import (
-    AzureCoreArmBuildProcessor, BaseArmBuildProcessor)
+    AzureCoreArmBuildProcessor,
+    BaseArmBuildProcessor,
+)
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
-from azext_aosm.common.constants import (ARTIFACT_LIST_FILENAME,
-                                         BASE_FOLDER_NAME,
-                                         MANIFEST_FOLDER_NAME,
-                                         NF_DEFINITION_FOLDER_NAME,
-                                         VNF_BASE_TEMPLATE_FILENAME,
-                                         VNF_TEMPLATE_FOLDER_NAME,
-                                         VNF_DEFINITION_TEMPLATE_FILENAME,
-                                         VNF_INPUT_FILENAME,
-                                         VNF_MANIFEST_TEMPLATE_FILENAME,
-                                         VNF_OUTPUT_FOLDER_FILENAME,
-                                         DEPLOYMENT_PARAMETERS_FILENAME,
-                                         VHD_PARAMETERS_FILENAME,
-                                         TEMPLATE_PARAMETERS_FILENAME)
+from azext_aosm.common.constants import (
+    ARTIFACT_LIST_FILENAME,
+    BASE_FOLDER_NAME,
+    MANIFEST_FOLDER_NAME,
+    NF_DEFINITION_FOLDER_NAME,
+    VNF_BASE_TEMPLATE_FILENAME,
+    VNF_TEMPLATE_FOLDER_NAME,
+    VNF_DEFINITION_TEMPLATE_FILENAME,
+    VNF_INPUT_FILENAME,
+    VNF_MANIFEST_TEMPLATE_FILENAME,
+    VNF_OUTPUT_FOLDER_FILENAME,
+    DEPLOYMENT_PARAMETERS_FILENAME,
+    VHD_PARAMETERS_FILENAME,
+    TEMPLATE_PARAMETERS_FILENAME,
+)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
     OnboardingVNFInputConfig,
@@ -60,15 +64,15 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return VNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_input_config(self, input_config: Dict[str, Any] = None) -> OnboardingVNFInputConfig:
+    def _get_input_config(
+        self, input_config: Dict[str, Any] = None
+    ) -> OnboardingVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
         return OnboardingVNFInputConfig(**input_config)
 
-    def _get_params_config(
-        self, config_file: dict = None
-    ) -> VNFCommonParametersConfig:
+    def _get_params_config(self, config_file: dict = None) -> VNFCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
             params_dict = json.load(_file)
@@ -195,7 +199,6 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
             # For each arm template, generate nf application
             if isinstance(processor, BaseArmBuildProcessor):
-
                 acr_nf_application_list.append(nf_application)
 
                 # Generate local file for template_parameters + add to supporting files list
@@ -238,11 +241,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             "sa_nf_application": sa_nf_application_list[0],
             "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
             "vhd_parameters_file": VHD_PARAMETERS_FILENAME,
-            "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME
+            "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
         }
-        bicep_contents = self._render_definition_bicep_contents(
-            template_path, params
-        )
+        bicep_contents = self._render_definition_bicep_contents(template_path, params)
 
         # Create a bicep element
         # + add its supporting files (deploymentParameters, vhdParameters and templateParameters)
@@ -268,10 +269,10 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             "publisherResourceGroupName": self.config.publisher_resource_group_name,
             "acrArtifactStoreName": self.config.acr_artifact_store_name,
             "saArtifactStoreName": self.config.blob_artifact_store_name,
-            "acrManifestName":  self.config.acr_artifact_store_name + "-manifest",
+            "acrManifestName": self.config.acr_artifact_store_name + "-manifest",
             "saManifestName": self.config.blob_artifact_store_name + "-manifest",
             "nfDefinitionGroup": self.config.nf_name,
-            "nfDefinitionVersion": self.config.version
+            "nfDefinitionVersion": self.config.version,
         }
         base_file = JSONDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)

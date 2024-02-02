@@ -68,7 +68,9 @@ class HelmChartProcessor(BaseInputProcessor):
         :return: A list of artifacts for the artifact manifest.
         :rtype: List[ManifestArtifactFormat]
         """
-        logger.debug("Getting artifact manifest list for Helm chart input %s.", self.name)
+        logger.debug(
+            "Getting artifact manifest list for Helm chart input %s.", self.name
+        )
         artifact_manifest_list = []
         artifact_manifest_list.append(
             ManifestArtifactFormat(

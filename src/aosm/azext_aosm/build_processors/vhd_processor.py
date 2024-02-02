@@ -9,17 +9,26 @@ from typing import List, Tuple
 from knack.log import get_logger
 
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
-from azext_aosm.common.artifact import (BaseArtifact,
-                                        BlobStorageAccountArtifact,
-                                        LocalFileStorageAccountArtifact)
+from azext_aosm.common.artifact import (
+    BaseArtifact,
+    BlobStorageAccountArtifact,
+    LocalFileStorageAccountArtifact,
+)
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
 from azext_aosm.vendored_sdks.models import (
-    ApplicationEnablement, ArtifactType,
-    AzureCoreNetworkFunctionVhdApplication, AzureCoreVhdImageArtifactProfile,
-    AzureCoreVhdImageDeployMappingRuleProfile, DependsOnProfile,
-    ManifestArtifactFormat, ReferencedResource, ResourceElementTemplate,
-    VhdImageArtifactProfile, VhdImageMappingRuleProfile)
+    ApplicationEnablement,
+    ArtifactType,
+    AzureCoreNetworkFunctionVhdApplication,
+    AzureCoreVhdImageArtifactProfile,
+    AzureCoreVhdImageDeployMappingRuleProfile,
+    DependsOnProfile,
+    ManifestArtifactFormat,
+    ReferencedResource,
+    ResourceElementTemplate,
+    VhdImageArtifactProfile,
+    VhdImageMappingRuleProfile,
+)
 
 logger = get_logger(__name__)
 
@@ -108,8 +117,9 @@ class VHDProcessor(BaseInputProcessor):
 
         return AzureCoreNetworkFunctionVhdApplication(
             name=self.name,
-            depends_on_profile=DependsOnProfile(install_depends_on=[],
-                                                uninstall_depends_on=[], update_depends_on=[]),
+            depends_on_profile=DependsOnProfile(
+                install_depends_on=[], uninstall_depends_on=[], update_depends_on=[]
+            ),
             artifact_profile=self._generate_artifact_profile(),
             deploy_parameters_mapping_rule_profile=self._generate_mapping_rule_profile(),
         )

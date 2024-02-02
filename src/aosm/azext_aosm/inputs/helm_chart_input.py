@@ -281,7 +281,9 @@ class HelmChartInput(BaseInput):
         :rtype: List[HelmChartInput]
         :raises MissingChartDependencyError: If a dependency chart is missing.
         """
-        logger.debug("Getting dependency charts for Helm chart input, '%s'", self.artifact_name)
+        logger.debug(
+            "Getting dependency charts for Helm chart input, '%s'", self.artifact_name
+        )
         # All dependency charts should be located in the charts directory.
         dependency_chart_dir = Path(self._chart_dir, "charts")
 
