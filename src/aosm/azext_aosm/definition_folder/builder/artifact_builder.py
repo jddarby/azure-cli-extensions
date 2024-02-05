@@ -33,7 +33,8 @@ class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
         """Write the definition element to disk."""
         self.path.mkdir(exist_ok=True)
         artifacts_list = []
-        # TODO: handle converting path to string that doesn't couple this code to the artifact. Probably should be in to_dict method.
+        # TODO: Handle converting path to string that doesn't couple this code to the artifact.
+        #       Probably should be in to_dict method.
         for artifact in self.artifacts:
             logger.debug(
                 "Writing artifact %s as: %s", artifact.artifact_name, artifact.to_dict()

@@ -48,11 +48,7 @@ from azext_aosm.definition_folder.builder.json_builder import (
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm.vendored_sdks.models import (
-    ManifestArtifactFormat,
-    NetworkFunctionDefinitionVersion,
-    NetworkFunctionDefinitionVersionPropertiesFormat,
-)
+from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 
 logger = get_logger(__name__)
 
@@ -108,9 +104,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
                 )
             elif resource_element.resource_element_type == "NF":
-                # TODO: change artifact name and version to the nfd name and version or justify why it was this in the first place
+                # TODO: change artifact name and version to the nfd name and version or justify why it was this
+                #       in the first place
                 # AC4 note: I couldn't find a reference in the old code, but this
-                # does ring a bell. Was it so the artifact manifest didn't get broken with changes to NF versions? I.e., you could make an NF version change in CGV, and the artifact manifest, which is immutable, would still be valid?
+                # does ring a bell. Was it so the artifact manifest didn't get broken with changes to NF versions?
+                # I.e., you could make an NF version change in CGV, and the artifact manifest, which is immutable,
+                # would still be valid?
                 # I am concerned that if we have multiple NFs we will have clashing artifact names.
                 # I'm not changing the behaviour right now as it's too high risk, but we should look again here.
                 nfdv_object = self._get_nfdv(resource_element.properties)
@@ -274,15 +273,15 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         )
         return base_file
 
-    def _render_config_group_schema_contents(self, complete_schema, nf_names):
-        required = [nf for nf in nf_names]
+    @staticmethod
+    def _render_config_group_schema_contents(complete_schema, nf_names):
 
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
             "title": f"{CGS_NAME}",
             "type": "object",
             "properties": complete_schema,
-            "required": required,
+            "required": nf_names,
         }
         return LocalFileBuilder(
             Path(

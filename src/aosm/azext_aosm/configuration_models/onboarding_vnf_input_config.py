@@ -36,7 +36,8 @@ class VhdImageConfig:
         metadata={
             "comment": (
                 "Supply either file_path or blob_sas_url, not both.\n"
-                "File path (absolute or relative to this configuration file) of the artifact you wish to upload from your local disk.\n"
+                "File path (absolute or relative to this configuration file) of the artifact you wish to upload from "
+                "your local disk.\n"
                 "Leave as empty string if not required. Use Linux slash (/) file separator even if running on Windows."
             )
         },
@@ -45,9 +46,9 @@ class VhdImageConfig:
         default="",
         metadata={
             "comment": (
-                "Supply either file_path or blob_sas_url, not both.\nSAS URL of the blob artifact you wish to copy to your Artifact Store.\n"
-                "Leave as empty string if not required."
-                "Use Linux slash (/) file separator even if running on Windows."
+                "Supply either file_path or blob_sas_url, not both.\nSAS URL of the blob artifact you wish to copy to "
+                "your Artifact Store.\n"
+                "Leave as empty string if not required. Use Linux slash (/) file separator even if running on Windows."
             )
         },
     )
@@ -125,7 +126,8 @@ class OnboardingVNFInputConfig(OnboardingNFDBaseInputConfig):
     arm_templates: List[ArmTemplatePropertiesConfig] = field(
         default_factory=lambda: [ArmTemplatePropertiesConfig()],
         metadata={
-            "comment": "ARM template configuration. The ARM templates given here would deploy a VM if run. They will be used to generate the VNF."
+            "comment": "ARM template configuration. The ARM templates given here would deploy a VM if run. They will "
+            "be used to generate the VNF."
         },
     )
 

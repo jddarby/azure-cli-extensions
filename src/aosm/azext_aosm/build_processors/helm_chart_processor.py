@@ -202,7 +202,8 @@ class HelmChartProcessor(BaseInputProcessor):
 
         return images
 
-    def _find_image_lines(self, chart: HelmChartInput, image_lines: Set[str]) -> None:
+    @staticmethod
+    def _find_image_lines(chart: HelmChartInput, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 

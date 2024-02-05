@@ -279,7 +279,8 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
         return base_file
 
-    def _get_default_config(self, vhd):
+    @staticmethod
+    def _get_default_config(vhd):
         default_config = {}
         if vhd.image_disk_size_GB:
             default_config.update({"image_disk_size_GB": vhd.image_disk_size_GB})

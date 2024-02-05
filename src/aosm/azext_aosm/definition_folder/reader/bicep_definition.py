@@ -2,26 +2,26 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-from dataclasses import asdict
 import time
+from dataclasses import asdict
 from typing import Any, Dict
 
+from azure.cli.core import AzCli
+from azure.cli.core.azclierror import AzCLIError
 from azure.cli.core.commands import LongRunningOperation
+from azure.core import exceptions as azure_exceptions
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import DeploymentExtended
+from knack.log import get_logger
 
 from azext_aosm.common.command_context import CommandContext
+from azext_aosm.common.constants import ManifestsExist
 from azext_aosm.common.utils import convert_bicep_to_arm
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
     VNFCommonParametersConfig,
 )
 from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
-from azext_aosm.common.constants import ManifestsExist
-from azure.cli.core import AzCli
-from azure.cli.core.azclierror import AzCLIError
-from azure.core import exceptions as azure_exceptions
-from knack.log import get_logger
 
 logger = get_logger(__name__)
 
@@ -29,8 +29,8 @@ logger = get_logger(__name__)
 class BicepDefinitionElement(BaseDefinitionElement):
     """Bicep definition"""
 
+    @staticmethod
     def _validate_and_deploy_arm_template(
-        self,
         cli_ctx: AzCli,
         template: Any,
         parameters: Dict[Any, Any],
@@ -151,8 +151,8 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
         if acr_manifest_exists:
             return ManifestsExist.ALL
-        else:
-            return ManifestsExist.NONE
+
+        return ManifestsExist.NONE
 
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
@@ -173,7 +173,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             manifests_exist = self._artifact_manifests_exist(
                 config=config, command_context=command_context
             )
-            if manifests_exist == ManifestsExist.ALL:
+            if manifests_exist == ManifestsExist.ALL:  # pylint: disable=no-else-return
                 # The manifest(s) already exist so nothing else to do for this template
                 logger.info("Artifact manifest(s) already exist; skipping deployment.")
                 return
@@ -196,7 +196,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             self.path.name,
         )
         arm_json = convert_bicep_to_arm(self.path / "deploy.bicep")
-        logger.info("Deploying ARM template for %s" % self.path.name)
+        logger.info("Deploying ARM template for %s", self.path.name)
 
         # TODO: handle creating the resource group if it doesn't exist
 
@@ -228,4 +228,4 @@ class BicepDefinitionElement(BaseDefinitionElement):
     ):
         """Delete the element."""
         # TODO: Implement.
-        pass
+        raise NotImplementedError

@@ -119,8 +119,12 @@ class OnboardingBaseCLIHandler(ABC):
         # TODO: Implement
 
     def pre_validate_build(self):
-        """Perform all validations that need to be done before running the build command."""
-        pass
+        """
+        Perform all validations that need to be done before running the build command.
+
+        This method must be overwritten by subclasses to be of use, but is not abstract as it's
+        allowed to not perform any pre-validation, in which case this base method just does nothing.
+        """
 
     @abstractmethod
     def build_base_bicep(self):
@@ -153,18 +157,19 @@ class OnboardingBaseCLIHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_input_config(self, input_config: Optional[dict] = None) -> OnboardingBaseInputConfig:
+    def _get_input_config(
+        self, input_config: Optional[dict] = None
+    ) -> OnboardingBaseInputConfig:
         """Get the configuration for the command."""
         raise NotImplementedError
 
     @abstractmethod
-    def _get_params_config(
-        self, config_file: Path
-    ) -> BaseCommonParametersConfig:
+    def _get_params_config(self, config_file: Path) -> BaseCommonParametersConfig:
         """Get the parameters config for publish/delete."""
         raise NotImplementedError
 
-    def _read_input_config_from_file(self, input_json_path: Path) -> dict:
+    @staticmethod
+    def _read_input_config_from_file(input_json_path: Path) -> dict:
         """Reads the input JSONC file, removes comments.
 
         Returns config as dictionary.
@@ -175,7 +180,8 @@ class OnboardingBaseCLIHandler(ABC):
 
         return config_dict
 
-    def _render_base_bicep_contents(self, template_path):
+    @staticmethod
+    def _render_base_bicep_contents(template_path):
         """Write the base bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
@@ -186,7 +192,8 @@ class OnboardingBaseCLIHandler(ABC):
         bicep_contents: str = template.render()
         return bicep_contents
 
-    def _render_definition_bicep_contents(self, template_path: Path, params):
+    @staticmethod
+    def _render_definition_bicep_contents(template_path: Path, params):
         """Write the definition bicep file from given template."""
         with open(template_path, "r", encoding="UTF-8") as f:
             template: Template = Template(
@@ -197,8 +204,8 @@ class OnboardingBaseCLIHandler(ABC):
         bicep_contents: str = template.render(params)
         return bicep_contents
 
+    @staticmethod
     def _render_manifest_bicep_contents(
-        self,
         template_path: Path,
         acr_artifact_list: list,
         sa_artifact_list: Optional[list] = None,
@@ -218,7 +225,8 @@ class OnboardingBaseCLIHandler(ABC):
         )
         return bicep_contents
 
-    def _get_template_path(self, definition_type: str, template_name: str) -> Path:
+    @staticmethod
+    def _get_template_path(definition_type: str, template_name: str) -> Path:
         """Get the path to a template."""
         return (
             Path(__file__).parent.parent
@@ -332,7 +340,8 @@ class OnboardingBaseCLIHandler(ABC):
         print(f"Empty configuration has been written to {output_path.name}")
         logger.info("Empty  configuration has been written to %s", output_path.name)
 
-    def _check_for_overwrite(self, output_path: Path):
+    @staticmethod
+    def _check_for_overwrite(output_path: Path):
         """Check that the input file exists."""
         if output_path.exists():
             carry_on = input(
@@ -357,7 +366,8 @@ class OnboardingBaseCLIHandler(ABC):
             ),
         )
 
-    def _build_deploy_params_schema(self, schema_properties):
+    @staticmethod
+    def _build_deploy_params_schema(schema_properties):
         """Build the schema for deployParameters.json."""
         schema_contents = {
             "$schema": "https://json-schema.org/draft-07/schema#",

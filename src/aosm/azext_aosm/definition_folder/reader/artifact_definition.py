@@ -3,19 +3,17 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-import json
 import inspect
+import json
 from pathlib import Path
-from typing import List
+
+from knack.log import get_logger
 
 from azext_aosm.common.artifact import ARTIFACT_TYPE_TO_CLASS, BaseArtifact
-
+from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
 )
-from azext_aosm.common.command_context import CommandContext
-from knack.log import get_logger
-
 from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
 
 logger = get_logger(__name__)
@@ -34,7 +32,8 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
 
     # TODO: add what types are expected, and check they are those types
     # For filepaths, we must convert to paths again
-    def create_artifact_object(self, artifact: dict) -> BaseArtifact:
+    @staticmethod
+    def create_artifact_object(artifact: dict) -> BaseArtifact:
         """
         Use reflection (via the inspect module) to identify the artifact class's required fields
         and create an instance of the class using the supplied artifact dict.
@@ -75,7 +74,7 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
             )
             artifact.upload(config=config, command_context=command_context)
 
-    def delete(self):
+    def delete(self, config: BaseCommonParametersConfig, command_context: CommandContext):
         """Delete the element."""
         # TODO: Implement?
-        pass
+        raise NotImplementedError

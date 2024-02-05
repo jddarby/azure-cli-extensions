@@ -55,8 +55,10 @@ class HelmPackageConfig:
         default="",
         metadata={
             "comment": (
-                "The file path to the helm chart on the local disk, relative to the directory from which the command is run.\n"
-                "Accepts .tgz, .tar or .tar.gz, or an unpacked directory. Use Linux slash (/) file separator even if running on Windows."
+                "The file path to the helm chart on the local disk, relative to the directory from which the "
+                "command is run.\n"
+                "Accepts .tgz, .tar or .tar.gz, or an unpacked directory. Use Linux slash (/) file separator "
+                "even if running on Windows."
             )
         },
     )
@@ -64,8 +66,8 @@ class HelmPackageConfig:
         default="",
         metadata={
             "comment": (
-                "The file path (absolute or relative to this configuration file) of YAML values file on the local disk which "
-                "will be used instead of the values.yaml file present in the helm chart.\n"
+                "The file path (absolute or relative to this configuration file) of YAML values file on the "
+                "local disk which will be used instead of the values.yaml file present in the helm chart.\n"
                 "Accepts .yaml or .yml. Use Linux slash (/) file separator even if running on Windows."
             )
         },

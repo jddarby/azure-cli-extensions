@@ -24,7 +24,8 @@ class ArmTemplatePropertiesConfig:
         default="",
         metadata={
             "comment": (
-                "File path (absolute or relative to this configuration file) of the artifact you wish to upload from your local disk.\n"
+                "File path (absolute or relative to this configuration file) of the artifact you wish to upload from "
+                "your local disk.\n"
                 "Use Linux slash (/) file separator even if running on Windows."
             )
         },

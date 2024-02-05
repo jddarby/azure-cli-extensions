@@ -4,20 +4,19 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
+from typing import Any, Dict, List
 
+from knack.log import get_logger
+
+from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
 )
-from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
-from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
 from azext_aosm.definition_folder.reader.artifact_definition import (
     ArtifactDefinitionElement,
 )
-from azure.mgmt.resource import ResourceManagementClient
-from azext_aosm.common.command_context import CommandContext
-from knack.log import get_logger
-
-from typing import Any, Dict, List
+from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
+from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
 
 logger = get_logger(__name__)
 
@@ -84,7 +83,12 @@ class DefinitionFolder:
             )
             element.deploy(config=config, command_context=command_context)
 
-    def delete(self, config: BaseCommonParametersConfig, command_context: CommandContext, clean: bool = False):
+    def delete(
+        self,
+        config: BaseCommonParametersConfig,
+        command_context: CommandContext,
+        clean: bool = False,
+    ):
         """Delete the definition folder."""
         for element in reversed(self.elements):
             if clean or not element.only_delete_on_clean:
