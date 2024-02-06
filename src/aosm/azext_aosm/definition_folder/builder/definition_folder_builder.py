@@ -4,9 +4,12 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-from pathlib import Path
 import shutil
+from pathlib import Path
+from typing import List
+
 from azure.cli.core.azclierror import UnclassifiedUserFault
+
 from azext_aosm.definition_folder.builder.base_builder import (
     BaseDefinitionElementBuilder,
 )
@@ -16,8 +19,6 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
-
-from typing import List
 
 
 class DefinitionFolderBuilder:

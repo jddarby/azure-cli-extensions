@@ -4,7 +4,8 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import (
@@ -15,24 +16,23 @@ from azext_aosm.build_processors.vhd_processor import VHDProcessor
 from azext_aosm.common.constants import (
     ARTIFACT_LIST_FILENAME,
     BASE_FOLDER_NAME,
+    DEPLOYMENT_PARAMETERS_FILENAME,
     MANIFEST_FOLDER_NAME,
     NF_DEFINITION_FOLDER_NAME,
+    TEMPLATE_PARAMETERS_FILENAME,
+    VHD_PARAMETERS_FILENAME,
     VNF_BASE_TEMPLATE_FILENAME,
-    VNF_TEMPLATE_FOLDER_NAME,
     VNF_DEFINITION_TEMPLATE_FILENAME,
     VNF_INPUT_FILENAME,
     VNF_MANIFEST_TEMPLATE_FILENAME,
     VNF_OUTPUT_FOLDER_FILENAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
-    VHD_PARAMETERS_FILENAME,
-    TEMPLATE_PARAMETERS_FILENAME,
-)
-from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
-from azext_aosm.configuration_models.onboarding_vnf_input_config import (
-    OnboardingVNFInputConfig,
+    VNF_TEMPLATE_FOLDER_NAME,
 )
 from azext_aosm.configuration_models.common_parameters_config import (
     VNFCommonParametersConfig,
+)
+from azext_aosm.configuration_models.onboarding_vnf_input_config import (
+    OnboardingVNFInputConfig,
 )
 from azext_aosm.definition_folder.builder.artifact_builder import (
     ArtifactDefinitionElementBuilder,
@@ -43,6 +43,7 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
 

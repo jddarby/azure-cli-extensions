@@ -16,20 +16,19 @@ from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCL
 from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
     ARTIFACT_LIST_FILENAME,
     BASE_FOLDER_NAME,
+    CGS_FILENAME,
+    CGS_NAME,
+    DEPLOYMENT_PARAMETERS_FILENAME,
     MANIFEST_FOLDER_NAME,
     NSD_BASE_TEMPLATE_FILENAME,
-    NSD_TEMPLATE_FOLDER_NAME,
+    NSD_DEFINITION_FOLDER_NAME,
+    NSD_DEFINITION_TEMPLATE_FILENAME,
     NSD_INPUT_FILENAME,
     NSD_MANIFEST_TEMPLATE_FILENAME,
     NSD_OUTPUT_FOLDER_FILENAME,
-    NSD_DEFINITION_TEMPLATE_FILENAME,
-    CGS_FILENAME,
-    NSD_DEFINITION_FOLDER_NAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
+    NSD_TEMPLATE_FOLDER_NAME,
     TEMPLATE_PARAMETERS_FILENAME,
-    CGS_NAME,
 )
-from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.common_parameters_config import (
     NSDCommonParametersConfig,
 )
@@ -45,6 +44,7 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
@@ -275,7 +275,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     @staticmethod
     def _render_config_group_schema_contents(complete_schema, nf_names):
-
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
             "title": f"{CGS_NAME}",

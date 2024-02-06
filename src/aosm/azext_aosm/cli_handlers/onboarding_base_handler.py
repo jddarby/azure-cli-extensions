@@ -9,24 +9,25 @@ from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Optional, Union
+
 from azure.cli.core.azclierror import UnclassifiedUserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
+from azext_aosm.common.command_context import CommandContext
+from azext_aosm.common.constants import DEPLOYMENT_PARAMETERS_FILENAME
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+)
 from azext_aosm.configuration_models.onboarding_base_input_config import (
     OnboardingBaseInputConfig,
 )
 from azext_aosm.definition_folder.builder.definition_folder_builder import (
     DefinitionFolderBuilder,
 )
-from azext_aosm.definition_folder.reader.definition_folder import DefinitionFolder
-from azext_aosm.common.command_context import CommandContext
-from azext_aosm.configuration_models.common_parameters_config import (
-    BaseCommonParametersConfig,
-)
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.reader.definition_folder import DefinitionFolder
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from azext_aosm.common.constants import DEPLOYMENT_PARAMETERS_FILENAME
 
 logger = get_logger(__name__)
 

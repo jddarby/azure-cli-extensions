@@ -2,31 +2,31 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-from abc import ABC, abstractmethod
-from functools import lru_cache
 import json
 import math
-from pathlib import Path
 import shutil
 import subprocess
+from abc import ABC, abstractmethod
+from functools import lru_cache
+from pathlib import Path
 from time import sleep
 from typing import Any, MutableMapping, Optional
 
-from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
-    BlobClient,
-    BlobType,
-)
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from knack.log import get_logger
+from knack.util import CLIError
+from oras.client import OrasClient
+
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.utils import convert_bicep_to_arm
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
     VNFCommonParametersConfig,
 )
-from knack.util import CLIError
-from knack.log import get_logger
-from oras.client import OrasClient
-
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
+    BlobClient,
+    BlobType,
+)
 
 logger = get_logger(__name__)
 

@@ -5,11 +5,13 @@
 
 import json
 from pathlib import Path
-from typing import List, Tuple, Any, Dict
+from typing import Any, Dict, List, Tuple
+
 from knack.log import get_logger
 
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.artifact import BaseArtifact, LocalFileACRArtifact
+from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
@@ -27,7 +29,6 @@ from azext_aosm.vendored_sdks.models import (
     ReferencedResource,
     TemplateType,
 )
-from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME
 
 logger = get_logger(__name__)
 

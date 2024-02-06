@@ -6,10 +6,10 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
 )
-from azext_aosm.common.command_context import CommandContext
 
 
 class BaseDefinitionElement(ABC):

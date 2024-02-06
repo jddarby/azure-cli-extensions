@@ -4,16 +4,17 @@
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
-from pathlib import Path
+from azure.cli.core.azclierror import UnrecognizedArgumentError
+from azure.cli.core.commands import AzCliCommand
+
 from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandler
-from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
+from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME, CNF, VNF
-from azure.cli.core.commands import AzCliCommand
-from azure.cli.core.azclierror import UnrecognizedArgumentError
 
 
 def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
@@ -30,7 +31,9 @@ def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
         raise UnrecognizedArgumentError("Invalid definition type")
 
 
-def onboard_nfd_build(definition_type: str, config_file: Path, skip: Optional[str] = None):
+def onboard_nfd_build(
+    definition_type: str, config_file: Path, skip: Optional[str] = None
+):
     """Build the NF definition."""
     # Declare types explicitly
     handler: OnboardingCNFCLIHandler | OnboardingVNFCLIHandler

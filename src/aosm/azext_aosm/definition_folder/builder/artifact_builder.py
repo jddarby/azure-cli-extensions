@@ -7,8 +7,9 @@ import json
 from pathlib import Path
 from typing import List
 
-from azext_aosm.common.artifact import BaseArtifact
 from knack.log import get_logger
+
+from azext_aosm.common.artifact import BaseArtifact
 
 from .base_builder import BaseDefinitionElementBuilder
 
