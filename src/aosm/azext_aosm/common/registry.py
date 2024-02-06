@@ -118,6 +118,7 @@ class Registry:
         images = {}
         for namespace in self.registry_namespaces:
             # TODO: should this have a try and except block?
+            # TODO: this should use real username and password
             url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
             response = requests.get(url, auth=HTTPBasicAuth("admin", "adminpass!"))
 
