@@ -24,7 +24,7 @@ from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
 )
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.common.constants import DEPLOYMENT_PARAMETERS_FILENAME
 

@@ -15,7 +15,7 @@ from azext_aosm.common.artifact import (
     LocalFileACRArtifact,
     RemoteACRArtifact,
 )
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,

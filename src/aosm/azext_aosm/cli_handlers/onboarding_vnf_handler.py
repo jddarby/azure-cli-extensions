@@ -27,7 +27,7 @@ from azext_aosm.common.constants import (
     VHD_PARAMETERS_FILENAME,
     TEMPLATE_PARAMETERS_FILENAME,
 )
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
     OnboardingVNFInputConfig,
 )
@@ -203,8 +203,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
                 # Generate local file for template_parameters + add to supporting files list
                 params = (
-                    nf_application.deploy_parameters_mapping_rule_profile.template_mapping_rule_profile.template_parameters
-                )
+                    nf_application.deploy_parameters_mapping_rule_profile.template_mapping_rule_profile
+                ).template_parameters  # Funky formatting is to stop black from reformatting to too long line
+
                 template_name = TEMPLATE_PARAMETERS_FILENAME
                 logger.info(
                     "Created templatateParameters as supporting file for nfDefinition bicep"
@@ -215,8 +216,8 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 sa_nf_application_list.append(nf_application)
                 # Generate local file for vhd_parameters
                 params = (
-                    nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
-                )
+                    nf_application.deploy_parameters_mapping_rule_profile.vhd_image_mapping_rule_profile
+                ).user_configuration  # Funky formatting is to stop black from reformatting to too long line
                 template_name = VHD_PARAMETERS_FILENAME
             else:
                 raise TypeError(f"Type: {type(processor)} is not valid")

@@ -18,7 +18,7 @@ from knack.log import get_logger
 
 from azext_aosm.build_processors.helm_chart_processor import HelmChartProcessor
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.common.exceptions import TemplateValidationError
 from azext_aosm.configuration_models.onboarding_cnf_input_config import (
     OnboardingCNFInputConfig,

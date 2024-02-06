@@ -10,7 +10,7 @@ from knack.log import get_logger
 
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.artifact import BaseArtifact, LocalFileACRArtifact
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
     ArmResourceDefinitionResourceElementTemplate,

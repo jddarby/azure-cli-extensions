@@ -14,7 +14,7 @@ from azext_aosm.common.artifact import (
     BlobStorageAccountArtifact,
     LocalFileStorageAccountArtifact,
 )
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,

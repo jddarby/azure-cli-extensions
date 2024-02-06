@@ -29,7 +29,7 @@ from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
     TEMPLATE_PARAMETERS_FILENAME,
     CGS_NAME,
 )
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.configuration_models.common_parameters_config import (
     NSDCommonParametersConfig,
 )
