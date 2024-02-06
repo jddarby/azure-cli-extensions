@@ -119,6 +119,7 @@ class Registry:
         for namespace in self.registry_namespaces:
             # TODO: should this have a try and except block?
             # TODO: this should use real username and password
+            # TODO: I didn't actually test this if it works from code but in the command line I tried: "curl -u username:password -X GET https://TestNsdTest481729ba55.azurecr.io/v2/samples/cust-core-mco-eng-docker/ifxr/tags/list" and that worked. You can ask Jacob how to find the username and password for an ACR
             url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
             response = requests.get(url, auth=HTTPBasicAuth("admin", "adminpass!"))
 
