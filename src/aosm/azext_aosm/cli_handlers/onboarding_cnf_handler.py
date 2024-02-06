@@ -33,6 +33,7 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
+from azext_aosm.common.registry import RegistryHandler
 from azext_aosm.common.constants import (
     ARTIFACT_LIST_FILENAME,
     BASE_FOLDER_NAME,
@@ -85,6 +86,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def _get_processor_list(self) -> [HelmChartProcessor]:
         processor_list = []
+
+        registry_handler = RegistryHandler(self.config.images.image_sources)
+
         # for each helm package, instantiate helm processor
         for helm_package in self.config.helm_packages:
             if helm_package.default_values:
@@ -105,10 +109,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 default_config_path=helm_package.default_values,
             )
             helm_processor = HelmChartProcessor(
-                helm_package.name,
-                helm_input,
-                self.config.images.source_registry,
-                self.config.images.source_registry_namespace,
+                helm_package.name, helm_input, registry_handler
             )
             processor_list.append(helm_processor)
         return processor_list
@@ -121,9 +122,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             validation_output = helm_processor.input_artifact.validate_template()
 
             if validation_output:
-                validation_errors[
-                    helm_processor.input_artifact.artifact_name
-                ] = validation_output
+                validation_errors[helm_processor.input_artifact.artifact_name] = (
+                    validation_output
+                )
 
         if validation_errors:
             # Create an error file using a j2 template

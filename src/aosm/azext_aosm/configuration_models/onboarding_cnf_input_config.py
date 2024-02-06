@@ -18,32 +18,20 @@ from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
 class ImageSourceConfig:
     """Object representing an image configuration"""
 
-    source_registry: str = field(
-        default="",
+    image_sources: list = field(
+        default_factory=lambda: [],
         metadata={
             "comment": (
-                "Login server of the source acr registry from which to pull the image(s).\n"
-                "For example sourceacr.azurecr.io. "
-            )
-        },
-    )
-    source_registry_namespace: str | None = field(
-        default="",
-        metadata={
-            "comment": (
-                "Optional. Namespace of the repository of the source acr registry from which to pull.\n"
-                "For example if your repository is samples/prod/nginx then set this to samples/prod.\n"
-                "Leave blank if the image is in the root namespace.\n"
-                "See https://learn.microsoft.com/en-us/azure/container-registry/"
-                "container-registry-best-practices#repository-namespaces for further details."
+                "List of registries from which to pull the image(s).\n"
+                "For example [sourceacr.azurecr.io/test, myacr2.azurecr.io]."
             )
         },
     )
 
     def validate(self):
         """Validate the image configuration."""
-        if not self.source_registry:
-            raise ValidationError("Source registry must be set")
+        if not self.image_sources:
+            raise ValidationError("Image sources must be set")
 
 
 @dataclass

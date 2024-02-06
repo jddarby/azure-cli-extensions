@@ -17,6 +17,7 @@ from azext_aosm.common.artifact import (
 )
 from azext_aosm.common.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
+from azext_aosm.common.registry import RegistryHandler
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,
     ArtifactType,
@@ -53,12 +54,10 @@ class HelmChartProcessor(BaseInputProcessor):
         self,
         name: str,
         input_artifact: HelmChartInput,
-        source_registry: str,
-        source_registry_namespace: str,
+        registry_handler: RegistryHandler,
     ):
         super().__init__(name, input_artifact)
-        self.source_registry = source_registry
-        self.source_registry_namespace = source_registry_namespace
+        self.registry_handler = registry_handler
         self.input_artifact: HelmChartInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -112,13 +111,23 @@ class HelmChartProcessor(BaseInputProcessor):
         artifact_details.append(helm_chart_details)
         for image_name, image_version in self._find_chart_images():
             # We only support remote ACR artifacts for container images
+
+            registry_and_namespace = self.registry_handler.find_registry_for_image(
+                image_name
+            )
+            if registry_and_namespace is not None:
+                registry = registry_and_namespace[0]
+                namespace = registry_and_namespace[1]
+            else:
+                continue
+
             artifact_details.append(
                 RemoteACRArtifact(
                     artifact_name=image_name,
                     artifact_type=ArtifactType.OCI_ARTIFACT.value,
                     artifact_version=image_version,
-                    source_registry=self.source_registry,
-                    source_registry_namespace=self.source_registry_namespace,
+                    source_registry=registry,
+                    source_registry_namespace=namespace,
                 )
             )
 

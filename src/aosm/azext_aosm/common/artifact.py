@@ -12,11 +12,18 @@ import subprocess
 from time import sleep
 from typing import Dict, Optional
 
-from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import BlobClient, BlobType
+from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
+    BlobClient,
+    BlobType,
+)
 from azext_aosm.vendored_sdks.models import ManifestArtifactFormat
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.common.command_context import CommandContext
-from azext_aosm.configuration_models.common_parameters_config import BaseCommonParametersConfig, VNFCommonParametersConfig
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+    VNFCommonParametersConfig,
+)
+from azext_aosm.common.registry import Registry
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from knack.util import CLIError
 from knack.log import get_logger
@@ -28,6 +35,7 @@ logger = get_logger(__name__)
 # TODO: Split these out into separate files, probably in a new artifacts module
 class BaseArtifact(ABC):
     """Abstract base class for artifacts."""
+
     def __init__(self, artifact_name: str, artifact_type: str, artifact_version: str):
         self.artifact_name = artifact_name
         self.artifact_type = artifact_type
@@ -36,13 +44,13 @@ class BaseArtifact(ABC):
     def to_dict(self) -> dict:
         """Convert an instance to a dict."""
         output_dict = {"type": ARTIFACT_CLASS_TO_TYPE[type(self)]}
-        output_dict.update(
-            {k: vars(self)[k] for k in vars(self)}
-        )
+        output_dict.update({k: vars(self)[k] for k in vars(self)})
         return output_dict
 
     @abstractmethod
-    def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
         pass
 
@@ -51,7 +59,9 @@ class BaseACRArtifact(BaseArtifact):
     """Abstract base class for ACR artifacts."""
 
     @abstractmethod
-    def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
         pass
 
@@ -105,7 +115,11 @@ class BaseACRArtifact(BaseArtifact):
             raise CLIError(all_output) from None
 
     @lru_cache(maxsize=32)
-    def _manifest_credentials(self, config: BaseCommonParametersConfig, aosm_client: HybridNetworkManagementClient) -> Dict:
+    def _manifest_credentials(
+        self,
+        config: BaseCommonParametersConfig,
+        aosm_client: HybridNetworkManagementClient,
+    ) -> Dict:
         """Gets the details for uploading the artifacts in the manifest."""
 
         return aosm_client.artifact_manifests.list_credential(
@@ -144,19 +158,23 @@ class LocalFileACRArtifact(BaseACRArtifact):
 
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
-        self.file_path = str(file_path)  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
+        self.file_path = str(
+            file_path
+        )  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
 
     # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
     # This way we can support in-place Bicep artifacts in the folder.
-    def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
         logger.debug("LocalFileACRArtifact config: %s", config)
-        manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
+        manifest_credentials = self._manifest_credentials(
+            config=config, aosm_client=command_context.aosm_client
+        )
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
-        target = (
-            f"{target_acr}/{self.artifact_name}:{self.artifact_version}"
-        )
+        target = f"{target_acr}/{self.artifact_name}:{self.artifact_version}"
         logger.debug("Uploading %s to %s", self.file_path, target)
         retries = 0
         while True:
@@ -186,71 +204,24 @@ class LocalFileACRArtifact(BaseACRArtifact):
         logger.info("LocalFileACRArtifact uploaded %s to %s", self.file_path, target)
 
 
+# TODO: have a think about the naming of this class
 class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
+
     def __init__(
-        self, artifact_name, artifact_type, artifact_version, source_registry: str, source_registry_namespace: str
+        self,
+        artifact_name,
+        artifact_type,
+        artifact_version,
+        source_registry: Registry,
+        source_registry_namespace: str,
     ):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.source_registry = source_registry
         self.source_registry_namespace = source_registry_namespace
-        self.namespace_with_slash = f"{source_registry_namespace}/" if source_registry_namespace else ""
-
-    def _pull_image_to_local_registry(
-        self,
-        source_registry_login_server: str,
-        source_image: str,
-    ) -> None:
-        """
-        Pull image to local registry using docker pull. Requires docker.
-
-        Uses the CLI user's context to log in to the source registry.
-
-        :param: source_registry_login_server: e.g. uploadacr.azurecr.io
-        :param: source_image: source docker image name e.g.
-            uploadacr.azurecr.io/samples/nginx:stable
-        """
-        try:
-            # Login to the source registry with the CLI user credentials. This requires
-            # docker to be installed.
-            message = f"Logging into source registry {source_registry_login_server}"
-            print(message)
-            logger.info(message)
-            acr_source_login_cmd = [
-                str(shutil.which("az")),
-                "acr",
-                "login",
-                "--name",
-                source_registry_login_server,
-            ]
-            self._call_subprocess_raise_output(acr_source_login_cmd)
-            message = f"Pulling source image {source_image}"
-            print(message)
-            logger.info(message)
-            pull_source_image_cmd = [
-                str(shutil.which("docker")),
-                "pull",
-                source_image,
-            ]
-            self._call_subprocess_raise_output(pull_source_image_cmd)
-        except CLIError as error:
-            logger.error(
-                (
-                    "Failed to pull %s. Check if this image exists in the"
-                    " source registry %s."
-                ),
-                source_image,
-                source_registry_login_server,
-            )
-            logger.debug(error, exc_info=True)
-            raise error
-        finally:
-            docker_logout_cmd = [
-                str(shutil.which("docker")),
-                "logout",
-                source_registry_login_server,
-            ]
-            self._call_subprocess_raise_output(docker_logout_cmd)
+        self.namespace_with_slash = (
+            f"{source_registry_namespace}/" if source_registry_namespace else ""
+        )
 
     def _push_image_from_local_registry(
         self,
@@ -268,7 +239,9 @@ class RemoteACRArtifact(BaseACRArtifact):
         :type target_password: str
         """
         logger.debug("RemoteACRArtifact config: %s", config)
-        manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
+        manifest_credentials = self._manifest_credentials(
+            config=config, aosm_client=command_context.aosm_client
+        )
         # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr. Is there a simpler way to do this?
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
@@ -286,7 +259,9 @@ class RemoteACRArtifact(BaseACRArtifact):
         ]
         self._call_subprocess_raise_output(tag_image_cmd)
 
-        logger.info("Logging into artifact store registry %s", oras_client.remote.hostname)
+        logger.info(
+            "Logging into artifact store registry %s", oras_client.remote.hostname
+        )
         # ACR login seems to work intermittently, so we retry on failure
         retries = 0
         while True:
@@ -312,9 +287,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                     sleep(3)
                     continue
                 logger.error(
-                    ("Failed to login to %s as %s."),
-                    target_acr,
-                    target_username
+                    ("Failed to login to %s as %s."), target_acr, target_username
                 )
                 logger.debug(error, exc_info=True)
                 raise error
@@ -347,7 +320,6 @@ class RemoteACRArtifact(BaseACRArtifact):
         self,
         config: BaseCommonParametersConfig,
         command_context: CommandContext,
-        source_registry_login_server: str,
         source_image: str,
     ):
         """
@@ -369,128 +341,47 @@ class RemoteACRArtifact(BaseACRArtifact):
                              samples/nginx:stable
         """
         logger.debug("RemoteACRArtifact (copy_image) config: %s", config)
-        manifest_credentials = self._manifest_credentials(config=config, aosm_client=command_context.aosm_client)
+        manifest_credentials = self._manifest_credentials(
+            config=config, aosm_client=command_context.aosm_client
+        )
         # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr. Is there a simpler way to do this?
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
-        try:
-            print("Copying artifact from source registry")
-            # In order to use az acr import cross subscription, we need to use a token
-            # to authenticate to the source registry. This is documented as the way to
-            # us az acr import cross-tenant, not cross-sub, but it also works
-            # cross-subscription, and meant we didn't have to make a breaking change to
-            # the format of input.json. Our usage here won't work cross-tenant since
-            # we're attempting to get the token (source) with the same context as that
-            # in which we are creating the ACR (i.e. the target tenant)
-            get_token_cmd = [str(shutil.which("az")), "account", "get-access-token"]
-            # Dont use _call_subprocess_raise_output here as we don't want to log the
-            # output
-            called_process = subprocess.run(  # noqa: S603
-                get_token_cmd,
-                encoding="utf-8",
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            access_token_json = json.loads(called_process.stdout)
-            access_token = access_token_json["accessToken"]
-        except subprocess.CalledProcessError as get_token_err:
-            # This error is thrown from the az account get-access-token command
-            # If it errored we can log the output as it doesn't contain the token
-            logger.debug(get_token_err, exc_info=True)
-            raise CLIError(  # pylint: disable=raise-missing-from
-                "Failed to import image: could not get an access token from your"
-                " Azure account. Try logging in again with `az login` and then re-run"
-                " the command. If it fails again, please raise an issue and try"
-                " repeating the command using the --no-subscription-permissions"
-                " flag to pull the image to your local machine and then"
-                " push it to the Artifact Store using manifest credentials scoped"
-                " only to the store. This requires Docker to be installed"
-                " locally."
-            )
 
-        try:
-            source = f"{self._clean_name(source_registry_login_server)}/{source_image}"
-            acr_import_image_cmd = [
-                str(shutil.which("az")),
-                "acr",
-                "import",
-                "--name",
-                target_acr,
-                "--source",
-                source,
-                "--image",
-                f"{self.artifact_name}:{self.artifact_version}",
-                "--password",
-                access_token,
-            ]
-            self._call_subprocess_raise_output(acr_import_image_cmd)
-        except CLIError as error:
-            logger.debug(error, exc_info=True)
-            if (" 401" in str(error)) or ("Unauthorized" in str(error)):
-                # As we shell out the the subprocess, I think checking for these strings
-                # is the best check we can do for permission failures.
-                raise CLIError(
-                    "Failed to import image.\nThe problem may be one or more of:\n"
-                    " - the source_registry in your config file does not exist;\n"
-                    " - the image doesn't exist;\n"
-                    " - you do not have permissions to import images.\n"
-                    f"You need to have Reader/AcrPull from {source_registry_login_server}, "
-                    "and Contributor role + AcrPush role, or a custom "
-                    "role that allows the importImage action and AcrPush over the "
-                    "whole subscription in order to be able to import to the new "
-                    "Artifact store. More information is available at "
-                    "https://aka.ms/acr/authorization\n\n"
-                    "If you do not have the latter then you can re-run the command using "
-                    "the --no-subscription-permissions flag to pull the image to your "
-                    "local machine and then push it to the Artifact Store using manifest "
-                    "credentials scoped only to the store. This requires Docker to be "
-                    "installed locally."
-                ) from error
+        self.source_registry.copy_image(
+            source_image=source_image,
+            target_acr=target_acr,
+            artifact_name=self.artifact_name,
+            artifact_version=self.artifact_version,
+        )
 
-            # Otherwise, the most likely failure is that the image already exists in the artifact
-            # store, so don't fail at this stage, log the error.
-            logger.warning(
-                (
-                    "Failed to import %s to %s. If this failure is because it already exists in "
-                    "the target registry we can continue. If the failure was for another reason, "
-                    " for example it does not exist in the source registry, this is likely "
-                    "fatal. Attempting to continue.\n"
-                    "%s"
-                ),
-                source_image,
-                target_acr,
-                error,
-            )
-
-    def upload(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
 
-        if command_context.cli_options['no_subscription_permissions']:
+        if command_context.cli_options["no_subscription_permissions"]:
             print(
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
             self._check_tool_installed("docker")
+            ## TODO: Should this be done in the Registry class
             image_name = (
-                f"{self._clean_name(self.source_registry)}/"
+                f"{self._clean_name(self.source_registry.registry_name)}/"
                 f"{self.namespace_with_slash}{self.artifact_name}"
                 f":{self.artifact_version}"
             )
-            self._pull_image_to_local_registry(
-                source_registry_login_server=self._clean_name(
-                    self.source_registry
-                ),
-                source_image=image_name,
-            )
+            self.source_registry.pull_image_to_local_registry(source_image=image_name)
+
             self._push_image_from_local_registry(
                 local_docker_image=image_name,
                 config=config,
                 command_context=command_context,
             )
         else:
+            # TODO: check if this works
             print(f"Using az acr import to copy image artifact: {self.artifact_name}")
             self._copy_image(
-                source_registry_login_server=self.source_registry,
                 config=config,
                 command_context=command_context,
                 source_image=(
@@ -504,11 +395,15 @@ class BaseStorageAccountArtifact(BaseArtifact):
     """Abstract base class for storage account artifacts."""
 
     @abstractmethod
-    def upload(self, config: VNFCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: VNFCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
         pass
 
-    def _get_blob_client(self, config: VNFCommonParametersConfig, command_context: CommandContext) -> BlobClient:
+    def _get_blob_client(
+        self, config: VNFCommonParametersConfig, command_context: CommandContext
+    ) -> BlobClient:
         container_basename = self.artifact_name.replace("-", "")
         container_name = f"{container_basename}-{self.artifact_version}"
         # For AOSM to work VHD blobs must have the suffix .vhd
@@ -519,12 +414,14 @@ class BaseStorageAccountArtifact(BaseArtifact):
 
         logger.debug("container name: %s, blob name: %s", container_name, blob_name)
 
-        manifest_credentials = command_context.aosm_client.artifact_manifests.list_credential(
-            resource_group_name=config.publisherResourceGroupName,
-            publisher_name=config.publisherName,
-            artifact_store_name=config.saArtifactStoreName,
-            artifact_manifest_name=config.saManifestName,
-        ).as_dict()
+        manifest_credentials = (
+            command_context.aosm_client.artifact_manifests.list_credential(
+                resource_group_name=config.publisherResourceGroupName,
+                publisher_name=config.publisherName,
+                artifact_store_name=config.saArtifactStoreName,
+                artifact_manifest_name=config.saManifestName,
+            ).as_dict()
+        )
 
         for container_credential in manifest_credentials["container_credentials"]:
             if container_credential["container_name"] == container_name:
@@ -541,14 +438,19 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
     """Class for storage account artifacts from a local file."""
 
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
-
         super().__init__(artifact_name, artifact_type, artifact_version)
-        self.file_path = str(file_path)  # TODO: Jordan cast this to str here, `str(file_path)`, check output file isn't broken, and/or is it used as a Path elsewhere?
+        self.file_path = str(
+            file_path
+        )  # TODO: Jordan cast this to str here, `str(file_path)`, check output file isn't broken, and/or is it used as a Path elsewhere?
 
-    def upload(self, config: VNFCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: VNFCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
         logger.debug("LocalFileStorageAccountArtifact config: %s", config)
-        blob_client = self._get_blob_client(config=config, command_context=command_context)
+        blob_client = self._get_blob_client(
+            config=config, command_context=command_context
+        )
         logger.info("Uploading local file '%s' to blob store", self.file_path)
         with open(self.file_path, "rb") as artifact:
             blob_client.upload_blob(
@@ -594,7 +496,9 @@ class BlobStorageAccountArtifact(BaseStorageAccountArtifact):
         super().__init__(artifact_manifest)
         self.blob_sas_uri = blob_sas_uri
 
-    def upload(self, config: VNFCommonParametersConfig, command_context: CommandContext):
+    def upload(
+        self, config: VNFCommonParametersConfig, command_context: CommandContext
+    ):
         """Upload the artifact."""
 
         logger.info("Copy from SAS URL to blob store")
