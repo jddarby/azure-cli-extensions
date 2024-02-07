@@ -5,23 +5,30 @@
 
 import json
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from knack.log import get_logger
 
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.artifact import BaseArtifact, LocalFileACRArtifact
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
-    ArmResourceDefinitionResourceElementTemplate, ArtifactType,
-    DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication)
-from azext_aosm.vendored_sdks.models import \
-    NetworkFunctionDefinitionResourceElementTemplateDetails as \
-    NFDResourceElementTemplate
-from azext_aosm.vendored_sdks.models import (NSDArtifactProfile,
-                                             ReferencedResource, TemplateType)
-from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME
+    ArmResourceDefinitionResourceElementTemplate,
+    ArtifactType,
+    DependsOnProfile,
+    ManifestArtifactFormat,
+    NetworkFunctionApplication,
+)
+from azext_aosm.vendored_sdks.models import (
+    NetworkFunctionDefinitionResourceElementTemplateDetails as NFDResourceElementTemplate,
+)
+from azext_aosm.vendored_sdks.models import (
+    NSDArtifactProfile,
+    ReferencedResource,
+    TemplateType,
+)
 
 logger = get_logger(__name__)
 
@@ -55,7 +62,7 @@ class NFDProcessor(BaseInputProcessor):
         :return: A list of artifacts for the artifact manifest.
         :rtype: List[ManifestArtifactFormat]
         """
-        logger.info("Getting artifact manifest list for NFD input.")
+        logger.debug("Getting artifact manifest list for NFD input %s.", self.name)
         return [
             ManifestArtifactFormat(
                 artifact_name=self.input_artifact.artifact_name,
@@ -80,7 +87,9 @@ class NFDProcessor(BaseInputProcessor):
             artifact_name=self.input_artifact.artifact_name,
             artifact_type=ArtifactType.OCI_ARTIFACT.value,
             artifact_version=self.input_artifact.artifact_version,
-            file_path=self.input_artifact.arm_template_output_path.relative_to(Path(NSD_OUTPUT_FOLDER_FILENAME)),
+            file_path=self.input_artifact.arm_template_output_path.relative_to(
+                Path(NSD_OUTPUT_FOLDER_FILENAME)
+            ),
         )
 
         # Create a local file builder for the ARM template
@@ -126,6 +135,52 @@ class NFDProcessor(BaseInputProcessor):
         return NFDResourceElementTemplate(
             name=self.name,
             configuration=configuration,
-            depends_on_profile=DependsOnProfile(install_depends_on=[],
-                                                uninstall_depends_on=[], update_depends_on=[]),
+            depends_on_profile=DependsOnProfile(
+                install_depends_on=[], uninstall_depends_on=[], update_depends_on=[]
+            ),
         )
+
+    def _generate_schema(
+        self,
+        schema: Dict[str, Any],
+        source_schema: Dict[str, Any],
+        values: Dict[str, Any],
+    ) -> None:
+        """
+        Generate the parameter schema.
+
+        This function recursively generates the parameter schema for the input artifact by updating
+        the schema parameter.
+
+        :param schema: The schema to generate.
+        :type schema: Dict[str, Any]
+        :param source_schema: The source schema.
+        :type source_schema: Dict[str, Any]
+        :param values: The values to generate the schema from.
+        :type values: Dict[str, Any]
+        """
+        if "properties" not in source_schema.keys():
+            return
+
+        # Loop through each property in the schema.
+        for k, v in source_schema["properties"].items():
+            # If the property is not in the values, and is required, add it to the values.
+            # Temp fix for removing schema from deployParameters
+            if k == "deploymentParameters":
+                del v["items"]["$schema"]
+                del v["items"]["title"]
+            if (
+                "required" in source_schema
+                and k not in values
+                and k in source_schema["required"]
+            ):
+                if v["type"] == "object":
+                    print(f"Resolving object {k} for schema")
+                    self._generate_schema(schema, v, {})
+                else:
+                    schema["required"].append(k)
+                    schema["properties"][k] = v
+            # If the property is in the values, and is an object, generate the values mappings
+            # for the subschema.
+            if k in values and v["type"] == "object" and values[k]:
+                self._generate_schema(schema, v, values[k])

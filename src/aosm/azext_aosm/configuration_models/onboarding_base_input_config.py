@@ -17,7 +17,9 @@ class OnboardingBaseInputConfig(ABC):
 
     location: str = field(
         default="",
-        metadata={"comment": "Azure location to use when creating resources e.g uksouth"},
+        metadata={
+            "comment": "Azure location to use when creating resources e.g uksouth"
+        },
     )
     publisher_name: str = field(
         default="",
@@ -33,7 +35,7 @@ class OnboardingBaseInputConfig(ABC):
         metadata={
             "comment": (
                 "Resource group for the Publisher resource.\n"
-                "You should create this before running the publish command"
+                "You should create this before running the publish command."
             )
         },
     )

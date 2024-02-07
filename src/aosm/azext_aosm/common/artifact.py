@@ -2,32 +2,31 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-from abc import ABC, abstractmethod
-from functools import lru_cache
 import json
 import math
-from pathlib import Path
 import shutil
 import subprocess
+from abc import ABC, abstractmethod
+from functools import lru_cache
+from pathlib import Path
 from time import sleep
-from typing import Dict, Optional
+from typing import Any, MutableMapping, Optional
 
-from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
-    BlobClient,
-    BlobType,
-)
-from azext_aosm.vendored_sdks.models import ManifestArtifactFormat
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from knack.log import get_logger
+from knack.util import CLIError
+from oras.client import OrasClient
+
 from azext_aosm.common.command_context import CommandContext
+from azext_aosm.common.utils import convert_bicep_to_arm
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
     VNFCommonParametersConfig,
 )
-from azext_aosm.common.registry import Registry
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-from knack.util import CLIError
-from knack.log import get_logger
-from oras.client import OrasClient
+from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
+    BlobClient,
+    BlobType,
+)
 
 logger = get_logger(__name__)
 
@@ -52,7 +51,6 @@ class BaseArtifact(ABC):
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
-        pass
 
 
 class BaseACRArtifact(BaseArtifact):
@@ -63,7 +61,6 @@ class BaseACRArtifact(BaseArtifact):
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
-        pass
 
     @staticmethod
     def _check_tool_installed(tool_name: str) -> None:
@@ -114,14 +111,13 @@ class BaseACRArtifact(BaseArtifact):
             # Raise the error without the original exception, which may contain secrets.
             raise CLIError(all_output) from None
 
+    @staticmethod
     @lru_cache(maxsize=32)
     def _manifest_credentials(
-        self,
         config: BaseCommonParametersConfig,
         aosm_client: HybridNetworkManagementClient,
-    ) -> Dict:
+    ) -> MutableMapping[str, Any]:
         """Gets the details for uploading the artifacts in the manifest."""
-
         return aosm_client.artifact_manifests.list_credential(
             resource_group_name=config.publisherResourceGroupName,
             publisher_name=config.publisherName,
@@ -130,7 +126,7 @@ class BaseACRArtifact(BaseArtifact):
         ).as_dict()
 
     @staticmethod
-    def _get_oras_client(manifest_credentials: Dict) -> OrasClient:
+    def _get_oras_client(manifest_credentials: MutableMapping[str, Any]) -> OrasClient:
         client = OrasClient(hostname=manifest_credentials["acr_server_url"])
         client.login(
             username=manifest_credentials["username"],
@@ -158,17 +154,32 @@ class LocalFileACRArtifact(BaseACRArtifact):
 
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
-        self.file_path = str(
-            file_path
-        )  # TODO: Jordan cast this to str here, check output file isn't broken, and/or is it used as a Path elsewhere?
+        self.file_path = file_path
 
-    # TODO (WIBNI): check if the artifact name ends in .bicep and if so use utils.convert_bicep_to_arm()
-    # This way we can support in-place Bicep artifacts in the folder.
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
         logger.debug("LocalFileACRArtifact config: %s", config)
+
+        # TODO: remove, this is temporary until we fix in artifact reader
+        self.file_path = Path(self.file_path)
+        # For NSDs, we provide paths relative to the artifacts folder, resolve them to absolute paths
+        if not self.file_path.is_absolute():
+            output_folder_path = command_context.cli_options["definition_folder"]
+            resolved_path = output_folder_path.resolve()
+            absolute_file_path = resolved_path / self.file_path
+            self.file_path = absolute_file_path
+
+        if self.file_path.suffix == ".bicep":
+            # Uploading the nf_template as part of the NSD will use this code path
+            # This does mean we can never have a bicep file as an artifact, but that should be OK
+            logger.debug("Converting self.file_path to ARM")
+            arm_template = convert_bicep_to_arm(self.file_path)
+            self.file_path = self.file_path.with_suffix(".json")
+            json.dump(arm_template, self.file_path.open("w"))
+            logger.debug("Converted bicep file to ARM as: %s", self.file_path)
+
         manifest_credentials = self._manifest_credentials(
             config=config, aosm_client=command_context.aosm_client
         )
@@ -242,7 +253,8 @@ class RemoteACRArtifact(BaseACRArtifact):
         manifest_credentials = self._manifest_credentials(
             config=config, aosm_client=command_context.aosm_client
         )
-        # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr. Is there a simpler way to do this?
+        # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr.
+        #               Is there a simpler way to do this?
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
         target_username = manifest_credentials["username"]
@@ -344,7 +356,8 @@ class RemoteACRArtifact(BaseACRArtifact):
         manifest_credentials = self._manifest_credentials(
             config=config, aosm_client=command_context.aosm_client
         )
-        # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr. Is there a simpler way to do this?
+        # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr.
+        #               Is there a simpler way to do this?
         oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
         target_acr = self._get_acr(oras_client)
 
@@ -396,10 +409,9 @@ class BaseStorageAccountArtifact(BaseArtifact):
 
     @abstractmethod
     def upload(
-        self, config: VNFCommonParametersConfig, command_context: CommandContext
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
-        pass
 
     def _get_blob_client(
         self, config: VNFCommonParametersConfig, command_context: CommandContext
@@ -439,14 +451,15 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
 
     def __init__(self, artifact_name, artifact_type, artifact_version, file_path: Path):
         super().__init__(artifact_name, artifact_type, artifact_version)
-        self.file_path = str(
-            file_path
-        )  # TODO: Jordan cast this to str here, `str(file_path)`, check output file isn't broken, and/or is it used as a Path elsewhere?
+        self.file_path = str(file_path)
 
     def upload(
-        self, config: VNFCommonParametersConfig, command_context: CommandContext
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
+        # Liskov substitution dictates we must accept BaseCommonParametersConfig, but we should
+        # never be calling upload on this class unless we've got VNFCommonParametersConfig
+        assert isinstance(config, VNFCommonParametersConfig)
         logger.debug("LocalFileStorageAccountArtifact config: %s", config)
         blob_client = self._get_blob_client(
             config=config, command_context=command_context
@@ -490,22 +503,26 @@ class BlobStorageAccountArtifact(BaseStorageAccountArtifact):
     # TODO (Rename): Rename class, e.g. RemoteBlobStorageAccountArtifact
     """Class for storage account artifacts from a remote blob."""
 
-    blob_sas_uri: str
-
-    def __init__(self, artifact_manifest: ManifestArtifactFormat, blob_sas_uri: str):
-        super().__init__(artifact_manifest)
+    def __init__(
+        self, artifact_name, artifact_type, artifact_version, blob_sas_uri: str
+    ):
+        super().__init__(artifact_name, artifact_type, artifact_version)
         self.blob_sas_uri = blob_sas_uri
 
     def upload(
-        self, config: VNFCommonParametersConfig, command_context: CommandContext
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
-
+        # Liskov substitution dictates we must accept BaseCommonParametersConfig, but we should
+        # never be calling upload on this class unless we've got VNFCommonParametersConfig
+        assert isinstance(config, VNFCommonParametersConfig)
         logger.info("Copy from SAS URL to blob store")
         source_blob = BlobClient.from_blob_url(self.blob_sas_uri)
 
         if source_blob.exists():
-            target_blob = self._get_blob_client(config)
+            target_blob = self._get_blob_client(
+                config=config, command_context=command_context
+            )
             logger.debug(source_blob.url)
             target_blob.start_copy_from_url(source_blob.url)
             logger.info(

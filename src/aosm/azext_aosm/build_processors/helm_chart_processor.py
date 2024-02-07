@@ -15,7 +15,7 @@ from azext_aosm.common.artifact import (
     LocalFileACRArtifact,
     RemoteACRArtifact,
 )
-from azext_aosm.common.local_file_builder import LocalFileBuilder
+from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 from azext_aosm.common.registry import RegistryHandler
 from azext_aosm.vendored_sdks.models import (
@@ -67,7 +67,9 @@ class HelmChartProcessor(BaseInputProcessor):
         :return: A list of artifacts for the artifact manifest.
         :rtype: List[ManifestArtifactFormat]
         """
-        logger.info("Getting artifact manifest list for Helm chart input.")
+        logger.debug(
+            "Getting artifact manifest list for Helm chart input %s.", self.name
+        )
         artifact_manifest_list = []
         artifact_manifest_list.append(
             ManifestArtifactFormat(
@@ -98,7 +100,7 @@ class HelmChartProcessor(BaseInputProcessor):
         :return: A tuple containing the list of artifacts and the list of local file builders.
         :rtype: Tuple[List[BaseACRArtifact], List[LocalFileBuilder]]
         """
-        logger.info("Getting artifact details for Helm chart input.")
+        logger.debug("Getting artifact details for Helm chart input %s.", self.name)
         artifact_details: List[BaseArtifact] = []
 
         # We only support local file artifacts for Helm charts
@@ -150,7 +152,7 @@ class HelmChartProcessor(BaseInputProcessor):
         :return: The generated Azure Arc Kubernetes Helm application.
         :rtype: AzureArcKubernetesHelmApplication
         """
-        logger.info("Generating NF application for Helm chart input.")
+        logger.debug("Generating NF application for Helm chart input %s.", self.name)
         artifact_profile = self._generate_artifact_profile()
         # We want to remove the registry values paths and image pull secrets values paths from the values mappings
         # as these values are supplied by NFM when it installs the chart.
@@ -209,7 +211,8 @@ class HelmChartProcessor(BaseInputProcessor):
 
         return images
 
-    def _find_image_lines(self, chart: HelmChartInput, image_lines: Set[str]) -> None:
+    @staticmethod
+    def _find_image_lines(chart: HelmChartInput, image_lines: Set[str]) -> None:
         """
         Finds the lines containing image references in the given Helm chart and its dependencies.
 
