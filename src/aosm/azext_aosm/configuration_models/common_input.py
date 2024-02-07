@@ -18,7 +18,7 @@ class ArmTemplatePropertiesConfig:
         metadata={"comment": "Name of the artifact. Used as internal reference only."},
     )
     version: str = field(
-        default="", metadata={"comment": "Version of the artifact in 1.1.1 format."}
+        default="", metadata={"comment": "Version of the artifact in 1.1.1 format (three integers separated by dots)."}
     )
     file_path: str = field(
         default="",
