@@ -10,7 +10,7 @@ from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Optional, Union
 
-from azure.cli.core.azclierror import UnclassifiedUserFault
+from azure.cli.core.azclierror import UnclassifiedUserFault, UserFault, InvalidArgumentValueError
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
@@ -37,37 +37,32 @@ class OnboardingBaseCLIHandler(ABC):
 
     def __init__(
         self,
-        provided_input_path: Optional[Path] = None,
+        config_file_path: Optional[Path] = None,
+        all_deploy_params_file_path: Optional[Path] = None,
         aosm_client: Optional[HybridNetworkManagementClient] = None,
         skip: Optional[str] = None,
     ):
         """Initialize the CLI handler."""
         self.aosm_client = aosm_client
         self.skip = skip
-        # If config file provided (for build, publish and delete)
-        if provided_input_path:
-            # Explicitly define types
-            self.config: Union[OnboardingBaseInputConfig, BaseCommonParametersConfig]
-            provided_input_path = Path(provided_input_path)
-            # If config file is the input.jsonc for build command
-            if provided_input_path.suffix == ".jsonc":
-                config_dict = self._read_input_config_from_file(provided_input_path)
-                try:
-                    self.config = self._get_input_config(config_dict)
-                except Exception as e:
-                    raise UnclassifiedUserFault(f"The input file provided contains an incorrect input.\nPlease fix the problem parameter:\n{e}") from e
-                # Validate config before getting processor list,
-                # in case error with input artifacts i.e helm package
-                self.config.validate()
-                self.processors = self._get_processor_list()
-            # If config file is the all parameters json file for publish/delete
-            elif provided_input_path.suffix == ".json":
-                try:
-                    self.config = self._get_params_config(provided_input_path)
-                except Exception as e:
-                    raise UnclassifiedUserFault(f"The all_deploy.parameters.json in the folder provided contains an incorrect input.\nPlease check if you have provided the correct folder for the definition/design type:\n{e}") from e
-            else:
-                raise UnclassifiedUserFault("Invalid input")
+        # If input.jsonc file provided (therefore if build command run)
+        if config_file_path:
+            self._validate_input_file(config_file_path)
+            config_dict = self._read_input_config_from_file(config_file_path)
+            try:
+                self.config = self._get_input_config(config_dict)
+            except Exception as e:
+                raise UnclassifiedUserFault(f"The input file provided contains an incorrect input.\nPlease fix the problem parameter:\n{e}") from e
+            # Validate config before getting processor list,
+            # in case error with input artifacts i.e helm package
+            self.config.validate()
+            self.processors = self._get_processor_list()
+        # If all_deploy.parameters.json file provided (therefore if publish/delete command run)
+        elif all_deploy_params_file_path:
+            try:
+                self.config = self._get_params_config(all_deploy_params_file_path)
+            except Exception as e:
+                raise UnclassifiedUserFault(f"The all_deploy.parameters.json in the folder provided contains an incorrect input.\nPlease check if you have provided the correct folder for the definition/design type:\n{e}") from e
         # If no config file provided (for generate-config)
         else:
             self.config = self._get_input_config()
@@ -339,3 +334,12 @@ class OnboardingBaseCLIHandler(ABC):
         }
         schema_contents["properties"] = schema_properties
         return schema_contents
+
+    def _validate_input_file(self, input_file: Path):
+        """Validate the input file."""
+        if not input_file.suffix == ".jsonc":
+            raise UnclassifiedUserFault(
+                f"The input file {input_file} does not have a .jsonc extension."
+            )
+        if not input_file.exists():
+            raise UnclassifiedUserFault(f"The input file {input_file} does not exist.")
