@@ -184,7 +184,7 @@ class OnboardingBaseCLIHandler(ABC):
             lines = [line for line in lines if not line.strip().startswith("//")]
             config_dict = json.loads("".join(lines))
             return config_dict
-        except (UserFault, FileNotFoundError) as e:
+        except FileNotFoundError as e:
             raise UnclassifiedUserFault(f"Invalid config file provided.\nError: {e} ") from e
         except JSONDecodeError as e:
             raise UnclassifiedUserFault("Invalid JSON found in the config file provided.\n"
