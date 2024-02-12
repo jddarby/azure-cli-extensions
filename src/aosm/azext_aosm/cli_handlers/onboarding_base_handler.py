@@ -9,8 +9,8 @@ from abc import ABC, abstractmethod
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Optional, Union
-
-from azure.cli.core.azclierror import UnclassifiedUserFault, UserFault, InvalidArgumentValueError
+from json.decoder import JSONDecodeError
+from azure.cli.core.azclierror import InvalidArgumentValueError, UnclassifiedUserFault, UserFault
 from jinja2 import StrictUndefined, Template
 from knack.log import get_logger
 
@@ -47,12 +47,13 @@ class OnboardingBaseCLIHandler(ABC):
         self.skip = skip
         # If input.jsonc file provided (therefore if build command run)
         if config_file_path:
-            self._validate_input_file(config_file_path)
             config_dict = self._read_input_config_from_file(config_file_path)
             try:
                 self.config = self._get_input_config(config_dict)
-            except Exception as e:
-                raise UnclassifiedUserFault(f"The input file provided contains an incorrect input.\nPlease fix the problem parameter:\n{e}") from e
+            except TypeError as e:
+                raise InvalidArgumentValueError(
+                    "The input file provided contains an incorrect input.\n"
+                    f"Please fix the problem parameter:\n{e}") from e
             # Validate config before getting processor list,
             # in case error with input artifacts i.e helm package
             self.config.validate()
@@ -61,8 +62,11 @@ class OnboardingBaseCLIHandler(ABC):
         elif all_deploy_params_file_path:
             try:
                 self.config = self._get_params_config(all_deploy_params_file_path)
-            except Exception as e:
-                raise UnclassifiedUserFault(f"The all_deploy.parameters.json in the folder provided contains an incorrect input.\nPlease check if you have provided the correct folder for the definition/design type:\n{e}") from e
+            except TypeError as e:
+                raise InvalidArgumentValueError(
+                    "The all_deploy.parameters.json in the folder "
+                    "provided contains an incorrect input.\nPlease check if you have provided "
+                    f"the correct folder for the definition/design type:\n{e}") from e
         # If no config file provided (for generate-config)
         else:
             self.config = self._get_input_config()
@@ -175,11 +179,16 @@ class OnboardingBaseCLIHandler(ABC):
 
         Returns config as dictionary.
         """
-        lines = input_json_path.read_text().splitlines()
-        lines = [line for line in lines if not line.strip().startswith("//")]
-        config_dict = json.loads("".join(lines))
-
-        return config_dict
+        try:
+            lines = input_json_path.read_text().splitlines()
+            lines = [line for line in lines if not line.strip().startswith("//")]
+            config_dict = json.loads("".join(lines))
+            return config_dict
+        except (UserFault, FileNotFoundError) as e:
+            raise UnclassifiedUserFault(f"Invalid config file provided.\nError: {e} ") from e
+        except JSONDecodeError as e:
+            raise UnclassifiedUserFault("Invalid JSON found in the config file provided.\n"
+                                        f"Error: {e} ") from e
 
     @staticmethod
     def _render_base_bicep_contents(template_path):
@@ -334,12 +343,3 @@ class OnboardingBaseCLIHandler(ABC):
         }
         schema_contents["properties"] = schema_properties
         return schema_contents
-
-    def _validate_input_file(self, input_file: Path):
-        """Validate the input file."""
-        if not input_file.suffix == ".jsonc":
-            raise UnclassifiedUserFault(
-                f"The input file {input_file} does not have a .jsonc extension."
-            )
-        if not input_file.exists():
-            raise UnclassifiedUserFault(f"The input file {input_file} does not exist.")
