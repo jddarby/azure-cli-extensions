@@ -257,8 +257,6 @@ class LocalFileACRArtifact(BaseACRArtifact):
             ]
             self._call_subprocess_raise_output(acr_login_cmd)
 
-            logger.info(f"Username: {username}")
-
             try:
                 helm_login_cmd = [
                     str(shutil.which("helm")),
@@ -275,7 +273,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
                 push_command = [
                     str(shutil.which("helm")),
                     "push",
-                    f"/tmp/{self.artifact_name}-{self.artifact_version}.tgz",  # TODO: fix up to use non-tmp path
+                    f"/tmp/{self.artifact_name}-{self.artifact_version}.tgz",  # TODO: fix up helm package to use non-tmp path
                     target_acr_with_protocol,
                 ]
                 self._call_subprocess_raise_output(push_command)
@@ -288,8 +286,11 @@ class LocalFileACRArtifact(BaseACRArtifact):
                 ]
                 self._call_subprocess_raise_output(helm_logout_cmd)
 
+            logger.info("LocalFileACRArtifact uploaded %s to %s using helm push", self.file_path, target)
+
         else:  # TODO: Make this one of the allowed Azure CLI exceptions
             raise ValueError(f"Unexpected artifact type. Got {self.artifact_type}. Expected {ArtifactType.ARM_TEMPLATE.value} or {ArtifactType.OCI_ARTIFACT.value}")
+
 
 class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
