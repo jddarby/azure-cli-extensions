@@ -12,9 +12,7 @@ from azext_aosm.build_processors.nexus_image_processor import NexusImageProcesso
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.constants import (
     BASE_FOLDER_NAME,
-    MANIFEST_FOLDER_NAME,
     VNF_TEMPLATE_FOLDER_NAME,
-    VNF_MANIFEST_TEMPLATE_FILENAME,
     VNF_OUTPUT_FOLDER_FILENAME,
     DEPLOYMENT_PARAMETERS_FILENAME,
     NEXUS_IMAGE_PARAMETERS_FILENAME,
@@ -45,7 +43,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
     """CLI handler for publishing NFDs."""
 
     config: OnboardingNexusVNFInputConfig
-    
+
     def _get_input_config(
         self, input_config: Dict[str, Any] = None
     ) -> OnboardingNexusVNFInputConfig:

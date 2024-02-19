@@ -75,7 +75,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         - Generates NF application for each processor
         - Generates deploymentParameters (flattened to be one schema overall)
         - Generates supporting parameters files (to avoid stringified JSON in template)
-        
+
         """
         logger.info("Creating artifacts list for artifacts.json")
         arm_nf_application_list = []

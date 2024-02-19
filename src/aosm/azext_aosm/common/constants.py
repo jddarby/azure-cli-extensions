@@ -13,6 +13,7 @@ CNF = "cnf"
 NSD = "nsd"
 VNF_NEXUS = "vnf-nexus"
 
+
 class DeployableResourceTypes(str, Enum):
     VNF = VNF
     CNF = CNF
