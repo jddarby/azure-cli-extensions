@@ -98,8 +98,7 @@ class BaseInputProcessor(ABC):
         )
 
         params_schema = json.loads(base_params_schema)
-        # print(json.dumps(self.input_artifact.get_schema(), indent=4))
-        # print(json.dumps(self.input_artifact.get_defaults(), indent=4))
+
         self._generate_schema(
             params_schema[self.name],
             self.input_artifact.get_schema(),

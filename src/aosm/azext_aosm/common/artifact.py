@@ -12,22 +12,21 @@ from pathlib import Path
 from time import sleep
 from typing import Any, MutableMapping, Optional
 
-from knack.log import get_logger
-from knack.util import CLIError
-from oras.client import OrasClient
-
-from azext_aosm.common.command_context import CommandContext
-from azext_aosm.common.utils import convert_bicep_to_arm
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
-    VNFCommonParametersConfig,
+    NFDCommonParametersConfig,
 )
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
     BlobClient,
     BlobType,
 )
 from azext_aosm.vendored_sdks.models import ArtifactType
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azext_aosm.common.command_context import CommandContext
+from azext_aosm.common.utils import convert_bicep_to_arm
+from knack.util import CLIError
+from knack.log import get_logger
+from oras.client import OrasClient
 
 logger = get_logger(__name__)
 
@@ -630,7 +629,7 @@ class BaseStorageAccountArtifact(BaseArtifact):
         """Upload the artifact."""
 
     def _get_blob_client(
-        self, config: VNFCommonParametersConfig, command_context: CommandContext
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
     ) -> BlobClient:
         container_basename = self.artifact_name.replace("-", "")
         container_name = f"{container_basename}-{self.artifact_version}"
@@ -674,8 +673,8 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
     ):
         """Upload the artifact."""
         # Liskov substitution dictates we must accept BaseCommonParametersConfig, but we should
-        # never be calling upload on this class unless we've got VNFCommonParametersConfig
-        assert isinstance(config, VNFCommonParametersConfig)
+        # never be calling upload on this class unless we've got NFDCommonParametersConfig
+        assert isinstance(config, NFDCommonParametersConfig)
         logger.debug("LocalFileStorageAccountArtifact config: %s", config)
         blob_client = self._get_blob_client(
             config=config, command_context=command_context
@@ -730,8 +729,8 @@ class BlobStorageAccountArtifact(BaseStorageAccountArtifact):
     ):
         """Upload the artifact."""
         # Liskov substitution dictates we must accept BaseCommonParametersConfig, but we should
-        # never be calling upload on this class unless we've got VNFCommonParametersConfig
-        assert isinstance(config, VNFCommonParametersConfig)
+        # never be calling upload on this class unless we've got NFDCommonParametersConfig
+        assert isinstance(config, NFDCommonParametersConfig)
         logger.info("Copy from SAS URL to blob store")
         source_blob = BlobClient.from_blob_url(self.blob_sas_uri)
 

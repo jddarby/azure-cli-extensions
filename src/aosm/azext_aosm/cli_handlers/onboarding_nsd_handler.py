@@ -9,9 +9,8 @@ from pathlib import Path
 from typing import Optional
 
 from knack.log import get_logger
-
-from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
+from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
     ARTIFACT_LIST_FILENAME,
@@ -47,14 +46,17 @@ from azext_aosm.definition_folder.builder.json_builder import (
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
+from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
 logger = get_logger(__name__)
 
 
 class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for publishing NFDs."""
+
+    config: OnboardingNSDInputConfig
 
     @property
     def default_config_file_name(self) -> str:
@@ -86,7 +88,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             params_dict = {}
         return NSDCommonParametersConfig(**params_dict)
 
-    def _get_processor_list(self):
+    def _get_processor_list(self) -> list:
         processor_list = []
         # for each resource element template, instantiate processor
         for resource_element in self.config.resource_element_templates:
@@ -138,20 +140,20 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 )
         return processor_list
 
-    def build_base_bicep(self):
+    def build_base_bicep(self) -> BicepDefinitionElementBuilder:
         """Build the base bicep file."""
         # Build base bicep contents, with bicep template
-        template_path = self._get_template_path(
+        template_path = get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_BASE_TEMPLATE_FILENAME
         )
-        bicep_contents = self._render_base_bicep_contents(template_path)
+        bicep_contents = render_bicep_contents_from_j2(template_path, {})
         # Create Bicep element with manifest contents
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
         )
         return bicep_file
 
-    def build_manifest_bicep(self):
+    def build_manifest_bicep(self) -> BicepDefinitionElementBuilder:
         """Build the manifest bicep file."""
         artifact_list = []
         for processor in self.processors:
@@ -160,19 +162,21 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "Created list of artifacts from resource element(s) provided: %s",
             artifact_list,
         )
-        template_path = self._get_template_path(
+        template_path = get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_MANIFEST_TEMPLATE_FILENAME
         )
-        bicep_contents = self._render_manifest_bicep_contents(
-            template_path, artifact_list
-        )
+        params = {
+            "acr_artifacts": artifact_list,
+            "sa_artifacts": []
+        }
+        bicep_contents = render_bicep_contents_from_j2(template_path, params)
 
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, MANIFEST_FOLDER_NAME), bicep_contents
         )
         return bicep_file
 
-    def build_artifact_list(self):
+    def build_artifact_list(self) -> ArtifactDefinitionElementBuilder:
         """Build the artifact list."""
         # Build artifact list for ArmTemplates
         artifact_list = []
@@ -192,7 +196,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         return artifact_file
 
-    def build_resource_bicep(self):
+    def build_resource_bicep(self) -> BicepDefinitionElementBuilder:
         """Build the resource bicep file."""
         bicep_contents = {}
         schema_properties = {}
@@ -225,12 +229,13 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # List of NF RET names, for adding to required part of CGS
             nf_names.append(processor.name)
 
-        template_path = self._get_template_path(
+        template_path = get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_DEFINITION_TEMPLATE_FILENAME
         )
 
         params = {
             "nsdv_description": self.config.nsdv_description,
+            "nfvi_type": self.config.nfvi_type,
             "cgs_name": CGS_NAME,
             "nfvi_site_name": self.nfvi_site_name,
             "nf_rets": ret_list,
@@ -239,7 +244,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
         }
 
-        bicep_contents = self._render_definition_bicep_contents(template_path, params)
+        bicep_contents = render_bicep_contents_from_j2(
+            template_path, params
+        )
         # Generate the nsd bicep file
         bicep_file = BicepDefinitionElementBuilder(
             Path(NSD_OUTPUT_FOLDER_FILENAME, NSD_DEFINITION_FOLDER_NAME), bicep_contents
@@ -256,8 +263,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         return bicep_file
 
-    def build_all_parameters_json(self):
-        # TODO: add common params for build resource bicep
+    def build_all_parameters_json(self) -> JSONDefinitionElementBuilder:
+        """Build all parameters json."""
         params_content = {
             "location": self.config.location,
             "publisherName": self.config.publisher_name,
