@@ -51,6 +51,7 @@ from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBui
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from azext_aosm.common.registry import RegistryHandler
 
 logger = get_logger(__name__)
 yaml_processor = ruamel.yaml.YAML(typ="safe", pure=True)
@@ -70,7 +71,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return CNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_input_config(self, input_config: Optional[dict] = None) -> OnboardingCNFInputConfig:
+    def _get_input_config(
+        self, input_config: Optional[dict] = None
+    ) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -123,9 +126,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             try:
                 helm_processor.input_artifact.validate_template()
             except TemplateValidationError as error:
-                validation_errors[
-                    helm_processor.input_artifact.artifact_name
-                ] = str(error)
+                validation_errors[helm_processor.input_artifact.artifact_name] = str(
+                    error
+                )
 
         if validation_errors:
             # Create an error file using a j2 template

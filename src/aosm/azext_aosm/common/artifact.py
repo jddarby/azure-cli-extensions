@@ -27,6 +27,7 @@ from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
     BlobClient,
     BlobType,
 )
+from azext_aosm.common.registry import Registry
 
 logger = get_logger(__name__)
 
