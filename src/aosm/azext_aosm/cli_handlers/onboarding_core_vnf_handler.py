@@ -53,7 +53,7 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
         return OnboardingCoreVNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, config_file: dict = None
+        self, config_file: Path
     ) -> CoreVNFCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:

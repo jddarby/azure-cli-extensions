@@ -183,9 +183,15 @@ class VHDProcessor(BaseInputProcessor):
     def generate_parameters_file(self) -> LocalFileBuilder:
         """ Generate parameters file. """
         mapping_rule_profile = self._generate_mapping_rule_profile()
-        params = (
-            mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
-        )
+        if (mapping_rule_profile.vhd_image_mapping_rule_profile
+           and mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration):
+            params = (
+                mapping_rule_profile.vhd_image_mapping_rule_profile.user_configuration
+            )
+        # We still want to create an empty params file,
+        # otherwise the nf definition bicep will refer to files that don't exist
+        else:
+            params = '{}'
         logger.info(
             "Created parameters file for Nexus image."
         )

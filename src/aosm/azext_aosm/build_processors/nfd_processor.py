@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from knack.log import get_logger
-
+from azure.cli.core.azclierror import ResourceNotFoundError
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.artifact import (BaseArtifact, LocalFileACRArtifact)
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
@@ -21,7 +21,6 @@ from azext_aosm.vendored_sdks.models import (
     ReferencedResource, TemplateType)
 from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME, NSD_NF_TEMPLATE_FILENAME, NSD_TEMPLATE_FOLDER_NAME
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
-
 logger = get_logger(__name__)
 
 
@@ -77,9 +76,13 @@ class NFDProcessor(BaseInputProcessor):
         )
 
         template_path = get_template_path(NSD_TEMPLATE_FOLDER_NAME, NSD_NF_TEMPLATE_FILENAME)
-        params = {
-            "nfvi_type": self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type
-        }
+        if self.input_artifact.network_function_definition.properties:
+            params = {
+                "nfvi_type": self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type
+            }
+        # TODO: check this can even be none? Mypy complains but i think it can't
+        else:
+            raise ResourceNotFoundError("The NFDV provided has no nfvi type.")
         bicep_contents = render_bicep_contents_from_j2(template_path, params)
         # Create a local file builder for the ARM template
         file_builder = LocalFileBuilder(

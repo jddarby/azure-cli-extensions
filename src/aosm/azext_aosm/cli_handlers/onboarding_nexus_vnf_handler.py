@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List, Tuple, Optional
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import NexusArmBuildProcessor
@@ -45,7 +45,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
     config: OnboardingNexusVNFInputConfig
 
     def _get_input_config(
-        self, input_config: Dict[str, Any] = None
+        self, input_config: Optional[dict] = None
     ) -> OnboardingNexusVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
@@ -53,7 +53,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
         return OnboardingNexusVNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, config_file: dict = None
+        self, config_file: Path
     ) -> NexusVNFCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
@@ -62,7 +62,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
             params_dict = {}
         return NexusVNFCommonParametersConfig(**params_dict)
 
-    def _get_processor_list(self) -> [BaseInputProcessor]:
+    def _get_processor_list(self) -> List[BaseInputProcessor]:
         processor_list = []
         # for each arm template, instantiate arm processor
         for arm_template in self.config.arm_templates:
@@ -120,13 +120,13 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
         )
         return base_file
 
-    def _split_image_path(self, image) -> "tuple[str, str, str]":
+    def _split_image_path(self, image) -> Tuple[str, str, str]:
         """Split the image path into source acr registry, name and version."""
         (source_acr_registry, name_and_version) = image.split("/", 2)
         (name, version) = name_and_version.split(":", 2)
         return (source_acr_registry, name, version)
 
-    def _generate_type_specific_nf_application(self, processor) -> "tuple[list, list]":
+    def _generate_type_specific_nf_application(self, processor) -> Tuple[list, list]:
         """Generate the type specific nf application."""
         arm_nf = []
         image_nf = []

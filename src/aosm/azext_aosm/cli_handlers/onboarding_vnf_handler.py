@@ -7,7 +7,9 @@ from abc import abstractmethod
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from knack.log import get_logger
-
+# from azext_aosm.configuration_models.onboarding_vnf_input_config import (
+#     OnboardingBaseVNFInputConfig,
+# )
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
@@ -49,6 +51,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         """
         logger.info("Creating artifacts list for artifacts.json")
+        # assert isinstance(self.config, OnboardingBaseVNFInputConfig)
         artifact_list = []
         # For each arm template, get list of artifacts and combine
         for processor in self.processors:

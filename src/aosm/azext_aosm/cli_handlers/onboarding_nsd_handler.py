@@ -49,7 +49,8 @@ from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-
+from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
+from azext_aosm.configuration_models.onboarding_nsd_input_config import NetworkFunctionPropertiesConfig
 logger = get_logger(__name__)
 
 
@@ -93,6 +94,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         # for each resource element template, instantiate processor
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "ArmTemplate":
+                assert isinstance(resource_element.properties, ArmTemplatePropertiesConfig)
                 arm_input = ArmTemplateInput(
                     artifact_name=resource_element.properties.artifact_name,
                     artifact_version=resource_element.properties.version,
@@ -106,6 +108,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
                 )
             elif resource_element.resource_element_type == "NF":
+                assert isinstance(resource_element.properties, NetworkFunctionPropertiesConfig)
                 # TODO: change artifact name and version to the nfd name and version or justify why it was this
                 #       in the first place
                 # AC4 note: I couldn't find a reference in the old code, but this

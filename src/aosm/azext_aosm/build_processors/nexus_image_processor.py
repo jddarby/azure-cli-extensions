@@ -156,12 +156,17 @@ class NexusImageProcessor(BaseInputProcessor):
     def generate_parameters_file(self) -> LocalFileBuilder:
         """ Generate parameters file. """
         mapping_rule_profile = self._generate_mapping_rule_profile()
-        params = (
-            mapping_rule_profile.image_mapping_rule_profile.user_configuration
-        )
-        logger.info(
-            "Created parameters file for Nexus image."
-        )
+        if mapping_rule_profile.image_mapping_rule_profile:
+            params = (
+                mapping_rule_profile.image_mapping_rule_profile.user_configuration
+            )
+            logger.info(
+                "Created parameters file for Nexus image."
+            )
+        # We still want to create an empty params file,
+        # otherwise the nf definition bicep will refer to files that don't exist
+        else:
+            params = '{}'
         return LocalFileBuilder(
             Path(
                 VNF_OUTPUT_FOLDER_FILENAME,
