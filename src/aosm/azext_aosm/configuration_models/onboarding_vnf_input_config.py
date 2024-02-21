@@ -154,7 +154,7 @@ class OnboardingCoreVNFInputConfig(OnboardingNFDBaseInputConfig):
     @property
     def sa_manifest_name(self) -> str:
         """Return the Storage account manifest name from the NFD name."""
-        return f"{self.blob_artifact_store_name}-manifest-{self.version.replace('.', '-')}"
+        return f"{self.blob_artifact_store_name}-sa-manifest-{self.version.replace('.', '-')}"
 
     def validate(self):
         """Validate the configuration."""

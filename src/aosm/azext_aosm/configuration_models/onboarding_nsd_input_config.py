@@ -193,6 +193,12 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
         )
     )
 
+    @property
+    def acr_manifest_name(self) -> str:
+        """Return the Storage account manifest name from the NFD name."""
+        sanitized_acr_name = self.acr_artifact_store_name.lower().replace("_", "-")
+        return f"{sanitized_acr_name}-nsd-manifest-{self.nsd_version.replace('.', '-')}"
+
     def validate(self):
         """Validate the configuration."""
         super().validate()
