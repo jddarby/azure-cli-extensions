@@ -379,7 +379,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
             self._check_tool_installed("docker")
-            ## TODO: Should this be done in the Registry class
+            ## TODO pk5: Should this be done in the Registry class
             image_name = (
                 f"{self._clean_name(self.source_registry.registry_name)}/"
                 f"{self.namespace_with_slash}{self.artifact_name}"
@@ -393,7 +393,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                 command_context=command_context,
             )
         else:
-            # TODO: check if this works
+            # TODO pk5: check if this works
             print(f"Using az acr import to copy image artifact: {self.artifact_name}")
             self._copy_image(
                 config=config,

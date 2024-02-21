@@ -6,20 +6,15 @@ import json
 import re
 import shutil
 import subprocess
+import os
+from typing import List
 import requests
 from requests.auth import HTTPBasicAuth
 from knack.log import get_logger
 from knack.util import CLIError
-from azure.cli.command_modules.acr._docker_utils import (
-    request_data_from_registry,
-    get_access_credentials,
-    RegistryAccessTokenPermission,
-)
+import base64
 
-try:
-    from urllib.parse import unquote
-except ImportError:
-    from urllib import unquote
+# TODO: check linting
 
 logger = get_logger(__name__)
 
@@ -113,19 +108,40 @@ class Registry:
             ]
             _call_subprocess_raise_output(docker_logout_cmd)
 
+    def get_access_credentials(self):
+        try:
+            with open(os.path.expanduser("~/.docker/config.json")) as credentials_file:
+                credentials = json.load(credentials_file)
+                auth_token = credentials["auths"][self.registry_name.lower()]["auth"]
+                decoded_auth_token = base64.b64decode(auth_token).decode()
+                username, password = decoded_auth_token.split(":")
+                return username, password
+        except:
+            # TODO: this should be a better except
+            raise Exception("Failed to get access credentials")
+
     def get_images(self):
 
+        username, password = self.get_access_credentials()
         images = {}
         for namespace in self.registry_namespaces:
             # TODO: should this have a try and except block?
-            # TODO: this should use real username and password
-            # TODO: I didn't actually test this if it works from code but in the command line I tried: "curl -u username:password -X GET https://TestNsdTest481729ba55.azurecr.io/v2/samples/cust-core-mco-eng-docker/ifxr/tags/list" and that worked. You can ask Jacob how to find the username and password for an ACR
+            # TODO: make sure you are not logging out passwords
             url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
-            response = requests.get(url, auth=HTTPBasicAuth("admin", "adminpass!"))
-
-            for image in response["tags"]:
-                images[image] = (self, namespace)
-
+            response = requests.get(
+                url,
+                auth=HTTPBasicAuth(
+                    username,
+                    password,
+                ),
+            )
+            try:
+                tags = response.json()["tags"]
+                for tag in tags:
+                    images[tag] = (self, namespace)
+            except KeyError:
+                # TODO: give some useful log and potentially error?
+                continue
         return images
 
 
@@ -288,7 +304,7 @@ class RegistryHandler:
         self.registry_list = self._create_registry_list()
         self.registry_for_image = self._get_images()
 
-    def _create_registry_list(self) -> [Registry]:
+    def _create_registry_list(self) -> List[Registry]:
         """Get the list of registries."""
 
         registries = {}
