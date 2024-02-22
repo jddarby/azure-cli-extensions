@@ -17,7 +17,11 @@ from knack.util import CLIError
 from oras.client import OrasClient
 
 from azext_aosm.common.command_context import CommandContext
-from azext_aosm.common.utils import convert_bicep_to_arm
+from azext_aosm.common.utils import (
+    convert_bicep_to_arm,
+    call_subprocess_raise_output,
+    clean_registry_name,
+)
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
     VNFCommonParametersConfig,
@@ -74,45 +78,6 @@ class BaseACRArtifact(BaseArtifact):
             raise CLIError(f"You must install {tool_name} to use this command.")
 
     @staticmethod
-    def _clean_name(registry_name: str) -> str:
-        """Remove https:// from the registry name."""
-        return registry_name.replace("https://", "")
-
-    @staticmethod
-    def _call_subprocess_raise_output(cmd: list) -> None:
-        """
-        Call a subprocess and raise a CLIError with the output if it fails.
-
-        :param cmd: command to run, in list format
-        :raise CLIError: if the subprocess fails
-        """
-        log_cmd = cmd.copy()
-        if "--password" in log_cmd:
-            # Do not log out passwords.
-            log_cmd[log_cmd.index("--password") + 1] = "[REDACTED]"
-
-        try:
-            called_process = subprocess.run(
-                cmd, encoding="utf-8", capture_output=True, text=True, check=True
-            )
-            logger.debug(
-                "Output from %s: %s. Error: %s",
-                log_cmd,
-                called_process.stdout,
-                called_process.stderr,
-            )
-        except subprocess.CalledProcessError as error:
-            all_output: str = (
-                f"Command: {' '.join(log_cmd)}\n"
-                f"stdout: {error.stdout}\n"
-                f"stderr: {error.stderr}\n"
-                f"Return code: {error.returncode}"
-            )
-            logger.debug("The following command failed to run:\n%s", all_output)
-            # Raise the error without the original exception, which may contain secrets.
-            raise CLIError(all_output) from None
-
-    @staticmethod
     @lru_cache(maxsize=32)
     def _manifest_credentials(
         config: BaseCommonParametersConfig,
@@ -147,7 +112,7 @@ class BaseACRArtifact(BaseArtifact):
             raise ValueError(
                 "Cannot upload artifact. Oras client has no remote hostname."
             )
-        return BaseACRArtifact._clean_name(upload_client.remote.hostname)
+        return clean_registry_name(upload_client.remote.hostname)
 
 
 class LocalFileACRArtifact(BaseACRArtifact):
@@ -270,7 +235,7 @@ class RemoteACRArtifact(BaseACRArtifact):
             local_docker_image,
             target,
         ]
-        self._call_subprocess_raise_output(tag_image_cmd)
+        call_subprocess_raise_output(tag_image_cmd)
 
         logger.info(
             "Logging into artifact store registry %s", oras_client.remote.hostname
@@ -290,7 +255,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                     "--password",
                     target_password,
                 ]
-                self._call_subprocess_raise_output(target_acr_login_cmd)
+                call_subprocess_raise_output(target_acr_login_cmd)
                 logger.debug("Logged in to %s", oras_client.remote.hostname)
                 break
             except CLIError as error:
@@ -312,7 +277,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                 "push",
                 target,
             ]
-            self._call_subprocess_raise_output(push_target_image_cmd)
+            call_subprocess_raise_output(push_target_image_cmd)
         except CLIError as error:
             logger.error(
                 ("Failed to push %s to %s."),
@@ -327,7 +292,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                 "logout",
                 target_acr,
             ]
-            self._call_subprocess_raise_output(docker_logout_cmd)
+            call_subprocess_raise_output(docker_logout_cmd)
 
     def _copy_image(
         self,
@@ -349,7 +314,6 @@ class RemoteACRArtifact(BaseACRArtifact):
         Artifact Store registry. This requires either Contributor role or a
         custom role that allows the importImage action over the whole subscription.
 
-        :param source_registry: source registry login server e.g. https://uploadacr.azurecr.io
         :param source_image: source image including namespace and tags e.g.
                              samples/nginx:stable
         """
@@ -381,7 +345,7 @@ class RemoteACRArtifact(BaseACRArtifact):
             self._check_tool_installed("docker")
             ## TODO pk5: Should this be done in the Registry class
             image_name = (
-                f"{self._clean_name(self.source_registry.registry_name)}/"
+                f"{clean_registry_name(self.source_registry.registry_name)}/"
                 f"{self.namespace_with_slash}{self.artifact_name}"
                 f":{self.artifact_version}"
             )

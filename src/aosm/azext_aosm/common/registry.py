@@ -7,75 +7,55 @@ import re
 import shutil
 import subprocess
 import os
-from typing import List
+from typing import List, Tuple, Dict
 import requests
 from requests.auth import HTTPBasicAuth
 from knack.log import get_logger
 from knack.util import CLIError
 import base64
+from azure.cli.core.azclierror import UnauthorizedError
+
+from azext_aosm.common.utils import (
+    call_subprocess_raise_output,
+    clean_registry_name,
+)
 
 # TODO: check linting
 
 logger = get_logger(__name__)
-
-
-def _clean_name(registry_name: str) -> str:
-    """Remove https:// from the registry name."""
-    return registry_name.replace("https://", "")
-
-
-# TODO: This is taken from the Artifact class. This should just be a utility function
-def _call_subprocess_raise_output(cmd: list) -> None:
-    """
-    Call a subprocess and raise a CLIError with the output if it fails.
-
-    :param cmd: command to run, in list format
-    :raise CLIError: if the subprocess fails
-    """
-    log_cmd = cmd.copy()
-    if "--password" in log_cmd:
-        # Do not log out passwords.
-        log_cmd[log_cmd.index("--password") + 1] = "[REDACTED]"
-
-    try:
-        called_process = subprocess.run(
-            cmd, encoding="utf-8", capture_output=True, text=True, check=True
-        )
-        logger.debug(
-            "Output from %s: %s. Error: %s",
-            log_cmd,
-            called_process.stdout,
-            called_process.stderr,
-        )
-        return called_process.stdout
-    except subprocess.CalledProcessError as error:
-        all_output: str = (
-            f"Command: {' '.join(log_cmd)}\n"
-            f"stdout: {error.stdout}\n"
-            f"stderr: {error.stderr}\n"
-            f"Return code: {error.returncode}"
-        )
-        logger.debug("The following command failed to run:\n%s", all_output)
-        # Raise the error without the original exception, which may contain secrets.
-        raise CLIError(all_output) from None
+ACR_REGISTRY_NAME_PATTERN = r"^([a-zA-Z0-9]+\.azurecr\.io)"
 
 
 class Registry:
+    """
+    A class to represent a registry and handle all Registry operations.
+    """
+
     def __init__(self, registry_name: str, registry_namespace: str):
+        """
+        Initialise the Registry object.
+
+        :param registry_name: The name of the registry
+        :param registry_namespace: The namespace of the registry
+        """
         self.registry_name = registry_name
         self.registry_namespaces = [registry_namespace]
 
-    def add_namespace(self, namespace: str):
+    def add_namespace(self, namespace: str) -> None:
+        """
+        Add a namespace to the registry.
+
+        :param namespace: The namespace to add to the registry
+        """
         self.registry_namespaces.append(namespace)
 
-    # TODO: this has not been tested at all but it is pretty much the same as what was in the RemoteACRArtifact class
-    def pull_image_to_local_registry(self, source_image: str):
+    # TODO: Test
+    def pull_image_to_local_registry(self, source_image: str) -> None:
         """
         Pull image to local registry using docker pull. Requires docker.
 
         Uses the CLI user's context to log in to the source registry.
 
-        :param: source_registry_login_server: e.g. uploadacr.azurecr.io
         :param: source_image: source docker image name e.g.
             uploadacr.azurecr.io/samples/nginx:stable
         """
@@ -88,7 +68,7 @@ class Registry:
                 "pull",
                 source_image,
             ]
-            _call_subprocess_raise_output(pull_source_image_cmd)
+            call_subprocess_raise_output(pull_source_image_cmd)
         except CLIError as error:
             logger.error(
                 (
@@ -101,31 +81,51 @@ class Registry:
             logger.debug(error, exc_info=True)
             raise error
         finally:
+            # TODO: If we do this before the get_images thing, we will lose the credentials from the config.json file
             docker_logout_cmd = [
                 str(shutil.which("docker")),
                 "logout",
                 self.registry_name,
             ]
-            _call_subprocess_raise_output(docker_logout_cmd)
+            call_subprocess_raise_output(docker_logout_cmd)
 
-    def get_access_credentials(self):
+    def get_access_credentials(self) -> Tuple[str, str]:
+        """
+        Get the access credentials for the registry from the default docker config file.
+
+        :return: A tuple of the username and password for the registry
+        """
+
         try:
-            with open(os.path.expanduser("~/.docker/config.json")) as credentials_file:
+            docker_config_path = os.path.expanduser("~/.docker/config.json")
+            # TODO: specify the encoding
+            with open(docker_config_path) as credentials_file:
                 credentials = json.load(credentials_file)
                 auth_token = credentials["auths"][self.registry_name.lower()]["auth"]
                 decoded_auth_token = base64.b64decode(auth_token).decode()
                 username, password = decoded_auth_token.split(":")
                 return username, password
-        except:
-            # TODO: this should be a better except
-            raise Exception("Failed to get access credentials")
+        except (FileNotFoundError, KeyError) as error:
+            # TODO: Should we allow the user to input credentials manually?
+            logger.debug(error, exc_info=True)
+            raise UnauthorizedError(
+                f"Access credentials for registry {self.registry_name} do no exist in the {docker_config_path}"
+            ) from error
 
-    def get_images(self):
+    def get_images(self) -> Dict[str, Tuple["Registry", str]]:
+        """
+        Query the images in the registry in all available namespaces.
 
+        :return: A dictionary of images with the image name as the key
+        and the registry and namespace as the value.
+        """
+
+        # We need to pass in username and password instead of logging into the registry because
+        # docker does not have a command to list images. Instead we need to use a get request
         username, password = self.get_access_credentials()
         images = {}
+
         for namespace in self.registry_namespaces:
-            # TODO: should this have a try and except block?
             # TODO: make sure you are not logging out passwords
             url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
             response = requests.get(
@@ -138,19 +138,29 @@ class Registry:
             try:
                 tags = response.json()["tags"]
                 for tag in tags:
+                    # TODO: if the tag appears in multiple namespaces, it will be overwritten, is that ok?
                     images[tag] = (self, namespace)
             except KeyError:
-                # TODO: give some useful log and potentially error?
+                logger.debug(
+                    "Could not obtain tags from %s", self.registry_name, exc_info=True
+                )
                 continue
         return images
 
 
 class ACRRegistry(Registry):
+    """
+    A class to represent an Azure Container Registry and handle all ACR operations.
+    """
 
     # TODO: there is a comment in the artifact.py file about the login to ACRs only working intermittently. We should check if this is the case here
     def _login(self):
+        """
+        Log in to the source registry using the Azure CLI.
+        """
+
         message = f"Logging into source registry {self.registry_name}"
-        print(message)  # Should this be a print?
+        print(message)  # TODO: Should this be a print?
         logger.info(message)
         try:
             acr_source_login_cmd = [
@@ -160,7 +170,8 @@ class ACRRegistry(Registry):
                 "--name",
                 self.registry_name,
             ]
-            _call_subprocess_raise_output(acr_source_login_cmd)
+            call_subprocess_raise_output(acr_source_login_cmd)
+        # TODO: better error
         except CLIError as error:
             logger.error(("Failed to log into registry %s."), self.registry_name)
             logger.debug(error, exc_info=True)
@@ -178,7 +189,16 @@ class ACRRegistry(Registry):
         target_acr: str,
         artifact_name: str,
         artifact_version: str,
-    ):
+    ) -> None:
+        """
+        Copy an image from this registry to a target ACR.
+
+        :param source_image: The image to copy
+        :param target_acr: The target ACR
+        :param artifact_name: The name of the artifact
+        :param artifact_version: The version of the artifact
+        """
+
         try:
             print("Copying artifact from source registry")
             # In order to use az acr import cross subscription, we need to use a token
@@ -189,7 +209,7 @@ class ACRRegistry(Registry):
             # we're attempting to get the token (source) with the same context as that
             # in which we are creating the ACR (i.e. the target tenant)
             get_token_cmd = [str(shutil.which("az")), "account", "get-access-token"]
-            # Dont use _call_subprocess_raise_output here as we don't want to log the
+            # Dont use call_subprocess_raise_output here as we don't want to log the
             # output
             called_process = subprocess.run(  # noqa: S603
                 get_token_cmd,
@@ -217,7 +237,7 @@ class ACRRegistry(Registry):
 
         try:
             # TODO: we need to add namespace here
-            source = f"{_clean_name(self.registry_name)}/{source_image}"
+            source = f"{clean_registry_name(self.registry_name)}/{source_image}"
             acr_import_image_cmd = [
                 str(shutil.which("az")),
                 "acr",
@@ -231,7 +251,7 @@ class ACRRegistry(Registry):
                 "--password",
                 access_token,
             ]
-            _call_subprocess_raise_output(acr_import_image_cmd)
+            call_subprocess_raise_output(acr_import_image_cmd)
         except CLIError as error:
             logger.debug(error, exc_info=True)
             if (" 401" in str(error)) or ("Unauthorized" in str(error)):
@@ -270,7 +290,13 @@ class ACRRegistry(Registry):
                 error,
             )
 
-    def get_images(self):
+    def get_images(self) -> Dict[str, Tuple["ACRRegistry", str]]:
+        """
+        Query the images in the registry in all available namespaces.
+
+        :return: A dictionary of images with the image name as the key
+        and the registry and namespace as the value.
+        """
         images = {}
         self._login()
         for namespace in self.registry_namespaces:
@@ -285,50 +311,52 @@ class ACRRegistry(Registry):
                 namespace,
             ]
 
-            output = _call_subprocess_raise_output(acr_source_get_images_cmd)
+            output = call_subprocess_raise_output(acr_source_get_images_cmd)
 
-            # This should give me a dictionary where I can search for an image and I will get a registry object (but I also want a namespace with it as well)
             for image in output:
                 images[image] = (self, namespace)
 
         return images
 
 
-class GenericRegistry(Registry):
-    pass
-
-
 class RegistryHandler:
+    """
+    A class to handle all the registries and their images.
+    """
+
     def __init__(self, image_sources):
         self.image_sources = image_sources
         self.registry_list = self._create_registry_list()
-        self.registry_for_image = self._get_images()
+        self.registry_for_image = (
+            self._get_images()
+        )  # TODO: should this be running in build?
 
     def _create_registry_list(self) -> List[Registry]:
-        """Get the list of registries."""
+        """Create a list of registry objects from the registries provided by the user."""
 
         registries = {}
         registry_list = []
 
         for registry in self.image_sources:
-            # if registry matches the pattern of myacr1.azurecr.io/**, then create a an instance of the ACR registry class
+            # if registry matches the pattern of myacr1.azurecr.io/**,
+            # then create a an instance of the ACR registry class
             parts = registry.split("/", 1)
             registry_name = parts[0]
             registry_namespace = parts[1] if len(parts) > 1 else None
-            # Remove a trailing slash from regisry_namespace
-            registry_namespace = registry_namespace.rstrip("/")
 
-            # TODO: this should be moved to top of the file
-            acr_pattern = r"^([a-zA-Z0-9]+\.azurecr\.io)"
-            match = re.match(acr_pattern, registry_name)
+            # Remove a trailing slash from regisry_namespace
+            if registry_namespace:
+                registry_namespace = registry_namespace.rstrip("/")
+
+            acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
             if registry_name not in registries:
-                if match:
+                if acr_match:
                     registries[registry_name] = ACRRegistry(
                         registry_name, registry_namespace
                     )
                 else:
-                    registries[registry_name] = GenericRegistry(
+                    registries[registry_name] = Registry(
                         registry_name, registry_namespace
                     )
                 registry_list.append(registries[registry_name])
@@ -337,13 +365,18 @@ class RegistryHandler:
 
         return registry_list
 
-    def get_registry_list(self):
+    def get_registry_list(self) -> List[Registry]:
+        """
+        Get the list of registries.
+        """
         return self.registry_list
 
-    def _get_images(self):
-        # go through all registries and find the images that they have.
-        # Then have some function that can search for registry based on the image.
-        # For example find_registry_for_image
+    def _get_images(self) -> Dict[str, Tuple["Registry", str]]:
+        """
+        Cycle through all available registries and get the images that they have.
+
+        :return: A dictionary of images with the image name as the key and the registry and namespace as the value.
+        """
         registry_for_image = {}
 
         for registry in self.registry_list:
@@ -352,7 +385,13 @@ class RegistryHandler:
 
         return registry_for_image
 
-    def find_registry_for_image(self, image):
+    def find_registry_for_image(self, image) -> Tuple["Registry", str]:
+        """
+        Find the registry and namespace for a given image.
+
+        :param image: The image to find the registry for
+        :return: The registry and namespace for the image
+        """
 
         if image in self.registry_for_image:
             return self.registry_for_image[image]

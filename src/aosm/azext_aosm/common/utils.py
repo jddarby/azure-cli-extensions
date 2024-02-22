@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 from knack.log import get_logger
+from knack.util import CLIError
 
 from azext_aosm.common.exceptions import InvalidFileTypeError, MissingDependency
 
@@ -104,3 +105,43 @@ def check_tool_installed(tool_name: str) -> None:
     """
     if shutil.which(tool_name) is None:
         raise MissingDependency(f"You must install {tool_name} to use this command.")
+
+
+def call_subprocess_raise_output(cmd: list) -> None:
+    """
+    Call a subprocess and raise a CLIError with the output if it fails.
+
+    :param cmd: command to run, in list format
+    :raise CLIError: if the subprocess fails
+    """
+    log_cmd = cmd.copy()
+    if "--password" in log_cmd:
+        # Do not log out passwords.
+        log_cmd[log_cmd.index("--password") + 1] = "[REDACTED]"
+
+    try:
+        called_process = subprocess.run(
+            cmd, encoding="utf-8", capture_output=True, text=True, check=True
+        )
+        logger.debug(
+            "Output from %s: %s. Error: %s",
+            log_cmd,
+            called_process.stdout,
+            called_process.stderr,
+        )
+        return called_process.stdout
+    except subprocess.CalledProcessError as error:
+        all_output: str = (
+            f"Command: {' '.join(log_cmd)}\n"
+            f"stdout: {error.stdout}\n"
+            f"stderr: {error.stderr}\n"
+            f"Return code: {error.returncode}"
+        )
+        logger.debug("The following command failed to run:\n%s", all_output)
+        # Raise the error without the original exception, which may contain secrets.
+        raise CLIError(all_output) from None
+
+
+def clean_registry_name(registry_name: str) -> str:
+    """Remove https:// from the registry name."""
+    return registry_name.replace("https://", "")
