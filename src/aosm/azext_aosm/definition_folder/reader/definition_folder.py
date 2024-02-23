@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from knack.log import get_logger
-
+from azure.mgmt.resource.resources.models import ResourceGroup
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
@@ -72,13 +72,19 @@ class DefinitionFolder:
         return parsed_elements
 
     def _validate_resource_group_exists(self, config, command_context):
+        """Ensure resource group exists.
+
+        Using ResourceManagementClient:
+        - Check for existence of resource group from allDeployParameters.json.
+        - Create resource group if doesn't exist.
+        """
         resource_client = command_context.resources_client
         if not resource_client.resource_groups.check_existence(config.publisherResourceGroupName):
+            rg_params = ResourceGroup(location=config.location)
             resource_client.resource_groups.create_or_update(
                 resource_group_name=config.publisherResourceGroupName,
-                parameters={location = config.location}
+                parameters=rg_params
             )
-
 
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
