@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+import re
 import os
 import tarfile
 from pathlib import Path
@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 
 from knack.log import get_logger
-
+from azext_aosm.common.constants import SEMVER_REGEX
 from azext_aosm.common.exceptions import InvalidFileTypeError, MissingDependency
 
 logger = get_logger(__name__)
@@ -123,3 +123,12 @@ def check_tool_installed(tool_name: str) -> None:
     """
     if shutil.which(tool_name) is None:
         raise MissingDependency(f"You must install {tool_name} to use this command.")
+
+def split_image_path(image) -> "tuple[str, str, str]":
+    """Split the image path into source acr registry, name and version."""
+    (source_acr_registry, name_and_version) = image.split("/", 2)
+    (name, version) = name_and_version.split(":", 2)
+    return (source_acr_registry, name, version)
+
+def is_semver(string):
+    return re.match(SEMVER_REGEX, string) is not None
