@@ -71,10 +71,20 @@ class DefinitionFolder:
             )
         return parsed_elements
 
+    def _validate_resource_group_exists(self, config, command_context):
+        resource_client = command_context.resources_client
+        if not resource_client.resource_groups.check_existence(config.publisherResourceGroupName):
+            resource_client.resource_groups.create_or_update(
+                resource_group_name=config.publisherResourceGroupName,
+                parameters={location = config.location}
+            )
+
+
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Deploy the resources defined in the folder."""
+        self._validate_resource_group_exists(config, command_context)
         for element in self.elements:
             logger.debug(
                 "Deploying definition element %s of type %s",
