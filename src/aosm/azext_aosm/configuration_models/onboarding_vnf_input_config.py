@@ -235,7 +235,7 @@ class OnboardingNexusVNFInputConfig(OnboardingNFDBaseInputConfig):
             (_, _, version) = split_image_path(image)
             if not is_valid_nexus_image_version(version):
                 raise ValidationError(f"{image} has invalid version '{version}'.\n"
-                                      "Allowed formats are major.minor.patch")
+                                      "Allowed format is major.minor.patch")
         if not self.arm_templates:
             raise ValidationError("You must include at least one arm template")
         for arm_template in self.arm_templates:
