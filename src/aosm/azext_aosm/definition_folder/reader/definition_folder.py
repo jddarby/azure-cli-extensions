@@ -75,7 +75,8 @@ class DefinitionFolder:
         """Ensure resource group exists.
 
         Using ResourceManagementClient:
-        - Check for existence of resource group from allDeployParameters.json.
+        - Check for existence of resource group specified in allDeployParameters.json.
+
         - Create resource group if doesn't exist.
         """
         resource_client = command_context.resources_client
