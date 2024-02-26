@@ -12,7 +12,7 @@ from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesCo
 from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
     OnboardingNFDBaseInputConfig,
 )
-from azext_aosm.common.utils import split_image_path, is_semver
+from azext_aosm.common.utils import split_image_path, is_valid_nexus_image_version
 
 
 @dataclass
@@ -233,7 +233,7 @@ class OnboardingNexusVNFInputConfig(OnboardingNFDBaseInputConfig):
             raise ValidationError("You must include at least one image")
         for image in self.images:
             (_, _, version) = split_image_path(image)
-            if not is_semver(version):
+            if not is_valid_nexus_image_version(version):
                 raise ValidationError(f"{image} has invalid version '{version}'.\n"
                                       "Allowed formats are major.minor.patch")
         if not self.arm_templates:

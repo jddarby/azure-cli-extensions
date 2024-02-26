@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 
 from knack.log import get_logger
-from azext_aosm.common.constants import SEMVER_REGEX
+from azext_aosm.common.constants import NEXUS_IMAGE_REGEX
 from azext_aosm.common.exceptions import InvalidFileTypeError, MissingDependency
 
 logger = get_logger(__name__)
@@ -130,5 +130,11 @@ def split_image_path(image) -> "tuple[str, str, str]":
     (name, version) = name_and_version.split(":", 2)
     return (source_acr_registry, name, version)
 
-def is_semver(string):
-    return re.match(SEMVER_REGEX, string) is not None
+def is_valid_nexus_image_version(string):
+    """Check if image version is valid.
+    
+    This is based on validation in pez repo.
+    It requires the image version to be major.minor.path,
+    but does enforce full semver validation.
+    """
+    return re.match(NEXUS_IMAGE_REGEX, string) is not None
