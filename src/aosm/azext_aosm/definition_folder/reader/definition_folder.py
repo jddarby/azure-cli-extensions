@@ -71,18 +71,17 @@ class DefinitionFolder:
             )
         return parsed_elements
 
-    def _validate_resource_group_exists(self, config, command_context):
-        """Ensure resource group exists.
+    def _create_or_confirm_existence_of_resource_group(self, config, command_context):
+        """Ensure resource group exists before deploying of elements begins.
 
         Using ResourceManagementClient:
         - Check for existence of resource group specified in allDeployParameters.json.
-
         - Create resource group if doesn't exist.
         """
-        resource_client = command_context.resources_client
-        if not resource_client.resource_groups.check_existence(config.publisherResourceGroupName):
+        resources_client = command_context.resources_client
+        if not resources_client.resource_groups.check_existence(config.publisherResourceGroupName):
             rg_params = ResourceGroup(location=config.location)
-            resource_client.resource_groups.create_or_update(
+            resources_client.resource_groups.create_or_update(
                 resource_group_name=config.publisherResourceGroupName,
                 parameters=rg_params
             )
@@ -91,7 +90,7 @@ class DefinitionFolder:
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Deploy the resources defined in the folder."""
-        self._validate_resource_group_exists(config, command_context)
+        self._create_or_confirm_existence_of_resource_group(config, command_context)
         for element in self.elements:
             logger.debug(
                 "Deploying definition element %s of type %s",
