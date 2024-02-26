@@ -187,13 +187,12 @@ class BaseInputProcessor(ABC):
 
             if "type" not in subschema:
                 if "oneOf" or "anyOf" in subschema:
-                    raise InvalidArgumentValueError(f"The subschema '{subschema_name}' does not contain a type.\n"
-                                                    "It contains 'anyOf' or 'oneOf' logic, "
-                                                    "which is not valid for AOSM.\n"
-                                                    "Please remove this from your values.schema.json "
-                                                     "and provide a concrete type "
-                                                    "or remove the schema and the CLI will generate a generic schema."
-                                                    )
+                    raise InvalidArgumentValueError(
+                        f"The subschema '{subschema_name}' does not contain a type.\n"
+                        "It contains 'anyOf' or 'oneOf' logic, which is not valid for AOSM.\n"
+                        "Please remove this from your values.schema.json and provide a concrete type "
+                        "or remove the schema and the CLI will generate a generic schema."
+                    )
                 else:
                     raise InvalidArgumentValueError(f"The subschema {subschema_name} does not contain a type. "
                                                     "This is a required field.\n"
