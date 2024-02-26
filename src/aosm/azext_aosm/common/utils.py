@@ -135,6 +135,6 @@ def is_valid_nexus_image_version(string):
     
     This is based on validation in pez repo.
     It requires the image version to be major.minor.path,
-    but does enforce full semver validation.
+    but does not enforce full semver validation.
     """
     return re.match(NEXUS_IMAGE_REGEX, string) is not None
