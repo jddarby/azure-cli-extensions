@@ -194,11 +194,11 @@ class BaseInputProcessor(ABC):
                         "or remove the schema and the CLI will generate a generic schema."
                     )
                 else:
-                    raise InvalidArgumentValueError(f"The subschema {subschema_name} does not contain a type. "
-                                                    "This is a required field.\n"
-                                                     "Please fix your values.schema.json "
-                                                     "or remove the schema and the CLI will generate a generic schema."
-                                                    )
+                    raise InvalidArgumentValueError(
+                        f"The subschema {subschema_name} does not contain a type. This is a required field.\n"
+                        "Please fix your values.schema.json or remove the schema and the CLI will generate a "
+                        "generic schema."
+                    )
             # If the property is not in the values, and is required, add it to the values.
             if (
                 "required" in schema
