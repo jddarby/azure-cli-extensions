@@ -15,6 +15,7 @@ from typing import Any, MutableMapping, Optional
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
     NFDCommonParametersConfig,
+    CoreVNFCommonParametersConfig
 )
 from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
     BlobClient,
@@ -268,11 +269,11 @@ class LocalFileACRArtifact(BaseACRArtifact):
                     password,
                 ]
                 self._call_subprocess_raise_output(helm_login_cmd)
-
+                # TODO: fix up helm package to use non-tmp path
                 push_command = [
                     str(shutil.which("helm")),
                     "push",
-                    f"/tmp/{self.artifact_name}-{self.artifact_version}.tgz",  # TODO: fix up helm package to use non-tmp path
+                    f"/tmp/{self.artifact_name}-{self.artifact_version}.tgz",
                     target_acr_with_protocol,
                 ]
                 self._call_subprocess_raise_output(push_command)
@@ -288,7 +289,8 @@ class LocalFileACRArtifact(BaseACRArtifact):
             logger.info("LocalFileACRArtifact uploaded %s to %s using helm push", self.file_path, target)
 
         else:  # TODO: Make this one of the allowed Azure CLI exceptions
-            raise ValueError(f"Unexpected artifact type. Got {self.artifact_type}. Expected {ArtifactType.ARM_TEMPLATE.value} or {ArtifactType.OCI_ARTIFACT.value}")
+            raise ValueError(f"Unexpected artifact type. Got {self.artifact_type}. "
+                             "Expected {ArtifactType.ARM_TEMPLATE.value} or {ArtifactType.OCI_ARTIFACT.value}")
 
 
 class RemoteACRArtifact(BaseACRArtifact):
@@ -640,7 +642,9 @@ class BaseStorageAccountArtifact(BaseArtifact):
             blob_name = container_name
 
         logger.debug("container name: %s, blob name: %s", container_name, blob_name)
-
+        # Liskov substitution dictates we must accept BaseCommonParametersConfig, but we should
+        # never be calling upload on this class unless we've got CoreVNFCommonParametersConfig
+        assert isinstance(config, CoreVNFCommonParametersConfig)
         manifest_credentials = (
             command_context.aosm_client.artifact_manifests.list_credential(
                 resource_group_name=config.publisherResourceGroupName,

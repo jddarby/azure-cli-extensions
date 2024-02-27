@@ -35,6 +35,8 @@ logger = get_logger(__name__)
 class OnboardingBaseCLIHandler(ABC):
     """Abstract base class for CLI handlers."""
 
+    config: OnboardingBaseInputConfig | BaseCommonParametersConfig
+
     def __init__(
         self,
         config_file_path: Optional[Path] = None,
