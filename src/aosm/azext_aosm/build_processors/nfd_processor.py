@@ -18,7 +18,8 @@ from azext_aosm.vendored_sdks.models import (
     DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication,
     NetworkFunctionDefinitionResourceElementTemplateDetails as
     NFDResourceElementTemplate, NSDArtifactProfile,
-    ReferencedResource, TemplateType)
+    ReferencedResource, TemplateType, ContainerizedNetworkFunctionDefinitionVersion,
+    VirtualNetworkFunctionDefinitionVersion)
 from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME, NSD_NF_TEMPLATE_FILENAME, NSD_TEMPLATE_FOLDER_NAME
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 logger = get_logger(__name__)
@@ -76,7 +77,25 @@ class NFDProcessor(BaseInputProcessor):
         )
 
         template_path = get_template_path(NSD_TEMPLATE_FOLDER_NAME, NSD_NF_TEMPLATE_FILENAME)
-        if self.input_artifact.network_function_definition.properties:
+
+        # This horrendous if statement is required because:
+        # - the 'properties' and 'network_function_template' attributes are optional
+        # - the isinstance check is because the base NetworkFunctionDefinitionVersionPropertiesFormat class
+        #   doesn't define the network_function_template attribute, even though both subclasses do.
+        # Not switching to EAFP style because mypy doesn't account for `except AttributeError` (for good reason).
+        # Similar test required in the NFD input, but we can't deduplicate the code because mypy doesn't
+        # propagate type narrowing from isinstance().
+        if (
+            self.input_artifact.network_function_definition.properties
+            and isinstance(
+                self.input_artifact.network_function_definition.properties,
+                (
+                    ContainerizedNetworkFunctionDefinitionVersion,
+                    VirtualNetworkFunctionDefinitionVersion,
+                ),
+            )
+            and self.input_artifact.network_function_definition.properties.network_function_template
+        ):
             params = {
                 "nfvi_type":
                 self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type

@@ -90,7 +90,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
         return NSDCommonParametersConfig(**params_dict)
 
     def _get_processor_list(self) -> list:
-        processor_list = []
+        processor_list: list[AzureCoreArmBuildProcessor | NFDProcessor] = []
         # for each resource element template, instantiate processor
         for resource_element in self.config.resource_element_templates:
             if resource_element.resource_element_type == "ArmTemplate":
@@ -201,7 +201,6 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     def build_resource_bicep(self) -> BicepDefinitionElementBuilder:
         """Build the resource bicep file."""
-        bicep_contents = {}
         schema_properties = {}
         nf_names = []
         ret_list = []
