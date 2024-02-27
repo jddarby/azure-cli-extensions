@@ -186,19 +186,18 @@ class BaseInputProcessor(ABC):
         for subschema_name, subschema in schema["properties"].items():
 
             if "type" not in subschema:
-                if "oneOf" or "anyOf" in subschema:
+                if ["oneOf", "anyOf"] in subschema:
                     raise InvalidArgumentValueError(
                         f"The subschema '{subschema_name}' does not contain a type.\n"
                         "It contains 'anyOf' or 'oneOf' logic, which is not valid for AOSM.\n"
                         "Please remove this from your values.schema.json and provide a concrete type "
                         "or remove the schema and the CLI will generate a generic schema."
                     )
-                else:
-                    raise InvalidArgumentValueError(
-                        f"The subschema {subschema_name} does not contain a type. This is a required field.\n"
-                        "Please fix your values.schema.json or remove the schema and the CLI will generate a "
-                        "generic schema."
-                    )
+                raise InvalidArgumentValueError(
+                    f"The subschema {subschema_name} does not contain a type. This is a required field.\n"
+                    "Please fix your values.schema.json or remove the schema and the CLI will generate a "
+                    "generic schema."
+                )
             # If the property is not in the values, and is required, add it to the values.
             if (
                 "required" in schema
