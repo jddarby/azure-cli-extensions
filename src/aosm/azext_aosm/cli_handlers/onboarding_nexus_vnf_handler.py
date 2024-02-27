@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
@@ -62,8 +64,8 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
             params_dict = {}
         return NexusVNFCommonParametersConfig(**params_dict)
 
-    def _get_processor_list(self) -> List[BaseInputProcessor]:
-        processor_list = []
+    def _get_processor_list(self) -> List[NexusArmBuildProcessor | NexusImageProcessor]:
+        processor_list: List[NexusArmBuildProcessor | NexusImageProcessor] = []
         # for each arm template, instantiate arm processor
         for arm_template in self.config.arm_templates:
             arm_input = ArmTemplateInput(

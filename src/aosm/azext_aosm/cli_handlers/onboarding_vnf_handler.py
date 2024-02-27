@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+from __future__ import annotations
+
 from pathlib import Path
 from abc import abstractmethod
 
@@ -11,6 +13,7 @@ from knack.log import get_logger
 #     OnboardingBaseVNFInputConfig,
 # )
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+from azext_aosm.configuration_models.onboarding_vnf_input_config import (OnboardingCoreVNFInputConfig, OnboardingNexusVNFInputConfig)
 from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
@@ -32,6 +35,8 @@ logger = get_logger(__name__)
 
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
+
+    config: OnboardingCoreVNFInputConfig | OnboardingNexusVNFInputConfig
 
     @property
     def default_config_file_name(self) -> str:

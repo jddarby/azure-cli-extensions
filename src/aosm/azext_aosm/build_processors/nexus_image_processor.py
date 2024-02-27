@@ -156,7 +156,10 @@ class NexusImageProcessor(BaseInputProcessor):
     def generate_parameters_file(self) -> LocalFileBuilder:
         """ Generate parameters file. """
         mapping_rule_profile = self._generate_mapping_rule_profile()
-        if mapping_rule_profile.image_mapping_rule_profile:
+        if (
+            mapping_rule_profile.image_mapping_rule_profile
+            and mapping_rule_profile.image_mapping_rule_profile.user_configuration
+        ):
             params = (
                 mapping_rule_profile.image_mapping_rule_profile.user_configuration
             )
