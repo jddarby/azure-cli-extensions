@@ -3,7 +3,6 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-
 from dataclasses import dataclass, field
 from typing import List
 
@@ -13,6 +12,7 @@ from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesCo
 from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
     OnboardingNFDBaseInputConfig,
 )
+from azext_aosm.common.utils import split_image_path, is_valid_nexus_image_version
 
 
 @dataclass
@@ -153,8 +153,9 @@ class OnboardingCoreVNFInputConfig(OnboardingNFDBaseInputConfig):
 
     @property
     def sa_manifest_name(self) -> str:
-        """Return the Storage account manifest name from the NFD name."""
-        return f"{self.blob_artifact_store_name}-manifest-{self.version.replace('.', '-')}"
+        """Return the Storage account manifest name from the NFD name and version."""
+        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
+        return f"{sanitized_nf_name}-sa-manifest-{self.version.replace('.', '-')}"
 
     def validate(self):
         """Validate the configuration."""
@@ -218,7 +219,7 @@ class OnboardingNexusVNFInputConfig(OnboardingNFDBaseInputConfig):
 
     @property
     def sa_manifest_name(self) -> str:
-        """Return the Storage account manifest name from the NFD name."""
+        """Return the Storage account manifest name from the NFD name and version."""
         sanitized_nf_name = self.nf_name.lower().replace("_", "-")
         return f"{sanitized_nf_name}-sa-manifest-{self.version.replace('.', '-')}"
 
@@ -231,6 +232,11 @@ class OnboardingNexusVNFInputConfig(OnboardingNFDBaseInputConfig):
             raise ValidationError("arm_template must be set")
         if not self.images:
             raise ValidationError("You must include at least one image")
+        for image in self.images:
+            (_, _, version) = split_image_path(image)
+            if not is_valid_nexus_image_version(version):
+                raise ValidationError(f"{image} has invalid version '{version}'.\n"
+                                      "Allowed format is major.minor.patch")
         if not self.arm_templates:
             raise ValidationError("You must include at least one arm template")
         for arm_template in self.arm_templates:
