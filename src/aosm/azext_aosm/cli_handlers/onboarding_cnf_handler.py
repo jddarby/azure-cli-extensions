@@ -26,7 +26,7 @@ from azext_aosm.common.constants import (
     CNF_MANIFEST_TEMPLATE_FILENAME,
     CNF_OUTPUT_FOLDER_FILENAME,
     CNF_TEMPLATE_FOLDER_NAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
+    DEPLOY_PARAMETERS_FILENAME,
     HELM_TEMPLATE,
     MANIFEST_FOLDER_NAME,
     NF_DEFINITION_FOLDER_NAME,
@@ -247,7 +247,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             nf_application = processor.generate_nf_application()
             nf_application_list.append(nf_application)
 
-            # Generate deploymentParameters schema properties
+            # Generate deployParameters schema properties
             params_schema = processor.generate_params_schema()
             schema_properties.update(params_schema)
 
@@ -269,10 +269,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         template_path = get_template_path(
             CNF_TEMPLATE_FOLDER_NAME, CNF_DEFINITION_TEMPLATE_FILENAME
         )
-
         params = {
             "acr_nf_applications": nf_application_list,
-            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "deploy_parameters_file": DEPLOY_PARAMETERS_FILENAME,
         }
         bicep_contents = render_bicep_contents_from_j2(template_path, params)
 
@@ -283,9 +282,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for mappings_file in mappings_files:
             bicep_file.add_supporting_file(mappings_file)
 
-        # Add the deploymentParameters schema file
+        # Add the deployParameters schema file
         bicep_file.add_supporting_file(
-            self._render_deployment_params_schema(
+            self._render_deploy_params_schema(
                 schema_properties, CNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME
             )
         )

@@ -119,7 +119,7 @@ class NFDInput(BaseInput):
                     "nfdgName": {"type": "string"},
                     "nfdvName": {"type": "string"},
                     "publisherResourceGroup": {"type": "string"},
-                    "deploymentParameters": {
+                    "deployParameters": {
                         "type": "array",
                         "items": {"type": "object"},
                     },
@@ -132,7 +132,7 @@ class NFDInput(BaseInput):
                     "nfdgName",
                     "nfdvName",
                     "publisherResourceGroup",
-                    "deploymentParameters",
+                    "deployParameters",
                     "customLocationId",
                     "managedIdentityId",
                 ],
@@ -148,7 +148,7 @@ class NFDInput(BaseInput):
         nfdv_properties = self.network_function_definition.properties
 
         if nfdv_properties and nfdv_properties.deploy_parameters:
-            schema["properties"]["configObject"]["properties"]["deploymentParameters"][
+            schema["properties"]["configObject"]["properties"]["deployParameters"][
                 "items"
             ] = json.loads(nfdv_properties.deploy_parameters)
 

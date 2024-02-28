@@ -177,7 +177,7 @@ class NFDProcessor(BaseInputProcessor):
         for k, v in source_schema["properties"].items():
             # If the property is not in the values, and is required, add it to the values.
             # Temp fix for removing schema from deployParameters
-            if k == "deploymentParameters":
+            if k == "deployParameters":
                 del v["items"]["$schema"]
                 del v["items"]["title"]
             if (

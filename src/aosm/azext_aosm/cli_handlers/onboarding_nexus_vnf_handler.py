@@ -16,7 +16,7 @@ from azext_aosm.common.constants import (
     BASE_FOLDER_NAME,
     VNF_TEMPLATE_FOLDER_NAME,
     VNF_OUTPUT_FOLDER_FILENAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
+    DEPLOY_PARAMETERS_FILENAME,
     NEXUS_IMAGE_PARAMETERS_FILENAME,
     TEMPLATE_PARAMETERS_FILENAME,
     VNF_NEXUS_BASE_TEMPLATE_FILENAME,
@@ -151,7 +151,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
             "acr_nf_applications": arm_nf_application_list,
             "sa_nf_applications": [],
             "nexus_image_nf_applications": image_nf_application_list,
-            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "deploy_parameters_file": DEPLOY_PARAMETERS_FILENAME,
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
             "image_parameters_file": NEXUS_IMAGE_PARAMETERS_FILENAME
         }

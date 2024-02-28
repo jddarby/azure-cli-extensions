@@ -81,7 +81,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         For each processor:
         - Generates NF application for each processor
-        - Generates deploymentParameters (flattened to be one schema overall)
+        - Generates deployParameters (flattened to be one schema overall)
         - Generates supporting parameters files (to avoid stringified JSON in template)
 
         """
@@ -97,7 +97,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             arm_nf_application_list.extend(arm_nf_application)
             image_nf_application_list.extend(image_nf_application)
 
-            # Generate deploymentParameters schema properties
+            # Generate deployParameters schema properties
             params_schema = processor.generate_params_schema()
             schema_properties.update(params_schema)
 
@@ -116,7 +116,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         )
 
         # Create a bicep element
-        # + add its supporting files (deploymentParameters, vhdParameters and templateParameters)
+        # + add its supporting files (deployParameters, vhdParameters and templateParameters)
         bicep_file = BicepDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME),
             bicep_contents,
@@ -124,9 +124,9 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         for supporting_file in supporting_files:
             bicep_file.add_supporting_file(supporting_file)
 
-        # Add the deploymentParameters schema file
+        # Add the deployParameters schema file
         bicep_file.add_supporting_file(
-            self._render_deployment_params_schema(
+            self._render_deploy_params_schema(
                 schema_properties, VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME
             )
         )
