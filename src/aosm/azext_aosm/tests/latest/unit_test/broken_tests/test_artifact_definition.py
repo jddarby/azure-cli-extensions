@@ -1,14 +1,14 @@
-# --------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See License.txt in the project root for license information.
-# --------------------------------------------------------------------------------------------
+# # --------------------------------------------------------------------------------------------
+# # Copyright (c) Microsoft Corporation. All rights reserved.
+# # Licensed under the MIT License. See License.txt in the project root for license information.
+# # --------------------------------------------------------------------------------------------
 
-from pathlib import Path
-from unittest import TestCase
-from unittest.mock import call, MagicMock, patch, create_autospec
+# from pathlib import Path
+# from unittest import TestCase
+# from unittest.mock import call, MagicMock, patch, create_autospec
 
-from azext_aosm.definition_folder.reader.artifact_definition import ArtifactDefinitionElement
-from azext_aosm.common.artifact import LocalFileACRArtifact
+# from azext_aosm.definition_folder.reader.artifact_definition import ArtifactDefinitionElement
+# from azext_aosm.common.artifact import LocalFileACRArtifact
 
 # class TestArtifactDefinitionElement(TestCase):
 #     """Test the Artifact definition element."""
