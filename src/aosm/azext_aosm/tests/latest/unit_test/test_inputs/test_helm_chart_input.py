@@ -15,7 +15,7 @@ from azext_aosm.common.exceptions import (
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 
 code_directory = os.path.dirname(__file__)
-parent_directory = os.path.abspath(os.path.join(code_directory, ".."))
+parent_directory = os.path.abspath(os.path.join(code_directory, "../.."))
 helm_charts_directory = os.path.join(parent_directory, "mock_cnf", "helm-charts")
 
 VALID_CHART_NAME = "nf-agent-cnf"
