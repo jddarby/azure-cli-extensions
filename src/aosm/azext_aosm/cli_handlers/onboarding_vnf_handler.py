@@ -115,12 +115,12 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             template_path, params
         )
 
-        # Create a bicep element
-        # + add its supporting files (deployParameters, vhdParameters and templateParameters)
+        # Create the bicep element
         bicep_file = BicepDefinitionElementBuilder(
             Path(VNF_OUTPUT_FOLDER_FILENAME, NF_DEFINITION_FOLDER_NAME),
             bicep_contents,
         )
+        # Add deployParameters, vhdParameters and templateParameters as supporting files
         for supporting_file in supporting_files:
             bicep_file.add_supporting_file(supporting_file)
 

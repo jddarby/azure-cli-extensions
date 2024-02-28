@@ -191,7 +191,7 @@ class BaseInputProcessor(ABC):
                         f"The subschema '{subschema_name}' does not contain a type.\n"
                         "It contains 'anyOf' or 'oneOf' logic, which is not valid for AOSM.\n"
                         "Please remove this from your values.schema.json and provide a concrete type "
-                        "or remove the schema and the CLI will generate a generic schema."
+                        "or remove the schema and the CLI will generate a schema from your values.yaml file."
                     )
                 raise InvalidArgumentValueError(
                     f"The subschema {subschema_name} does not contain a type. This is a required field.\n"

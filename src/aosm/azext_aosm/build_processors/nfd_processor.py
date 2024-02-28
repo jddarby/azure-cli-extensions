@@ -115,9 +115,9 @@ class NFDProcessor(BaseInputProcessor):
         """
         Generate the network function application from the input.
 
-        :raises NotImplementedError: NFDs do not support deployment of NFs.
+        :raises NotImplementedError: NFDs cannot be used to generate new NF application templates.
         """
-        raise NotImplementedError("NFDs do not support deployment of NFs.")
+        raise NotImplementedError("NFDs cannot be used to generate new NF application templates.")
 
     def generate_resource_element_template(self) -> NFDResourceElementTemplate:
         """

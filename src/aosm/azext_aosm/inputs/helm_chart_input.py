@@ -26,6 +26,7 @@ from azext_aosm.common.exceptions import (
     TemplateValidationError,
 )
 from azext_aosm.common.utils import check_tool_installed, extract_tarfile
+from azext_aosm.common.constants import CNF_VALUES_SCHEMA_FILENAME
 from azext_aosm.inputs.base_input import BaseInput
 
 logger = get_logger(__name__)
@@ -208,7 +209,7 @@ class HelmChartInput(BaseInput):
         logger.debug("Getting default values for Helm chart %s", self.artifact_name)
 
         try:
-            self.default_config or self._read_values_yaml()
+            self.default_config or self._read_values_yaml_from_chart()
         except FileNotFoundError:
             logger.error("No values found for Helm chart '%s'", self.chart_path)
             raise DefaultValuesNotFoundError(
@@ -224,7 +225,7 @@ class HelmChartInput(BaseInput):
         :return: The default values for the Helm chart.
         :rtype: Dict[str, Any]
         """
-        default_config = self.default_config or self._read_values_yaml()
+        default_config = self.default_config or self._read_values_yaml_from_chart()
         logger.debug(
             "Default values for Helm chart input: %s",
             json.dumps(default_config, indent=4),
@@ -248,7 +249,7 @@ class HelmChartInput(BaseInput):
             schema = None
             # Use the schema provided in the chart if there is one.
             for file in self._chart_dir.iterdir():
-                if file.name == "values.schema.json":
+                if file.name == CNF_VALUES_SCHEMA_FILENAME:
                     logger.debug("Using schema from chart %s", file)
                     with file.open(encoding="UTF-8") as schema_file:
                         schema = json.load(schema_file)
@@ -261,7 +262,7 @@ class HelmChartInput(BaseInput):
                 schema = built_schema.to_dict()
 
             logger.debug(
-                "Schema for Helm chart input: %s",
+                "Schema for Helm chart input:\n%s",
                 json.dumps(schema, indent=4),
             )
 
@@ -409,7 +410,7 @@ class HelmChartInput(BaseInput):
             dependencies=dependencies,
         )
 
-    def _read_values_yaml(self) -> Dict[str, Any]:
+    def _read_values_yaml_from_chart(self) -> Dict[str, Any]:
         """
         Reads the values.yaml file in the Helm chart directory.
 

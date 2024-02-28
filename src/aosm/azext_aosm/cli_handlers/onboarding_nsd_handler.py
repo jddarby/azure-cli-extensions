@@ -208,11 +208,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         # For each RET (arm template or NF), generate RET
         for processor in self.processors:
-            # Generate RET
             nf_ret = processor.generate_resource_element_template()
             ret_list.append(nf_ret)
 
-            # Adding supporting file: config mappings
+            # Add supporting file: config mappings
             deploy_values = nf_ret.configuration.parameter_values
             mapping_file = LocalFileBuilder(
                 Path(
