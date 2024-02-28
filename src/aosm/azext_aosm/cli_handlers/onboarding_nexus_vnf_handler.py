@@ -2,9 +2,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+from __future__ import annotations
+
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import NexusArmBuildProcessor
@@ -12,9 +14,7 @@ from azext_aosm.build_processors.nexus_image_processor import NexusImageProcesso
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.constants import (
     BASE_FOLDER_NAME,
-    MANIFEST_FOLDER_NAME,
     VNF_TEMPLATE_FOLDER_NAME,
-    VNF_MANIFEST_TEMPLATE_FILENAME,
     VNF_OUTPUT_FOLDER_FILENAME,
     DEPLOYMENT_PARAMETERS_FILENAME,
     NEXUS_IMAGE_PARAMETERS_FILENAME,
@@ -45,9 +45,9 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
     """CLI handler for publishing NFDs."""
 
     config: OnboardingNexusVNFInputConfig
-    
+
     def _get_input_config(
-        self, input_config: Dict[str, Any] = None
+        self, input_config: Optional[dict] = None
     ) -> OnboardingNexusVNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
@@ -55,7 +55,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
         return OnboardingNexusVNFInputConfig(**input_config)
 
     def _get_params_config(
-        self, config_file: dict = None
+        self, config_file: Path
     ) -> NexusVNFCommonParametersConfig:
         """Get the configuration for the command."""
         with open(config_file, "r", encoding="utf-8") as _file:
@@ -64,8 +64,8 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
             params_dict = {}
         return NexusVNFCommonParametersConfig(**params_dict)
 
-    def _get_processor_list(self) -> [BaseInputProcessor]:
-        processor_list = []
+    def _get_processor_list(self) -> List[NexusArmBuildProcessor | NexusImageProcessor]:
+        processor_list: List[NexusArmBuildProcessor | NexusImageProcessor] = []
         # for each arm template, instantiate arm processor
         for arm_template in self.config.arm_templates:
             arm_input = ArmTemplateInput(

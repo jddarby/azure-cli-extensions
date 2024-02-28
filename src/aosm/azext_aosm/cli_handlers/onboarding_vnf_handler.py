@@ -2,13 +2,18 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+from __future__ import annotations
+
 from pathlib import Path
 from abc import abstractmethod
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
 from knack.log import get_logger
-
+# from azext_aosm.configuration_models.onboarding_vnf_input_config import (
+#     OnboardingBaseVNFInputConfig,
+# )
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+from azext_aosm.configuration_models.onboarding_vnf_input_config import (OnboardingCoreVNFInputConfig, OnboardingNexusVNFInputConfig)
 from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
@@ -31,6 +36,8 @@ logger = get_logger(__name__)
 class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
+    config: OnboardingCoreVNFInputConfig | OnboardingNexusVNFInputConfig
+
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
@@ -49,6 +56,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
         """
         logger.info("Creating artifacts list for artifacts.json")
+        # assert isinstance(self.config, OnboardingBaseVNFInputConfig)
         artifact_list = []
         # For each arm template, get list of artifacts and combine
         for processor in self.processors:
@@ -75,7 +83,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
         - Generates NF application for each processor
         - Generates deploymentParameters (flattened to be one schema overall)
         - Generates supporting parameters files (to avoid stringified JSON in template)
-        
+
         """
         logger.info("Creating artifacts list for artifacts.json")
         arm_nf_application_list = []
