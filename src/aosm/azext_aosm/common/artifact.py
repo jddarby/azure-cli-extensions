@@ -227,6 +227,8 @@ class LocalFileACRArtifact(BaseACRArtifact):
             self._check_tool_installed("docker")
             self._check_tool_installed("helm")
 
+            # tmpdir is only used if file_path is dir, but `with` context manager is cleaner to use, so we always
+            # set up the tmpdir, even if it doesn't end up being used.
             with tempfile.TemporaryDirectory() as tmpdir:
                 if self.file_path.is_dir():
                     helm_package_cmd = [
@@ -237,6 +239,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
                         tmpdir,
                     ]
                     self._call_subprocess_raise_output(helm_package_cmd)
+                    self.file_path = Path(tmpdir, f"{self.artifact_name}-{self.artifact_version}.tgz")
 
                 # This seems to prevent occasional helm login failures
                 acr_login_cmd = [
@@ -268,7 +271,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
                     push_command = [
                         str(shutil.which("helm")),
                         "push",
-                        f"{tmpdir}/{self.artifact_name}-{self.artifact_version}.tgz",
+                        self.file_path,
                         target_acr_with_protocol,
                     ]
                     self._call_subprocess_raise_output(push_command)
