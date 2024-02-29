@@ -112,40 +112,75 @@ class Registry:
                 f"Access credentials for registry {self.registry_name} do no exist in the {docker_config_path}"
             ) from error
 
-    def get_images(self) -> Dict[str, Tuple["Registry", str]]:
-        """
-        Query the images in the registry in all available namespaces.
+    # def get_images(self) -> Dict[str, Tuple["Registry", str]]:
+    #     """
+    #     Query the images in the registry in all available namespaces.
 
-        :return: A dictionary of images with the image name as the key
-        and the registry and namespace as the value.
-        """
+    #     :return: A dictionary of images with the image name as the key
+    #     and the registry and namespace as the value.
+    #     """
 
-        # We need to pass in username and password instead of logging into the registry because
-        # docker does not have a command to list images. Instead we need to use a get request
-        username, password = self.get_access_credentials()
-        images = {}
+    #     # We need to pass in username and password instead of logging into the registry because
+    #     # docker does not have a command to list images. Instead we need to use a get request
+    #     username, password = self.get_access_credentials()
+    #     images = {}
+
+    #     for namespace in self.registry_namespaces:
+    #         # TODO: make sure you are not logging out passwords
+    #         url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
+    #         response = requests.get(
+    #             url,
+    #             auth=HTTPBasicAuth(
+    #                 username,
+    #                 password,
+    #             ),
+    #         )
+    #         try:
+    #             tags = response.json()["tags"]
+    #             for tag in tags:
+    #                 # TODO: if the tag appears in multiple namespaces, it will be overwritten, is that ok?
+    #                 images[tag] = (self, namespace)
+    #         except KeyError:
+    #             logger.debug(
+    #                 "Could not obtain tags from %s", self.registry_name, exc_info=True
+    #             )
+    #             continue
+    #     return images
+
+    def find_image(self, image: str, version: str) -> Tuple["Registry", str]:
+        """
+        Find whether the given image exists in this registry.
+
+        :param image: The image to find in the registry
+        :return: The registry and namespace for the image
+        """
 
         for namespace in self.registry_namespaces:
-            # TODO: make sure you are not logging out passwords
-            url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
-            response = requests.get(
-                url,
-                auth=HTTPBasicAuth(
-                    username,
-                    password,
-                ),
-            )
+            image_path = f"{self.registry_name}/{namespace}/{image}:{version}"
+
             try:
-                tags = response.json()["tags"]
-                for tag in tags:
-                    # TODO: if the tag appears in multiple namespaces, it will be overwritten, is that ok?
-                    images[tag] = (self, namespace)
-            except KeyError:
-                logger.debug(
-                    "Could not obtain tags from %s", self.registry_name, exc_info=True
+                manifest_inspect_cmd = [
+                    str(shutil.which("docker")),
+                    "manifest inspect",
+                    image_path,
+                ]
+
+                return_code = call_subprocess_raise_output(manifest_inspect_cmd)
+
+                if return_code == 0:
+                    return self, namespace
+            except CLIError as error:
+                logger.warning(
+                    (
+                        "Failed to contact source registry %s."
+                        "Make sure you run docker login on this registry "
+                        "before running the aosm command."
+                    ),
+                    self.registry_name,
                 )
-                continue
-        return images
+                logger.debug(error, exc_info=True)
+                raise error
+        return None, None
 
 
 class ACRRegistry(Registry):
@@ -290,33 +325,43 @@ class ACRRegistry(Registry):
                 error,
             )
 
-    def get_images(self) -> Dict[str, Tuple["ACRRegistry", str]]:
+    def find_image(self, image, version) -> Tuple["ACRRegistry", str]:
         """
         Query the images in the registry in all available namespaces.
 
         :return: A dictionary of images with the image name as the key
         and the registry and namespace as the value.
         """
-        images = {}
-        self._login()
+
         for namespace in self.registry_namespaces:
-            acr_source_get_images_cmd = [
-                str(shutil.which("az")),
-                "acr",
-                "repository",
-                "show-tags",
-                "--name",
-                self.registry_name,
-                "--repository",
-                namespace,
-            ]
+            image_with_namespace = f"{namespace}/{image}:{version}"
+            try:
+                acr_source_get_images_cmd = [
+                    str(shutil.which("az")),
+                    "acr",
+                    "repository",
+                    "show",
+                    "--name",
+                    self.registry_name,
+                    "--image",
+                    image_with_namespace,
+                ]
 
-            output = call_subprocess_raise_output(acr_source_get_images_cmd)
+                return_code = call_subprocess_raise_output(acr_source_get_images_cmd)
 
-            for image in output:
-                images[image] = (self, namespace)
+                if return_code == 0:
+                    return (self, namespace)
 
-        return images
+            except CLIError as error:
+                logger.debug(
+                    ("Image %s, version %s not found in %s registry."),
+                    image,
+                    version,
+                    self.registry_name,
+                )
+                logger.debug(error, exc_info=True)
+
+        return None, None
 
 
 class RegistryHandler:
@@ -327,15 +372,12 @@ class RegistryHandler:
     def __init__(self, image_sources):
         self.image_sources = image_sources
         self.registry_list = self._create_registry_list()
-        self.registry_for_image = (
-            self._get_images()
-        )  # TODO: should this be running in build?
 
     def _create_registry_list(self) -> List[Registry]:
         """Create a list of registry objects from the registries provided by the user."""
 
-        registries = {}
-        registry_list = []
+        registries: Dict[str, Registry] = {}
+        registry_list: List[Registry] = []
 
         for registry in self.image_sources:
             # if registry matches the pattern of myacr1.azurecr.io/**,
@@ -371,21 +413,7 @@ class RegistryHandler:
         """
         return self.registry_list
 
-    def _get_images(self) -> Dict[str, Tuple["Registry", str]]:
-        """
-        Cycle through all available registries and get the images that they have.
-
-        :return: A dictionary of images with the image name as the key and the registry and namespace as the value.
-        """
-        registry_for_image = {}
-
-        for registry in self.registry_list:
-
-            registry_for_image.update(registry.get_images())
-
-        return registry_for_image
-
-    def find_registry_for_image(self, image) -> Tuple["Registry", str]:
+    def find_registry_for_image(self, image, version) -> Tuple["Registry", str]:
         """
         Find the registry and namespace for a given image.
 
@@ -393,7 +421,10 @@ class RegistryHandler:
         :return: The registry and namespace for the image
         """
 
-        if image in self.registry_for_image:
-            return self.registry_for_image[image]
+        for registry in self.registry_list:
+            registry_for_image, namespace = registry.find_image(image, version)
+            if registry_for_image:
+                return registry_for_image, namespace
+            continue
         logger.warning("Image %s not found in any of the provided registries", image)
         return None
