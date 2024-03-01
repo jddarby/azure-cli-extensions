@@ -51,7 +51,7 @@ from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBui
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
-from azext_aosm.common.registry import RegistryHandler
+from azext_aosm.common.registry import ContainerRegistryHandler
 
 logger = get_logger(__name__)
 yaml_processor = ruamel.yaml.YAML(typ="safe", pure=True)
@@ -90,7 +90,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
     def _get_processor_list(self) -> list[HelmChartProcessor]:
         processor_list = []
 
-        registry_handler = RegistryHandler(self.config.images.image_sources)
+        registry_handler = ContainerRegistryHandler(self.config.images.image_sources)
 
         # for each helm package, instantiate helm processor
         assert isinstance(self.config, OnboardingCNFInputConfig)

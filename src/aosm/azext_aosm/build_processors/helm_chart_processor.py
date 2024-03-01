@@ -17,7 +17,7 @@ from azext_aosm.common.artifact import (
 )
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
-from azext_aosm.common.registry import RegistryHandler
+from azext_aosm.common.registry import ContainerRegistryHandler
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,
     ArtifactType,
@@ -54,7 +54,7 @@ class HelmChartProcessor(BaseInputProcessor):
         self,
         name: str,
         input_artifact: HelmChartInput,
-        registry_handler: RegistryHandler,
+        registry_handler: ContainerRegistryHandler,
     ):
         super().__init__(name, input_artifact)
         self.registry_handler = registry_handler
@@ -114,13 +114,10 @@ class HelmChartProcessor(BaseInputProcessor):
         for image_name, image_version in self._find_chart_images():
             # We only support remote ACR artifacts for container images
 
-            registry_and_namespace = self.registry_handler.find_registry_for_image(
-                image_name
+            registry = self.registry_handler.find_registry_for_image(
+                image_name, image_version
             )
-            if registry_and_namespace is not None:
-                registry = registry_and_namespace[0]
-                namespace = registry_and_namespace[1]
-            else:
+            if registry is None:
                 continue
 
             artifact_details.append(
@@ -129,7 +126,6 @@ class HelmChartProcessor(BaseInputProcessor):
                     artifact_type=ArtifactType.OCI_ARTIFACT.value,
                     artifact_version=image_version,
                     source_registry=registry,
-                    source_registry_namespace=namespace,
                 )
             )
 
@@ -209,6 +205,7 @@ class HelmChartProcessor(BaseInputProcessor):
                     self.name,
                 )
 
+        print("images are: ", images)
         return images
 
     @staticmethod

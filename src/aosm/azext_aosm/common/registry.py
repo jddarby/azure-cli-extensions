@@ -26,12 +26,12 @@ logger = get_logger(__name__)
 ACR_REGISTRY_NAME_PATTERN = r"^([a-zA-Z0-9]+\.azurecr\.io)"
 
 
-class Registry:
+class ContainerRegistry:
     """
     A class to represent a registry and handle all Registry operations.
     """
 
-    def __init__(self, registry_name: str, registry_namespace: str):
+    def __init__(self, registry_name: str):
         """
         Initialise the Registry object.
 
@@ -39,15 +39,12 @@ class Registry:
         :param registry_namespace: The namespace of the registry
         """
         self.registry_name = registry_name
-        self.registry_namespaces = [registry_namespace]
 
-    def add_namespace(self, namespace: str) -> None:
-        """
-        Add a namespace to the registry.
-
-        :param namespace: The namespace to add to the registry
-        """
-        self.registry_namespaces.append(namespace)
+    def to_dict(self) -> dict:
+        """Convert an instance to a dict."""
+        output_dict = {"type": REGISTRY_CLASS_TO_TYPE[type(self)]}
+        output_dict.update({k: vars(self)[k] for k in vars(self)})
+        return output_dict
 
     # TODO: Test
     def pull_image_to_local_registry(self, source_image: str) -> None:
@@ -89,65 +86,10 @@ class Registry:
             ]
             call_subprocess_raise_output(docker_logout_cmd)
 
-    def get_access_credentials(self) -> Tuple[str, str]:
-        """
-        Get the access credentials for the registry from the default docker config file.
 
-        :return: A tuple of the username and password for the registry
-        """
+class UniversalRegistry(ContainerRegistry):
 
-        try:
-            docker_config_path = os.path.expanduser("~/.docker/config.json")
-            # TODO: specify the encoding
-            with open(docker_config_path) as credentials_file:
-                credentials = json.load(credentials_file)
-                auth_token = credentials["auths"][self.registry_name.lower()]["auth"]
-                decoded_auth_token = base64.b64decode(auth_token).decode()
-                username, password = decoded_auth_token.split(":")
-                return username, password
-        except (FileNotFoundError, KeyError) as error:
-            # TODO: Should we allow the user to input credentials manually?
-            logger.debug(error, exc_info=True)
-            raise UnauthorizedError(
-                f"Access credentials for registry {self.registry_name} do no exist in the {docker_config_path}"
-            ) from error
-
-    # def get_images(self) -> Dict[str, Tuple["Registry", str]]:
-    #     """
-    #     Query the images in the registry in all available namespaces.
-
-    #     :return: A dictionary of images with the image name as the key
-    #     and the registry and namespace as the value.
-    #     """
-
-    #     # We need to pass in username and password instead of logging into the registry because
-    #     # docker does not have a command to list images. Instead we need to use a get request
-    #     username, password = self.get_access_credentials()
-    #     images = {}
-
-    #     for namespace in self.registry_namespaces:
-    #         # TODO: make sure you are not logging out passwords
-    #         url = f"https://{self.registry_name}/v2/{namespace}/tags/list"
-    #         response = requests.get(
-    #             url,
-    #             auth=HTTPBasicAuth(
-    #                 username,
-    #                 password,
-    #             ),
-    #         )
-    #         try:
-    #             tags = response.json()["tags"]
-    #             for tag in tags:
-    #                 # TODO: if the tag appears in multiple namespaces, it will be overwritten, is that ok?
-    #                 images[tag] = (self, namespace)
-    #         except KeyError:
-    #             logger.debug(
-    #                 "Could not obtain tags from %s", self.registry_name, exc_info=True
-    #             )
-    #             continue
-    #     return images
-
-    def find_image(self, image: str, version: str) -> Tuple["Registry", str]:
+    def find_image(self, image: str, version: str) -> ContainerRegistry:
         """
         Find whether the given image exists in this registry.
 
@@ -155,35 +97,35 @@ class Registry:
         :return: The registry and namespace for the image
         """
 
-        for namespace in self.registry_namespaces:
-            image_path = f"{self.registry_name}/{namespace}/{image}:{version}"
+        image_path = f"{self.registry_name}/{image}:{version}"
 
-            try:
-                manifest_inspect_cmd = [
-                    str(shutil.which("docker")),
-                    "manifest inspect",
-                    image_path,
-                ]
+        try:
+            manifest_inspect_cmd = [
+                str(shutil.which("docker")),
+                "manifest inspect",
+                image_path,
+            ]
 
-                return_code = call_subprocess_raise_output(manifest_inspect_cmd)
+            output = call_subprocess_raise_output(manifest_inspect_cmd)
 
-                if return_code == 0:
-                    return self, namespace
-            except CLIError as error:
-                logger.warning(
-                    (
-                        "Failed to contact source registry %s."
-                        "Make sure you run docker login on this registry "
-                        "before running the aosm command."
-                    ),
-                    self.registry_name,
-                )
-                logger.debug(error, exc_info=True)
-                raise error
-        return None, None
+            if output is None:
+                return None
+            else:
+                return self
+        except CLIError as error:
+            logger.warning(
+                (
+                    "Failed to contact source registry %s."
+                    "Make sure you run docker login on this registry "
+                    "before running the aosm command."
+                ),
+                self.registry_name,
+            )
+            logger.debug(error, exc_info=True)
+            raise error
 
 
-class ACRRegistry(Registry):
+class AzureContainerRegistry(ContainerRegistry):
     """
     A class to represent an Azure Container Registry and handle all ACR operations.
     """
@@ -325,46 +267,57 @@ class ACRRegistry(Registry):
                 error,
             )
 
-    def find_image(self, image, version) -> Tuple["ACRRegistry", str]:
+    def get_repositories(self) -> Dict[str, Tuple["AzureContainerRegistry", str]]:
         """
         Query the images in the registry in all available namespaces.
 
         :return: A dictionary of images with the image name as the key
         and the registry and namespace as the value.
         """
+        repositories = {}
 
-        for namespace in self.registry_namespaces:
-            image_with_namespace = f"{namespace}/{image}:{version}"
-            try:
-                acr_source_get_images_cmd = [
-                    str(shutil.which("az")),
-                    "acr",
-                    "repository",
-                    "show",
-                    "--name",
-                    self.registry_name,
-                    "--image",
-                    image_with_namespace,
-                ]
+        acr_get_repositories_cmd = [
+            str(shutil.which("az")),
+            "acr",
+            "repository",
+            "list",
+            "--name",
+            self.registry_name,
+        ]
 
-                return_code = call_subprocess_raise_output(acr_source_get_images_cmd)
+        logger.info("Looking for images in %s registry", self.registry_name)
 
-                if return_code == 0:
-                    return (self, namespace)
+        repository_list: List[str] = json.loads(
+            call_subprocess_raise_output(acr_get_repositories_cmd)
+        )
 
-            except CLIError as error:
-                logger.debug(
-                    ("Image %s, version %s not found in %s registry."),
-                    image,
-                    version,
-                    self.registry_name,
-                )
-                logger.debug(error, exc_info=True)
+        logger.debug(
+            "Repositories found in %s: %s", self.registry_name, repository_list
+        )
 
-        return None, None
+        for repository in repository_list:
+            acr_get_versions_for_repository_cmd = [
+                str(shutil.which("az")),
+                "acr",
+                "repository",
+                "show-tags",
+                "--name",
+                self.registry_name,
+                "--repository",
+                f"{repository}",
+            ]
+
+            version_list: List[str] = json.loads(
+                call_subprocess_raise_output(acr_get_versions_for_repository_cmd)
+            )
+
+            for version in version_list:
+                repositories[(repository, version)] = self
+
+        return repositories
 
 
-class RegistryHandler:
+class ContainerRegistryHandler:
     """
     A class to handle all the registries and their images.
     """
@@ -372,59 +325,84 @@ class RegistryHandler:
     def __init__(self, image_sources):
         self.image_sources = image_sources
         self.registry_list = self._create_registry_list()
+        self.registry_for_image = self._get_repositories()
 
-    def _create_registry_list(self) -> List[Registry]:
+    def _create_registry_list(self) -> List[ContainerRegistry]:
         """Create a list of registry objects from the registries provided by the user."""
 
-        registries: Dict[str, Registry] = {}
-        registry_list: List[Registry] = []
+        registries: Dict[str, ContainerRegistry] = {}
+        registry_list: List[ContainerRegistry] = []
 
         for registry in self.image_sources:
             # if registry matches the pattern of myacr1.azurecr.io/**,
             # then create a an instance of the ACR registry class
             parts = registry.split("/", 1)
             registry_name = parts[0]
-            registry_namespace = parts[1] if len(parts) > 1 else None
-
-            # Remove a trailing slash from regisry_namespace
-            if registry_namespace:
-                registry_namespace = registry_namespace.rstrip("/")
 
             acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
             if registry_name not in registries:
                 if acr_match:
-                    registries[registry_name] = ACRRegistry(
-                        registry_name, registry_namespace
-                    )
+                    registries[registry_name] = AzureContainerRegistry(registry_name)
                 else:
-                    registries[registry_name] = Registry(
-                        registry_name, registry_namespace
-                    )
+                    registries[registry_name] = UniversalRegistry(registry_name)
                 registry_list.append(registries[registry_name])
-            else:
-                registries[registry_name].add_namespace(registry_namespace)
 
         return registry_list
 
-    def get_registry_list(self) -> List[Registry]:
+    def get_registry_list(self) -> List[ContainerRegistry]:
         """
         Get the list of registries.
         """
         return self.registry_list
 
-    def find_registry_for_image(self, image, version) -> Tuple["Registry", str]:
+    def _get_repositories(self) -> Dict[str, Tuple["ContainerRegistry", str]]:
+        """
+        Cycle through all available registries and get the images that they have.
+
+        :return: A dictionary of images with the image name as the key and the registry and namespace as the value.
+        """
+        registry_for_image = {}
+
+        for registry in self.registry_list:
+
+            if isinstance(registry, AzureContainerRegistry):
+                registry_for_image.update(registry.get_repositories())
+
+        logger.debug("Images found in the ACR registires: %s", registry_for_image)
+        print("Images found in the ACR registires: %s", registry_for_image)
+        return registry_for_image
+
+    def find_registry_for_image(
+        self, image, version
+    ) -> Tuple["ContainerRegistry", str]:
         """
         Find the registry and namespace for a given image.
 
         :param image: The image to find the registry for
         :return: The registry and namespace for the image
         """
+        # TODO: this function should not be running in build
+
+        if (image, version) in self.registry_for_image:
+            return self.registry_for_image[(image, version)]
 
         for registry in self.registry_list:
-            registry_for_image, namespace = registry.find_image(image, version)
-            if registry_for_image:
-                return registry_for_image, namespace
-            continue
-        logger.warning("Image %s not found in any of the provided registries", image)
+            if isinstance(registry, UniversalRegistry):
+                image_registry = registry.find_image(image, version)
+                if image_registry:
+                    return image_registry
+                continue
+        logger.warning(
+            "Image: %s, version: %s was not found in any of the provided registries",
+            image,
+            version,
+        )
         return None
+
+
+# Mapping of registry type names to their classes.
+REGISTRY_CLASS_TO_TYPE = {
+    "UniversalRegistry": UniversalRegistry,
+    "AzureContainerRegistry": AzureContainerRegistry,
+}

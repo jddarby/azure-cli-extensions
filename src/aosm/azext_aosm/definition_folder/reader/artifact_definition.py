@@ -29,6 +29,7 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
         self.artifacts = [
             self.create_artifact_object(artifact) for artifact in artifact_list
         ]
+        raise ValueError("Hello world")
 
     # TODO: add what types are expected, and check they are those types
     # For filepaths, we must convert to paths again
@@ -40,15 +41,20 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
         """
         if "type" not in artifact or artifact["type"] not in ARTIFACT_TYPE_TO_CLASS:
             raise ValueError(
-                "Artifact type is missing or invalid for artifact {artifact}"
+                f"Artifact type is missing or invalid for artifact {artifact}"
             )
+        print("------------------------------")
+        print("artifact type: ", artifact["type"])
         # Use reflection to get the required fields for the artifact class
         class_sig = inspect.signature(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].__init__)
+        print("Class signature: ", class_sig)
         class_args = [arg for arg, _ in class_sig.parameters.items() if arg != "self"]
+        print("class args: ", class_args)
         logger.debug("Artifact configuration from definition folder: %s", artifact)
         logger.debug(
             "class_args found for artifact type %s: %s", artifact["type"], class_args
         )
+
         # Filter the artifact dict to only include the required fields, erroring if any are missing
         try:
             filtered_dict = {arg: artifact[arg] for arg in class_args}
@@ -74,7 +80,9 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
             )
             artifact.upload(config=config, command_context=command_context)
 
-    def delete(self, config: BaseCommonParametersConfig, command_context: CommandContext):
+    def delete(
+        self, config: BaseCommonParametersConfig, command_context: CommandContext
+    ):
         """Delete the element."""
         # TODO: Implement?
         raise NotImplementedError

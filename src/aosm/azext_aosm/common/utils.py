@@ -129,6 +129,8 @@ def call_subprocess_raise_output(cmd: list) -> None:
             called_process.stdout,
             called_process.stderr,
         )
+        if called_process.returncode == 1:
+            return None
         return called_process.stdout
     except subprocess.CalledProcessError as error:
         all_output: str = (

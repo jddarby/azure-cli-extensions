@@ -31,7 +31,7 @@ from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
     BlobClient,
     BlobType,
 )
-from azext_aosm.common.registry import Registry
+from azext_aosm.common.registry import ContainerRegistry
 
 logger = get_logger(__name__)
 
@@ -190,15 +190,10 @@ class RemoteACRArtifact(BaseACRArtifact):
         artifact_name,
         artifact_type,
         artifact_version,
-        source_registry: Registry,
-        source_registry_namespace: str,
+        source_registry: ContainerRegistry,
     ):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.source_registry = source_registry
-        self.source_registry_namespace = source_registry_namespace
-        self.namespace_with_slash = (
-            f"{source_registry_namespace}/" if source_registry_namespace else ""
-        )
 
     def _push_image_from_local_registry(
         self,
@@ -346,7 +341,7 @@ class RemoteACRArtifact(BaseACRArtifact):
             ## TODO pk5: Should this be done in the Registry class
             image_name = (
                 f"{clean_registry_name(self.source_registry.registry_name)}/"
-                f"{self.namespace_with_slash}{self.artifact_name}"
+                f"{self.artifact_name}"
                 f":{self.artifact_version}"
             )
             self.source_registry.pull_image_to_local_registry(source_image=image_name)
@@ -362,10 +357,7 @@ class RemoteACRArtifact(BaseACRArtifact):
             self._copy_image(
                 config=config,
                 command_context=command_context,
-                source_image=(
-                    f"{self.namespace_with_slash}{self.artifact_name}"
-                    f":{self.artifact_version}"
-                ),
+                source_image=(f"{self.artifact_name}" f":{self.artifact_version}"),
             )
 
 
