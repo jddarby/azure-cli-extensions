@@ -128,23 +128,14 @@ class AzureCoreArmProcessorTest(TestCase):
         self.assertEqual(parameters_file.file_content, expected_json)
         # Assert name of the file includes templateParameters
         # (We want to know that in the instance of Azure Core ARM Templates, we are creating template parameters)
-        self.assertIn(TEMPLATE_PARAMETERS_FILENAME, str(parameters_file.path))
+        if TEMPLATE_PARAMETERS_FILENAME in str(parameters_file.path):
+            assert True
+        else:
+            assert False
         # Assert the type is LocalFileBuilder
         self.assertIsInstance(parameters_file, LocalFileBuilder)
         # Assert that the necessary methods were called
         self.processor._generate_mapping_rule_profile.assert_called_once()
-        
-    def test_generate_artifact_profile(self):
-        """ Test generate artifact profile returned correctly with generate_nf_application."""
-        
-        nf_application = self.processor.generate_nf_application()
-        expected_arm_artifact_profile = ArmTemplateArtifactProfile(template_name="test-artifact-name", template_version="1.1.1")
-        expected_nexus_arm_artifact_profile = AzureCoreArmTemplateArtifactProfile(
-                             artifact_store=ReferencedResource(id=""), 
-                             template_artifact_profile=expected_arm_artifact_profile
-                             )
-        self.assertEqual(nf_application.artifact_profile, expected_nexus_arm_artifact_profile)
-        self.assertIsInstance(nf_application.artifact_profile, AzureCoreArmTemplateArtifactProfile)
 
     def test_generate_mapping_rule_profile(self):
         """ Test generate artifact profile returned correctly with generate_nf_application."""
@@ -163,3 +154,15 @@ class AzureCoreArmProcessorTest(TestCase):
         self.assertEqual(nf_application.deploy_parameters_mapping_rule_profile, expected_nexus_arm_mapping_profile)
         self.assertIsInstance(nf_application.deploy_parameters_mapping_rule_profile,
                               AzureCoreArmTemplateDeployMappingRuleProfile)
+        
+    def test_generate_artifact_profile(self):
+        """ Test generate artifact profile returned correctly with generate_nf_application."""
+        
+        nf_application = self.processor.generate_nf_application()
+        expected_arm_artifact_profile = ArmTemplateArtifactProfile(template_name="test-artifact-name", template_version="1.1.1")
+        expected_nexus_arm_artifact_profile = AzureCoreArmTemplateArtifactProfile(
+                             artifact_store=ReferencedResource(id=""), 
+                             template_artifact_profile=expected_arm_artifact_profile
+                             )
+        self.assertEqual(nf_application.artifact_profile, expected_nexus_arm_artifact_profile)
+        self.assertIsInstance(nf_application.artifact_profile, AzureCoreArmTemplateArtifactProfile)
