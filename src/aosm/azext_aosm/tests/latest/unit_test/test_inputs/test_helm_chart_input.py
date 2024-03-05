@@ -26,6 +26,7 @@ class TestHelmChartInput(TestCase):
     """Test the HelmChartInput class."""
 
     def setUp(self):
+        # Prints out info logs in console if fails
         logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
     def test_validate_template_valid_chart(self):
