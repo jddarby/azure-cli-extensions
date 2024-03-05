@@ -242,9 +242,9 @@ class HelmChartProcessor(BaseInputProcessor):
         """
         logger.debug("Generating artifact profile for Helm chart input.")
         image_pull_secrets_values_paths: Set[str] = set()
-        self._find_image_pull_secrets_values_paths(
-            self.input_artifact, image_pull_secrets_values_paths
-        )
+        # self._find_image_pull_secrets_values_paths(
+        #     self.input_artifact, image_pull_secrets_values_paths
+        # )
 
         registry_values_paths = self._find_registry_values_paths()
 
@@ -262,56 +262,56 @@ class HelmChartProcessor(BaseInputProcessor):
             helm_artifact_profile=helm_artifact_profile,
         )
 
-    def _find_image_pull_secrets_values_paths(
-        self, chart: HelmChartInput, matches: Set[str]
-    ) -> None:
-        """
-        Find image pull secrets values paths in the Helm chart templates.
+    # def _find_image_pull_secrets_values_paths(
+    #     self, chart: HelmChartInput, matches: Set[str]
+    # ) -> None:
+    #     """
+    #     Find image pull secrets values paths in the Helm chart templates.
 
-        Recursively searches the dependency charts for image pull secrets values paths and adds them to the matches set.
+    #     Recursively searches the dependency charts for image pull secrets values paths and adds them to the matches set.
 
-        :param chart: The Helm chart to search.
-        :type chart: HelmChartInput
-        :param matches: A set of image pull secrets values paths found so far.
-        :type matches: Set[str]
-        """
-        logger.debug(
-            "Finding image pull secrets values paths in Helm chart %s",
-            chart.artifact_name,
-        )
-        for template in chart.get_templates():
-            # Loop through each line in the template.
-            for index in range(len(template.data)):
-                count = 0
-                # If the line contains 'imagePullSecrets:' we check if there is a
-                # value path matching the regex. If there is, we add it to the
-                # matches set and break the loop. If there is not, we check the
-                # next line. We do this until we find a line that contains a match.
-                # NFM provides the image pull secrets parameter as a list. If we find
-                # a line that contains 'name:' we know that the image pull secrets
-                # parameter value path is for a string and not a list, and
-                # so we can break from the loop.
-                while ("imagePullSecrets:" in template.data[index]) and (
-                    "name:" not in template.data[index + count]
-                ):
-                    new_matches = re.findall(
-                        VALUE_PATH_REGEX, template.data[index + count]
-                    )
-                    if len(new_matches) != 0:
-                        logger.debug(
-                            "Found image pull secrets values path %s in Helm chart %s",
-                            new_matches,
-                            chart.artifact_name,
-                        )
-                        # Add the new matches to the matches set
-                        matches.update(new_matches)
-                        break
+    #     :param chart: The Helm chart to search.
+    #     :type chart: HelmChartInput
+    #     :param matches: A set of image pull secrets values paths found so far.
+    #     :type matches: Set[str]
+    #     """
+    #     logger.debug(
+    #         "Finding image pull secrets values paths in Helm chart %s",
+    #         chart.artifact_name,
+    #     )
+    #     for template in chart.get_templates():
+    #         # Loop through each line in the template.
+    #         for index in range(len(template.data)):
+    #             count = 0
+    #             # If the line contains 'imagePullSecrets:' we check if there is a
+    #             # value path matching the regex. If there is, we add it to the
+    #             # matches set and break the loop. If there is not, we check the
+    #             # next line. We do this until we find a line that contains a match.
+    #             # NFM provides the image pull secrets parameter as a list. If we find
+    #             # a line that contains 'name:' we know that the image pull secrets
+    #             # parameter value path is for a string and not a list, and
+    #             # so we can break from the loop.
+    #             while ("imagePullSecrets:" in template.data[index]) and (
+    #                 "name:" not in template.data[index + count]
+    #             ):
+    #                 new_matches = re.findall(
+    #                     VALUE_PATH_REGEX, template.data[index + count]
+    #                 )
+    #                 if len(new_matches) != 0:
+    #                     logger.debug(
+    #                         "Found image pull secrets values path %s in Helm chart %s",
+    #                         new_matches,
+    #                         chart.artifact_name,
+    #                     )
+    #                     # Add the new matches to the matches set
+    #                     matches.update(new_matches)
+    #                     break
 
-                    count += 1
+    #                 count += 1
 
-        # Recursively search the dependency charts for image pull secrets parameters
-        for dep in chart.get_dependencies():
-            self._find_image_pull_secrets_values_paths(dep, matches)
+    #     # Recursively search the dependency charts for image pull secrets parameters
+    #     for dep in chart.get_dependencies():
+    #         self._find_image_pull_secrets_values_paths(dep, matches)
 
     def _find_registry_values_paths(self) -> Set[str]:
         """
