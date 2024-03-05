@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import os
+from time import sleep
 from typing import List, Tuple, Dict
 import requests
 from requests.auth import HTTPBasicAuth
@@ -60,7 +61,6 @@ class ContainerRegistry:
                 "of the definition folder."
             )
 
-    # TODO: Test
     def pull_image_to_local_registry(self, source_image: str) -> None:
         """
         Pull image to local registry using docker pull. Requires docker.
@@ -91,14 +91,91 @@ class ContainerRegistry:
             )
             logger.debug(error, exc_info=True)
             raise error
-        # finally:
-        #     # TODO: If we do this before the get_images thing, we will lose the credentials from the config.json file
-        #     docker_logout_cmd = [
-        #         str(shutil.which("docker")),
-        #         "logout",
-        #         self.registry_name,
-        #     ]
-        #     call_subprocess_raise_output(docker_logout_cmd)
+
+    def push_image_from_local_registry(
+        self,
+        target_acr: str,
+        target_image: str,
+        target_username: str,
+        target_password: str,
+        local_docker_image: str,
+    ) -> None:
+        """
+        Push image to target registry using docker push. Requires docker.
+
+        :param local_docker_image: name and tag of the source image on local registry
+            e.g. uploadacr.azurecr.io/samples/nginx:stable
+        :type local_docker_image: str
+        :param target_password: The password to use for the az acr login attempt
+        :type target_password: str
+        """
+
+        target = f"{target_acr}/{target_image}"
+        logger.debug("Target ACR: %s", target)
+
+        print("Tagging source image")
+        tag_image_cmd = [
+            str(shutil.which("docker")),
+            "tag",
+            local_docker_image,
+            target,
+        ]
+        call_subprocess_raise_output(tag_image_cmd)
+
+        logger.info("Logging into artifact store registry %s", target_acr)
+        # ACR login seems to work intermittently, so we retry on failure
+        retries = 0
+        while True:
+            try:
+                target_acr_login_cmd = [
+                    str(shutil.which("az")),
+                    "acr",
+                    "login",
+                    "--name",
+                    target_acr,
+                    "--username",
+                    target_username,
+                    "--password",
+                    target_password,
+                ]
+                call_subprocess_raise_output(target_acr_login_cmd)
+                logger.debug("Logged in to %s", target_acr)
+                break
+            except CLIError as error:
+                if retries < 20:
+                    logger.info("Retrying ACR login. Retries so far: %s", retries)
+                    retries += 1
+                    sleep(3)
+                    continue
+                logger.error(
+                    ("Failed to login to %s as %s."), target_acr, target_username
+                )
+                logger.debug(error, exc_info=True)
+                raise error
+
+        try:
+            print("Pushing target image using docker push")
+            push_target_image_cmd = [
+                str(shutil.which("docker")),
+                "push",
+                target,
+            ]
+            call_subprocess_raise_output(push_target_image_cmd)
+        except CLIError as error:
+            logger.error(
+                ("Failed to push %s to %s."),
+                local_docker_image,
+                target_acr,
+            )
+            logger.debug(error, exc_info=True)
+            raise error
+        finally:
+            docker_logout_cmd = [
+                str(shutil.which("docker")),
+                "logout",
+                target_acr,
+            ]
+            call_subprocess_raise_output(docker_logout_cmd)
 
 
 class UniversalRegistry(ContainerRegistry):
@@ -176,7 +253,17 @@ class AzureContainerRegistry(ContainerRegistry):
     def pull_image_to_local_registry(self, source_image: str):
 
         self._login()
-        super().pull_image_to_local_registry(source_image)
+        try:
+            super().pull_image_to_local_registry(source_image)
+        except CLIError as error:
+            raise error
+        finally:
+            docker_logout_cmd = [
+                str(shutil.which("docker")),
+                "logout",
+                self.registry_name,
+            ]
+            call_subprocess_raise_output(docker_logout_cmd)
 
     # TODO: test this - ported from the artifact.py
     def copy_image(

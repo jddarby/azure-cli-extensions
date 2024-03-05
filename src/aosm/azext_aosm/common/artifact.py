@@ -31,7 +31,7 @@ from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
     BlobClient,
     BlobType,
 )
-from azext_aosm.common.registry import ContainerRegistry, UniversalRegistry
+from azext_aosm.common.registry import ContainerRegistry, AzureContainerRegistry
 
 logger = get_logger(__name__)
 
@@ -261,153 +261,30 @@ class RemoteACRArtifact(BaseACRArtifact):
                 "This is unexpected and most likely comes from manual editing "
                 "of the definition folder."
             )
-
-    def _push_image_from_local_registry(
-        self,
-        config: BaseCommonParametersConfig,
-        command_context: CommandContext,
-        local_docker_image: str,
-    ):
-        """
-        Push image to target registry using docker push. Requires docker.
-
-        :param local_docker_image: name and tag of the source image on local registry
-            e.g. uploadacr.azurecr.io/samples/nginx:stable
-        :type local_docker_image: str
-        :param target_password: The password to use for the az acr login attempt
-        :type target_password: str
-        """
-        logger.debug("RemoteACRArtifact config: %s", config)
-        manifest_credentials = self._manifest_credentials(
-            config=config, aosm_client=command_context.aosm_client
-        )
-        # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr.
-        #               Is there a simpler way to do this?
-        oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
-        target_acr = self._get_acr(oras_client)
-        target_username = manifest_credentials["username"]
-        target_password = manifest_credentials["acr_token"]
-        target = f"{target_acr}/{self.artifact_name}:{self.artifact_version}"
-        logger.debug("Target ACR: %s", target)
-
-        print("Tagging source image")
-        tag_image_cmd = [
-            str(shutil.which("docker")),
-            "tag",
-            local_docker_image,
-            target,
-        ]
-        call_subprocess_raise_output(tag_image_cmd)
-
-        logger.info(
-            "Logging into artifact store registry %s", oras_client.remote.hostname
-        )
-        # ACR login seems to work intermittently, so we retry on failure
-        retries = 0
-        while True:
-            try:
-                target_acr_login_cmd = [
-                    str(shutil.which("az")),
-                    "acr",
-                    "login",
-                    "--name",
-                    target_acr,
-                    "--username",
-                    target_username,
-                    "--password",
-                    target_password,
-                ]
-                call_subprocess_raise_output(target_acr_login_cmd)
-                logger.debug("Logged in to %s", oras_client.remote.hostname)
-                break
-            except CLIError as error:
-                if retries < 20:
-                    logger.info("Retrying ACR login. Retries so far: %s", retries)
-                    retries += 1
-                    sleep(3)
-                    continue
-                logger.error(
-                    ("Failed to login to %s as %s."), target_acr, target_username
-                )
-                logger.debug(error, exc_info=True)
-                raise error
-
-        try:
-            print("Pushing target image using docker push")
-            push_target_image_cmd = [
-                str(shutil.which("docker")),
-                "push",
-                target,
-            ]
-            call_subprocess_raise_output(push_target_image_cmd)
-        except CLIError as error:
-            logger.error(
-                ("Failed to push %s to %s."),
-                local_docker_image,
-                target_acr,
-            )
-            logger.debug(error, exc_info=True)
-            raise error
-        finally:
-            docker_logout_cmd = [
-                str(shutil.which("docker")),
-                "logout",
-                target_acr,
-            ]
-            call_subprocess_raise_output(docker_logout_cmd)
-
-    def _copy_image(
-        self,
-        config: BaseCommonParametersConfig,
-        command_context: CommandContext,
-        source_image: str,
-    ):
-        """
-        Copy image from one ACR to another.
-
-        Use az acr import to do the import image. Previously we used the python
-        sdk `ContainerRegistryManagementClient.registries.begin_import_image`
-        but this requires the source resource group name, which is more faff
-        at configuration time.
-
-        Neither `az acr import` or `begin_import_image` support using the username
-        and acr_token retrieved from the manifest credentials, so this uses the
-        CLI users context to access both the source registry and the target
-        Artifact Store registry. This requires either Contributor role or a
-        custom role that allows the importImage action over the whole subscription.
-
-        :param source_image: source image including namespace and tags e.g.
-                             samples/nginx:stable
-        """
-        logger.debug("RemoteACRArtifact (copy_image) config: %s", config)
-        manifest_credentials = self._manifest_credentials(
-            config=config, aosm_client=command_context.aosm_client
-        )
-        # TODO (WIBNI): All oras_client is used for (I think) is to get the target_acr.
-        #               Is there a simpler way to do this?
-        oras_client = self._get_oras_client(manifest_credentials=manifest_credentials)
-        target_acr = self._get_acr(oras_client)
-
-        self.source_registry.copy_image(
-            source_image=source_image,
-            target_acr=target_acr,
-            artifact_name=self.artifact_name,
-            artifact_version=self.artifact_version,
-        )
-
+        
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
 
-        if command_context.cli_options["no_subscription_permissions"] or isinstance(
-            self.source_registry, UniversalRegistry
+        logger.debug("RemoteACRArtifact config: %s", config)
+
+        manifest_credentials = self._manifest_credentials(
+            config=config, aosm_client=command_context.aosm_client
+        )
+
+        target_acr = clean_registry_name(manifest_credentials["acr_server_url"])
+        target_username = manifest_credentials["username"]
+        target_password = manifest_credentials["acr_token"]
+
+        if command_context.cli_options["no_subscription_permissions"] or not isinstance(
+            self.source_registry, AzureContainerRegistry
         ):
             print(
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
             self._check_tool_installed("docker")
-            ## TODO pk5: Should this be done in the Registry class
+            # TODO pk5: Should this be done in the Registry class
             image_name = (
                 f"{clean_registry_name(self.source_registry.registry_name)}/"
                 f"{self.artifact_name}"
@@ -415,17 +292,21 @@ class RemoteACRArtifact(BaseACRArtifact):
             )
             self.source_registry.pull_image_to_local_registry(source_image=image_name)
 
-            self._push_image_from_local_registry(
+            self.source_registry.push_image_from_local_registry(
+                target_acr=target_acr,
+                target_image=f"{self.artifact_name}:{self.artifact_version}",
+                target_username=target_username,
+                target_password=target_password,
                 local_docker_image=image_name,
-                config=config,
-                command_context=command_context,
             )
         else:
             print(f"Using az acr import to copy image artifact: {self.artifact_name}")
-            self._copy_image(
-                config=config,
-                command_context=command_context,
+
+            self.source_registry.copy_image(
                 source_image=(f"{self.artifact_name}" f":{self.artifact_version}"),
+                target_acr=target_acr,
+                artifact_name=self.artifact_name,
+                artifact_version=self.artifact_version,
             )
 
 
