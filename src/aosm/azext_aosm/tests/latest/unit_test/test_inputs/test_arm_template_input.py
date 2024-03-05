@@ -71,11 +71,106 @@ class TestARMTemplateInput(TestCase):
             "param2": "value2"
         })
 
-    def test_get_schema(self):
+    @patch("builtins.open", mock_open(
+        read_data='{"parameters": { "location": { "type": "string", "defaultValue": "test" } } }'))
+    def test_get_schema_with_params(self):
         """Test getting the schema for the ARM template input."""
-        assert True
+        schema = self.arm_input.get_schema()
+        expected_schema = {
+            '$schema': 'https://json-schema.org/draft-07/schema#',
+            'properties': {'location': {'type': 'string'}},
+            'required': [],
+            'type': 'object'
+        }
+        self.assertEqual(schema, expected_schema)
 
-
+    @patch("builtins.open", mock_open(
+        read_data='{"$schema": "#", "resources": { } }'))
     def test_get_schema_no_parameters(self):
         """Test getting the schema for the ARM template input when no parameters are found."""
-        assert True
+        # Assert logger warning when no parameters in file
+        with self.assertLogs(level='WARNING'):
+            schema = self.arm_input.get_schema()
+            expected_schema = {
+                '$schema': 'https://json-schema.org/draft-07/schema#',
+                'properties': {},
+                'required': [],
+                'type': 'object'
+            }
+            # Assert outputted schema is base schema with empty properties
+            self.assertEqual(schema, expected_schema)
+
+    def test_generate_schema_from_params_with_default_values(self):
+        """ Test _generate_schema_from_params for ARM template input.
+            With default values, which mean no required params
+        """
+        schema = {
+            "properties": {},
+            "required": []
+        }
+        data = {
+            "test": {
+                "type": "string",
+                "defaultValue": "test"
+            }
+        }
+        # pylint: disable=protected-access
+        self.arm_input._generate_schema_from_params(schema, data)
+
+        expected_schema = {
+            'properties':
+                {'test': {'type': 'string'}},
+                'required': []}
+
+        self.assertEqual(schema, expected_schema)
+
+    def test_generate_schema_from_params_with_no_default_values(self):
+        """ Test _generate_schema_from_params for ARM template input.
+            Without default values, so they should be added to required properties
+        """
+        schema = {
+            "properties": {},
+            "required": []
+        }
+        data = {
+            "test": {
+                "type": "string"
+            }
+        }
+        # pylint: disable=protected-access
+        self.arm_input._generate_schema_from_params(schema, data)
+        expected_schema = {'properties': {'test': {'type': 'string'}}, 'required': ['test']}
+        self.assertEqual(schema, expected_schema)
+
+    def test_generate_schema_from_params_nested_properties(self):
+        """ Test _generate_schema_from_params for ARM template input.
+            With an object in the template, so we expect this to be called recursively
+        """
+        schema = {
+            "properties": {},
+            "required": []
+        }
+        data = {
+            "test": {
+                "type": "string"
+            },
+            "vmImageRepositoryCredentials": {
+                "type": "object",
+                "metadata": {
+                    "description": "Credentials used to login to the image repository."
+                }
+            }
+        }
+        # pylint: disable=protected-access
+        self.arm_input._generate_schema_from_params(schema, data)
+
+        # We expect vmImageRepositoryCredentials to be required and to have a nested schema
+        expected_schema = {'properties':
+                           {'test': {'type': 'string'},
+                            'vmImageRepositoryCredentials': {
+                                "type": "object",
+                                "properties": {},
+                                "required": []}
+                            },
+                           'required': ['test', 'vmImageRepositoryCredentials']}
+        self.assertEqual(schema, expected_schema)
