@@ -29,10 +29,7 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
         self.artifacts = [
             self.create_artifact_object(artifact) for artifact in artifact_list
         ]
-        raise ValueError("Hello world")
 
-    # TODO: add what types are expected, and check they are those types
-    # For filepaths, we must convert to paths again
     @staticmethod
     def create_artifact_object(artifact: dict) -> BaseArtifact:
         """
@@ -43,30 +40,8 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
             raise ValueError(
                 f"Artifact type is missing or invalid for artifact {artifact}"
             )
-        print("------------------------------")
-        print("artifact type: ", artifact["type"])
-        # Use reflection to get the required fields for the artifact class
-        class_sig = inspect.signature(ARTIFACT_TYPE_TO_CLASS[artifact["type"]].__init__)
-        print("Class signature: ", class_sig)
-        class_args = [arg for arg, _ in class_sig.parameters.items() if arg != "self"]
-        print("class args: ", class_args)
-        logger.debug("Artifact configuration from definition folder: %s", artifact)
-        logger.debug(
-            "class_args found for artifact type %s: %s", artifact["type"], class_args
-        )
 
-        # Filter the artifact dict to only include the required fields, erroring if any are missing
-        try:
-            filtered_dict = {arg: artifact[arg] for arg in class_args}
-        except KeyError as e:
-            raise ValueError(
-                f"Artifact is missing required field {e}.\n"
-                f"Required fields are: {class_args}.\n"
-                f"Artifact is: {artifact}.\n"
-                "This is unexpected and most likely comes from manual editing "
-                "of the definition folder."
-            )
-        return ARTIFACT_TYPE_TO_CLASS[artifact["type"]](**filtered_dict)
+        return ARTIFACT_TYPE_TO_CLASS[artifact["type"]].from_dict(artifact)
 
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext

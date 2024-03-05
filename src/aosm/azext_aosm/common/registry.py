@@ -46,6 +46,20 @@ class ContainerRegistry:
         output_dict.update({k: vars(self)[k] for k in vars(self)})
         return output_dict
 
+    @classmethod
+    def from_dict(cls, registry_dict: Dict) -> "ContainerRegistry":
+        try:
+            registry_name = registry_dict["registry_name"]
+            registry_class = REGISTRY_TYPE_TO_CLASS[registry_dict["type"]]
+            return registry_class(registry_name)
+        except KeyError as error:
+            raise ValueError(
+                f"Registry is missing required field {error}.\n"
+                f"Registry is: {registry_dict}.\n"
+                "This is unexpected and most likely comes from manual editing "
+                "of the definition folder."
+            )
+
     # TODO: Test
     def pull_image_to_local_registry(self, source_image: str) -> None:
         """
@@ -70,21 +84,21 @@ class ContainerRegistry:
             logger.error(
                 (
                     "Failed to pull %s. Check if this image exists in the"
-                    " source registry %s."
+                    " source registry %s and that you have run docker login on this registry."
                 ),
                 source_image,
                 self.registry_name,
             )
             logger.debug(error, exc_info=True)
             raise error
-        finally:
-            # TODO: If we do this before the get_images thing, we will lose the credentials from the config.json file
-            docker_logout_cmd = [
-                str(shutil.which("docker")),
-                "logout",
-                self.registry_name,
-            ]
-            call_subprocess_raise_output(docker_logout_cmd)
+        # finally:
+        #     # TODO: If we do this before the get_images thing, we will lose the credentials from the config.json file
+        #     docker_logout_cmd = [
+        #         str(shutil.which("docker")),
+        #         "logout",
+        #         self.registry_name,
+        #     ]
+        #     call_subprocess_raise_output(docker_logout_cmd)
 
 
 class UniversalRegistry(ContainerRegistry):
@@ -99,10 +113,13 @@ class UniversalRegistry(ContainerRegistry):
 
         image_path = f"{self.registry_name}/{image}:{version}"
 
+        logger.debug("Checking if image %s exists in %s", image, self.registry_name)
+
         try:
             manifest_inspect_cmd = [
                 str(shutil.which("docker")),
-                "manifest inspect",
+                "manifest",
+                "inspect",
                 image_path,
             ]
 
@@ -113,9 +130,11 @@ class UniversalRegistry(ContainerRegistry):
             else:
                 return self
         except CLIError as error:
+            if "manifest unknown" in str(error):
+                return None
             logger.warning(
                 (
-                    "Failed to contact source registry %s."
+                    "Failed to contact source registry %s. "
                     "Make sure you run docker login on this registry "
                     "before running the aosm command."
                 ),
@@ -341,12 +360,15 @@ class ContainerRegistryHandler:
 
             acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
+            # TODO pk5: is this how we should be handling this? We are now effectively ignoring namespace completely and just using the registry name. Can we use the namespace somehow?
+            registry = registry.rstrip("/")
+
             if registry_name not in registries:
                 if acr_match:
-                    registries[registry_name] = AzureContainerRegistry(registry_name)
+                    registries[registry] = AzureContainerRegistry(registry_name)
                 else:
-                    registries[registry_name] = UniversalRegistry(registry_name)
-                registry_list.append(registries[registry_name])
+                    registries[registry] = UniversalRegistry(registry)
+                registry_list.append(registries[registry])
 
         return registry_list
 
@@ -370,7 +392,6 @@ class ContainerRegistryHandler:
                 registry_for_image.update(registry.get_repositories())
 
         logger.debug("Images found in the ACR registires: %s", registry_for_image)
-        print("Images found in the ACR registires: %s", registry_for_image)
         return registry_for_image
 
     def find_registry_for_image(
@@ -403,6 +424,8 @@ class ContainerRegistryHandler:
 
 # Mapping of registry type names to their classes.
 REGISTRY_CLASS_TO_TYPE = {
-    "UniversalRegistry": UniversalRegistry,
-    "AzureContainerRegistry": AzureContainerRegistry,
+    UniversalRegistry: "UniversalRegistry",
+    AzureContainerRegistry: "AzureContainerRegistry",
 }
+
+REGISTRY_TYPE_TO_CLASS = {value: key for key, value in REGISTRY_CLASS_TO_TYPE.items()}

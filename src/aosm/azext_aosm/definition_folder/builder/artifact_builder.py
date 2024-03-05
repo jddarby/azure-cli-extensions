@@ -37,20 +37,9 @@ class ArtifactDefinitionElementBuilder(BaseDefinitionElementBuilder):
         # TODO: Handle converting path to string that doesn't couple this code to the artifact.
         #       Probably should be in to_dict method.
         for artifact in self.artifacts:
-
-            if hasattr(artifact, "file_path") and artifact.file_path is not None:
-                artifact.file_path = str(artifact.file_path)
-            # TODO pk5: do the todo above? - we could just run a .to_dict() on all class objects
-            if (
-                hasattr(artifact, "source_registry")
-                and artifact.source_registry is not None
-            ):
-                artifact.source_registry = artifact.source_registry.to_dict()
-
             logger.debug(
                 "Writing artifact %s as: %s", artifact.artifact_name, artifact.to_dict()
             )
             artifacts_list.append(artifact.to_dict())
-        print("artifact list: ", artifacts_list)
         (self.path / "artifacts.json").write_text(json.dumps(artifacts_list, indent=4))
         self._write_supporting_files()

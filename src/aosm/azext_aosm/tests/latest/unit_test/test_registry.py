@@ -2,26 +2,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-import os
 from unittest import TestCase
 from unittest.mock import Mock, patch, mock_open
 import logging
 import sys
 import json
 
-from azext_aosm.common.registry import Registry, ACRRegistry, RegistryHandler
-
-code_directory = os.path.dirname(__file__)
-parent_directory = os.path.abspath(os.path.join(code_directory, ".."))
-mock_cnf_directory = os.path.join(parent_directory, "mock_cnf")
-
-HELM_TEMPLATE_MOCK_OUTPUT_FILE = "nf-agent-cnf-helm_template_output.yaml"
+from azext_aosm.common.registry import (
+    ContainerRegistry,
+    AzureContainerRegistry,
+    ContainerRegistryHandler,
+)
 
 
 class TestRegistry(TestCase):
     def setUp(self):
         logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-        self.registry = Registry(
+        self.registry = ContainerRegistry(
             registry_name="registry.example.com", registry_namespace=""
         )
 
@@ -79,7 +76,7 @@ class TestRegistry(TestCase):
 class TestACRRegistry(TestCase):
     def setUp(self):
         logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-        self.registry = ACRRegistry(
+        self.registry = AzureContainerRegistry(
             registry_name="registry.azurecr.io", registry_namespace=""
         )
 
@@ -95,7 +92,7 @@ class TestACRRegistry(TestCase):
             "azext_aosm.common.registry.call_subprocess_raise_output",
             mocked_call_subprocess_raise_output,
         ):
-            images = self.registry.get_images()
+            images = self.registry.get_repositories()
 
         registry_namespace = self.registry.registry_namespaces[0]
 
@@ -115,14 +112,14 @@ class TestRegistryHandler(TestCase):
         self.registry_name_3 = "registry.example.com"
 
         with patch.object(
-            RegistryHandler,
+            ContainerRegistryHandler,
             "_get_images",
             return_value={
-                "image1": (ACRRegistry(self.registry_name_1, ""), ""),
-                "image2": (Registry(self.registry_name_2, "sample"), "sample"),
+                "image1": (AzureContainerRegistry(self.registry_name_1, ""), ""),
+                "image2": (ContainerRegistry(self.registry_name_2, "sample"), "sample"),
             },
         ):
-            self.registry_handler = RegistryHandler(
+            self.registry_handler = ContainerRegistryHandler(
                 image_sources=[
                     self.registry_name_1,
                     self.registry_name_2,
@@ -142,9 +139,9 @@ class TestRegistryHandler(TestCase):
         for registry in registry_list:
             self.assertIn(registry.registry_name, self.registry_handler.image_sources)
 
-            if isinstance(registry, ACRRegistry):
+            if isinstance(registry, AzureContainerRegistry):
                 acr_registry_count += 1
-            elif isinstance(registry, Registry):
+            elif isinstance(registry, ContainerRegistry):
                 registry_count += 1
             else:
                 self.fail("Unexpected registry type")

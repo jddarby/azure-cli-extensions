@@ -205,7 +205,6 @@ class HelmChartProcessor(BaseInputProcessor):
                     self.name,
                 )
 
-        print("images are: ", images)
         return images
 
     @staticmethod

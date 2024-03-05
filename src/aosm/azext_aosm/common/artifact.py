@@ -31,7 +31,7 @@ from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
     BlobClient,
     BlobType,
 )
-from azext_aosm.common.registry import ContainerRegistry
+from azext_aosm.common.registry import ContainerRegistry, UniversalRegistry
 
 logger = get_logger(__name__)
 
@@ -50,6 +50,12 @@ class BaseArtifact(ABC):
         output_dict = {"type": ARTIFACT_CLASS_TO_TYPE[type(self)]}
         output_dict.update({k: vars(self)[k] for k in vars(self)})
         return output_dict
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, artifact_dict):
+        """Create an instance from a dict."""
+        raise NotImplementedError
 
     @abstractmethod
     def upload(
@@ -122,6 +128,35 @@ class LocalFileACRArtifact(BaseACRArtifact):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.file_path = file_path
 
+    def to_dict(self) -> dict:
+        """Convert an instance to a dict."""
+        # Take the output_dict from the parent class
+        output_dict = super().to_dict()
+        # Add the file_path to the output_dict
+        output_dict["file_path"] = str(self.file_path)
+        return output_dict
+
+    @classmethod
+    def from_dict(cls, artifact_dict):
+        try:
+            artifact_name = artifact_dict["artifact_name"]
+            artifact_type = artifact_dict["artifact_type"]
+            artifact_version = artifact_dict["artifact_version"]
+            file_path = Path(artifact_dict["file_path"])
+            return LocalFileACRArtifact(
+                artifact_name=artifact_name,
+                artifact_type=artifact_type,
+                artifact_version=artifact_version,
+                file_path=file_path,
+            )
+        except KeyError as error:
+            raise ValueError(
+                f"Artifact is missing required field {error}.\n"
+                f"Artifact is: {artifact_dict}.\n"
+                "This is unexpected and most likely comes from manual editing "
+                "of the definition folder."
+            )
+
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
@@ -170,7 +205,7 @@ class LocalFileACRArtifact(BaseACRArtifact):
 
                 logger.error(
                     "Failed to upload %s to %s. Check if this image exists in the"
-                    " source registry %s.",
+                    " source registry %s.",  # TODO pk5. This error message makes no sense. Why would I check if it is in the source registry if I am trying to upload it from local?
                     self.file_path,
                     target,
                     target_acr,
@@ -194,6 +229,38 @@ class RemoteACRArtifact(BaseACRArtifact):
     ):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.source_registry = source_registry
+
+    def to_dict(self) -> dict:
+        """Convert an instance to a dict."""
+        # Take the output_dict from the parent class
+        output_dict = super().to_dict()
+        # Add the source_registry to the output_dict
+        if self.source_registry:
+            output_dict["source_registry"] = self.source_registry.to_dict()
+        return output_dict
+
+    @classmethod
+    def from_dict(cls, artifact_dict):
+        try:
+            artifact_name = artifact_dict["artifact_name"]
+            artifact_type = artifact_dict["artifact_type"]
+            artifact_version = artifact_dict["artifact_version"]
+            source_registry = ContainerRegistry.from_dict(
+                registry_dict=artifact_dict["source_registry"]
+            )
+            return RemoteACRArtifact(
+                artifact_name=artifact_name,
+                artifact_type=artifact_type,
+                artifact_version=artifact_version,
+                source_registry=source_registry,
+            )
+        except KeyError as error:
+            raise ValueError(
+                f"Artifact is missing required field {error}.\n"
+                f"Artifact is: {artifact_dict}.\n"
+                "This is unexpected and most likely comes from manual editing "
+                "of the definition folder."
+            )
 
     def _push_image_from_local_registry(
         self,
@@ -333,7 +400,9 @@ class RemoteACRArtifact(BaseACRArtifact):
     ):
         """Upload the artifact."""
 
-        if command_context.cli_options["no_subscription_permissions"]:
+        if command_context.cli_options["no_subscription_permissions"] or isinstance(
+            self.source_registry, UniversalRegistry
+        ):
             print(
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
@@ -352,7 +421,6 @@ class RemoteACRArtifact(BaseACRArtifact):
                 command_context=command_context,
             )
         else:
-            # TODO pk5: check if this works
             print(f"Using az acr import to copy image artifact: {self.artifact_name}")
             self._copy_image(
                 config=config,
@@ -410,6 +478,35 @@ class LocalFileStorageAccountArtifact(BaseStorageAccountArtifact):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.file_path = str(file_path)
 
+    def to_dict(self) -> dict:
+        """Convert an instance to a dict."""
+        # Take the output_dict from the parent class
+        output_dict = super().to_dict()
+        # Add the file_path to the output_dict
+        output_dict["file_path"] = str(self.file_path)
+        return output_dict
+
+    @classmethod
+    def from_dict(cls, artifact_dict):
+        try:
+            artifact_name = artifact_dict["artifact_name"]
+            artifact_type = artifact_dict["artifact_type"]
+            artifact_version = artifact_dict["artifact_version"]
+            file_path = Path(artifact_dict["file_path"])
+            return LocalFileStorageAccountArtifact(
+                artifact_name=artifact_name,
+                artifact_type=artifact_type,
+                artifact_version=artifact_version,
+                file_path=file_path,
+            )
+        except KeyError as error:
+            raise ValueError(
+                f"Artifact is missing required field {error}.\n"
+                f"Artifact is: {artifact_dict}.\n"
+                "This is unexpected and most likely comes from manual editing "
+                "of the definition folder."
+            )
+
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
@@ -465,6 +562,27 @@ class BlobStorageAccountArtifact(BaseStorageAccountArtifact):
     ):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.blob_sas_uri = blob_sas_uri
+
+    @classmethod
+    def from_dict(cls, artifact_dict):
+        try:
+            artifact_name = artifact_dict["artifact_name"]
+            artifact_type = artifact_dict["artifact_type"]
+            artifact_version = artifact_dict["artifact_version"]
+            blob_sas_uri = artifact_dict["blob_sas_uri"]
+            return BlobStorageAccountArtifact(
+                artifact_name=artifact_name,
+                artifact_type=artifact_type,
+                artifact_version=artifact_version,
+                blob_sas_uri=blob_sas_uri,
+            )
+        except KeyError as error:
+            raise ValueError(
+                f"Artifact is missing required field {error}.\n"
+                f"Artifact is: {artifact_dict}.\n"
+                "This is unexpected and most likely comes from manual editing "
+                "of the definition folder."
+            )
 
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
