@@ -38,5 +38,11 @@ resource nfResource 'Microsoft.HybridNetwork/networkFunctions@2023-09-01' = [for
     allowSoftwareUpdate: true
     configurationType: 'Secret'
     secretDeploymentValues: string(values)
+    roleOverrideValues: [
+    {%- for nf_app_name in nf_application_names %}
+     '{"name":"{{nf_app_name}}","deployParametersMappingRuleProfile":{"helmMappingRuleProfile":{"options":{"installOptions":{"injectArtifactStoreDetails":"true"},"upgradeOptions":{"injectArtifactStoreDetails":"true"}}}}}'
+    
+    {%- endfor %}
+    ]
   }
 }]

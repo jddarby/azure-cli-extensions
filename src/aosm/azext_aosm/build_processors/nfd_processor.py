@@ -96,10 +96,22 @@ class NFDProcessor(BaseInputProcessor):
             )
             and self.input_artifact.network_function_definition.properties.network_function_template
         ):
-            params = {
-                "nfvi_type":
-                self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type
-            }
+            print("nfs", self.input_artifact.network_function_definition.properties.network_function_template.network_function_applications[0])
+            nf_application_names = [nf_app.name for nf_app in self.input_artifact.network_function_definition.properties.network_function_template.network_function_applications]
+            print("PROPERTIES", nf_application_names)
+            if self.input_artifact.network_function_definition.properties.network_function_type == "ContainerizedNetworkFunction":
+                params = {
+                    "nfvi_type":
+                    self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type,
+                    "nf_application_names" : nf_application_names
+                }
+            elif self.input_artifact.network_function_definition.properties.network_function_type == "VirtualNetworkFunction":
+                params = {
+                    "nfvi_type":
+                    self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type,
+                }
+            else:
+                raise ResourceNotFoundError("The NFDV provided has no network function type.")
         else:
             raise ResourceNotFoundError("The NFDV provided has no nfvi type.")
         bicep_contents = render_bicep_contents_from_j2(template_path, params)
