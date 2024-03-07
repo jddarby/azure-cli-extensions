@@ -46,23 +46,17 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
 
     config: OnboardingCoreVNFInputConfig
 
-    def _get_input_config(
-        self, input_config: Optional[dict] = None
-    ) -> OnboardingCoreVNFInputConfig:
-        """Get the configuration for the command."""
-        if input_config is None:
-            input_config = {}
-        return OnboardingCoreVNFInputConfig(**input_config)
+    @property
+    def input_config(self):
+        return OnboardingCoreVNFInputConfig
 
-    def _get_params_config(
-        self, config_file: Path
-    ) -> CoreVNFCommonParametersConfig:
-        """Get the configuration for the command."""
-        with open(config_file, "r", encoding="utf-8") as _file:
-            params_dict = json.load(_file)
-        if params_dict is None:
-            params_dict = {}
-        return CoreVNFCommonParametersConfig(**params_dict)
+    @property
+    def params_config(self):
+        return CoreVNFCommonParametersConfig
+
+    @property
+    def base_template_filename(self):
+        return VNF_CORE_BASE_TEMPLATE_FILENAME
 
     def _get_processor_list(self) -> List[AzureCoreArmBuildProcessor | VHDProcessor]:
         """Get the list of processors."""
@@ -95,22 +89,8 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
         processor_list.append(vhd_processor)
         return processor_list
 
-    def build_base_bicep(self) -> BicepDefinitionElementBuilder:
-        """Build the base bicep file."""
-        # Build manifest bicep contents, with j2 template
-        template_path = get_template_path(
-            VNF_TEMPLATE_FOLDER_NAME, VNF_CORE_BASE_TEMPLATE_FILENAME
-        )
-        bicep_contents = render_bicep_contents_from_j2(template_path, {})
-        # Create Bicep element with manifest contents
-        bicep_file = BicepDefinitionElementBuilder(
-            Path(VNF_OUTPUT_FOLDER_FILENAME, BASE_FOLDER_NAME), bicep_contents
-        )
-        return bicep_file
-
-    def build_all_parameters_json(self) -> JSONDefinitionElementBuilder:
-        """Create object for all_parameters.json."""
-        params_content = {
+    def get_params_content(self):
+        return {
             "location": self.config.location,
             "publisherName": self.config.publisher_name,
             "publisherResourceGroupName": self.config.publisher_resource_group_name,
@@ -121,10 +101,6 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             "nfDefinitionGroup": self.config.nf_name,
             "nfDefinitionVersion": self.config.version
         }
-        base_file = JSONDefinitionElementBuilder(
-            Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
-        )
-        return base_file
 
     def _get_default_config(self, vhd) -> Dict[str, Any]:
         """Get default VHD config for Azure Core VNF."""
