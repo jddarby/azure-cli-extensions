@@ -261,7 +261,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                 "This is unexpected and most likely comes from manual editing "
                 "of the definition folder."
             )
-        
+
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
@@ -292,7 +292,7 @@ class RemoteACRArtifact(BaseACRArtifact):
             )
             self.source_registry.pull_image_to_local_registry(source_image=image_name)
 
-            self.source_registry.push_image_from_local_registry(
+            self.source_registry.push_image_from_local_registry_to_acr(
                 target_acr=target_acr,
                 target_image=f"{self.artifact_name}:{self.artifact_version}",
                 target_username=target_username,

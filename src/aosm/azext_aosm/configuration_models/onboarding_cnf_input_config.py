@@ -15,26 +15,6 @@ from azext_aosm.configuration_models.onboarding_nfd_base_input_config import (
 
 
 @dataclass
-class ImageSourceConfig:
-    """Object representing an image configuration"""
-
-    image_sources: list = field(
-        default_factory=lambda: [],
-        metadata={
-            "comment": (
-                "List of registries from which to pull the image(s).\n"
-                "For example [sourceacr.azurecr.io/test, myacr2.azurecr.io]."
-            )
-        },
-    )
-
-    def validate(self):
-        """Validate the image configuration."""
-        if not self.image_sources:
-            raise ValidationError("Image sources must be set")
-
-
-@dataclass
 class HelmPackageConfig:
     """Helm package configuration."""
 
@@ -83,12 +63,18 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
 
     # TODO: Add better comment for images as not a list
-    images: ImageSourceConfig = field(
-        default_factory=ImageSourceConfig,
+
+    image_sources: list = field(
+        default_factory=lambda: [],
         metadata={
-            "comment": "Source of container images to be included in the CNF. Currently only one source is supported."
+            "comment": (
+                "List of registries from which to pull the image(s).\n"
+                "For example [sourceacr.azurecr.io/test, myacr2.azurecr.io].\n"
+                "For non Azure Container Registries, ensure you have run a docker login command before running build.\n"
+            )
         },
     )
+
     helm_packages: List[HelmPackageConfig] = field(
         default_factory=lambda: [HelmPackageConfig()],
         metadata={"comment": "List of Helm packages to be included in the CNF."},
@@ -97,18 +83,14 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     def validate(self):
         """Validate the CNFconfiguration."""
         super().validate()
-        if not self.images:
-            raise ValidationError("At least one image must be included.")
+        if not self.image_sources:
+            raise ValidationError("At least one image source must be included.")
         if not self.helm_packages:
             raise ValidationError("At least one Helm package must be included.")
-        self.images.validate()
         for helm_package in self.helm_packages:
             helm_package.validate()
 
     def __post_init__(self):
-        if self.images and isinstance(self.images, dict):
-            self.images = ImageSourceConfig(**self.images)
-
         helm_list = []
         for helm_package in self.helm_packages:
             if isinstance(helm_package, dict):

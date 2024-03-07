@@ -6,22 +6,16 @@ import json
 import re
 import shutil
 import subprocess
-import os
 from time import sleep
 from typing import List, Tuple, Dict
-import requests
-from requests.auth import HTTPBasicAuth
 from knack.log import get_logger
 from knack.util import CLIError
-import base64
-from azure.cli.core.azclierror import UnauthorizedError
+from azure.cli.core.azclierror import BadRequestError
 
 from azext_aosm.common.utils import (
     call_subprocess_raise_output,
     clean_registry_name,
 )
-
-# TODO: check linting
 
 logger = get_logger(__name__)
 ACR_REGISTRY_NAME_PATTERN = r"^([a-zA-Z0-9]+\.azurecr\.io)"
@@ -41,7 +35,7 @@ class ContainerRegistry:
         """
         self.registry_name = registry_name
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         """Convert an instance to a dict."""
         output_dict = {"type": REGISTRY_CLASS_TO_TYPE[type(self)]}
         output_dict.update({k: vars(self)[k] for k in vars(self)})
@@ -65,8 +59,6 @@ class ContainerRegistry:
         """
         Pull image to local registry using docker pull. Requires docker.
 
-        Uses the CLI user's context to log in to the source registry.
-
         :param: source_image: source docker image name e.g.
             uploadacr.azurecr.io/samples/nginx:stable
         """
@@ -80,7 +72,7 @@ class ContainerRegistry:
                 source_image,
             ]
             call_subprocess_raise_output(pull_source_image_cmd)
-        except CLIError as error:
+        except BadRequestError as error:
             logger.error(
                 (
                     "Failed to pull %s. Check if this image exists in the"
@@ -92,7 +84,7 @@ class ContainerRegistry:
             logger.debug(error, exc_info=True)
             raise error
 
-    def push_image_from_local_registry(
+    def push_image_from_local_registry_to_acr(
         self,
         target_acr: str,
         target_image: str,
@@ -103,11 +95,19 @@ class ContainerRegistry:
         """
         Push image to target registry using docker push. Requires docker.
 
+        :param target_acr: name of the target Azure Container registry
+            e.g. targetacr.azurecr.io
+        :type target_acr: str
+        :param target_image: name of the target image (repository:tag)
+            e.g. nginx:1.0.0
+        :type target_image: str
+        :param target_username: username for the target ACR
+        :type target_username: str
+        :param target_password: password for the target ACR
+        :type target_password: str
         :param local_docker_image: name and tag of the source image on local registry
             e.g. uploadacr.azurecr.io/samples/nginx:stable
         :type local_docker_image: str
-        :param target_password: The password to use for the az acr login attempt
-        :type target_password: str
         """
 
         target = f"{target_acr}/{target_image}"
@@ -226,10 +226,10 @@ class AzureContainerRegistry(ContainerRegistry):
     A class to represent an Azure Container Registry and handle all ACR operations.
     """
 
-    # TODO: there is a comment in the artifact.py file about the login to ACRs only working intermittently. We should check if this is the case here
     def _login(self):
         """
-        Log in to the source registry using the Azure CLI.
+        Log in to the source registry using the Azure CLI.         Uses the CLI user's context to log in to the source registry.
+
         """
 
         message = f"Logging into source registry {self.registry_name}"
@@ -265,7 +265,6 @@ class AzureContainerRegistry(ContainerRegistry):
             ]
             call_subprocess_raise_output(docker_logout_cmd)
 
-    # TODO: test this - ported from the artifact.py
     def copy_image(
         self,
         source_image: str,
@@ -448,6 +447,7 @@ class ContainerRegistryHandler:
             acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
             # TODO pk5: is this how we should be handling this? We are now effectively ignoring namespace completely and just using the registry name. Can we use the namespace somehow?
+            # I should be using the full name as the registry_name but then I should be striping the images of all namespace. Just leaving the final slash.
             registry = registry.rstrip("/")
 
             if registry_name not in registries:
