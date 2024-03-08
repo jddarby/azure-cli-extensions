@@ -62,14 +62,12 @@ class HelmPackageConfig:
 class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
 
-    # TODO: Add better comment for images as not a list
-
     image_sources: list = field(
         default_factory=lambda: [],
         metadata={
             "comment": (
                 "List of registries from which to pull the image(s).\n"
-                "For example [sourceacr.azurecr.io/test, myacr2.azurecr.io].\n"
+                "For example [sourceacr.azurecr.io/test, myacr2.azurecr.io, ghcr.io/path].\n"
                 "For non Azure Container Registries, ensure you have run a docker login command before running build.\n"
             )
         },
