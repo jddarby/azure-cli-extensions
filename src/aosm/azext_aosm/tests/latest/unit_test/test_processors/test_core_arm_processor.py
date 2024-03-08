@@ -110,7 +110,7 @@ class AzureCoreArmProcessorTest(TestCase):
 
     def test_generate_parameters_file(self):
         """ Test generate parameters file for Azure Core ARM Processor"""
-
+        # TODO: remove mocking, use ubuntu template expected output
         # Mock private function
         # (generate mapping rule profile is tested elsewhere)
         mapping_rule_profile = MagicMock()
@@ -129,13 +129,11 @@ class AzureCoreArmProcessorTest(TestCase):
 
         # Assert the contents
         self.assertEqual(parameters_file.file_content, expected_json)
-        # Assert name of the file includes templateParameters
+        # Assert name of the file includes 
         # (We want to know that in the instance of Azure Core ARM Templates,
         # we are creating template parameters)
-        if TEMPLATE_PARAMETERS_FILENAME in str(parameters_file.path):
-            assert True
-        else:
-            assert False
+        assert TEMPLATE_PARAMETERS_FILENAME in str(parameters_file.path)
+
         # Assert the type is LocalFileBuilder
         self.assertIsInstance(parameters_file, LocalFileBuilder)
         # Assert that the necessary methods were called
