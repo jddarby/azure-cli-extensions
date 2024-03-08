@@ -5,7 +5,6 @@
 import json
 import math
 import shutil
-import subprocess
 from abc import ABC, abstractmethod
 from functools import lru_cache
 from pathlib import Path
@@ -19,8 +18,8 @@ from oras.client import OrasClient
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.utils import (
     convert_bicep_to_arm,
-    call_subprocess_raise_output,
     clean_registry_name,
+    push_image_from_local_registry_to_acr,
 )
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
@@ -203,20 +202,13 @@ class LocalFileACRArtifact(BaseACRArtifact):
                     sleep(3)
                     continue
 
-                logger.error(
-                    "Failed to upload %s to %s. Check if this image exists in the"
-                    " source registry %s.",  # TODO pk5. This error message makes no sense. Why would I check if it is in the source registry if I am trying to upload it from local?
-                    self.file_path,
-                    target,
-                    target_acr,
-                )
+                logger.error("Failed to upload %s to %s.", self.file_path, target)
                 logger.debug(error, exc_info=True)
                 raise error
 
         logger.info("LocalFileACRArtifact uploaded %s to %s", self.file_path, target)
 
 
-# TODO: have a think about the naming of this class
 class RemoteACRArtifact(BaseACRArtifact):
     """Class for ACR artifacts from a remote ACR image."""
 
@@ -226,9 +218,11 @@ class RemoteACRArtifact(BaseACRArtifact):
         artifact_type,
         artifact_version,
         source_registry: ContainerRegistry,
+        registry_namespace: str = "",
     ):
         super().__init__(artifact_name, artifact_type, artifact_version)
         self.source_registry = source_registry
+        self.registry_namespace = registry_namespace
 
     def to_dict(self) -> dict:
         """Convert an instance to a dict."""
@@ -237,6 +231,8 @@ class RemoteACRArtifact(BaseACRArtifact):
         # Add the source_registry to the output_dict
         if self.source_registry:
             output_dict["source_registry"] = self.source_registry.to_dict()
+        if self.registry_namespace:
+            output_dict["registry_namespace"] = self.registry_namespace
         return output_dict
 
     @classmethod
@@ -248,11 +244,13 @@ class RemoteACRArtifact(BaseACRArtifact):
             source_registry = ContainerRegistry.from_dict(
                 registry_dict=artifact_dict["source_registry"]
             )
+            registry_namespace = artifact_dict["registry_namespace"]
             return RemoteACRArtifact(
                 artifact_name=artifact_name,
                 artifact_type=artifact_type,
                 artifact_version=artifact_version,
                 source_registry=source_registry,
+                registry_namespace=registry_namespace,
             )
         except KeyError as error:
             raise ValueError(
@@ -260,7 +258,7 @@ class RemoteACRArtifact(BaseACRArtifact):
                 f"Artifact is: {artifact_dict}.\n"
                 "This is unexpected and most likely comes from manual editing "
                 "of the definition folder."
-            )
+            ) from error
 
     def upload(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
@@ -277,6 +275,13 @@ class RemoteACRArtifact(BaseACRArtifact):
         target_username = manifest_credentials["username"]
         target_password = manifest_credentials["acr_token"]
 
+        source_image = (
+            f"{self.source_registry.registry_name}/"
+            f"{self.registry_namespace}"
+            f"{self.artifact_name}"
+            f":{self.artifact_version}"
+        )
+
         if command_context.cli_options["no_subscription_permissions"] or not isinstance(
             self.source_registry, AzureContainerRegistry
         ):
@@ -284,29 +289,23 @@ class RemoteACRArtifact(BaseACRArtifact):
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
             self._check_tool_installed("docker")
-            # TODO pk5: Should this be done in the Registry class
-            image_name = (
-                f"{clean_registry_name(self.source_registry.registry_name)}/"
-                f"{self.artifact_name}"
-                f":{self.artifact_version}"
-            )
-            self.source_registry.pull_image_to_local_registry(source_image=image_name)
+            self.source_registry.pull_image_to_local_registry(source_image=source_image)
 
-            self.source_registry.push_image_from_local_registry_to_acr(
+            push_image_from_local_registry_to_acr(
                 target_acr=target_acr,
-                target_image=f"{self.artifact_name}:{self.artifact_version}",
+                target_image=f"{self.registry_namespace}{self.artifact_name}:{self.artifact_version}",
                 target_username=target_username,
                 target_password=target_password,
-                local_docker_image=image_name,
+                local_docker_image=source_image,
             )
         else:
             print(f"Using az acr import to copy image artifact: {self.artifact_name}")
 
-            self.source_registry.copy_image(
-                source_image=(f"{self.artifact_name}" f":{self.artifact_version}"),
+            self.source_registry.copy_image_to_target_acr(
+                source_image=source_image,
                 target_acr=target_acr,
-                artifact_name=self.artifact_name,
-                artifact_version=self.artifact_version,
+                image_name=self.artifact_name,
+                image_version=self.artifact_version,
             )
 
 

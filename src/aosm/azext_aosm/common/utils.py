@@ -7,12 +7,15 @@ import json
 import os
 import shutil
 import subprocess
+from time import sleep
 import tarfile
 import tempfile
 from pathlib import Path
+from typing import Union
 
 from knack.log import get_logger
 from knack.util import CLIError
+from azure.cli.core.azclierror import BadRequestError, ClientRequestError
 
 from azext_aosm.common.exceptions import InvalidFileTypeError, MissingDependency
 
@@ -107,7 +110,7 @@ def check_tool_installed(tool_name: str) -> None:
         raise MissingDependency(f"You must install {tool_name} to use this command.")
 
 
-def call_subprocess_raise_output(cmd: list) -> None:
+def call_subprocess_raise_output(cmd: list) -> str:
     """
     Call a subprocess and raise a CLIError with the output if it fails.
 
@@ -129,8 +132,7 @@ def call_subprocess_raise_output(cmd: list) -> None:
             called_process.stdout,
             called_process.stderr,
         )
-        if called_process.returncode == 1:
-            return None
+        
         return called_process.stdout
     except subprocess.CalledProcessError as error:
         all_output: str = (
@@ -147,3 +149,107 @@ def call_subprocess_raise_output(cmd: list) -> None:
 def clean_registry_name(registry_name: str) -> str:
     """Remove https:// from the registry name."""
     return registry_name.replace("https://", "")
+
+
+def push_image_from_local_registry_to_acr(
+    target_acr: str,
+    target_image: str,
+    target_username: str,
+    target_password: str,
+    local_docker_image: str,
+) -> None:
+    """
+    Push image to target registry using docker push. Requires docker.
+
+    :param target_acr: name of the target Azure Container registry
+        e.g. targetacr.azurecr.io
+    :type target_acr: str
+    :param target_image: name of the target image (namespace/repository:tag)
+        e.g. namespace/nginx:1.0.0
+    :type target_image: str
+    :param target_username: username for the target ACR
+    :type target_username: str
+    :param target_password: password for the target ACR
+    :type target_password: str
+    :param local_docker_image: name and tag of the source image on local registry
+        e.g. uploadacr.azurecr.io/samples/nginx:stable
+    :type local_docker_image: str
+    """
+
+    target = f"{target_acr}/{target_image}"
+    logger.debug("Target ACR: %s", target)
+
+    # To push the image to the target registry, we need to tag the source image
+    logger.info("Tagging source image %s as %s", local_docker_image, target)
+    tag_image_cmd = [
+        str(shutil.which("docker")),
+        "tag",
+        local_docker_image,
+        target,
+    ]
+    call_subprocess_raise_output(tag_image_cmd)
+
+    login_to_artifact_store_registry(target_acr, target_username, target_password)
+
+    try:
+        logger.info("Pushing target image %s using docker push", target)
+        push_target_image_cmd = [
+            str(shutil.which("docker")),
+            "push",
+            target,
+        ]
+        call_subprocess_raise_output(push_target_image_cmd)
+    except CLIError as error:
+        logger.debug(error, exc_info=True)
+        raise ClientRequestError(
+            f"Failed to push {local_docker_image} to {target_acr}."
+        ) from error
+    finally:
+        docker_logout_cmd = [
+            str(shutil.which("docker")),
+            "logout",
+            target_acr,
+        ]
+        call_subprocess_raise_output(docker_logout_cmd)
+
+
+def login_to_artifact_store_registry(
+    registry: str, username: str, password: str
+) -> None:
+    """
+    Log in to the registry using az acr login.
+
+    :param registry: The registry to log in to
+    :param username: The username to use for logging in
+    :param password: The password to use for logging in
+    """
+    logger.info("Logging into artifact store registry %s", registry)
+    # ACR login seems to work intermittently, so we retry on failure
+    retries = 0
+    while True:
+        try:
+            target_acr_login_cmd = [
+                str(shutil.which("az")),
+                "acr",
+                "login",
+                "--name",
+                registry,
+                "--username",
+                username,
+                "--password",
+                password,
+            ]
+            call_subprocess_raise_output(target_acr_login_cmd)
+            logger.debug("Logged in to %s", registry)
+            break
+        except CLIError as error:
+            if retries < 20:
+                logger.info("Retrying ACR login. Retries so far: %s", retries)
+                retries += 1
+                sleep(3)
+                continue
+            logger.debug(error, exc_info=True)
+
+            raise BadRequestError(
+                f"Failed to login to {registry} as {username}."
+            ) from error

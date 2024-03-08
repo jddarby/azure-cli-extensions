@@ -89,11 +89,11 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def _get_processor_list(self) -> list[HelmChartProcessor]:
         processor_list = []
+        assert isinstance(self.config, OnboardingCNFInputConfig)
 
         registry_handler = ContainerRegistryHandler(self.config.image_sources)
 
         # for each helm package, instantiate helm processor
-        assert isinstance(self.config, OnboardingCNFInputConfig)
         for helm_package in self.config.helm_packages:
             if helm_package.default_values:
                 if Path(helm_package.default_values).exists():

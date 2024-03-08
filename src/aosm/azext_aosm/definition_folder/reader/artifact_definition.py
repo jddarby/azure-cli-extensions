@@ -3,9 +3,9 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-import inspect
 import json
 from pathlib import Path
+from typing import cast, Type
 
 from knack.log import get_logger
 
@@ -41,7 +41,11 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
                 f"Artifact type is missing or invalid for artifact {artifact}"
             )
 
-        return ARTIFACT_TYPE_TO_CLASS[artifact["type"]].from_dict(artifact)
+        # Give mypy a hint that the type of the artifact
+        artifact_class = cast(
+            Type[BaseArtifact], ARTIFACT_TYPE_TO_CLASS[artifact["type"]]
+        )
+        return artifact_class.from_dict(artifact)
 
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext

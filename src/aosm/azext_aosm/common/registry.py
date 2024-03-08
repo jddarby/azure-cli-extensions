@@ -6,11 +6,10 @@ import json
 import re
 import shutil
 import subprocess
-from time import sleep
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from knack.log import get_logger
 from knack.util import CLIError
-from azure.cli.core.azclierror import BadRequestError
+from azure.cli.core.azclierror import BadRequestError, ClientRequestError
 
 from azext_aosm.common.utils import (
     call_subprocess_raise_output,
@@ -31,9 +30,9 @@ class ContainerRegistry:
         Initialise the Registry object.
 
         :param registry_name: The name of the registry
-        :param registry_namespace: The namespace of the registry
         """
         self.registry_name = registry_name
+        self.registry_namespaces: List[str] = []
 
     def to_dict(self) -> Dict:
         """Convert an instance to a dict."""
@@ -43,6 +42,7 @@ class ContainerRegistry:
 
     @classmethod
     def from_dict(cls, registry_dict: Dict) -> "ContainerRegistry":
+        """Create an instance from a dict."""
         try:
             registry_name = registry_dict["registry_name"]
             registry_class = REGISTRY_TYPE_TO_CLASS[registry_dict["type"]]
@@ -53,7 +53,16 @@ class ContainerRegistry:
                 f"Registry is: {registry_dict}.\n"
                 "This is unexpected and most likely comes from manual editing "
                 "of the definition folder."
-            )
+            ) from error
+
+    def add_namespace(self, namespace: str) -> None:
+        """
+        Add a namespace to the registry.
+
+        :param namespace: The namespace to add
+        """
+        if namespace not in self.registry_namespaces:
+            self.registry_namespaces.append(namespace)
 
     def pull_image_to_local_registry(self, source_image: str) -> None:
         """
@@ -64,7 +73,6 @@ class ContainerRegistry:
         """
         try:
             message = f"Pulling source image {source_image}"
-            print(message)
             logger.info(message)
             pull_source_image_cmd = [
                 str(shutil.which("docker")),
@@ -73,152 +81,73 @@ class ContainerRegistry:
             ]
             call_subprocess_raise_output(pull_source_image_cmd)
         except BadRequestError as error:
-            logger.error(
-                (
-                    "Failed to pull %s. Check if this image exists in the"
-                    " source registry %s and that you have run docker login on this registry."
-                ),
-                source_image,
-                self.registry_name,
-            )
             logger.debug(error, exc_info=True)
-            raise error
-
-    def push_image_from_local_registry_to_acr(
-        self,
-        target_acr: str,
-        target_image: str,
-        target_username: str,
-        target_password: str,
-        local_docker_image: str,
-    ) -> None:
-        """
-        Push image to target registry using docker push. Requires docker.
-
-        :param target_acr: name of the target Azure Container registry
-            e.g. targetacr.azurecr.io
-        :type target_acr: str
-        :param target_image: name of the target image (repository:tag)
-            e.g. nginx:1.0.0
-        :type target_image: str
-        :param target_username: username for the target ACR
-        :type target_username: str
-        :param target_password: password for the target ACR
-        :type target_password: str
-        :param local_docker_image: name and tag of the source image on local registry
-            e.g. uploadacr.azurecr.io/samples/nginx:stable
-        :type local_docker_image: str
-        """
-
-        target = f"{target_acr}/{target_image}"
-        logger.debug("Target ACR: %s", target)
-
-        print("Tagging source image")
-        tag_image_cmd = [
-            str(shutil.which("docker")),
-            "tag",
-            local_docker_image,
-            target,
-        ]
-        call_subprocess_raise_output(tag_image_cmd)
-
-        logger.info("Logging into artifact store registry %s", target_acr)
-        # ACR login seems to work intermittently, so we retry on failure
-        retries = 0
-        while True:
-            try:
-                target_acr_login_cmd = [
-                    str(shutil.which("az")),
-                    "acr",
-                    "login",
-                    "--name",
-                    target_acr,
-                    "--username",
-                    target_username,
-                    "--password",
-                    target_password,
-                ]
-                call_subprocess_raise_output(target_acr_login_cmd)
-                logger.debug("Logged in to %s", target_acr)
-                break
-            except CLIError as error:
-                if retries < 20:
-                    logger.info("Retrying ACR login. Retries so far: %s", retries)
-                    retries += 1
-                    sleep(3)
-                    continue
-                logger.error(
-                    ("Failed to login to %s as %s."), target_acr, target_username
-                )
-                logger.debug(error, exc_info=True)
-                raise error
-
-        try:
-            print("Pushing target image using docker push")
-            push_target_image_cmd = [
-                str(shutil.which("docker")),
-                "push",
-                target,
-            ]
-            call_subprocess_raise_output(push_target_image_cmd)
-        except CLIError as error:
-            logger.error(
-                ("Failed to push %s to %s."),
-                local_docker_image,
-                target_acr,
-            )
-            logger.debug(error, exc_info=True)
-            raise error
-        finally:
-            docker_logout_cmd = [
-                str(shutil.which("docker")),
-                "logout",
-                target_acr,
-            ]
-            call_subprocess_raise_output(docker_logout_cmd)
+            raise BadRequestError(
+                f"Failed to pull {source_image}. Check if this image exists in the"
+                f" source registry {self.registry_name} and that you have run docker"
+                "login on this registry."
+            ) from error
 
 
 class UniversalRegistry(ContainerRegistry):
+    """
+    A class to represent all Container Registries other than Azure Container Registry
+    and handle all Registry operations (primarily using docker CLI).
+    """
 
-    def find_image(self, image: str, version: str) -> ContainerRegistry:
+    def find_image(
+        self, image: str, version: str
+    ) -> Union[Tuple[ContainerRegistry, str], Tuple[None, None]]:
         """
         Find whether the given image exists in this registry.
 
         :param image: The image to find in the registry
+            (the image should be stripped of all namespace)
+        :param version: The version of the image (also known as image tag)
         :return: The registry and namespace for the image
         """
 
-        image_path = f"{self.registry_name}/{image}:{version}"
+        for namespace in self.registry_namespaces:
+            image_path = f"{self.registry_name}/{namespace}{image}:{version}"
 
-        logger.debug("Checking if image %s exists in %s", image, self.registry_name)
-
-        try:
-            manifest_inspect_cmd = [
-                str(shutil.which("docker")),
-                "manifest",
-                "inspect",
-                image_path,
-            ]
-
-            output = call_subprocess_raise_output(manifest_inspect_cmd)
-
-            if output is None:
-                return None
-            else:
-                return self
-        except CLIError as error:
-            if "manifest unknown" in str(error):
-                return None
-            logger.warning(
-                (
-                    "Failed to contact source registry %s. "
-                    "Make sure you run docker login on this registry "
-                    "before running the aosm command."
-                ),
+            logger.debug(
+                "Checking if image %s:%s exists in %s",
+                image,
+                version,
                 self.registry_name,
             )
-            logger.debug(error, exc_info=True)
-            raise error
+
+            try:
+                manifest_inspect_cmd = [
+                    str(shutil.which("docker")),
+                    "manifest",
+                    "inspect",
+                    image_path,
+                ]
+
+                output = call_subprocess_raise_output(manifest_inspect_cmd)
+
+                if output is not None:
+                    return self, namespace
+
+            except CLIError as error:
+                if "manifest unknown" in str(error):
+                    continue
+                logger.warning(
+                    (
+                        "Failed to contact source registry %s. "
+                        "Make sure you run docker login on this registry "
+                        "before running the aosm command."
+                    ),
+                    self.registry_name,
+                )
+                logger.debug(error, exc_info=True)
+                raise ClientRequestError(
+                    f"Failed to contact source registry {self.registry_name} "
+                    "Make sure you run docker login on this registry "
+                    "before running the aosm command."
+                ) from error
+        return None, None
 
 
 class AzureContainerRegistry(ContainerRegistry):
@@ -226,15 +155,16 @@ class AzureContainerRegistry(ContainerRegistry):
     A class to represent an Azure Container Registry and handle all ACR operations.
     """
 
-    def _login(self):
+    # TODO: Have I tested this code path?
+    def _login(self) -> None:
         """
-        Log in to the source registry using the Azure CLI.         Uses the CLI user's context to log in to the source registry.
-
+        Log in to the source registry using the Azure CLI.
+        Uses the CLI user's context to log in to the source registry.
         """
 
         message = f"Logging into source registry {self.registry_name}"
-        print(message)  # TODO: Should this be a print?
         logger.info(message)
+
         try:
             acr_source_login_cmd = [
                 str(shutil.which("az")),
@@ -244,20 +174,29 @@ class AzureContainerRegistry(ContainerRegistry):
                 self.registry_name,
             ]
             call_subprocess_raise_output(acr_source_login_cmd)
-        # TODO: better error
-        except CLIError as error:
-            logger.error(("Failed to log into registry %s."), self.registry_name)
-            logger.debug(error, exc_info=True)
-            raise error
 
-    def pull_image_to_local_registry(self, source_image: str):
+        except CLIError as error:
+            logger.debug(error, exc_info=True)
+            raise ClientRequestError(
+                f"Failed to log into registry {self.registry_name}"
+            ) from error
+
+    def pull_image_to_local_registry(self, source_image: str) -> None:
+        """
+        Pull image to local registry using docker pull. Requires docker.
+
+        :param: source_image: source docker image name e.g.
+            uploadacr.azurecr.io/samples/nginx:stable
+        """
 
         self._login()
         try:
             super().pull_image_to_local_registry(source_image)
-        except CLIError as error:
+        except BadRequestError as error:
             raise error
         finally:
+            logger.info("Logging out of source registry %s", self.registry_name)
+
             docker_logout_cmd = [
                 str(shutil.which("docker")),
                 "logout",
@@ -265,20 +204,23 @@ class AzureContainerRegistry(ContainerRegistry):
             ]
             call_subprocess_raise_output(docker_logout_cmd)
 
-    def copy_image(
+    def copy_image_to_target_acr(
         self,
         source_image: str,
+        image_name: str,
+        image_version: str,
         target_acr: str,
-        artifact_name: str,
-        artifact_version: str,
     ) -> None:
         """
         Copy an image from this registry to a target ACR.
 
         :param source_image: The image to copy
+            e.g. uploadacr.azurecr.io/samples/nginx:1.0.0
+        :param image_name: The name of the image
+            e.g. nginx
+        :param image_version: The version of the artifact
+            e.g. 1.0.0
         :param target_acr: The target ACR
-        :param artifact_name: The name of the artifact
-        :param artifact_version: The version of the artifact
         """
 
         try:
@@ -306,7 +248,7 @@ class AzureContainerRegistry(ContainerRegistry):
             # This error is thrown from the az account get-access-token command
             # If it errored we can log the output as it doesn't contain the token
             logger.debug(get_token_err, exc_info=True)
-            raise CLIError(  # pylint: disable=raise-missing-from
+            raise ClientRequestError(  # pylint: disable=raise-missing-from
                 "Failed to import image: could not get an access token from your"
                 " Azure account. Try logging in again with `az login` and then re-run"
                 " the command. If it fails again, please raise an issue and try"
@@ -318,8 +260,6 @@ class AzureContainerRegistry(ContainerRegistry):
             )
 
         try:
-            # TODO: we need to add namespace here
-            source = f"{clean_registry_name(self.registry_name)}/{source_image}"
             acr_import_image_cmd = [
                 str(shutil.which("az")),
                 "acr",
@@ -327,9 +267,9 @@ class AzureContainerRegistry(ContainerRegistry):
                 "--name",
                 target_acr,
                 "--source",
-                source,
+                source_image,
                 "--image",
-                f"{artifact_name}:{artifact_version}",
+                f"{image_name}:{image_version}",
                 "--password",
                 access_token,
             ]
@@ -339,7 +279,7 @@ class AzureContainerRegistry(ContainerRegistry):
             if (" 401" in str(error)) or ("Unauthorized" in str(error)):
                 # As we shell out the the subprocess, I think checking for these strings
                 # is the best check we can do for permission failures.
-                raise CLIError(
+                raise BadRequestError(
                     "Failed to import image.\nThe problem may be one or more of:\n"
                     " - the source_registry in your config file does not exist;\n"
                     " - the image doesn't exist;\n"
@@ -372,15 +312,17 @@ class AzureContainerRegistry(ContainerRegistry):
                 error,
             )
 
-    def get_repositories(self) -> Dict[str, Tuple["AzureContainerRegistry", str]]:
+    def get_images_in_registry(
+        self,
+    ) -> Dict[Tuple[str, str], Tuple["AzureContainerRegistry", str]]:
         """
-        Query the images in the registry in all available namespaces.
+        Find all available images in this registry.
 
-        :return: A dictionary of images with the image name as the key
-        and the registry and namespace as the value.
+        :return: A dictionary where keys are (image, version) and values are (registry, namespace)
         """
-        repositories = {}
+        image_dict = {}
 
+        # Get the list of repositories in the registry
         acr_get_repositories_cmd = [
             str(shutil.which("az")),
             "acr",
@@ -401,6 +343,7 @@ class AzureContainerRegistry(ContainerRegistry):
         )
 
         for repository in repository_list:
+            # Get the list of versions for each repository
             acr_get_versions_for_repository_cmd = [
                 str(shutil.which("az")),
                 "acr",
@@ -416,10 +359,20 @@ class AzureContainerRegistry(ContainerRegistry):
                 call_subprocess_raise_output(acr_get_versions_for_repository_cmd)
             )
 
-            for version in version_list:
-                repositories[(repository, version)] = self
+            # The image name is the final part of the repository name
+            image = repository.split("/")[-1]
+            # The namespace is everything before the image name
+            namespace_list = repository.split("/")[:-1]
+            # If namespace is not an empty list then join it with a slash
+            if namespace_list:
+                namespace = "/".join(namespace_list) + "/"
+            else:
+                namespace = ""
 
-        return repositories
+            for version in version_list:
+                image_dict[(image, version)] = (self, namespace)
+
+        return image_dict
 
 
 class ContainerRegistryHandler:
@@ -430,83 +383,107 @@ class ContainerRegistryHandler:
     def __init__(self, image_sources):
         self.image_sources = image_sources
         self.registry_list = self._create_registry_list()
-        self.registry_for_image = self._get_repositories()
+        self.registry_for_image = self._get_registries_for_images()
 
     def _create_registry_list(self) -> List[ContainerRegistry]:
-        """Create a list of registry objects from the registries provided by the user."""
+        """
+        Create a list of registry objects from the registries provided by the user.
+
+        :return: A list of registry objects
+        """
 
         registries: Dict[str, ContainerRegistry] = {}
         registry_list: List[ContainerRegistry] = []
 
+        logger.debug("Creating registry list from the provided registries")
+
         for registry in self.image_sources:
-            # if registry matches the pattern of myacr1.azurecr.io/**,
+            registry = clean_registry_name(registry)
+
+            # If registry matches the pattern of myacr1.azurecr.io/**,
             # then create a an instance of the ACR registry class
             parts = registry.split("/", 1)
             registry_name = parts[0]
+            registry_namespace = parts[1] if len(parts) > 1 else None
 
             acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
-            # TODO pk5: is this how we should be handling this? We are now effectively ignoring namespace completely and just using the registry name. Can we use the namespace somehow?
-            # I should be using the full name as the registry_name but then I should be striping the images of all namespace. Just leaving the final slash.
-            registry = registry.rstrip("/")
-
             if registry_name not in registries:
                 if acr_match:
-                    registries[registry] = AzureContainerRegistry(registry_name)
+                    registries[registry_name] = AzureContainerRegistry(registry_name)
                 else:
-                    registries[registry] = UniversalRegistry(registry)
-                registry_list.append(registries[registry])
+                    registries[registry_name] = UniversalRegistry(registry_name)
+
+                registry_list.append(registries[registry_name])
+
+            if registry_namespace:
+                # Make sure that the namespace ends with a slash
+                if not registry_namespace.endswith("/"):
+                    registry_namespace += "/"
+                registries[registry_name].add_namespace(registry_namespace)
+            else:
+                registries[registry_name].add_namespace("")
 
         return registry_list
 
     def get_registry_list(self) -> List[ContainerRegistry]:
         """
         Get the list of registries.
+
+        :return: The list of registries
         """
         return self.registry_list
 
-    def _get_repositories(self) -> Dict[str, Tuple["ContainerRegistry", str]]:
+    def _get_registries_for_images(
+        self,
+    ) -> Dict[Tuple[str, str], Tuple["AzureContainerRegistry", str]]:
         """
-        Cycle through all available registries and get the images that they have.
+        Cycle through all available registries to find images in each.
 
-        :return: A dictionary of images with the image name as the key and the registry and namespace as the value.
+        :return: A dictionary where keys are (image, version) and values are (registry, namespace)
         """
         registry_for_image = {}
 
         for registry in self.registry_list:
 
+            # We can only do this for ACRs because docker does not have this functionality.
             if isinstance(registry, AzureContainerRegistry):
-                registry_for_image.update(registry.get_repositories())
+                registry_for_image.update(registry.get_images_in_registry())
 
         logger.debug("Images found in the ACR registires: %s", registry_for_image)
         return registry_for_image
 
     def find_registry_for_image(
         self, image, version
-    ) -> Tuple["ContainerRegistry", str]:
+    ) -> Union[Tuple["ContainerRegistry", str], Tuple[None, None]]:
         """
-        Find the registry and namespace for a given image.
+        Find the registry and namespace for a given image and version.
 
         :param image: The image to find the registry for
+            This should be stripped of all namespace (e.g nginx, not samples/nginx)
+        :param version: The version of the image
         :return: The registry and namespace for the image
         """
-        # TODO: this function should not be running in build
 
+        # If we already found this image, version combination in the available ACRs,
+        # return the registry and namespace.
         if (image, version) in self.registry_for_image:
             return self.registry_for_image[(image, version)]
 
+        # If we didn't find the image in the ACRs, cycle through the Universal Registries
         for registry in self.registry_list:
             if isinstance(registry, UniversalRegistry):
-                image_registry = registry.find_image(image, version)
-                if image_registry:
-                    return image_registry
+                image_registry, namespace = registry.find_image(image, version)
+                if image_registry and namespace is not None:
+                    return image_registry, namespace
                 continue
+
         logger.warning(
             "Image: %s, version: %s was not found in any of the provided registries",
             image,
             version,
         )
-        return None
+        return None, None
 
 
 # Mapping of registry type names to their classes.
