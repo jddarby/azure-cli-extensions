@@ -36,8 +36,10 @@ class ContainerRegistry:
 
     def to_dict(self) -> Dict:
         """Convert an instance to a dict."""
-        output_dict = {"type": REGISTRY_CLASS_TO_TYPE[type(self)]}
-        output_dict.update({k: vars(self)[k] for k in vars(self)})
+        output_dict = {
+            "type": REGISTRY_CLASS_TO_TYPE[type(self)],
+            "registry_name": self.registry_name,
+        }
         return output_dict
 
     @classmethod
