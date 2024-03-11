@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from knack.log import get_logger
-
+from azext_aosm.common.utils import snake_case_to_camel_case
 from azext_aosm.common.constants import BASE_SCHEMA
 from azext_aosm.inputs.base_input import BaseInput
 
@@ -51,7 +51,8 @@ class VHDFileInput(BaseInput):
         :rtype: Dict[str, Any]
         """
         logger.info("Getting default values for VHD file input")
-        default_config = self.default_config or {}
+        formatted_default_config = self._format_default_config()
+        default_config = formatted_default_config or {}
         logger.debug(
             "Default values for VHD file Input: %s",
             json.dumps(default_config, indent=4),
@@ -82,3 +83,14 @@ class VHDFileInput(BaseInput):
 
         logger.debug("Schema for VHD file input: %s", json.dumps(schema, indent=4))
         return copy.deepcopy(schema)
+
+    def _format_default_config(self):
+        print(self.default_config)
+        formatted_config = {}
+        for (key, value) in self.default_config.items():
+            # This must be an integer, but is a string in the input file
+            if key == "image_disk_size_GB":
+                value = int(value)
+            formatted_key = snake_case_to_camel_case(key)
+            formatted_config[formatted_key] = value
+        return formatted_config
