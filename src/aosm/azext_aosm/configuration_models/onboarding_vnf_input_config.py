@@ -147,10 +147,6 @@ class OnboardingCoreVNFInputConfig(OnboardingNFDBaseInputConfig):
         if self.vhd and isinstance(self.vhd, dict):
             self.vhd = VhdImageConfig(**self.vhd)
 
-        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
-        if not self.blob_artifact_store_name:
-            self.blob_artifact_store_name = sanitized_nf_name + "-sa"
-
     @property
     def sa_manifest_name(self) -> str:
         """Return the Storage account manifest name from the NFD name and version."""
@@ -171,6 +167,11 @@ class OnboardingCoreVNFInputConfig(OnboardingNFDBaseInputConfig):
         for arm_template in self.arm_templates:
             arm_template.validate()
         self.vhd.validate()
+
+        # We have to do this in validate, otherwise it created the input file with "-sa"
+        sanitized_nf_name = self.nf_name.lower().replace("_", "-")
+        if not self.blob_artifact_store_name:
+            self.blob_artifact_store_name = sanitized_nf_name + "-sa"
 
 
 @dataclass
