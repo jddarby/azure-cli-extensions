@@ -382,9 +382,10 @@ class RemoteACRArtifact(BaseACRArtifact):
             self._check_tool_installed("docker")
             self.source_registry.pull_image_to_local_registry(source_image=source_image)
 
+            # We do not want the namespace to be included in the target image
             push_image_from_local_registry_to_acr(
                 target_acr=target_acr,
-                target_image=f"{self.registry_namespace}{self.artifact_name}:{self.artifact_version}",
+                target_image=f"{self.artifact_name}:{self.artifact_version}",
                 target_username=target_username,
                 target_password=target_password,
                 local_docker_image=source_image,
