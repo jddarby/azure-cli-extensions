@@ -132,10 +132,7 @@ class NexusArmProcessorTest(TestCase):
         # Assert name of the file includes templateParameters
         # (We want to know that in the instance of Nexus ARM Templates,
         # we are creating template parameters)
-        if TEMPLATE_PARAMETERS_FILENAME in str(parameters_file.path):
-            assert True
-        else:
-            assert False
+        assert TEMPLATE_PARAMETERS_FILENAME in str(parameters_file.path)
         # Assert the type is LocalFileBuilder
         self.assertIsInstance(parameters_file, LocalFileBuilder)
         # Assert that the necessary methods were called

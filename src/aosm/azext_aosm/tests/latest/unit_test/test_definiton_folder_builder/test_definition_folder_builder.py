@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+import json
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
@@ -42,7 +42,11 @@ class TestDefinitionFolderBuilder(TestCase):
         element_2.write.assert_called_once()
 
         # Check that the index.json file was written to disk.
-        mock_write_text.assert_called_once_with(
-            '[\n    {\n        "name": "element_1",\n        "type": "artifact",\n        "only_delete_on_clean": false\n    },\n    {\n        "name": "element_2",\n        "type": "artifact",\n        "only_delete_on_clean": true\n    }\n]'
-        )
+        expected_params = [{"name": "element_1",
+                            "type": "artifact",
+                            "only_delete_on_clean": False },
+                            {"name": "element_2",
+                             "type": "artifact",
+                             "only_delete_on_clean": True}]
+        mock_write_text.assert_called_once_with(json.dumps(expected_params, indent=4))
 

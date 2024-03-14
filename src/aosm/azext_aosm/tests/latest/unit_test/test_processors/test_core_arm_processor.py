@@ -66,7 +66,8 @@ class AzureCoreArmProcessorTest(TestCase):
             file_path=mock_arm_template_path,
         )]
 
-        # Testing each individial part of artifact are equal
+        # Testing each individial part of artifact are equal,
+        # as two artifacts objects are never equal, even if they contain the same content
         self.assertEqual(artifact_details[0][0].artifact_name, mock_artifact[0].artifact_name)
         self.assertEqual(artifact_details[0][0].artifact_version, mock_artifact[0].artifact_version)
         self.assertEqual(artifact_details[0][0].artifact_type, mock_artifact[0].artifact_type)
@@ -110,7 +111,6 @@ class AzureCoreArmProcessorTest(TestCase):
 
     def test_generate_parameters_file(self):
         """ Test generate parameters file for Azure Core ARM Processor"""
-        # TODO: remove mocking, use ubuntu template expected output
         # Mock private function
         # (generate mapping rule profile is tested elsewhere)
         mapping_rule_profile = MagicMock()
