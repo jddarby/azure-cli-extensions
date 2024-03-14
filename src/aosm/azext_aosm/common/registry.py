@@ -82,7 +82,7 @@ class ContainerRegistry:
                 source_image,
             ]
             call_subprocess_raise_output(pull_source_image_cmd)
-        except BadRequestError as error:
+        except CLIError as error:
             logger.debug(error, exc_info=True)
             raise BadRequestError(
                 f"Failed to pull {source_image}. Check if this image exists in the"
