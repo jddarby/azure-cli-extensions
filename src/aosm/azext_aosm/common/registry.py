@@ -283,7 +283,7 @@ class AzureContainerRegistry(ContainerRegistry):
                 # is the best check we can do for permission failures.
                 raise BadRequestError(
                     "Failed to import image.\nThe problem may be one or more of:\n"
-                    " - the source_registry in your config file does not exist;\n"
+                    " - the image_source in your config file does not exist;\n"
                     " - the image doesn't exist;\n"
                     " - you do not have permissions to import images.\n"
                     f"You need to have Reader/AcrPull from {self.registry_name}, "
