@@ -5,27 +5,15 @@
 import logging
 import os
 import sys
-from pathlib import Path
 from unittest import TestCase
-
-from azext_aosm.common.exceptions import (
-    DefaultValuesNotFoundError,
-    TemplateValidationError,
-)
-import json
-import copy
-from typing import Dict, Any
 from unittest.mock import mock_open, patch
 
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 
 code_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(code_directory, "../.."))
-helm_charts_directory = os.path.join(parent_directory, "mock_cnf", "helm-charts")
-
-VALID_CHART_NAME = "nf-agent-cnf"
-INVALID_CHART_NAME = "nf-agent-cnf-invalid"
-
+arm_template_path = os.path.join(parent_directory, "mock_arm_templates", "simple-template.json")
+no_params_template_path = os.path.join(parent_directory, "mock_arm_templates", "no-params-template.json")
 
 class TestARMTemplateInput(TestCase):
     """Test the ARMTempalteInput class."""
@@ -36,7 +24,7 @@ class TestARMTemplateInput(TestCase):
         self.arm_input = ArmTemplateInput(
             artifact_name="test-artifact-name",
             artifact_version="1.1.1",
-            template_path="mock/path",
+            template_path=arm_template_path,
             default_config=None
         )
 
@@ -71,8 +59,6 @@ class TestARMTemplateInput(TestCase):
             "param2": "value2"
         })
 
-    @patch("builtins.open", mock_open(
-        read_data='{"parameters": { "location": { "type": "string", "defaultValue": "test" } } }'))
     def test_get_schema_with_params(self):
         """Test getting the schema for the ARM template input."""
         schema = self.arm_input.get_schema()
@@ -82,12 +68,20 @@ class TestARMTemplateInput(TestCase):
             'required': [],
             'type': 'object'
         }
+        print("SCHEMA", schema)
         self.assertEqual(schema, expected_schema)
 
     @patch("builtins.open", mock_open(
         read_data='{"$schema": "#", "resources": { } }'))
     def test_get_schema_no_parameters(self):
         """Test getting the schema for the ARM template input when no parameters are found."""
+        
+        no_params_arm_input = ArmTemplateInput(
+        artifact_name="test-artifact-name",
+        artifact_version="1.1.1",
+        template_path=no_params_template_path,
+        default_config=None
+        )
         # Assert logger warning when no parameters in file
         with self.assertLogs(level='WARNING'):
             schema = self.arm_input.get_schema()
