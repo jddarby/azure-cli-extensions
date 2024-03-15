@@ -72,7 +72,7 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                default_config=None,
+                default_config={"imageName": self.config.nf_name + "Image"},
                 template_path=Path(arm_template.file_path).absolute(),
             )
             processor_list.append(
@@ -82,13 +82,19 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
         # Instantiate vhd processor
         if not self.config.vhd.artifact_name:
             self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
+
+        if self.config.vhd.file_path:
+            file_path = Path(self.config.vhd.file_path).absolute()
+        else:
+            file_path = None
+
         vhd_processor = VHDProcessor(
             name=self.config.vhd.artifact_name,
             input_artifact=VHDFileInput(
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 default_config=self._get_default_config(self.config.vhd),
-                file_path=Path(self.config.vhd.file_path).absolute(),
+                file_path=file_path,
                 blob_sas_uri=self.config.vhd.blob_sas_url,
             ),
         )
@@ -140,6 +146,9 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             default_config.update({"image_hyper_v_generation": "V1"})
         if vhd.image_api_version:
             default_config.update({"image_api_version": vhd.image_api_version})
+            
+        # Add imageName
+        default_config["imageName"] = self.config.nf_name + 'Image'
         return default_config
 
     def _generate_type_specific_nf_application(self, processor) -> Tuple[List, List]:
