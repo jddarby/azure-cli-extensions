@@ -17,6 +17,7 @@ from azext_aosm.common.artifact import (
 )
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
+from azext_aosm.common.registry import ContainerRegistryHandler
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,
     ArtifactType,
@@ -53,12 +54,10 @@ class HelmChartProcessor(BaseInputProcessor):
         self,
         name: str,
         input_artifact: HelmChartInput,
-        source_registry: str,
-        source_registry_namespace: str,
+        registry_handler: ContainerRegistryHandler,
     ):
         super().__init__(name, input_artifact)
-        self.source_registry = source_registry
-        self.source_registry_namespace = source_registry_namespace
+        self.registry_handler = registry_handler
         self.input_artifact: HelmChartInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -114,13 +113,20 @@ class HelmChartProcessor(BaseInputProcessor):
         artifact_details.append(helm_chart_details)
         for image_name, image_version in self._find_chart_images():
             # We only support remote ACR artifacts for container images
+
+            registry, namespace = self.registry_handler.find_registry_for_image(
+                image_name, image_version
+            )
+            if registry is None or namespace is None:
+                continue
+
             artifact_details.append(
                 RemoteACRArtifact(
                     artifact_name=image_name,
                     artifact_type=ArtifactType.OCI_ARTIFACT.value,
                     artifact_version=image_version,
-                    source_registry=self.source_registry,
-                    source_registry_namespace=self.source_registry_namespace,
+                    source_registry=registry,
+                    registry_namespace=namespace,
                 )
             )
 
@@ -185,6 +191,9 @@ class HelmChartProcessor(BaseInputProcessor):
             name_and_tag = re.search(IMAGE_NAME_AND_VERSION_REGEX, line)
             if name_and_tag and len(name_and_tag.groups()) == 2:
                 image_name = name_and_tag.group("name")
+                # If name contains a slash then take only what is after the final slash
+                if "/" in image_name:
+                    image_name = image_name.split("/")[-1]
                 image_tag = name_and_tag.group("tag")
                 logger.debug(
                     "Found image %s:%s in Helm chart %s",
