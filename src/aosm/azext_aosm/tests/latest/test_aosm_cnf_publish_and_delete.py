@@ -15,17 +15,20 @@
 
 import os
 from typing import Dict
+import logging
+import sys
 
-from azure.cli.testsdk import LiveScenarioTest, ResourceGroupPreparer
+from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from jinja2 import Template
 from knack.log import get_logger
+from .recording_processors import TokenReplacer, SasUriReplacer, BlobStoreUriReplacer
 
 logger = get_logger(__name__)
 
-NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.json"
-NFD_INPUT_FILE_NAME = "cnf_input.json"
-NSD_INPUT_TEMPLATE_NAME = "cnf_nsd_input_template.json"
-NSD_INPUT_FILE_NAME = "nsd_cnf_input.json"
+NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.jsonc"
+NFD_INPUT_FILE_NAME = "cnf_input.jsonc"
+NSD_INPUT_TEMPLATE_NAME = "cnf_nsd_input_template.jsonc"
+NSD_INPUT_FILE_NAME = "nsd_cnf_input.jsonc"
 CHART_NAME = "nginxdemo-0.1.0.tgz"
 
 
@@ -58,7 +61,7 @@ def update_input_file(input_template_name, output_file_name, params: Dict[str, s
     return output_path
 
 
-class CnfNsdTest(LiveScenarioTest):
+class CnfNsdTest(ScenarioTest):
     """
     Integration tests for the aosm extension for cnf definition type.
 
@@ -66,7 +69,25 @@ class CnfNsdTest(LiveScenarioTest):
     which does not work when playing back from the recording.
     """
 
-    @ResourceGroupPreparer(name_prefix="cli_test_cnf_nsd_", location="uaenorth")
+    def __init__(self, method_name):
+        """
+        This constructor initializes the class
+        :param method_name: The name of the test method.
+        :param recording_processors: The recording processors to use for the test.
+        These recording processors modify the recording of a test before it is saved,
+        helping to remove sensitive information from the recording.
+        """
+        logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+        super(CnfNsdTest, self).__init__(
+            method_name,
+            recording_processors=[
+                TokenReplacer(),
+                SasUriReplacer(),
+                BlobStoreUriReplacer(),
+            ],
+        )
+
+    @ResourceGroupPreparer(name_prefix="cli_test_cnf_nsd_", location="uksouth")
     def test_cnf_nsd_publish_and_delete(self, resource_group):
         """
         This test creates a cnf nfd and nsd, publishes them, and then deletes them.
@@ -86,32 +107,6 @@ class CnfNsdTest(LiveScenarioTest):
             },
         )
 
-        self.cmd(
-            f'az aosm nfd build -f "{nfd_input_file_path}" --definition-type cnf --force'
-        )
+        self.cmd(f'az aosm nfd build -f "{nfd_input_file_path}" --definition-type cnf')
 
-        try:
-            self.cmd(
-                f'az aosm nfd publish -f "{nfd_input_file_path}" --definition-type cnf --debug --skip image-upload'
-            )
-        except Exception:
-            self.cmd(
-                f'az aosm nfd delete --definition-type cnf -f "{nfd_input_file_path}" --debug --force'
-            )
-            raise
-
-        nsd_input_file_path = update_input_file(
-            NSD_INPUT_TEMPLATE_NAME,
-            NSD_INPUT_FILE_NAME,
-            params={"publisher_resource_group_name": resource_group},
-        )
-
-        self.cmd(f'az aosm nsd build -f "{nsd_input_file_path}" --debug --force')
-
-        try:
-            self.cmd(f'az aosm nsd publish -f "{nsd_input_file_path}" --debug')
-        finally:
-            self.cmd(f'az aosm nsd delete -f "{nsd_input_file_path}" --debug --force')
-            self.cmd(
-                f'az aosm nfd delete --definition-type cnf -f "{nfd_input_file_path}" --debug --force'
-            )
+        self.cmd("az aosm nfd publish -b cnf-cli-output --definition-type cnf")
