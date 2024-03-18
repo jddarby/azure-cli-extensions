@@ -11,7 +11,6 @@ from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
-from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.constants import (
     BASE_FOLDER_NAME,
     VNF_CORE_BASE_TEMPLATE_FILENAME,
@@ -72,7 +71,7 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                default_config=None,
+                default_config={"imageName": self.config.nf_name + "Image"},
                 template_path=Path(arm_template.file_path).absolute(),
             )
             processor_list.append(
@@ -146,6 +145,9 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             default_config.update({"image_hyper_v_generation": "V1"})
         if vhd.image_api_version:
             default_config.update({"image_api_version": vhd.image_api_version})
+
+        # Add imageName
+        default_config["imageName"] = self.config.nf_name + 'Image'
         return default_config
 
     def _generate_type_specific_nf_application(self, processor) -> Tuple[List, List]:
