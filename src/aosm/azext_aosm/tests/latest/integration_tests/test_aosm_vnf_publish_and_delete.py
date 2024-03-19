@@ -20,7 +20,11 @@
 # from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 # from jinja2 import Template
 # from knack.log import get_logger
-# from .recording_processors import TokenReplacer, SasUriReplacer, BlobStoreUriReplacer
+# from azext_aosm.tests.latest.integration_tests.recording_processors import (
+#     TokenReplacer,
+#     SasUriReplacer,
+#     BlobStoreUriReplacer,
+# )
 
 # logger = get_logger(__name__)
 

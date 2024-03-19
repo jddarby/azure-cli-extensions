@@ -17,8 +17,6 @@
   // Optional. Name of the storage account Artifact Store resource.
   // Will be created if it does not exist (with a default name if none is supplied).
   "blob_artifact_store_name": "ubuntu-blob-store",
-  // The parameter name in the VM ARM template which specifies the name of the image to use for the VM.
-  "image_name_parameter": "imageName",
   // ARM template configuration.
   "arm_templates": [
     {

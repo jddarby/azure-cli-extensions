@@ -21,7 +21,11 @@ import sys
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from jinja2 import Template
 from knack.log import get_logger
-from .recording_processors import TokenReplacer, SasUriReplacer, BlobStoreUriReplacer
+from azext_aosm.tests.latest.integration_tests.recording_processors import (
+    TokenReplacer,
+    SasUriReplacer,
+    BlobStoreUriReplacer,
+)
 
 logger = get_logger(__name__)
 
@@ -34,7 +38,7 @@ CHART_NAME = "nginxdemo-0.1.0.tgz"
 
 def get_path_to_chart():
     code_dir = os.path.dirname(__file__)
-    templates_dir = os.path.join(code_dir, "scenario_test_mocks", "cnf_mocks")
+    templates_dir = os.path.join(code_dir, "integration_test_mocks", "cnf_mocks")
     chart_path = os.path.join(templates_dir, CHART_NAME)
     return chart_path
 
@@ -42,7 +46,7 @@ def get_path_to_chart():
 def update_input_file(input_template_name, output_file_name, params: Dict[str, str]):
     code_dir = os.path.dirname(__file__)
     templates_dir = os.path.join(
-        code_dir, "scenario_test_mocks", "mock_input_templates"
+        code_dir, "integration_test_mocks", "mock_input_templates"
     )
     input_template_path = os.path.join(templates_dir, input_template_name)
 
