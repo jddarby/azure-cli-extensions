@@ -1,30 +1,27 @@
 # --------------------------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
-#
-# This is an integration tests for the aosm extension. It tests the following commands for the
-# vnf definition type:
-#   aosm nfd build
-#   aosm nfd publish
-#   aosm nfd delete
-#   aosm nsd build
-#   aosm nsd publish
-#   aosm nsd delete
 # --------------------------------------------------------------------------------------------
+"""Integration tests for the vnf definition type commands in the aosm extension.
+They test the following commands:
+    aosm nfd build
+    aosm nfd publish
+    aosm nsd build
+    aosm nsd publish
+"""
 
 import os
 import logging
 import sys
-from typing import Dict
 
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
-from jinja2 import Template
 from knack.log import get_logger
 from azext_aosm.tests.latest.integration_tests.recording_processors import (
     TokenReplacer,
     SasUriReplacer,
     BlobStoreUriReplacer,
 )
+from azext_aosm.tests.latest.integration_tests.utils import update_input_file
 
 logger = get_logger(__name__)
 
@@ -37,32 +34,11 @@ VHD_NAME = "ubuntu.vhd"
 
 
 def get_path_to_vnf_mocks():
+    """Get the path to the vnf mocks directory."""
     code_dir = os.path.dirname(__file__)
     vnf_mocks_dir = os.path.join(code_dir, "integration_test_mocks", "vnf_mocks")
 
     return vnf_mocks_dir
-
-
-def update_input_file(input_template_name, output_file_name, params: Dict[str, str]):
-    code_dir = os.path.dirname(__file__)
-    templates_dir = os.path.join(
-        code_dir, "integration_test_mocks", "mock_input_templates"
-    )
-    input_template_path = os.path.join(templates_dir, input_template_name)
-
-    with open(input_template_path, "r", encoding="utf-8") as file:
-        contents = file.read()
-
-    jinja_template = Template(contents)
-
-    rendered_template = jinja_template.render(**params)
-
-    output_path = os.path.join(templates_dir, output_file_name)
-
-    with open(output_path, "w", encoding="utf-8") as file:
-        file.write(rendered_template)
-
-    return output_path
 
 
 class VnfNsdTest(ScenarioTest):
@@ -77,7 +53,7 @@ class VnfNsdTest(ScenarioTest):
         helping to remove sensitive information from the recording.
         """
         logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-        super(VnfNsdTest, self).__init__(
+        super().__init__(
             method_name,
             recording_processors=[
                 TokenReplacer(),
@@ -87,9 +63,11 @@ class VnfNsdTest(ScenarioTest):
         )
 
     @ResourceGroupPreparer(name_prefix="cli_test_vnf_nsd_", location="uksouth")
-    def test_vnf_nsd_publish_and_delete(self, resource_group):
+    def test_vnf_nsd_build_and_publish(self, resource_group):
         """
-        This test creates a vnf nfd and nsd, publishes them, and then deletes them.
+        This test creates a vnf nfd and nsd, publishes them.
+        The resource group is created by the ResourceGroupPreparer decorator
+        and is deleted at the end of the live test.
 
         :param resource_group: The name of the resource group to use for the test.
         This is passed in by the ResourceGroupPreparer decorator.
