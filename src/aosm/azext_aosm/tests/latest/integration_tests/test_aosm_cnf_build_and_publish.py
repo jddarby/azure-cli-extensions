@@ -21,6 +21,7 @@ from knack.log import get_logger
 from azext_aosm.tests.latest.integration_tests.utils import (
     mock_in_unit_test,
     update_input_file,
+    get_path_to_test_chart,
 )
 from azext_aosm.tests.latest.integration_tests.recording_processors import (
     TokenReplacer,
@@ -32,7 +33,6 @@ logger = get_logger(__name__)
 
 NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.jsonc"
 NFD_INPUT_FILE_NAME = "cnf_input.jsonc"
-CHART_NAME = "nginxdemo-0.1.0.tgz"
 
 
 def patch_call_subprocess_raise_output(unit_test):
@@ -67,14 +67,6 @@ def patch_call_subprocess_raise_output(unit_test):
         "azext_aosm.common.utils.call_subprocess_raise_output",
         _mock_call_subprocess_raise_output,
     )
-
-
-def get_path_to_chart():
-    """Get the path to the chart used in the tests."""
-    code_dir = os.path.dirname(__file__)
-    templates_dir = os.path.join(code_dir, "integration_test_mocks", "cnf_mocks")
-    chart_path = os.path.join(templates_dir, CHART_NAME)
-    return chart_path
 
 
 class CnfNfdTest(ScenarioTest):
@@ -118,7 +110,7 @@ class CnfNfdTest(ScenarioTest):
         This is passed in by the ResourceGroupPreparer decorator.
         """
 
-        chart_path = get_path_to_chart()
+        chart_path = get_path_to_test_chart()
 
         nfd_input_file_path = update_input_file(
             NFD_INPUT_TEMPLATE_NAME,
