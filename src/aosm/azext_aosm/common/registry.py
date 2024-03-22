@@ -484,7 +484,12 @@ class ContainerRegistryHandler:
                 continue
 
         logger.warning(
-            "Image: %s, version: %s was not found in any of the provided registries",
+            (
+                "Image: %s, version: %s was not found in any of the provided registries. "
+                "This image will not be part of your Network Function. "
+                "If you would like to include it, provide the registry containing this image "
+                "in the `image_sources` list in the input file."
+            ),
             image,
             version,
         )
