@@ -74,8 +74,7 @@ class ContainerRegistry:
             uploadacr.azurecr.io/samples/nginx:stable
         """
         try:
-            message = f"Pulling source image {source_image}"
-            logger.info(message)
+            logger.info("Pulling source image %s", source_image)
             pull_source_image_cmd = [
                 str(shutil.which("docker")),
                 "pull",
@@ -112,12 +111,7 @@ class UniversalRegistry(ContainerRegistry):
         for namespace in self.registry_namespaces:
             image_path = f"{self.registry_name}/{namespace}{image}:{version}"
 
-            logger.debug(
-                "Checking if image %s:%s exists in %s",
-                image,
-                version,
-                self.registry_name,
-            )
+            logger.debug("Checking if %s exists.", image_path)
 
             try:
                 manifest_inspect_cmd = [
@@ -157,7 +151,6 @@ class AzureContainerRegistry(ContainerRegistry):
     A class to represent an Azure Container Registry and handle all ACR operations.
     """
 
-    # TODO: Have I tested this code path?
     def _login(self) -> None:
         """
         Log in to the source registry using the Azure CLI.
@@ -176,7 +169,6 @@ class AzureContainerRegistry(ContainerRegistry):
                 self.registry_name,
             ]
             call_subprocess_raise_output(acr_source_login_cmd)
-
         except CLIError as error:
             logger.debug(error, exc_info=True)
             raise ClientRequestError(
@@ -199,6 +191,7 @@ class AzureContainerRegistry(ContainerRegistry):
         finally:
             logger.info("Logging out of source registry %s", self.registry_name)
 
+            # There is not az acr logout command, so we use docker logout
             docker_logout_cmd = [
                 str(shutil.which("docker")),
                 "logout",
@@ -249,12 +242,14 @@ class AzureContainerRegistry(ContainerRegistry):
         except subprocess.CalledProcessError as get_token_err:
             # This error is thrown from the az account get-access-token command
             # If it errored we can log the output as it doesn't contain the token
+            # TODO: we shouldn't be using "raise an issue" type language with users.
+            # We should find out what we should use and change this
             logger.debug(get_token_err, exc_info=True)
             raise ClientRequestError(  # pylint: disable=raise-missing-from
                 "Failed to import image: could not get an access token from your"
                 " Azure account. Try logging in again with `az login` and then re-run"
-                " the command. If it fails again, please raise an issue and try"
-                " repeating the command using the --no-subscription-permissions"
+                " the command. If it fails again, please raise an issue."
+                " You can also try repeating the command using the --no-subscription-permissions"
                 " flag to pull the image to your local machine and then"
                 " push it to the Artifact Store using manifest credentials scoped"
                 " only to the store. This requires Docker to be installed"
@@ -303,13 +298,14 @@ class AzureContainerRegistry(ContainerRegistry):
             # store, so don't fail at this stage, log the error.
             logger.warning(
                 (
-                    "Failed to import %s to %s. If this failure is because it already exists in "
-                    "the target registry we can continue. If the failure was for another reason, "
-                    " for example it does not exist in the source registry, this is likely "
-                    "fatal. Attempting to continue.\n"
+                    "Failed to copy %s from %s to %s. If this failure is because it already "
+                    "exists in the target registry we can continue. If the failure was for "
+                    "another reason, for example it does not exist in the source registry, "
+                    "this is likely fatal. Attempting to continue.\n"
                     "%s"
                 ),
                 source_image,
+                self.registry_name,
                 target_acr,
                 error,
             )
@@ -385,7 +381,7 @@ class ContainerRegistryHandler:
     def __init__(self, image_sources):
         self.image_sources = image_sources
         self.registry_list = self._create_registry_list()
-        self.registry_for_image = self._get_registries_for_images()
+        self.registry_for_image = {}
 
     def _create_registry_list(self) -> List[ContainerRegistry]:
         """
@@ -394,8 +390,8 @@ class ContainerRegistryHandler:
         :return: A list of registry objects
         """
 
-        registries: Dict[str, ContainerRegistry] = {}
-        registry_list: List[ContainerRegistry] = []
+        registry_name_to_class_dict: Dict[str, ContainerRegistry] = {}
+        registry_object_list: List[ContainerRegistry] = []
 
         logger.debug("Creating registry list from the provided registries")
 
@@ -410,33 +406,31 @@ class ContainerRegistryHandler:
 
             acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
-            if registry_name not in registries:
+            if registry_name not in registry_name_to_class_dict:
                 if acr_match:
-                    registries[registry_name] = AzureContainerRegistry(registry_name)
+                    registry_name_to_class_dict[registry_name] = AzureContainerRegistry(
+                        registry_name
+                    )
                 else:
-                    registries[registry_name] = UniversalRegistry(registry_name)
+                    registry_name_to_class_dict[registry_name] = UniversalRegistry(
+                        registry_name
+                    )
 
-                registry_list.append(registries[registry_name])
+                registry_object_list.append(registry_name_to_class_dict[registry_name])
 
             if registry_namespace:
                 # Make sure that the namespace ends with a slash
                 if not registry_namespace.endswith("/"):
                     registry_namespace += "/"
-                registries[registry_name].add_namespace(registry_namespace)
+                registry_name_to_class_dict[registry_name].add_namespace(
+                    registry_namespace
+                )
             else:
-                registries[registry_name].add_namespace("")
+                registry_name_to_class_dict[registry_name].add_namespace("")
 
-        return registry_list
+        return registry_object_list
 
-    def get_registry_list(self) -> List[ContainerRegistry]:
-        """
-        Get the list of registries.
-
-        :return: The list of registries
-        """
-        return self.registry_list
-
-    def _get_registries_for_images(
+    def _get_azure_container_registries_for_images(
         self,
     ) -> Dict[Tuple[str, str], Tuple["AzureContainerRegistry", str]]:
         """
@@ -466,6 +460,15 @@ class ContainerRegistryHandler:
         :param version: The version of the image
         :return: The registry and namespace for the image
         """
+        # In the interest of speed, if we have just one registry and namespace, return it
+        if (
+            len(self.registry_list) == 1
+            and len(self.registry_list[0].registry_namespaces) == 1
+        ):
+            return self.registry_list[0], self.registry_list[0].registry_namespaces[0]
+
+        if not self.registry_for_image:
+            self.registry_for_image = self._get_azure_container_registries_for_images()
 
         # If we already found this image, version combination in the available ACRs,
         # return the registry and namespace.
@@ -476,7 +479,7 @@ class ContainerRegistryHandler:
         for registry in self.registry_list:
             if isinstance(registry, UniversalRegistry):
                 image_registry, namespace = registry.find_image(image, version)
-                if image_registry and namespace is not None:
+                if (image_registry is not None) and (namespace is not None):
                     return image_registry, namespace
                 continue
 

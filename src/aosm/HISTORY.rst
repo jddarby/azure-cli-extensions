@@ -5,8 +5,8 @@ Release History
 
 Unreleased
 ++++++++
-* Added improvements in how the CNF image sources are handles. Users are now able to specify multiple image sources from all types of registries (not just ACRs).
-* Fixed an issue where the namespace would appear twice in the `artifacts.json` file, leading to errors in the publish step of the CLI. 
+* Added: Users can specify multiple image sources from all types of registries (not just ACRs). General improvements in how CNF image sources are handled. 
+* Fixed: Namespace appeared twice in the `artifacts.json` file, leading to errors in the publish step of the CLI.
 
 1.0.0b9
 ++++++++

@@ -63,7 +63,7 @@ class OnboardingCNFInputConfig(OnboardingNFDBaseInputConfig):
     """Input configuration for onboarding CNFs."""
 
     image_sources: list = field(
-        default_factory=lambda: [],
+        default_factory=list,
         metadata={
             "comment": (
                 "List of registries from which to pull the image(s).\n"
