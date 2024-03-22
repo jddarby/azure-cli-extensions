@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 from typing import List, Tuple, Dict, Union
+from abc import abstractmethod
 from knack.log import get_logger
 from knack.util import CLIError
 from azure.cli.core.azclierror import BadRequestError, ClientRequestError
@@ -56,6 +57,20 @@ class ContainerRegistry:
                 "This is unexpected and most likely comes from manual editing "
                 "of the definition folder."
             ) from error
+
+    @abstractmethod
+    def find_image(
+        self, image: str, version: str
+    ) -> Union[Tuple["ContainerRegistry", str], Tuple[None, None]]:
+        """
+        Find whether the given image exists in this registry.
+
+        :param image: The image to find in the registry
+            (the image should be stripped of all namespace)
+        :param version: The version of the image (also known as image tag)
+        :return: The registry and namespace for the image
+        """
+        raise NotImplementedError
 
     def add_namespace(self, namespace: str) -> None:
         """
@@ -310,67 +325,45 @@ class AzureContainerRegistry(ContainerRegistry):
                 error,
             )
 
-    def get_images_in_registry(
-        self,
-    ) -> Dict[Tuple[str, str], Tuple["AzureContainerRegistry", str]]:
+    def find_image(
+        self, image: str, version: str
+    ) -> Union[Tuple["AzureContainerRegistry", str], Tuple[None, None]]:
         """
-        Find all available images in this registry.
+        Find whether the given image exists in this registry.
 
-        :return: A dictionary where keys are (image, version) and values are (registry, namespace)
+        :param image: The image to find in the registry
+            (the image should be stripped of all namespace)
+        :param version: The version of the image (also known as image tag)
+        :return: The registry and namespace for the image
         """
-        image_dict = {}
+        for namespace in self.registry_namespaces:
+            image_with_namespace = f"{namespace}{image}:{version}"
+            try:
+                acr_source_get_images_cmd = [
+                    str(shutil.which("az")),
+                    "acr",
+                    "repository",
+                    "show",
+                    "--name",
+                    self.registry_name,
+                    "--image",
+                    image_with_namespace,
+                ]
 
-        # Get the list of repositories in the registry
-        acr_get_repositories_cmd = [
-            str(shutil.which("az")),
-            "acr",
-            "repository",
-            "list",
-            "--name",
-            self.registry_name,
-        ]
+                call_subprocess_raise_output(acr_source_get_images_cmd)
 
-        logger.info("Looking for images in %s registry", self.registry_name)
+                return (self, namespace)
 
-        repository_list: List[str] = json.loads(
-            call_subprocess_raise_output(acr_get_repositories_cmd)
-        )
+            except CLIError as error:
+                logger.debug(
+                    ("Image %s, version %s not found in %s registry."),
+                    image_with_namespace,
+                    version,
+                    self.registry_name,
+                )
+                logger.debug(error, exc_info=True)
 
-        logger.debug(
-            "Repositories found in %s: %s", self.registry_name, repository_list
-        )
-
-        for repository in repository_list:
-            # Get the list of versions for each repository
-            acr_get_versions_for_repository_cmd = [
-                str(shutil.which("az")),
-                "acr",
-                "repository",
-                "show-tags",
-                "--name",
-                self.registry_name,
-                "--repository",
-                f"{repository}",
-            ]
-
-            version_list: List[str] = json.loads(
-                call_subprocess_raise_output(acr_get_versions_for_repository_cmd)
-            )
-
-            # The image name is the final part of the repository name
-            image = repository.split("/")[-1]
-            # The namespace is everything before the image name
-            namespace_list = repository.split("/")[:-1]
-            # If namespace is not an empty list then join it with a slash
-            if namespace_list:
-                namespace = "/".join(namespace_list) + "/"
-            else:
-                namespace = ""
-
-            for version in version_list:
-                image_dict[(image, version)] = (self, namespace)
-
-        return image_dict
+        return None, None
 
 
 class ContainerRegistryHandler:
@@ -381,7 +374,6 @@ class ContainerRegistryHandler:
     def __init__(self, image_sources):
         self.image_sources = image_sources
         self.registry_list = self._create_registry_list()
-        self.registry_for_image = {}
 
     def _create_registry_list(self) -> List[ContainerRegistry]:
         """
@@ -430,25 +422,6 @@ class ContainerRegistryHandler:
 
         return registry_object_list
 
-    def _get_azure_container_registries_for_images(
-        self,
-    ) -> Dict[Tuple[str, str], Tuple["AzureContainerRegistry", str]]:
-        """
-        Cycle through all available registries to find images in each.
-
-        :return: A dictionary where keys are (image, version) and values are (registry, namespace)
-        """
-        registry_for_image = {}
-
-        for registry in self.registry_list:
-
-            # We can only do this for ACRs because docker does not have this functionality.
-            if isinstance(registry, AzureContainerRegistry):
-                registry_for_image.update(registry.get_images_in_registry())
-
-        logger.debug("Images found in the ACR registires: %s", registry_for_image)
-        return registry_for_image
-
     def find_registry_for_image(
         self, image, version
     ) -> Union[Tuple["ContainerRegistry", str], Tuple[None, None]]:
@@ -467,21 +440,12 @@ class ContainerRegistryHandler:
         ):
             return self.registry_list[0], self.registry_list[0].registry_namespaces[0]
 
-        if not self.registry_for_image:
-            self.registry_for_image = self._get_azure_container_registries_for_images()
-
-        # If we already found this image, version combination in the available ACRs,
-        # return the registry and namespace.
-        if (image, version) in self.registry_for_image:
-            return self.registry_for_image[(image, version)]
-
-        # If we didn't find the image in the ACRs, cycle through the Universal Registries
         for registry in self.registry_list:
-            if isinstance(registry, UniversalRegistry):
-                image_registry, namespace = registry.find_image(image, version)
-                if (image_registry is not None) and (namespace is not None):
-                    return image_registry, namespace
-                continue
+
+            image_registry, namespace = registry.find_image(image, version)
+            if (image_registry is not None) and (namespace is not None):
+                return image_registry, namespace
+            continue
 
         logger.warning(
             (

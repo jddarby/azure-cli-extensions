@@ -191,9 +191,6 @@ class HelmChartProcessor(BaseInputProcessor):
             name_and_tag = re.search(IMAGE_NAME_AND_VERSION_REGEX, line)
             if name_and_tag and len(name_and_tag.groups()) == 2:
                 image_name = name_and_tag.group("name")
-                # If name contains a slash then take only what is after the final slash
-                if "/" in image_name:
-                    image_name = image_name.split("/")[-1]
                 image_tag = name_and_tag.group("tag")
                 logger.debug(
                     "Found image %s:%s in Helm chart %s",
