@@ -13,6 +13,8 @@ They test the following commands:
 import os
 import logging
 import sys
+import shutil
+from tempfile import TemporaryDirectory
 
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from knack.log import get_logger
@@ -67,36 +69,53 @@ class VnfNsdTest(ScenarioTest):
         :param resource_group: The name of the resource group to use for the test.
         This is passed in by the ResourceGroupPreparer decorator.
         """
+        starting_directory = os.getcwd()
 
         vnf_mocks_dir = get_path_to_vnf_mocks()
 
         arm_template_path = os.path.join(vnf_mocks_dir, ARM_TEMPLATE_NAME)
+
         vhd_path = os.path.join(vnf_mocks_dir, VHD_NAME)
 
-        nfd_input_file_path = update_input_file(
-            NFD_INPUT_TEMPLATE_NAME,
-            NFD_INPUT_FILE_NAME,
-            params={
-                "publisher_resource_group_name": resource_group,
-                "arm_template_path": arm_template_path,
-                "vhd_path": vhd_path,
-            },
-        )
+        with TemporaryDirectory() as test_dir:
+            os.chdir(test_dir)
 
-        self.cmd(
-            f'az aosm nfd build --config-file "{nfd_input_file_path}" --definition-type vnf'
-        )
+            try:
+                # For ORAS push to work, we need the arm template to be in the
+                # current working directory.
+                arm_template_in_temp_dir = os.path.join(test_dir, ARM_TEMPLATE_NAME)
 
-        self.cmd(
-            "az aosm nfd publish --build-output-folder vnf-cli-output --definition-type vnf"
-        )
+                shutil.copy(arm_template_path, arm_template_in_temp_dir)
 
-        nsd_input_file_path = update_input_file(
-            NSD_INPUT_TEMPLATE_NAME,
-            NSD_INPUT_FILE_NAME,
-            params={"publisher_resource_group_name": resource_group},
-        )
+                nfd_input_file_path = os.path.join(test_dir, NFD_INPUT_FILE_NAME)
 
-        self.cmd(f'az aosm nsd build -f "{nsd_input_file_path}"')
+                update_input_file(
+                    NFD_INPUT_TEMPLATE_NAME,
+                    nfd_input_file_path,
+                    params={
+                        "publisher_resource_group_name": resource_group,
+                        "arm_template_path": arm_template_in_temp_dir,
+                        "vhd_path": vhd_path,
+                    },
+                )
 
-        self.cmd("az aosm nsd publish --build-output-folder nsd-cli-output")
+                self.cmd(
+                    f'az aosm nfd build --config-file "{nfd_input_file_path}" --definition-type vnf'
+                )
+
+                self.cmd(
+                    "az aosm nfd publish --build-output-folder vnf-cli-output --definition-type vnf"
+                )
+
+                nsd_input_file_path = os.path.join(test_dir, NSD_INPUT_FILE_NAME)
+                update_input_file(
+                    NSD_INPUT_TEMPLATE_NAME,
+                    nsd_input_file_path,
+                    params={"publisher_resource_group_name": resource_group},
+                )
+
+                self.cmd(f'az aosm nsd build -f "{nsd_input_file_path}"')
+
+                self.cmd("az aosm nsd publish --build-output-folder nsd-cli-output")
+            finally:
+                os.chdir(starting_directory)

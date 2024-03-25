@@ -5,7 +5,6 @@
 import unittest
 import json
 import os
-from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from azext_aosm.custom import (
@@ -18,11 +17,8 @@ from azext_aosm.tests.latest.integration_tests.utils import (
     get_path_to_test_chart,
 )
 
-NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.jsonc"
-NFD_INPUT_FILE_NAME = "cnf_input_2.jsonc"
-
-
-mock_cnf_folder = ((Path(__file__).parent) / "mock_cnf").resolve()
+INPUT_TEMPLATE_NAME = "cnf_input_template.jsonc"
+INPUT_FILE_NAME = "cnf_input.jsonc"
 
 
 class TestCNF(unittest.TestCase):
@@ -48,19 +44,22 @@ class TestCNF(unittest.TestCase):
 
         chart_path = get_path_to_test_chart()
 
-        nfd_input_file_path = update_input_file(
-            NFD_INPUT_TEMPLATE_NAME,
-            NFD_INPUT_FILE_NAME,
-            params={
-                "publisher_resource_group_name": "cli_test_cnf_nfd",
-                "path_to_chart": chart_path,
-            },
-        )
         with TemporaryDirectory() as test_dir:
             os.chdir(test_dir)
 
             try:
-                onboard_nfd_build("cnf", nfd_input_file_path)
+                cnf_input_file_path = os.path.join(test_dir, INPUT_FILE_NAME)
+
+                update_input_file(
+                    INPUT_TEMPLATE_NAME,
+                    cnf_input_file_path,
+                    params={
+                        "publisher_resource_group_name": "cli_test_cnf_nfd",
+                        "path_to_chart": chart_path,
+                    },
+                )
+
+                onboard_nfd_build("cnf", cnf_input_file_path)
                 assert os.path.exists("cnf-cli-output")
 
                 assert os.path.exists("cnf-cli-output/all_deploy.parameters.json")

@@ -69,22 +69,24 @@ class TestVNF(unittest.TestCase):
         with TemporaryDirectory() as test_dir:
             os.chdir(test_dir)
 
-            vnf_mocks_dir = get_path_to_vnf_mocks()
-
-            arm_template_path = os.path.join(vnf_mocks_dir, ARM_TEMPLATE_NAME)
-            vhd_path = os.path.join(vnf_mocks_dir, VHD_NAME)
-
-            nfd_input_file_path = update_input_file(
-                NFD_INPUT_TEMPLATE_NAME,
-                NFD_INPUT_FILE_NAME,
-                params={
-                    "publisher_resource_group_name": "resource_group",
-                    "arm_template_path": arm_template_path,
-                    "vhd_path": vhd_path,
-                },
-            )
-
             try:
+                vnf_mocks_dir = get_path_to_vnf_mocks()
+
+                arm_template_path = os.path.join(vnf_mocks_dir, ARM_TEMPLATE_NAME)
+                vhd_path = os.path.join(vnf_mocks_dir, VHD_NAME)
+
+                nfd_input_file_path = os.path.join(test_dir, NFD_INPUT_FILE_NAME)
+
+                update_input_file(
+                    NFD_INPUT_TEMPLATE_NAME,
+                    nfd_input_file_path,
+                    params={
+                        "publisher_resource_group_name": "resource_group",
+                        "arm_template_path": arm_template_path,
+                        "vhd_path": vhd_path,
+                    },
+                )
+
                 onboard_nfd_build("vnf", nfd_input_file_path)
                 assert os.path.exists(VNF_OUTPUT_FOLDER_FILENAME)
             finally:
@@ -96,19 +98,21 @@ class TestVNF(unittest.TestCase):
         with TemporaryDirectory() as test_dir:
             os.chdir(test_dir)
 
-            vnf_mocks_dir = get_path_to_vnf_mocks()
-
-            arm_template_path = os.path.join(vnf_mocks_dir, ARM_TEMPLATE_NAME)
-
-            nfd_input_file_path = update_input_file(
-                VNF_INPUT_WITH_SAS_TOKEN_TEMPLATE_NAME,
-                "vnf_with_sas.jsonc",
-                params={
-                    "publisher_resource_group_name": "resource_group",
-                    "arm_template_path": arm_template_path,
-                },
-            )
             try:
+                vnf_mocks_dir = get_path_to_vnf_mocks()
+
+                arm_template_path = os.path.join(vnf_mocks_dir, ARM_TEMPLATE_NAME)
+
+                nfd_input_file_path = os.path.join(test_dir, NFD_INPUT_FILE_NAME)
+                update_input_file(
+                    VNF_INPUT_WITH_SAS_TOKEN_TEMPLATE_NAME,
+                    nfd_input_file_path,
+                    params={
+                        "publisher_resource_group_name": "resource_group",
+                        "arm_template_path": arm_template_path,
+                    },
+                )
+
                 onboard_nfd_build("vnf", nfd_input_file_path)
                 assert os.path.exists(VNF_OUTPUT_FOLDER_FILENAME)
                 validate_vhd_parameters(

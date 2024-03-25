@@ -15,6 +15,7 @@ import os
 import logging
 import sys
 import unittest.mock as mock
+from tempfile import TemporaryDirectory
 
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from knack.log import get_logger
@@ -109,18 +110,29 @@ class CnfNfdTest(ScenarioTest):
         :param resource_group: The name of the resource group to use for the test.
         This is passed in by the ResourceGroupPreparer decorator.
         """
+        starting_directory = os.getcwd()
 
-        chart_path = get_path_to_test_chart()
+        with TemporaryDirectory() as test_dir:
+            os.chdir(test_dir)
 
-        nfd_input_file_path = update_input_file(
-            NFD_INPUT_TEMPLATE_NAME,
-            NFD_INPUT_FILE_NAME,
-            params={
-                "publisher_resource_group_name": resource_group,
-                "path_to_chart": chart_path,
-            },
-        )
+            try:
+                chart_path = get_path_to_test_chart()
 
-        self.cmd(f'az aosm nfd build -f "{nfd_input_file_path}" --definition-type cnf')
+                nfd_input_file_path = os.path.join(test_dir, NFD_INPUT_FILE_NAME)
 
-        self.cmd("az aosm nfd publish -b cnf-cli-output --definition-type cnf")
+                update_input_file(
+                    NFD_INPUT_TEMPLATE_NAME,
+                    nfd_input_file_path,
+                    params={
+                        "publisher_resource_group_name": resource_group,
+                        "path_to_chart": chart_path,
+                    },
+                )
+
+                self.cmd(
+                    f'az aosm nfd build -f "{nfd_input_file_path}" --definition-type cnf'
+                )
+
+                self.cmd("az aosm nfd publish -b cnf-cli-output --definition-type cnf")
+            finally:
+                os.chdir(starting_directory)

@@ -336,9 +336,10 @@ class TestNSDGenerator(TestCase):
             os.chdir(test_dir)
 
             # TODO, this is not necessary
-            nsd_input_file_path = update_input_file(
+            nsd_input_file_path = os.path.join(test_dir, NSD_INPUT_FILE_NAME)
+            update_input_file(
                 NSD_INPUT_TEMPLATE_NAME,
-                NSD_INPUT_FILE_NAME,
+                nsd_input_file_path,
                 params={"publisher_resource_group_name": "cli_test_nsd"},
             )
 

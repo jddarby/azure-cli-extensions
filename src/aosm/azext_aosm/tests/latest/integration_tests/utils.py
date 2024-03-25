@@ -24,8 +24,7 @@ def mock_in_unit_test(unit_test, target, replacement):
     unit_test.addCleanup(patcher.__exit__, None, None, None)
 
 
-def update_input_file(input_template_name, output_file_name, params: Dict[str, str]):
-    # TODO: change this to have a custom output_file_path. Then we can use a temp directory
+def update_input_file(input_template_name, output_file_path, params: Dict[str, str]):
     """Update the input file with the given parameters and return the path to the updated file."""
     code_dir = os.path.dirname(__file__)
     templates_dir = os.path.join(
@@ -40,12 +39,8 @@ def update_input_file(input_template_name, output_file_name, params: Dict[str, s
 
     rendered_template = jinja_template.render(**params)
 
-    output_path = os.path.join(templates_dir, output_file_name)
-
-    with open(output_path, "w", encoding="utf-8") as file:
+    with open(output_file_path, "w", encoding="utf-8") as file:
         file.write(rendered_template)
-
-    return output_path
 
 
 def get_path_to_test_chart():
