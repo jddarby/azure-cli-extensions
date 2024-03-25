@@ -14,7 +14,6 @@ from azext_aosm.tests.latest.integration_tests.utils import update_input_file
 from azext_aosm.common.constants import VNF_OUTPUT_FOLDER_FILENAME
 
 mock_vnf_folder = ((Path(__file__).parent.parent) / "mock_vnf").resolve()
-vnf_output_directory = ((Path(__file__).parent) / "vnf_output").resolve()
 
 INPUT_WITH_SAS_VHD_PARAMS = {
     "imageDiskSizeGB": 30,
