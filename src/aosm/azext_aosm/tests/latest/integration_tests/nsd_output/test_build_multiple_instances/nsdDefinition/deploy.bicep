@@ -19,19 +19,21 @@ param nfviSiteName string = 'ubuntu_NFVI'
 
 // The publisher resource is the top level AOSM resource under which all other designer resources
 // are created.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource publisher 'Microsoft.HybridNetwork/publishers@2023-09-01' existing = {
   name: publisherName
   scope: resourceGroup()
 }
 
 // The artifact store is the resource in which all the artifacts required to deploy the NF are stored.
-// The artifact store is created by the az aosm CLI before this template is deployed.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource acrArtifactStore 'Microsoft.HybridNetwork/publishers/artifactStores@2023-09-01' existing = {
   parent: publisher
   name: acrArtifactStoreName
 }
 
-// Created up-front, the NSD Group is the parent resource under which all NSD versions will be created.
+// The NSD Group is the parent resource under which all NSD versions will be created.
+// If using publish command, this is created from deploying the nsdbase.bicep
 resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups@2023-09-01' existing = {
   parent: publisher
   name: nsDesignGroup
@@ -42,27 +44,26 @@ resource nsdGroup 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups
 // The operator will create a config group values object that will satisfy this schema.
 resource cgSchema 'Microsoft.Hybridnetwork/publishers/configurationGroupSchemas@2023-09-01' = {
   parent: publisher
-  name: 'ubuntu_ConfigGroupSchema'
+  name: 'ConfigGroupSchema'
   location: location
   properties: {
-    schemaDefinition: string(loadJsonContent('schemas/ubuntu_ConfigGroupSchema.json'))
+    schemaDefinition: string(loadJsonContent('config-group-schema.json'))
   }
 }
 
+
 // The NSD version
+// This will deploy an NSDV in 'Preview' state. It should be changed to 'Active' once it is finalised.
 resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngroups/networkservicedesignversions@2023-09-01' = {
   parent: nsdGroup
   name: nsDesignVersion
   location: location
   properties: {
     description: 'Plain ubuntu VM'
-    // The version state can be Preview, Active or Deprecated.
-    // Once in an Active state, the NSDV becomes immutable.
-    versionState: 'Preview'
     // The `configurationgroupsSchemaReferences` field contains references to the schemas required to
     // be filled out to configure this NSD.
     configurationGroupSchemaReferences: {
-      ubuntu_ConfigGroupSchema: {
+      ConfigGroupSchema: {
         id: cgSchema.id
       }
     }
@@ -77,7 +78,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     // to the values in the CG schemas.
     resourceElementTemplates: [
       {
-        name: 'ubuntu-vm-nfdg_nf_artifact_resource_element'
+        name: 'ubuntu'
         // The type of resource element can be ArmResourceDefinition, ConfigurationDefinition or NetworkFunctionDefinition.
         type: 'NetworkFunctionDefinition'
         // The configuration object may be different for different types of resource element.
@@ -87,13 +88,13 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             artifactStoreReference: {
               id: acrArtifactStore.id
             }
-            artifactName: 'ubuntu-vm-nfdg_nf_artifact'
+            artifactName: 'ubuntu'
             artifactVersion: '1.0.0'
           }
           templateType: 'ArmTemplate'
           // The parameter values map values from the CG schema, to values required by the template
           // deployed by this resource element.
-          parameterValues: string(loadJsonContent('configMappings/ubuntu-vm-nfdg_config_mapping.json'))
+          parameterValues: string(loadJsonContent('ubuntu-mappings.json'))
         }
         dependsOnProfile: {
           installDependsOn: []
