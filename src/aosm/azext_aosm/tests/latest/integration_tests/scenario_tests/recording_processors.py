@@ -16,6 +16,7 @@ from azure.cli.testsdk.scenario_tests.utilities import is_text_payload
 MOCK_TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 MOCK_SAS_URI = "https://xxxxxxxxxxxxxxx.blob.core.windows.net"
 MOCK_STORAGE_ACCOUNT_SR = "&si=StorageAccountAccessPolicy&sr=xxxxxxxxxxxxxxxxxxxx"
+MOCK_USERNAME = "xxxxxxxxxxx@microsoft.com"
 BLOB_STORE_URI_REGEX = r"https:\/\/[a-zA-Z0-9]+\.blob\.core\.windows\.net"
 STORAGE_ACCOUNT_SR_REGEX = r"&si=StorageAccountAccessPolicy&sr=.*"
 
@@ -86,3 +87,29 @@ class BlobStoreUriReplacer(RecordingProcessor):
             pass
 
         return request
+
+
+class UsernameReplacer(RecordingProcessor):
+    def process_response(self, response):
+        CREATEDBY = "createdBy"
+        LASTMODIFIEDBY = "lastModifiedBy"
+        SYSTEMDATA = "systemData"
+        if is_text_payload(response) and response["body"]["string"]:
+            try:
+                response_body = json.loads(response["body"]["string"])
+
+                if SYSTEMDATA not in response_body:
+                    return response
+
+                system_data = response_body[SYSTEMDATA]
+
+                if CREATEDBY in system_data:
+                    system_data[CREATEDBY] = MOCK_USERNAME
+                if LASTMODIFIEDBY in system_data:
+                    system_data[LASTMODIFIEDBY] = MOCK_USERNAME
+
+                response_body[SYSTEMDATA] = system_data
+                response["body"]["string"] = json.dumps(response_body)
+            except TypeError:
+                pass
+        return response

@@ -28,6 +28,7 @@ from azext_aosm.tests.latest.integration_tests.scenario_tests.recording_processo
     TokenReplacer,
     SasUriReplacer,
     BlobStoreUriReplacer,
+    UsernameReplacer,
 )
 
 logger = get_logger(__name__)
@@ -96,6 +97,7 @@ class CnfNfdTest(ScenarioTest):
                 TokenReplacer(),
                 SasUriReplacer(),
                 BlobStoreUriReplacer(),
+                UsernameReplacer(),
             ],
             replay_patches=[patch_call_subprocess_raise_output],
         )

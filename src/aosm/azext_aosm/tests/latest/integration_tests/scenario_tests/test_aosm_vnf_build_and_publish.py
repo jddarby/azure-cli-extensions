@@ -22,6 +22,7 @@ from azext_aosm.tests.latest.integration_tests.scenario_tests.recording_processo
     TokenReplacer,
     SasUriReplacer,
     BlobStoreUriReplacer,
+    UsernameReplacer,
 )
 from azext_aosm.tests.latest.integration_tests.utils import (
     update_input_file,
@@ -56,6 +57,7 @@ class VnfNsdTest(ScenarioTest):
                 TokenReplacer(),
                 SasUriReplacer(),
                 BlobStoreUriReplacer(),
+                UsernameReplacer(),
             ],
         )
 
