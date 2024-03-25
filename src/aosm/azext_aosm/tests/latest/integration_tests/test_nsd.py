@@ -20,8 +20,6 @@ from azext_aosm.vendored_sdks.models import VirtualNetworkFunctionDefinitionVers
 from unittest import TestCase
 
 import jsonschema
-import pytest
-from azure.cli.core.azclierror import CLIInternalError
 from azure.core import exceptions as azure_exceptions
 from azure.mgmt.resource.features.v2015_12_01.models import (
     FeatureProperties,
@@ -38,12 +36,12 @@ from azext_aosm.tests.latest.integration_tests.utils import (
 
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 
-mock_nsd_folder = ((Path(__file__).parent.parent) / "mock_nsd").resolve()
+mock_input_templates_folder = (
+    (Path(__file__)).parent / "integration_test_mocks/mock_input_templates"
+).resolve()
 output_folder = ((Path(__file__).parent) / "nsd_output").resolve()
 
-NSD_INPUT_TEMPLATE_NAME = "vnf_nsd_input_template.jsonc"
-# TODO: change this
-NSD_INPUT_FILE_NAME = "nsd_input_2.jsonc"
+NSD_INPUT_FILE_NAME = "nsd_core_input.jsonc"
 
 CGV_DATA = {
     "ubuntu": {
@@ -278,14 +276,14 @@ def build_bicep(bicep_template_path):
 
 def compare_to_expected_output(expected_folder_name: str):
     """
-    Compares nsd-bicep-templates to the supplied folder name.
+    Compares nsd-cli-output to the supplied folder name.
 
     :param expected_folder_name: The name of the folder within nsd_output to compare
     with.
     """
     # Check files and folders within the top level directory are the same.
     expected_output_path = output_folder / expected_folder_name
-    comparison = dircmp("nsd-bicep-templates", expected_output_path)
+    comparison = dircmp("nsd-cli-output", expected_output_path)
 
     try:
         assert len(comparison.diff_files) == 0
@@ -298,7 +296,7 @@ def compare_to_expected_output(expected_folder_name: str):
             assert len(subdir.left_only) == 0
             assert len(subdir.right_only) == 0
     except:
-        copy_tree("nsd-bicep-templates", str(expected_output_path))
+        copy_tree("nsd-cli-output", str(expected_output_path))
         print(
             f"Output has changed in {expected_output_path}, use git diff to check if "
             f"you are happy with those changes."
@@ -335,12 +333,8 @@ class TestNSDGenerator(TestCase):
         with TemporaryDirectory() as test_dir:
             os.chdir(test_dir)
 
-            # TODO, this is not necessary
-            nsd_input_file_path = os.path.join(test_dir, NSD_INPUT_FILE_NAME)
-            update_input_file(
-                NSD_INPUT_TEMPLATE_NAME,
-                nsd_input_file_path,
-                params={"publisher_resource_group_name": "cli_test_nsd"},
+            nsd_input_file_path = os.path.join(
+                mock_input_templates_folder, NSD_INPUT_FILE_NAME
             )
 
             try:
@@ -356,8 +350,7 @@ class TestNSDGenerator(TestCase):
                     "nsd-cli-output/nsdDefinition/config-group-schema.json",
                 )
 
-                # TODO: fix this
-                # compare_to_expected_output("test_build")
+                compare_to_expected_output("test_build")
             finally:
                 os.chdir(starting_directory)
 
@@ -375,7 +368,9 @@ class TestNSDGenerator(TestCase):
             try:
                 onboard_nsd_build(
                     cmd=mock_cmd,
-                    config_file=str(mock_nsd_folder / "input_multiple_instances.jsonc"),
+                    config_file=str(
+                        mock_input_templates_folder / "input_multiple_instances.jsonc"
+                    ),
                 )
 
                 assert os.path.exists("nsd-cli-output")
@@ -384,7 +379,7 @@ class TestNSDGenerator(TestCase):
                     "nsd-cli-output/nsdDefinition/config-group-schema.json",
                 )
 
-                # compare_to_expected_output("test_build_multiple_instances")
+                compare_to_expected_output("test_build_multiple_instances")
             finally:
                 os.chdir(starting_directory)
 
@@ -403,7 +398,7 @@ class TestNSDGenerator(TestCase):
     #     try:
     #         onboard_nsd_build(
     #             cmd=mock_cmd,
-    #             config_file=str(mock_nsd_folder / "input_multi_nf_nsd.jsonc"),
+    #             config_file=str(mock_input_templates_folder / "input_multi_nf_nsd.jsonc"),
     #         )
 
     #         assert os.path.exists("nsd-cli-output")
