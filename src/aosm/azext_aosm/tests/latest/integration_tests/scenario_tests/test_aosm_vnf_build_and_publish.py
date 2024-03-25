@@ -16,12 +16,15 @@ import sys
 
 from azure.cli.testsdk import ScenarioTest, ResourceGroupPreparer
 from knack.log import get_logger
-from azext_aosm.tests.latest.integration_tests.recording_processors import (
+from azext_aosm.tests.latest.integration_tests.scenario_tests.recording_processors import (
     TokenReplacer,
     SasUriReplacer,
     BlobStoreUriReplacer,
 )
-from azext_aosm.tests.latest.integration_tests.utils import update_input_file
+from azext_aosm.tests.latest.integration_tests.utils import (
+    update_input_file,
+    get_path_to_vnf_mocks,
+)
 
 logger = get_logger(__name__)
 
@@ -31,14 +34,6 @@ NSD_INPUT_TEMPLATE_NAME = "vnf_nsd_input_template.jsonc"
 NSD_INPUT_FILE_NAME = "nsd_input.jsonc"
 ARM_TEMPLATE_NAME = "ubuntu_template.json"
 VHD_NAME = "ubuntu.vhd"
-
-
-def get_path_to_vnf_mocks():
-    """Get the path to the vnf mocks directory."""
-    code_dir = os.path.dirname(__file__)
-    vnf_mocks_dir = os.path.join(code_dir, "integration_test_mocks", "vnf_mocks")
-
-    return vnf_mocks_dir
 
 
 class VnfNsdTest(ScenarioTest):

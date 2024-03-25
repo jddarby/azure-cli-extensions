@@ -54,3 +54,11 @@ def get_path_to_test_chart():
     templates_dir = os.path.join(code_dir, "integration_test_mocks", "cnf_mocks")
     chart_path = os.path.join(templates_dir, CHART_NAME)
     return chart_path
+
+
+def get_path_to_vnf_mocks():
+    """Get the path to the vnf mocks directory."""
+    code_dir = os.path.dirname(__file__)
+    vnf_mocks_dir = os.path.join(code_dir, "integration_test_mocks", "vnf_mocks")
+
+    return vnf_mocks_dir

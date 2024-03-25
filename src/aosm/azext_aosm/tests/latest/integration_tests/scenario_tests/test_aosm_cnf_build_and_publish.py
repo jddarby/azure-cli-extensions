@@ -23,7 +23,7 @@ from azext_aosm.tests.latest.integration_tests.utils import (
     update_input_file,
     get_path_to_test_chart,
 )
-from azext_aosm.tests.latest.integration_tests.recording_processors import (
+from azext_aosm.tests.latest.integration_tests.scenario_tests.recording_processors import (
     TokenReplacer,
     SasUriReplacer,
     BlobStoreUriReplacer,
