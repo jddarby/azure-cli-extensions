@@ -5,6 +5,7 @@
 import re
 import os
 import tarfile
+from typing import Tuple
 from pathlib import Path
 from jinja2 import StrictUndefined, Template
 import json
@@ -277,7 +278,7 @@ def login_to_artifact_store_registry(
             ) from error
 
 
-def split_image_path(image) -> "tuple[str, str, str]":
+def split_image_path(image) -> Tuple[str, str, str]:
     """Split the image path into source acr registry, name and version."""
     (source_acr_registry, name_and_version) = image.split("/", 2)
     (name, version) = name_and_version.split(":", 2)
