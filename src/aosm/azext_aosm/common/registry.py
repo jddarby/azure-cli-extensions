@@ -153,11 +153,7 @@ class UniversalRegistry(ContainerRegistry):
                     self.registry_name,
                 )
                 logger.debug(error, exc_info=True)
-                raise ClientRequestError(
-                    f"Failed to contact source registry {self.registry_name} "
-                    "Make sure you run docker login on this registry "
-                    "before running the aosm command."
-                ) from error
+                return None, None
         return None, None
 
 
@@ -206,7 +202,7 @@ class AzureContainerRegistry(ContainerRegistry):
         finally:
             logger.info("Logging out of source registry %s", self.registry_name)
 
-            # There is not az acr logout command, so we use docker logout
+            # There is no az 'acr logout' command, so we use docker logout
             docker_logout_cmd = [
                 str(shutil.which("docker")),
                 "logout",
@@ -338,6 +334,7 @@ class AzureContainerRegistry(ContainerRegistry):
         """
         for namespace in self.registry_namespaces:
             image_with_namespace = f"{namespace}{image}:{version}"
+            logger.debug("Checking if %s exists.", image_with_namespace)
             try:
                 acr_source_get_images_cmd = [
                     str(shutil.which("az")),
@@ -382,7 +379,7 @@ class ContainerRegistryHandler:
         :return: A list of registry objects
         """
 
-        registry_name_to_class_dict: Dict[str, ContainerRegistry] = {}
+        registry_name_to_object_dict: Dict[str, ContainerRegistry] = {}
         registry_object_list: List[ContainerRegistry] = []
 
         logger.debug("Creating registry list from the provided registries")
@@ -390,35 +387,33 @@ class ContainerRegistryHandler:
         for registry in self.image_sources:
             registry = clean_registry_name(registry)
 
-            # If registry matches the pattern of myacr1.azurecr.io/**,
-            # then create a an instance of the ACR registry class
             parts = registry.split("/", 1)
             registry_name = parts[0]
             registry_namespace = parts[1] if len(parts) > 1 else None
 
             acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
 
-            if registry_name not in registry_name_to_class_dict:
+            if registry_name not in registry_name_to_object_dict:
                 if acr_match:
-                    registry_name_to_class_dict[registry_name] = AzureContainerRegistry(
-                        registry_name
+                    registry_name_to_object_dict[registry_name] = (
+                        AzureContainerRegistry(registry_name)
                     )
                 else:
-                    registry_name_to_class_dict[registry_name] = UniversalRegistry(
+                    registry_name_to_object_dict[registry_name] = UniversalRegistry(
                         registry_name
                     )
 
-                registry_object_list.append(registry_name_to_class_dict[registry_name])
+                registry_object_list.append(registry_name_to_object_dict[registry_name])
 
             if registry_namespace:
                 # Make sure that the namespace ends with a slash
                 if not registry_namespace.endswith("/"):
                     registry_namespace += "/"
-                registry_name_to_class_dict[registry_name].add_namespace(
+                registry_name_to_object_dict[registry_name].add_namespace(
                     registry_namespace
                 )
             else:
-                registry_name_to_class_dict[registry_name].add_namespace("")
+                registry_name_to_object_dict[registry_name].add_namespace("")
 
         return registry_object_list
 
@@ -452,7 +447,7 @@ class ContainerRegistryHandler:
                 "Image: %s, version: %s was not found in any of the provided registries. "
                 "This image will not be part of your Network Function. "
                 "If you would like to include it, provide the registry containing this image "
-                "in the `image_sources` list in the input file."
+                "in the 'image_sources' list in the input file and run the build command again."
             ),
             image,
             version,
