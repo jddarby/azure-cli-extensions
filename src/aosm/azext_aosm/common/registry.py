@@ -379,41 +379,45 @@ class ContainerRegistryHandler:
         :return: A list of registry objects
         """
 
-        registry_name_to_object_dict: Dict[str, ContainerRegistry] = {}
         registry_object_list: List[ContainerRegistry] = []
 
         logger.debug("Creating registry list from the provided registries")
 
-        for registry in self.image_sources:
-            registry = clean_registry_name(registry)
+        for image_source in self.image_sources:
+            image_source = clean_registry_name(image_source)
 
-            parts = registry.split("/", 1)
+            parts = image_source.split("/", 1)
             registry_name = parts[0]
             registry_namespace = parts[1] if len(parts) > 1 else None
-
-            acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
-
-            if registry_name not in registry_name_to_object_dict:
-                if acr_match:
-                    registry_name_to_object_dict[registry_name] = (
-                        AzureContainerRegistry(registry_name)
-                    )
-                else:
-                    registry_name_to_object_dict[registry_name] = UniversalRegistry(
-                        registry_name
-                    )
-
-                registry_object_list.append(registry_name_to_object_dict[registry_name])
 
             if registry_namespace:
                 # Make sure that the namespace ends with a slash
                 if not registry_namespace.endswith("/"):
                     registry_namespace += "/"
-                registry_name_to_object_dict[registry_name].add_namespace(
-                    registry_namespace
-                )
             else:
-                registry_name_to_object_dict[registry_name].add_namespace("")
+                registry_namespace = ""
+
+            # Get the registry_object with matching registry_name from the list,
+            # or None if not found
+            registry_object = None
+            for registry in registry_object_list:
+                if registry.registry_name == registry_name:
+                    registry_object = registry
+                    break
+
+            if registry_object:
+                # Object already exists, add namespace to it
+                registry_object.add_namespace(registry_namespace)
+            else:
+                # Object does not exist, create a new one
+                acr_match = re.match(ACR_REGISTRY_NAME_PATTERN, registry_name)
+
+                if acr_match:
+                    registry_object_list.append(AzureContainerRegistry(registry_name))
+                else:
+                    registry_object_list.append(UniversalRegistry(registry_name))
+
+                registry_object_list[-1].add_namespace(registry_namespace)
 
         return registry_object_list
 
