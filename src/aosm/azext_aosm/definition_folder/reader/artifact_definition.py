@@ -41,7 +41,7 @@ class ArtifactDefinitionElement(BaseDefinitionElement):
                 f"Artifact type is missing or invalid for artifact {artifact}"
             )
 
-        # Give mypy a hint that the type of the artifact
+        # Give mypy a hint for the artifact type
         artifact_class = cast(
             Type[BaseArtifact], ARTIFACT_TYPE_TO_CLASS[artifact["type"]]
         )

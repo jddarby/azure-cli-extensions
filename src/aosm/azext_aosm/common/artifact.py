@@ -18,6 +18,7 @@ from azext_aosm.common.utils import (
     clean_registry_name,
     push_image_from_local_registry_to_acr,
     call_subprocess_raise_output,
+    check_tool_installed,
 )
 from azext_aosm.configuration_models.common_parameters_config import (
     BaseCommonParametersConfig,
@@ -31,7 +32,6 @@ from azext_aosm.vendored_sdks.azure_storagev2.blob.v2022_11_02 import (
 from azext_aosm.common.registry import ContainerRegistry, AzureContainerRegistry
 from azext_aosm.vendored_sdks.models import ArtifactType
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
-
 from knack.util import CLIError
 from knack.log import get_logger
 from oras.client import OrasClient
@@ -75,16 +75,6 @@ class BaseACRArtifact(BaseArtifact):
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Upload the artifact."""
-
-    @staticmethod
-    def _check_tool_installed(tool_name: str) -> None:
-        """
-        Check whether a tool such as docker or helm is installed.
-
-        :param tool_name: name of the tool to check, e.g. docker
-        """
-        if shutil.which(tool_name) is None:
-            raise CLIError(f"You must install {tool_name} to use this command.")
 
     @staticmethod
     @lru_cache(maxsize=32)
@@ -225,8 +215,8 @@ class LocalFileACRArtifact(BaseACRArtifact):
             username = manifest_credentials["username"]
             password = manifest_credentials["acr_token"]
 
-            self._check_tool_installed("docker")
-            self._check_tool_installed("helm")
+            check_tool_installed("docker")
+            check_tool_installed("helm")
 
             # tmpdir is only used if file_path is dir, but `with` context manager is cleaner to use, so we always
             # set up the tmpdir, even if it doesn't end up being used.
@@ -379,7 +369,7 @@ class RemoteACRArtifact(BaseACRArtifact):
             print(
                 f"Using docker pull and push to copy image artifact: {self.artifact_name}"
             )
-            self._check_tool_installed("docker")
+            check_tool_installed("docker")
             self.source_registry.pull_image_to_local_registry(source_image=source_image)
 
             # We do not want the namespace to be included in the target image

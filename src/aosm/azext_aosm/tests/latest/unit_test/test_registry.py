@@ -182,8 +182,8 @@ class TestRegistryHandler(TestCase):
                 ]
             )
 
-    def test_get_registry_list(self):
-        registry_list = self.registry_handler.get_registry_list()
+    def test_create_registry_list(self):
+        registry_list = self.registry_handler.registry_list
 
         # There are two unique registries (registry.example.com and registry.azurecr.io)
         self.assertEqual(len(registry_list), 2)
