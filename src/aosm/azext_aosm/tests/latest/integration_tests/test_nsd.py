@@ -15,8 +15,10 @@ from filecmp import dircmp
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
-from unittest.mock import Mock, patch
-from azext_aosm.vendored_sdks.models import VirtualNetworkFunctionDefinitionVersion
+from unittest.mock import patch
+from azext_aosm.vendored_sdks.models import (
+    VirtualNetworkFunctionDefinitionVersion,
+)
 from unittest import TestCase
 
 import jsonschema
@@ -29,9 +31,6 @@ from azure.mgmt.resource.features.v2015_12_01.models import (
 from azext_aosm.custom import (
     onboard_nsd_build,
     onboard_nsd_generate_config,
-)
-from azext_aosm.tests.latest.integration_tests.utils import (
-    update_input_file,
 )
 
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
@@ -137,8 +136,8 @@ class NetworkFunctionTemplate:
 
 @dataclass
 class NFDVProperties(VirtualNetworkFunctionDefinitionVersion):
-    deploy_parameters: object
-    network_function_template: NetworkFunctionTemplate
+    deploy_parameters: str
+    network_function_template: NetworkFunctionTemplate  # type: ignore
 
 
 @dataclass
@@ -170,7 +169,7 @@ class NFDVs:
 
 class AOSMClient(HybridNetworkManagementClient):
     def __init__(self) -> None:
-        self.network_function_definition_versions = NFDVs()
+        self.network_function_definition_versions = NFDVs()  # type: ignore
 
 
 mock_client = AOSMClient()
