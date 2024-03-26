@@ -25,7 +25,7 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 17:58:12 GMT
+      - Tue, 26 Mar 2024 17:36:17 GMT
       expires:
       - '-1'
       pragma:
@@ -87,8 +87,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389496",
-        "name": "AOSM_CLI_deployment_1711389496", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474588",
+        "name": "AOSM_CLI_deployment_1711474588", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "9985939870973944498", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -96,7 +96,7 @@ interactions:
         "String", "value": "ubuntu-blob-store"}, "nfDefinitionGroup": {"type": "String",
         "value": "ubuntu-vm"}}, "mode": "Incremental", "provisioningState": "Succeeded",
         "timestamp": "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId":
-        "79b1ee51-dea0-4320-a3a3-2fca92279656", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "8b5c7d80-a701-463a-b0ea-0897b4e410e4", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers", "locations": ["uksouth"]},
         {"resourceType": "publishers/artifactStores", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkfunctiondefinitiongroups", "locations": ["uksouth"]}]}],
@@ -127,7 +127,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 17:58:17 GMT
+      - Tue, 26 Mar 2024 17:36:27 GMT
       expires:
       - '-1'
       pragma:
@@ -191,16 +191,16 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389496",
-        "name": "AOSM_CLI_deployment_1711389496", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474588",
+        "name": "AOSM_CLI_deployment_1711474588", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "9985939870973944498", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "saArtifactStoreName": {"type":
         "String", "value": "ubuntu-blob-store"}, "nfDefinitionGroup": {"type": "String",
         "value": "ubuntu-vm"}}, "mode": "Incremental", "provisioningState": "Accepted",
-        "timestamp": "2024-03-25T17:58:18.5145767Z", "duration": "PT0.000929S", "correlationId":
-        "feb28d73-502d-4dd0-b6a1-f650f59b5f2d", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "timestamp": "2024-03-26T17:36:27.9457594Z", "duration": "PT0.0001042S", "correlationId":
+        "2e39b075-b1c8-4260-8eae-5a1d4af7afc5", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers", "locations": ["uksouth"]},
         {"resourceType": "publishers/artifactStores", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkfunctiondefinitiongroups", "locations": ["uksouth"]}]}],
@@ -221,15 +221,15 @@ interactions:
         "resourceName": "automated-cli-tests-ubuntu-publisher/ubuntu-vm"}]}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389496/operationStatuses/08584902173871851384?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474588/operationStatuses/08584901322977259664?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
-      - '3181'
+      - '3182'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 17:58:17 GMT
+      - Tue, 26 Mar 2024 17:36:27 GMT
       expires:
       - '-1'
       pragma:
@@ -259,7 +259,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Accepted"}'
@@ -271,7 +271,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 17:58:17 GMT
+      - Tue, 26 Mar 2024 17:36:28 GMT
       expires:
       - '-1'
       pragma:
@@ -299,7 +299,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -311,7 +311,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 17:58:48 GMT
+      - Tue, 26 Mar 2024 17:36:58 GMT
       expires:
       - '-1'
       pragma:
@@ -339,7 +339,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -351,7 +351,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 17:59:18 GMT
+      - Tue, 26 Mar 2024 17:37:30 GMT
       expires:
       - '-1'
       pragma:
@@ -379,7 +379,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -391,7 +391,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 17:59:48 GMT
+      - Tue, 26 Mar 2024 17:38:00 GMT
       expires:
       - '-1'
       pragma:
@@ -419,7 +419,49 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
+  response:
+    body:
+      string: '{"status": "Running"}'
+    headers:
+      cache-control:
+      - no-cache
+      connection:
+      - close
+      content-length:
+      - '21'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 26 Mar 2024 17:38:30 GMT
+      expires:
+      - '-1'
+      pragma:
+      - no-cache
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-content-type-options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      CommandName:
+      - aosm nfd publish
+      Connection:
+      - keep-alive
+      ParameterSetName:
+      - --build-output-folder --definition-type
+      User-Agent:
+      - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+    method: GET
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -431,7 +473,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:00:17 GMT
+      - Tue, 26 Mar 2024 17:39:02 GMT
       expires:
       - '-1'
       pragma:
@@ -459,7 +501,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -471,7 +513,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:00:48 GMT
+      - Tue, 26 Mar 2024 17:39:31 GMT
       expires:
       - '-1'
       pragma:
@@ -499,7 +541,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -511,7 +553,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:01:18 GMT
+      - Tue, 26 Mar 2024 17:40:01 GMT
       expires:
       - '-1'
       pragma:
@@ -539,47 +581,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
-  response:
-    body:
-      string: '{"status": "Running"}'
-    headers:
-      cache-control:
-      - no-cache
-      content-length:
-      - '21'
-      content-type:
-      - application/json; charset=utf-8
-      date:
-      - Mon, 25 Mar 2024 18:01:49 GMT
-      expires:
-      - '-1'
-      pragma:
-      - no-cache
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains
-      x-content-type-options:
-      - nosniff
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      CommandName:
-      - aosm nfd publish
-      Connection:
-      - keep-alive
-      ParameterSetName:
-      - --build-output-folder --definition-type
-      User-Agent:
-      - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
-    method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902173871851384?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901322977259664?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -591,7 +593,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:18 GMT
+      - Tue, 26 Mar 2024 17:40:31 GMT
       expires:
       - '-1'
       pragma:
@@ -622,16 +624,16 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389496",
-        "name": "AOSM_CLI_deployment_1711389496", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474588",
+        "name": "AOSM_CLI_deployment_1711474588", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "9985939870973944498", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "saArtifactStoreName": {"type":
         "String", "value": "ubuntu-blob-store"}, "nfDefinitionGroup": {"type": "String",
         "value": "ubuntu-vm"}}, "mode": "Incremental", "provisioningState": "Succeeded",
-        "timestamp": "2024-03-25T18:02:05.8785154Z", "duration": "PT3M47.3648677S",
-        "correlationId": "feb28d73-502d-4dd0-b6a1-f650f59b5f2d", "providers": [{"namespace":
+        "timestamp": "2024-03-26T17:40:16.0105341Z", "duration": "PT3M48.0648789S",
+        "correlationId": "2e39b075-b1c8-4260-8eae-5a1d4af7afc5", "providers": [{"namespace":
         "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType": "publishers",
         "locations": ["uksouth"]}, {"resourceType": "publishers/artifactStores", "locations":
         ["uksouth"]}, {"resourceType": "publishers/networkfunctiondefinitiongroups",
@@ -662,7 +664,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:18 GMT
+      - Tue, 26 Mar 2024 17:40:31 GMT
       expires:
       - '-1'
       pragma:
@@ -704,7 +706,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:18 GMT
+      - Tue, 26 Mar 2024 17:40:32 GMT
       expires:
       - '-1'
       pragma:
@@ -748,7 +750,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:18 GMT
+      - Tue, 26 Mar 2024 17:40:33 GMT
       expires:
       - '-1'
       pragma:
@@ -811,8 +813,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389742",
-        "name": "AOSM_CLI_deployment_1711389742", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474840",
+        "name": "AOSM_CLI_deployment_1711474840", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "2261224723127030745", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -821,7 +823,7 @@ interactions:
         "value": "ubuntu-vm-acr-manifest-1-0-0"}, "saManifestName": {"type": "String",
         "value": "ubuntu-vm-sa-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
         "Succeeded", "timestamp": "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId":
-        "4849ae23-56fa-48d8-a6d6-5d6ace7bd563", "providers": [{"namespace": "Microsoft.Hybridnetwork",
+        "09e80968-2902-4d79-adeb-f54e3cab77f6", "providers": [{"namespace": "Microsoft.Hybridnetwork",
         "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": [], "validatedResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Hybridnetwork/publishers/automated-cli-tests-ubuntu-publisher/artifactStores/ubuntu-acr/artifactManifests/ubuntu-vm-acr-manifest-1-0-0"},
@@ -834,7 +836,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:23 GMT
+      - Tue, 26 Mar 2024 17:40:41 GMT
       expires:
       - '-1'
       pragma:
@@ -844,7 +846,7 @@ interactions:
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1198'
+      - '1199'
     status:
       code: 200
       message: OK
@@ -897,8 +899,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389742",
-        "name": "AOSM_CLI_deployment_1711389742", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474840",
+        "name": "AOSM_CLI_deployment_1711474840", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "2261224723127030745", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -906,21 +908,21 @@ interactions:
         "String", "value": "ubuntu-blob-store"}, "acrManifestName": {"type": "String",
         "value": "ubuntu-vm-acr-manifest-1-0-0"}, "saManifestName": {"type": "String",
         "value": "ubuntu-vm-sa-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
-        "Accepted", "timestamp": "2024-03-25T18:02:24.9409663Z", "duration": "PT0.0001289S",
-        "correlationId": "5ebd7827-48be-480b-80e3-98bb95b04963", "providers": [{"namespace":
+        "Accepted", "timestamp": "2024-03-26T17:40:42.3758705Z", "duration": "PT0.000714S",
+        "correlationId": "4b94da61-1c59-4595-8e81-0f118a61c0dc", "providers": [{"namespace":
         "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": []}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389742/operationStatuses/08584902171407842747?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474840/operationStatuses/08584901320433747222?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
-      - '1138'
+      - '1137'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:24 GMT
+      - Tue, 26 Mar 2024 17:40:41 GMT
       expires:
       - '-1'
       pragma:
@@ -930,7 +932,7 @@ interactions:
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1198'
+      - '1199'
     status:
       code: 201
       message: Created
@@ -950,7 +952,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902171407842747?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901320433747222?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Accepted"}'
@@ -962,7 +964,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:24 GMT
+      - Tue, 26 Mar 2024 17:40:41 GMT
       expires:
       - '-1'
       pragma:
@@ -990,7 +992,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902171407842747?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901320433747222?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -1002,7 +1004,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:02:54 GMT
+      - Tue, 26 Mar 2024 17:41:11 GMT
       expires:
       - '-1'
       pragma:
@@ -1030,7 +1032,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902171407842747?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901320433747222?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -1042,7 +1044,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:24 GMT
+      - Tue, 26 Mar 2024 17:41:44 GMT
       expires:
       - '-1'
       pragma:
@@ -1070,7 +1072,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902171407842747?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901320433747222?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -1082,7 +1084,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:54 GMT
+      - Tue, 26 Mar 2024 17:42:13 GMT
       expires:
       - '-1'
       pragma:
@@ -1113,8 +1115,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389742",
-        "name": "AOSM_CLI_deployment_1711389742", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474840",
+        "name": "AOSM_CLI_deployment_1711474840", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "2261224723127030745", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -1122,8 +1124,8 @@ interactions:
         "String", "value": "ubuntu-blob-store"}, "acrManifestName": {"type": "String",
         "value": "ubuntu-vm-acr-manifest-1-0-0"}, "saManifestName": {"type": "String",
         "value": "ubuntu-vm-sa-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
-        "Succeeded", "timestamp": "2024-03-25T18:03:47.7867371Z", "duration": "PT1M22.8458997S",
-        "correlationId": "5ebd7827-48be-480b-80e3-98bb95b04963", "providers": [{"namespace":
+        "Succeeded", "timestamp": "2024-03-26T17:42:05.2619033Z", "duration": "PT1M22.8867468S",
+        "correlationId": "4b94da61-1c59-4595-8e81-0f118a61c0dc", "providers": [{"namespace":
         "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": [], "outputResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Hybridnetwork/publishers/automated-cli-tests-ubuntu-publisher/artifactStores/ubuntu-acr/artifactManifests/ubuntu-vm-acr-manifest-1-0-0"},
@@ -1136,7 +1138,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:54 GMT
+      - Tue, 26 Mar 2024 17:42:13 GMT
       expires:
       - '-1'
       pragma:
@@ -1170,8 +1172,8 @@ interactions:
   response:
     body:
       string: '{"username": "ubuntu-vm-acr-manifest-1-0-0", "acrToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "acrServerUrl": "https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",
-        "repositories": ["automated-cli-tests-artifact"], "expiry": "2024-03-26T18:03:57.0975036+00:00",
+        "acrServerUrl": "https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",
+        "repositories": ["automated-cli-tests-artifact"], "expiry": "2024-03-27T17:42:15.2750844+00:00",
         "credentialType": "AzureContainerRegistryScopedToken"}'
     headers:
       cache-control:
@@ -1181,7 +1183,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:56 GMT
+      - Tue, 26 Mar 2024 17:42:15 GMT
       expires:
       - '-1'
       pragma:
@@ -1215,7 +1217,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
   response:
     body:
       string: '{"errors": [{"code": "UNAUTHORIZED", "message": "authentication required,
@@ -1235,7 +1237,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:15 GMT
       docker-distribution-api-version:
       - registry/2.0
       server:
@@ -1244,7 +1246,7 @@ interactions:
       - max-age=31536000; includeSubDomains
       - max-age=31536000; includeSubDomains
       www-authenticate:
-      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",scope="repository:automated-cli-tests-artifact:pull,push"
+      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",scope="repository:automated-cli-tests-artifact:pull,push"
       x-content-type-options:
       - nosniff
     status:
@@ -1260,11 +1262,11 @@ interactions:
       Connection:
       - keep-alive
       Service:
-      - automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io
+      - automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io
       User-Agent:
       - oras-py
     method: GET
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io&scope=repository%3Aautomated-cli-tests-artifact%3Apull%2Cpush
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io&scope=repository%3Aautomated-cli-tests-artifact%3Apull%2Cpush
   response:
     body:
       string: '{"access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
@@ -1274,7 +1276,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:15 GMT
       server:
       - openresty
       strict-transport-security:
@@ -1302,7 +1304,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
   response:
     body:
       string: ''
@@ -1317,13 +1319,13 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:15 GMT
       docker-distribution-api-version:
       - registry/2.0
       docker-upload-uuid:
-      - eabbba33-fddf-4a84-918b-46965931d544
+      - 0c6b706f-b5c5-45df-a3a8-b4ad3facd704
       location:
-      - /v2/automated-cli-tests-artifact/blobs/uploads/eabbba33-fddf-4a84-918b-46965931d544?_nouploadcache=false&_state=O6vuESeLpFaFPEq1XNa0F1QSr0EBvFYdeXyKMpSSK0J7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6ImVhYmJiYTMzLWZkZGYtNGE4NC05MThiLTQ2OTY1OTMxZDU0NCIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNVQxODowMzo1Ny42NzM2NjA1NDdaIn0%3D
+      - /v2/automated-cli-tests-artifact/blobs/uploads/0c6b706f-b5c5-45df-a3a8-b4ad3facd704?_nouploadcache=false&_state=_zJEA08SXOBv4B708KF3xDF4uRs5QGDcLFZ_9TWtw-V7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6IjBjNmI3MDZmLWI1YzUtNDVkZi1hM2E4LWI0YWQzZmFjZDcwNCIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNlQxNzo0MjoxNS44MTk1MzQ1MzJaIn0%3D
       range:
       - 0-0
       server:
@@ -1396,7 +1398,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/eabbba33-fddf-4a84-918b-46965931d544?_nouploadcache=false&_state=O6vuESeLpFaFPEq1XNa0F1QSr0EBvFYdeXyKMpSSK0J7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6ImVhYmJiYTMzLWZkZGYtNGE4NC05MThiLTQ2OTY1OTMxZDU0NCIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNVQxODowMzo1Ny42NzM2NjA1NDdaIn0%3D&digest=sha256%3Ae71bf56543dc33dc8e550a0c574efe9a4875754a4ddf74347e448dec2462798b
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/0c6b706f-b5c5-45df-a3a8-b4ad3facd704?_nouploadcache=false&_state=_zJEA08SXOBv4B708KF3xDF4uRs5QGDcLFZ_9TWtw-V7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6IjBjNmI3MDZmLWI1YzUtNDVkZi1hM2E4LWI0YWQzZmFjZDcwNCIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNlQxNzo0MjoxNS44MTk1MzQ1MzJaIn0%3D&digest=sha256%3Ae71bf56543dc33dc8e550a0c574efe9a4875754a4ddf74347e448dec2462798b
   response:
     body:
       string: ''
@@ -1411,7 +1413,7 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       docker-content-digest:
       - sha256:e71bf56543dc33dc8e550a0c574efe9a4875754a4ddf74347e448dec2462798b
       docker-distribution-api-version:
@@ -1444,7 +1446,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
   response:
     body:
       string: '{"errors": [{"code": "UNAUTHORIZED", "message": "authentication required,
@@ -1464,7 +1466,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       docker-distribution-api-version:
       - registry/2.0
       server:
@@ -1473,7 +1475,7 @@ interactions:
       - max-age=31536000; includeSubDomains
       - max-age=31536000; includeSubDomains
       www-authenticate:
-      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",scope="repository:automated-cli-tests-artifact:pull,push"
+      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",scope="repository:automated-cli-tests-artifact:push,pull"
       x-content-type-options:
       - nosniff
     status:
@@ -1489,11 +1491,11 @@ interactions:
       Connection:
       - keep-alive
       Service:
-      - automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io
+      - automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io
       User-Agent:
       - oras-py
     method: GET
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io&scope=repository%3Aautomated-cli-tests-artifact%3Apull%2Cpush
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io&scope=repository%3Aautomated-cli-tests-artifact%3Apush%2Cpull
   response:
     body:
       string: '{"access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
@@ -1503,7 +1505,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       server:
       - openresty
       strict-transport-security:
@@ -1531,7 +1533,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/
   response:
     body:
       string: ''
@@ -1546,13 +1548,13 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:57 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       docker-distribution-api-version:
       - registry/2.0
       docker-upload-uuid:
-      - b4482758-4aaf-4f3c-a970-d789bfb48289
+      - e5c270f8-2a5d-4945-88e2-0b1a7996938c
       location:
-      - /v2/automated-cli-tests-artifact/blobs/uploads/b4482758-4aaf-4f3c-a970-d789bfb48289?_nouploadcache=false&_state=v6AthxLFRsBMcY0fy0QgWMs_YHzTDMD9MVjoCTPTHEB7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6ImI0NDgyNzU4LTRhYWYtNGYzYy1hOTcwLWQ3ODliZmI0ODI4OSIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNVQxODowMzo1Ny45MTc0MTYwMDVaIn0%3D
+      - /v2/automated-cli-tests-artifact/blobs/uploads/e5c270f8-2a5d-4945-88e2-0b1a7996938c?_nouploadcache=false&_state=h3rQ97n4QEvLKZv05iWfx8mB0V8S1OJ5X8lMfCn9ioh7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6ImU1YzI3MGY4LTJhNWQtNDk0NS04OGUyLTBiMWE3OTk2OTM4YyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNlQxNzo0MjoxNi4xMDcwMTU4N1oifQ%3D%3D
       range:
       - 0-0
       server:
@@ -1581,7 +1583,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/b4482758-4aaf-4f3c-a970-d789bfb48289?_nouploadcache=false&_state=v6AthxLFRsBMcY0fy0QgWMs_YHzTDMD9MVjoCTPTHEB7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6ImI0NDgyNzU4LTRhYWYtNGYzYy1hOTcwLWQ3ODliZmI0ODI4OSIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNVQxODowMzo1Ny45MTc0MTYwMDVaIn0%3D&digest=sha256%3Ae3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/blobs/uploads/e5c270f8-2a5d-4945-88e2-0b1a7996938c?_nouploadcache=false&_state=h3rQ97n4QEvLKZv05iWfx8mB0V8S1OJ5X8lMfCn9ioh7Ik5hbWUiOiJhdXRvbWF0ZWQtY2xpLXRlc3RzLWFydGlmYWN0IiwiVVVJRCI6ImU1YzI3MGY4LTJhNWQtNDk0NS04OGUyLTBiMWE3OTk2OTM4YyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNC0wMy0yNlQxNzo0MjoxNi4xMDcwMTU4N1oifQ%3D%3D&digest=sha256%3Ae3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
   response:
     body:
       string: ''
@@ -1596,7 +1598,7 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       docker-content-digest:
       - sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       docker-distribution-api-version:
@@ -1635,7 +1637,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/manifests/1.0.0
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/manifests/1.0.0
   response:
     body:
       string: '{"errors": [{"code": "UNAUTHORIZED", "message": "authentication required,
@@ -1655,7 +1657,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       docker-distribution-api-version:
       - registry/2.0
       server:
@@ -1664,7 +1666,7 @@ interactions:
       - max-age=31536000; includeSubDomains
       - max-age=31536000; includeSubDomains
       www-authenticate:
-      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",scope="repository:automated-cli-tests-artifact:pull,push"
+      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",scope="repository:automated-cli-tests-artifact:pull,push"
       x-content-type-options:
       - nosniff
     status:
@@ -1680,11 +1682,11 @@ interactions:
       Connection:
       - keep-alive
       Service:
-      - automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io
+      - automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io
       User-Agent:
       - oras-py
     method: GET
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io&scope=repository%3Aautomated-cli-tests-artifact%3Apull%2Cpush
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io&scope=repository%3Aautomated-cli-tests-artifact%3Apull%2Cpush
   response:
     body:
       string: '{"access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
@@ -1694,7 +1696,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       server:
       - openresty
       strict-transport-security:
@@ -1728,7 +1730,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/automated-cli-tests-artifact/manifests/1.0.0
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/automated-cli-tests-artifact/manifests/1.0.0
   response:
     body:
       string: ''
@@ -1743,7 +1745,7 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       docker-content-digest:
       - sha256:8923fa544da97914212bc9173ec512741d331940e4a2c7b6fbad979657a5c507
       docker-distribution-api-version:
@@ -1781,19 +1783,19 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-ubuntu-publisher/artifactStores/ubuntu-blob-store/artifactManifests/ubuntu-vm-sa-manifest-1-0-0/listCredential?api-version=2023-09-01
   response:
     body:
-      string: '{"storageAccountId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/ubuntu-blob-store-HostedResources-21026C9C/providers/Microsoft.Storage/storageAccounts/21026c9cubuntublobstore7",
+      string: '{"storageAccountId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/ubuntu-blob-store-HostedResources-079FCC97/providers/Microsoft.Storage/storageAccounts/079fcc97ubuntublobstorea",
         "containerCredentials": [{"containerName": "automatedclitestsvhd-1-0-0", "containerSasUri":
         "https://xxxxxxxxxxxxxxx.blob.core.windows.net/automatedclitestsvhd-1-0-0?sv=2021-08-06&si=StorageAccountAccessPolicy&sr=xxxxxxxxxxxxxxxxxxxx"}],
-        "expiry": "2024-03-26T18:03:59.590023+00:00", "credentialType": "AzureStorageAccountToken"}'
+        "expiry": "2024-03-27T17:42:17.6600985+00:00", "credentialType": "AzureStorageAccountToken"}'
     headers:
       cache-control:
       - no-cache
       content-length:
-      - '532'
+      - '533'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:17 GMT
       expires:
       - '-1'
       pragma:
@@ -1829,7 +1831,7 @@ interactions:
       x-ms-blob-type:
       - PageBlob
       x-ms-date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       x-ms-version:
       - '2022-11-02'
     method: PUT
@@ -1841,11 +1843,11 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:17 GMT
       etag:
-      - '"0x8DC4CF5F2674878"'
+      - '"0x8DC4DBC14D14DC6"'
       last-modified:
-      - Mon, 25 Mar 2024 18:03:59 GMT
+      - Tue, 26 Mar 2024 17:42:17 GMT
       server:
       - Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
       x-ms-request-server-encrypted:
@@ -1875,11 +1877,11 @@ interactions:
       Content-Type:
       - application/octet-stream
       If-Match:
-      - '"0x8DC4CF5F2674878"'
+      - '"0x8DC4DBC14D14DC6"'
       User-Agent:
       - azsdk-python-storage-blob/12.16.0 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
       x-ms-date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:16 GMT
       x-ms-page-write:
       - update
       x-ms-range:
@@ -1895,11 +1897,11 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:03:58 GMT
+      - Tue, 26 Mar 2024 17:42:17 GMT
       etag:
-      - '"0x8DC4CF5F2703F16"'
+      - '"0x8DC4DBC14D6ECD1"'
       last-modified:
-      - Mon, 25 Mar 2024 18:03:59 GMT
+      - Tue, 26 Mar 2024 17:42:17 GMT
       server:
       - Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
       x-ms-blob-sequence-number:
@@ -1978,8 +1980,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389842",
-        "name": "AOSM_CLI_deployment_1711389842", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474944",
+        "name": "AOSM_CLI_deployment_1711474944", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "7199002541811128072", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -1987,7 +1989,7 @@ interactions:
         "String", "value": "ubuntu-blob-store"}, "nfDefinitionGroup": {"type": "String",
         "value": "ubuntu-vm"}, "nfDefinitionVersion": {"type": "String", "value":
         "1.0.0"}}, "mode": "Incremental", "provisioningState": "Succeeded", "timestamp":
-        "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId": "e32ce8e1-60e0-48e8-94c1-f25489f3ae4a",
+        "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId": "ca3f5ffe-1378-44ff-9317-aceee1e04a09",
         "providers": [{"namespace": "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType":
         "publishers/networkfunctiondefinitiongroups/networkfunctiondefinitionversions",
         "locations": ["uksouth"]}]}], "dependencies": [], "validatedResources": [{"id":
@@ -2000,7 +2002,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:04:03 GMT
+      - Tue, 26 Mar 2024 17:42:25 GMT
       expires:
       - '-1'
       pragma:
@@ -2010,7 +2012,7 @@ interactions:
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1197'
+      - '1198'
     status:
       code: 200
       message: OK
@@ -2079,8 +2081,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389842",
-        "name": "AOSM_CLI_deployment_1711389842", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474944",
+        "name": "AOSM_CLI_deployment_1711474944", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "7199002541811128072", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -2088,21 +2090,21 @@ interactions:
         "String", "value": "ubuntu-blob-store"}, "nfDefinitionGroup": {"type": "String",
         "value": "ubuntu-vm"}, "nfDefinitionVersion": {"type": "String", "value":
         "1.0.0"}}, "mode": "Incremental", "provisioningState": "Accepted", "timestamp":
-        "2024-03-25T18:04:04.6661296Z", "duration": "PT0.0007516S", "correlationId":
-        "82e8fe90-333a-4789-b2b6-8ef5c428752e", "providers": [{"namespace": "Microsoft.Hybridnetwork",
+        "2024-03-26T17:42:26.7689542Z", "duration": "PT0.000588S", "correlationId":
+        "be9190ad-feb9-4a82-816d-6ad42c590444", "providers": [{"namespace": "Microsoft.Hybridnetwork",
         "resourceTypes": [{"resourceType": "publishers/networkfunctiondefinitiongroups/networkfunctiondefinitionversions",
         "locations": ["uksouth"]}]}], "dependencies": []}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389842/operationStatuses/08584902170410054229?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474944/operationStatuses/08584901319389339559?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
-      - '1137'
+      - '1136'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:04:03 GMT
+      - Tue, 26 Mar 2024 17:42:26 GMT
       expires:
       - '-1'
       pragma:
@@ -2112,7 +2114,7 @@ interactions:
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1197'
+      - '1198'
     status:
       code: 201
       message: Created
@@ -2132,7 +2134,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902170410054229?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901319389339559?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Accepted"}'
@@ -2144,7 +2146,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:04:03 GMT
+      - Tue, 26 Mar 2024 17:42:26 GMT
       expires:
       - '-1'
       pragma:
@@ -2172,7 +2174,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902170410054229?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901319389339559?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2184,7 +2186,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:04:34 GMT
+      - Tue, 26 Mar 2024 17:42:56 GMT
       expires:
       - '-1'
       pragma:
@@ -2212,7 +2214,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902170410054229?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901319389339559?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2224,7 +2226,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:04 GMT
+      - Tue, 26 Mar 2024 17:43:26 GMT
       expires:
       - '-1'
       pragma:
@@ -2252,7 +2254,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902170410054229?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901319389339559?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -2264,7 +2266,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:36 GMT
+      - Tue, 26 Mar 2024 17:43:56 GMT
       expires:
       - '-1'
       pragma:
@@ -2295,8 +2297,8 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389842",
-        "name": "AOSM_CLI_deployment_1711389842", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711474944",
+        "name": "AOSM_CLI_deployment_1711474944", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "7199002541811128072", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
@@ -2304,8 +2306,8 @@ interactions:
         "String", "value": "ubuntu-blob-store"}, "nfDefinitionGroup": {"type": "String",
         "value": "ubuntu-vm"}, "nfDefinitionVersion": {"type": "String", "value":
         "1.0.0"}}, "mode": "Incremental", "provisioningState": "Succeeded", "timestamp":
-        "2024-03-25T18:05:27.011234Z", "duration": "PT1M22.345856S", "correlationId":
-        "82e8fe90-333a-4789-b2b6-8ef5c428752e", "providers": [{"namespace": "Microsoft.Hybridnetwork",
+        "2024-03-26T17:43:49.412615Z", "duration": "PT1M22.6442488S", "correlationId":
+        "be9190ad-feb9-4a82-816d-6ad42c590444", "providers": [{"namespace": "Microsoft.Hybridnetwork",
         "resourceTypes": [{"resourceType": "publishers/networkfunctiondefinitiongroups/networkfunctiondefinitionversions",
         "locations": ["uksouth"]}]}], "dependencies": [], "outputResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Hybridnetwork/publishers/automated-cli-tests-ubuntu-publisher/networkfunctiondefinitiongroups/ubuntu-vm/networkfunctiondefinitionversions/1.0.0"}]}}'
@@ -2313,11 +2315,11 @@ interactions:
       cache-control:
       - no-cache
       content-length:
-      - '1426'
+      - '1427'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:36 GMT
+      - Tue, 26 Mar 2024 17:43:57 GMT
       expires:
       - '-1'
       pragma:
@@ -2351,9 +2353,9 @@ interactions:
       string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Hybridnetwork/publishers/automated-cli-tests-ubuntu-publisher/networkfunctiondefinitiongroups/ubuntu-vm/networkfunctiondefinitionversions/1.0.0",
         "name": "1.0.0", "type": "microsoft.hybridnetwork/publishers/networkfunctiondefinitiongroups/networkfunctiondefinitionversions",
         "location": "uksouth", "systemData": {"createdBy": "xxxxxxxxxxx@microsoft.com",
-        "createdByType": "User", "createdAt": "2024-03-25T18:04:06.2905984Z", "lastModifiedBy":
+        "createdByType": "User", "createdAt": "2024-03-26T17:42:28.1546375Z", "lastModifiedBy":
         "xxxxxxxxxxx@microsoft.com", "lastModifiedByType": "User", "lastModifiedAt":
-        "2024-03-25T18:04:06.2905984Z"}, "properties": {"networkFunctionTemplate":
+        "2024-03-26T17:42:28.1546375Z"}, "properties": {"networkFunctionTemplate":
         {"networkFunctionApplications": [{"artifactProfile": {"vhdArtifactProfile":
         {"vhdName": "automated-cli-tests-vhd", "vhdVersion": "1-0-0"}, "artifactStore":
         {"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-ubuntu-publisher/artifactStores/ubuntu-blob-store"}},
@@ -2377,9 +2379,9 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:37 GMT
+      - Tue, 26 Mar 2024 17:43:57 GMT
       etag:
-      - '"2409a12a-0000-1000-0000-6601bca20000"'
+      - '"a709610f-0000-1000-0000-660309160000"'
       expires:
       - '-1'
       pragma:
@@ -2419,7 +2421,7 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:05:36 GMT
+      - Tue, 26 Mar 2024 17:43:57 GMT
       expires:
       - '-1'
       pragma:
@@ -2473,15 +2475,15 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389940",
-        "name": "AOSM_CLI_deployment_1711389940", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475047",
+        "name": "AOSM_CLI_deployment_1711475047", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "3408402259472792388", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "nsDesignGroup": {"type": "String",
         "value": "ubuntu"}}, "mode": "Incremental", "provisioningState": "Succeeded",
         "timestamp": "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId":
-        "54a85b08-bae5-427e-83c2-be6cb37950f1", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "46c25b53-720c-4d4a-a0a5-e14ba3a93141", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers", "locations": ["uksouth"]},
         {"resourceType": "publishers/artifactStores", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkservicedesigngroups", "locations": ["uksouth"]}]}], "dependencies":
@@ -2506,7 +2508,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:41 GMT
+      - Tue, 26 Mar 2024 17:44:08 GMT
       expires:
       - '-1'
       pragma:
@@ -2562,15 +2564,15 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389940",
-        "name": "AOSM_CLI_deployment_1711389940", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475047",
+        "name": "AOSM_CLI_deployment_1711475047", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "3408402259472792388", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "nsDesignGroup": {"type": "String",
         "value": "ubuntu"}}, "mode": "Incremental", "provisioningState": "Accepted",
-        "timestamp": "2024-03-25T18:05:42.2535988Z", "duration": "PT0.000304S", "correlationId":
-        "f3fca21f-5ce2-46d1-8d5f-162c513fc4a9", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "timestamp": "2024-03-26T17:44:09.6938991Z", "duration": "PT0.0005981S", "correlationId":
+        "62b9948b-fb81-4964-a47f-48718c1fe626", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers", "locations": ["uksouth"]},
         {"resourceType": "publishers/artifactStores", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkservicedesigngroups", "locations": ["uksouth"]}]}], "dependencies":
@@ -2586,15 +2588,15 @@ interactions:
         "resourceName": "automated-cli-tests-ubuntu-publisher/ubuntu"}]}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389940/operationStatuses/08584902169434398181?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475047/operationStatuses/08584901318359994710?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
-      - '2411'
+      - '2412'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:41 GMT
+      - Tue, 26 Mar 2024 17:44:08 GMT
       expires:
       - '-1'
       pragma:
@@ -2624,7 +2626,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Accepted"}'
@@ -2636,7 +2638,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:05:41 GMT
+      - Tue, 26 Mar 2024 17:44:08 GMT
       expires:
       - '-1'
       pragma:
@@ -2664,7 +2666,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2676,7 +2678,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:06:12 GMT
+      - Tue, 26 Mar 2024 17:44:39 GMT
       expires:
       - '-1'
       pragma:
@@ -2704,7 +2706,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2716,7 +2718,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:06:41 GMT
+      - Tue, 26 Mar 2024 17:45:10 GMT
       expires:
       - '-1'
       pragma:
@@ -2744,7 +2746,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2756,7 +2758,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:07:11 GMT
+      - Tue, 26 Mar 2024 17:45:42 GMT
       expires:
       - '-1'
       pragma:
@@ -2784,7 +2786,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2796,7 +2798,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:07:42 GMT
+      - Tue, 26 Mar 2024 17:46:11 GMT
       expires:
       - '-1'
       pragma:
@@ -2824,7 +2826,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2836,7 +2838,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:08:11 GMT
+      - Tue, 26 Mar 2024 17:46:42 GMT
       expires:
       - '-1'
       pragma:
@@ -2864,7 +2866,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2876,7 +2878,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:08:42 GMT
+      - Tue, 26 Mar 2024 17:47:11 GMT
       expires:
       - '-1'
       pragma:
@@ -2904,7 +2906,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -2916,7 +2918,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:09:12 GMT
+      - Tue, 26 Mar 2024 17:47:43 GMT
       expires:
       - '-1'
       pragma:
@@ -2944,7 +2946,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902169434398181?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901318359994710?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -2956,7 +2958,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:09:42 GMT
+      - Tue, 26 Mar 2024 17:48:13 GMT
       expires:
       - '-1'
       pragma:
@@ -2987,15 +2989,15 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711389940",
-        "name": "AOSM_CLI_deployment_1711389940", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475047",
+        "name": "AOSM_CLI_deployment_1711475047", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "3408402259472792388", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "nsDesignGroup": {"type": "String",
         "value": "ubuntu"}}, "mode": "Incremental", "provisioningState": "Succeeded",
-        "timestamp": "2024-03-25T18:09:27.0063067Z", "duration": "PT3M44.7530119S",
-        "correlationId": "f3fca21f-5ce2-46d1-8d5f-162c513fc4a9", "providers": [{"namespace":
+        "timestamp": "2024-03-26T17:47:53.1538201Z", "duration": "PT3M43.4605191S",
+        "correlationId": "62b9948b-fb81-4964-a47f-48718c1fe626", "providers": [{"namespace":
         "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType": "publishers",
         "locations": ["uksouth"]}, {"resourceType": "publishers/artifactStores", "locations":
         ["uksouth"]}, {"resourceType": "publishers/networkservicedesigngroups", "locations":
@@ -3020,7 +3022,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:09:42 GMT
+      - Tue, 26 Mar 2024 17:48:13 GMT
       expires:
       - '-1'
       pragma:
@@ -3062,7 +3064,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:09:43 GMT
+      - Tue, 26 Mar 2024 17:48:14 GMT
       expires:
       - '-1'
       pragma:
@@ -3114,15 +3116,15 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390186",
-        "name": "AOSM_CLI_deployment_1711390186", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475301",
+        "name": "AOSM_CLI_deployment_1711475301", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "1992933778514196637", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "acrManifestName": {"type": "String",
         "value": "ubuntu-nsd-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
         "Succeeded", "timestamp": "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId":
-        "8afa6cf9-cd7d-43e3-82ba-e94443f151e4", "providers": [{"namespace": "Microsoft.Hybridnetwork",
+        "8bdabd74-76a4-4bf1-9cc1-6406aad741ee", "providers": [{"namespace": "Microsoft.Hybridnetwork",
         "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": [], "validatedResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Hybridnetwork/publishers/automated-cli-tests-ubuntu-publisher/artifactStores/ubuntu-acr/artifactManifests/ubuntu-nsd-manifest-1-0-0"}]}}'
@@ -3134,7 +3136,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:09:46 GMT
+      - Tue, 26 Mar 2024 17:48:22 GMT
       expires:
       - '-1'
       pragma:
@@ -3186,20 +3188,20 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390186",
-        "name": "AOSM_CLI_deployment_1711390186", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475301",
+        "name": "AOSM_CLI_deployment_1711475301", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "1992933778514196637", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "acrManifestName": {"type": "String",
         "value": "ubuntu-nsd-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
-        "Accepted", "timestamp": "2024-03-25T18:09:48.1324604Z", "duration": "PT0.0001545S",
-        "correlationId": "592bb1e1-ac9f-497b-9bfa-0cdf696c5ef0", "providers": [{"namespace":
+        "Accepted", "timestamp": "2024-03-26T17:48:23.8081775Z", "duration": "PT0.0009866S",
+        "correlationId": "7eb204e3-d16b-4390-84a9-2c34df6150bb", "providers": [{"namespace":
         "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": []}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390186/operationStatuses/08584902166975568339?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475301/operationStatuses/08584901315818368108?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
@@ -3207,7 +3209,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:09:47 GMT
+      - Tue, 26 Mar 2024 17:48:23 GMT
       expires:
       - '-1'
       pragma:
@@ -3237,47 +3239,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902166975568339?api-version=2022-09-01
-  response:
-    body:
-      string: '{"status": "Accepted"}'
-    headers:
-      cache-control:
-      - no-cache
-      content-length:
-      - '22'
-      content-type:
-      - application/json; charset=utf-8
-      date:
-      - Mon, 25 Mar 2024 18:09:47 GMT
-      expires:
-      - '-1'
-      pragma:
-      - no-cache
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains
-      x-content-type-options:
-      - nosniff
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      CommandName:
-      - aosm nsd publish
-      Connection:
-      - keep-alive
-      ParameterSetName:
-      - --build-output-folder
-      User-Agent:
-      - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
-    method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902166975568339?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901315818368108?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -3289,7 +3251,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:10:17 GMT
+      - Tue, 26 Mar 2024 17:48:23 GMT
       expires:
       - '-1'
       pragma:
@@ -3317,7 +3279,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902166975568339?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901315818368108?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -3329,7 +3291,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:10:47 GMT
+      - Tue, 26 Mar 2024 17:48:53 GMT
       expires:
       - '-1'
       pragma:
@@ -3357,7 +3319,47 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902166975568339?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901315818368108?api-version=2022-09-01
+  response:
+    body:
+      string: '{"status": "Running"}'
+    headers:
+      cache-control:
+      - no-cache
+      content-length:
+      - '21'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 26 Mar 2024 17:49:24 GMT
+      expires:
+      - '-1'
+      pragma:
+      - no-cache
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-content-type-options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      CommandName:
+      - aosm nsd publish
+      Connection:
+      - keep-alive
+      ParameterSetName:
+      - --build-output-folder
+      User-Agent:
+      - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+    method: GET
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901315818368108?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -3369,7 +3371,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:17 GMT
+      - Tue, 26 Mar 2024 17:49:53 GMT
       expires:
       - '-1'
       pragma:
@@ -3400,15 +3402,15 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390186",
-        "name": "AOSM_CLI_deployment_1711390186", "type": "Microsoft.Resources/deployments",
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475301",
+        "name": "AOSM_CLI_deployment_1711475301", "type": "Microsoft.Resources/deployments",
         "properties": {"templateHash": "1992933778514196637", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "acrManifestName": {"type": "String",
         "value": "ubuntu-nsd-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
-        "Succeeded", "timestamp": "2024-03-25T18:11:07.7210118Z", "duration": "PT1M19.5887059S",
-        "correlationId": "592bb1e1-ac9f-497b-9bfa-0cdf696c5ef0", "providers": [{"namespace":
+        "Succeeded", "timestamp": "2024-03-26T17:49:44.9615785Z", "duration": "PT1M21.1543876S",
+        "correlationId": "7eb204e3-d16b-4390-84a9-2c34df6150bb", "providers": [{"namespace":
         "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": [], "outputResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Hybridnetwork/publishers/automated-cli-tests-ubuntu-publisher/artifactStores/ubuntu-acr/artifactManifests/ubuntu-nsd-manifest-1-0-0"}]}}'
@@ -3420,7 +3422,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:17 GMT
+      - Tue, 26 Mar 2024 17:49:53 GMT
       expires:
       - '-1'
       pragma:
@@ -3454,8 +3456,8 @@ interactions:
   response:
     body:
       string: '{"username": "ubuntu-nsd-manifest-1-0-0", "acrToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "acrServerUrl": "https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",
-        "repositories": ["ubuntu"], "expiry": "2024-03-26T18:11:23.3413681+00:00",
+        "acrServerUrl": "https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",
+        "repositories": ["ubuntu"], "expiry": "2024-03-27T17:50:04.1901768+00:00",
         "credentialType": "AzureContainerRegistryScopedToken"}'
     headers:
       cache-control:
@@ -3465,7 +3467,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:22 GMT
+      - Tue, 26 Mar 2024 17:50:03 GMT
       expires:
       - '-1'
       pragma:
@@ -3499,7 +3501,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/blobs/uploads/
   response:
     body:
       string: '{"errors": [{"code": "UNAUTHORIZED", "message": "authentication required,
@@ -3519,7 +3521,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:23 GMT
+      - Tue, 26 Mar 2024 17:50:04 GMT
       docker-distribution-api-version:
       - registry/2.0
       server:
@@ -3528,7 +3530,7 @@ interactions:
       - max-age=31536000; includeSubDomains
       - max-age=31536000; includeSubDomains
       www-authenticate:
-      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",scope="repository:ubuntu:pull,push"
+      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",scope="repository:ubuntu:push,pull"
       x-content-type-options:
       - nosniff
     status:
@@ -3544,11 +3546,11 @@ interactions:
       Connection:
       - keep-alive
       Service:
-      - automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io
+      - automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io
       User-Agent:
       - oras-py
     method: GET
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io&scope=repository%3Aubuntu%3Apull%2Cpush
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io&scope=repository%3Aubuntu%3Apush%2Cpull
   response:
     body:
       string: '{"access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
@@ -3558,7 +3560,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:23 GMT
+      - Tue, 26 Mar 2024 17:50:04 GMT
       server:
       - openresty
       strict-transport-security:
@@ -3586,7 +3588,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/blobs/uploads/
   response:
     body:
       string: ''
@@ -3601,13 +3603,13 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:11:23 GMT
+      - Tue, 26 Mar 2024 17:50:09 GMT
       docker-distribution-api-version:
       - registry/2.0
       docker-upload-uuid:
-      - fd5bb3eb-4a3d-4d23-b155-ecaa4e0114e3
+      - a90bd350-1fc7-4a62-8064-a7842117cb20
       location:
-      - /v2/ubuntu/blobs/uploads/fd5bb3eb-4a3d-4d23-b155-ecaa4e0114e3?_nouploadcache=false&_state=3G6ifdobkzDhdzi9mhm01eIGwXZnkAA9ZiVmnos_qO97Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiZmQ1YmIzZWItNGEzZC00ZDIzLWIxNTUtZWNhYTRlMDExNGUzIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI1VDE4OjExOjIzLjgyNDAzNDMxMloifQ%3D%3D
+      - /v2/ubuntu/blobs/uploads/a90bd350-1fc7-4a62-8064-a7842117cb20?_nouploadcache=false&_state=r7Im6L9IIg9gDRBWFUuyTXv6JD9a2RBZykqQcvhmxrJ7Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiYTkwYmQzNTAtMWZjNy00YTYyLTgwNjQtYTc4NDIxMTdjYjIwIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI2VDE3OjUwOjA0Ljc0MDI4MTAyNloifQ%3D%3D
       range:
       - 0-0
       server:
@@ -3623,7 +3625,7 @@ interactions:
 - request:
     body: '{"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.8.9.13224", "templateHash": "17061501665466778051"}}, "parameters": {"configObject":
+      "0.8.9.13224", "templateHash": "3143786477138181218"}}, "parameters": {"configObject":
       {"type": "secureObject"}}, "variables": {"resourceGroupId": "[resourceGroup().id]",
       "identityObject": "[if(equals(parameters(''configObject'').managedIdentityId,
       ''''), createObject(''type'', ''SystemAssigned''), createObject(''type'', ''UserAssigned'',
@@ -3641,7 +3643,7 @@ interactions:
       ''/'')[1], split(variables(''nfdvSymbolicName''), ''/'')[2])]", "idType": "Open"},
       "nfviType": "AzureCore", "nfviId": "[if(equals(parameters(''configObject'').customLocationId,
       ''''), variables(''resourceGroupId''), parameters(''configObject'').customLocationId)]",
-      "allowSoftwareUpdate": true, "configurationType": "Secret", "secretDeploymentValues":
+      "allowSoftwareUpdate": true, "configurationType": "Open", "deploymentValues":
       "[string(parameters(''configObject'').deploymentParameters[copyIndex()])]"}}]}'
     headers:
       Accept:
@@ -3651,13 +3653,13 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1999'
+      - '1990'
       Content-Type:
       - application/octet-stream
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/blobs/uploads/fd5bb3eb-4a3d-4d23-b155-ecaa4e0114e3?_nouploadcache=false&_state=3G6ifdobkzDhdzi9mhm01eIGwXZnkAA9ZiVmnos_qO97Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiZmQ1YmIzZWItNGEzZC00ZDIzLWIxNTUtZWNhYTRlMDExNGUzIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI1VDE4OjExOjIzLjgyNDAzNDMxMloifQ%3D%3D&digest=sha256%3A12313ff8d0eaac58c21979e02f5c7a0494cf1e428e0fa05292a25d58ca55ce48
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/blobs/uploads/a90bd350-1fc7-4a62-8064-a7842117cb20?_nouploadcache=false&_state=r7Im6L9IIg9gDRBWFUuyTXv6JD9a2RBZykqQcvhmxrJ7Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiYTkwYmQzNTAtMWZjNy00YTYyLTgwNjQtYTc4NDIxMTdjYjIwIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI2VDE3OjUwOjA0Ljc0MDI4MTAyNloifQ%3D%3D&digest=sha256%3A6b00a79ed3e0b9f11f3c6aafeaae2d6ee12f2a43a25090d1c44fdc492d5f55d5
   response:
     body:
       string: ''
@@ -3672,13 +3674,13 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       docker-content-digest:
-      - sha256:12313ff8d0eaac58c21979e02f5c7a0494cf1e428e0fa05292a25d58ca55ce48
+      - sha256:6b00a79ed3e0b9f11f3c6aafeaae2d6ee12f2a43a25090d1c44fdc492d5f55d5
       docker-distribution-api-version:
       - registry/2.0
       location:
-      - /v2/ubuntu/blobs/sha256:12313ff8d0eaac58c21979e02f5c7a0494cf1e428e0fa05292a25d58ca55ce48
+      - /v2/ubuntu/blobs/sha256:6b00a79ed3e0b9f11f3c6aafeaae2d6ee12f2a43a25090d1c44fdc492d5f55d5
       server:
       - openresty
       strict-transport-security:
@@ -3705,7 +3707,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/blobs/uploads/
   response:
     body:
       string: '{"errors": [{"code": "UNAUTHORIZED", "message": "authentication required,
@@ -3725,7 +3727,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       docker-distribution-api-version:
       - registry/2.0
       server:
@@ -3734,7 +3736,7 @@ interactions:
       - max-age=31536000; includeSubDomains
       - max-age=31536000; includeSubDomains
       www-authenticate:
-      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",scope="repository:ubuntu:pull,push"
+      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",scope="repository:ubuntu:pull,push"
       x-content-type-options:
       - nosniff
     status:
@@ -3750,11 +3752,11 @@ interactions:
       Connection:
       - keep-alive
       Service:
-      - automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io
+      - automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io
       User-Agent:
       - oras-py
     method: GET
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io&scope=repository%3Aubuntu%3Apull%2Cpush
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io&scope=repository%3Aubuntu%3Apull%2Cpush
   response:
     body:
       string: '{"access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
@@ -3764,7 +3766,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       server:
       - openresty
       strict-transport-security:
@@ -3792,7 +3794,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: POST
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/blobs/uploads/
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/blobs/uploads/
   response:
     body:
       string: ''
@@ -3807,13 +3809,13 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       docker-distribution-api-version:
       - registry/2.0
       docker-upload-uuid:
-      - 4dee4aa3-a110-4996-b96b-8223c183c9ec
+      - e6869643-1d57-4745-8f17-90a9f546eaee
       location:
-      - /v2/ubuntu/blobs/uploads/4dee4aa3-a110-4996-b96b-8223c183c9ec?_nouploadcache=false&_state=oF1uLSGh8JfzoMDg7-TKVRGZOEI2ZF1IdR6DvjBfHpJ7Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiNGRlZTRhYTMtYTExMC00OTk2LWI5NmItODIyM2MxODNjOWVjIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI1VDE4OjExOjI0LjEwMTUzODEwN1oifQ%3D%3D
+      - /v2/ubuntu/blobs/uploads/e6869643-1d57-4745-8f17-90a9f546eaee?_nouploadcache=false&_state=sm5yJR70r_SZKbBmu5UcNV6HaGstgA_EUwuRSK0RGYx7Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiZTY4Njk2NDMtMWQ1Ny00NzQ1LThmMTctOTBhOWY1NDZlYWVlIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI2VDE3OjUwOjEwLjEyNTQ5NjI2OFoifQ%3D%3D
       range:
       - 0-0
       server:
@@ -3842,7 +3844,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/blobs/uploads/4dee4aa3-a110-4996-b96b-8223c183c9ec?_nouploadcache=false&_state=oF1uLSGh8JfzoMDg7-TKVRGZOEI2ZF1IdR6DvjBfHpJ7Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiNGRlZTRhYTMtYTExMC00OTk2LWI5NmItODIyM2MxODNjOWVjIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI1VDE4OjExOjI0LjEwMTUzODEwN1oifQ%3D%3D&digest=sha256%3Ae3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/blobs/uploads/e6869643-1d57-4745-8f17-90a9f546eaee?_nouploadcache=false&_state=sm5yJR70r_SZKbBmu5UcNV6HaGstgA_EUwuRSK0RGYx7Ik5hbWUiOiJ1YnVudHUiLCJVVUlEIjoiZTY4Njk2NDMtMWQ1Ny00NzQ1LThmMTctOTBhOWY1NDZlYWVlIiwiT2Zmc2V0IjowLCJTdGFydGVkQXQiOiIyMDI0LTAzLTI2VDE3OjUwOjEwLjEyNTQ5NjI2OFoifQ%3D%3D&digest=sha256%3Ae3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
   response:
     body:
       string: ''
@@ -3857,7 +3859,7 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       docker-content-digest:
       - sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       docker-distribution-api-version:
@@ -3878,8 +3880,8 @@ interactions:
     body: '{"schemaVersion": 2, "mediaType": "application/vnd.oci.image.manifest.v1+json",
       "config": {"mediaType": "application/vnd.unknown.config.v1+json", "size": 0,
       "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
-      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 1999,
-      "digest": "sha256:12313ff8d0eaac58c21979e02f5c7a0494cf1e428e0fa05292a25d58ca55ce48",
+      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 1990,
+      "digest": "sha256:6b00a79ed3e0b9f11f3c6aafeaae2d6ee12f2a43a25090d1c44fdc492d5f55d5",
       "annotations": {"org.opencontainers.image.title": "ubuntu-vm.json"}}], "annotations":
       {}}'
     headers:
@@ -3896,7 +3898,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/manifests/1.0.0
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/manifests/1.0.0
   response:
     body:
       string: '{"errors": [{"code": "UNAUTHORIZED", "message": "authentication required,
@@ -3916,7 +3918,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       docker-distribution-api-version:
       - registry/2.0
       server:
@@ -3925,7 +3927,7 @@ interactions:
       - max-age=31536000; includeSubDomains
       - max-age=31536000; includeSubDomains
       www-authenticate:
-      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io",scope="repository:ubuntu:pull,push"
+      - Bearer realm="https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token",service="automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io",scope="repository:ubuntu:push,pull"
       x-content-type-options:
       - nosniff
     status:
@@ -3941,11 +3943,11 @@ interactions:
       Connection:
       - keep-alive
       Service:
-      - automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io
+      - automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io
       User-Agent:
       - oras-py
     method: GET
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io&scope=repository%3Aubuntu%3Apull%2Cpush
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/oauth2/token?service=automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io&scope=repository%3Aubuntu%3Apush%2Cpull
   response:
     body:
       string: '{"access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}'
@@ -3955,7 +3957,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       server:
       - openresty
       strict-transport-security:
@@ -3971,8 +3973,8 @@ interactions:
     body: '{"schemaVersion": 2, "mediaType": "application/vnd.oci.image.manifest.v1+json",
       "config": {"mediaType": "application/vnd.unknown.config.v1+json", "size": 0,
       "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
-      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 1999,
-      "digest": "sha256:12313ff8d0eaac58c21979e02f5c7a0494cf1e428e0fa05292a25d58ca55ce48",
+      "layers": [{"mediaType": "application/vnd.oci.image.layer.v1.tar", "size": 1990,
+      "digest": "sha256:6b00a79ed3e0b9f11f3c6aafeaae2d6ee12f2a43a25090d1c44fdc492d5f55d5",
       "annotations": {"org.opencontainers.image.title": "ubuntu-vm.json"}}], "annotations":
       {}}'
     headers:
@@ -3989,7 +3991,7 @@ interactions:
       User-Agent:
       - python-requests/2.26.0
     method: PUT
-    uri: https://automatedclitestsubuntupublisherubuntuac8695e00d2b.azurecr.io/v2/ubuntu/manifests/1.0.0
+    uri: https://automatedclitestsubuntupublisherubuntuac19ff03324d.azurecr.io/v2/ubuntu/manifests/1.0.0
   response:
     body:
       string: ''
@@ -4004,13 +4006,13 @@ interactions:
       content-length:
       - '0'
       date:
-      - Mon, 25 Mar 2024 18:11:24 GMT
+      - Tue, 26 Mar 2024 17:50:10 GMT
       docker-content-digest:
-      - sha256:65ed9564bb5395a1759e4c82a4887a9bcbe6781559e28d776b147e6783a7e342
+      - sha256:0739fd6a63dca7205160b42cf62fb18a150de6f2ff0d2bce1130abcf9ef6c0ec
       docker-distribution-api-version:
       - registry/2.0
       location:
-      - /v2/ubuntu/manifests/sha256:65ed9564bb5395a1759e4c82a4887a9bcbe6781559e28d776b147e6783a7e342
+      - /v2/ubuntu/manifests/sha256:0739fd6a63dca7205160b42cf62fb18a150de6f2ff0d2bce1130abcf9ef6c0ec
       server:
       - openresty
       strict-transport-security:
@@ -4024,7 +4026,7 @@ interactions:
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.8.9.13224", "templateHash": "17633006497835624407"}}, "parameters": {"location":
+      "0.8.9.13224", "templateHash": "15149419403364783370"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of an existing publisher, expected to be in the resource group where you
       deploy the template"}}, "acrArtifactStoreName": {"type": "string", "metadata":
@@ -4090,16 +4092,16 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390287",
-        "name": "AOSM_CLI_deployment_1711390287", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "17633006497835624407", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475418",
+        "name": "AOSM_CLI_deployment_1711475418", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "15149419403364783370", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "nsDesignGroup": {"type": "String",
         "value": "ubuntu"}, "nsDesignVersion": {"type": "String", "value": "1.0.0"},
         "nfviSiteName": {"type": "String", "value": "ubuntu_NFVI"}}, "mode": "Incremental",
         "provisioningState": "Succeeded", "timestamp": "0001-01-01T00:00:00Z", "duration":
-        "PT0S", "correlationId": "80140928-7603-4ac8-a0aa-8c08c07601c0", "providers":
+        "PT0S", "correlationId": "42260aba-3dd0-492d-96ae-d3e0b5fcb4c5", "providers":
         [{"namespace": "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType":
         "publishers/configurationGroupSchemas", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkservicedesigngroups/networkservicedesignversions", "locations":
@@ -4119,7 +4121,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:28 GMT
+      - Tue, 26 Mar 2024 17:50:19 GMT
       expires:
       - '-1'
       pragma:
@@ -4136,7 +4138,7 @@ interactions:
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.8.9.13224", "templateHash": "17633006497835624407"}}, "parameters": {"location":
+      "0.8.9.13224", "templateHash": "15149419403364783370"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of an existing publisher, expected to be in the resource group where you
       deploy the template"}}, "acrArtifactStoreName": {"type": "string", "metadata":
@@ -4202,16 +4204,16 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390287",
-        "name": "AOSM_CLI_deployment_1711390287", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "17633006497835624407", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475418",
+        "name": "AOSM_CLI_deployment_1711475418", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "15149419403364783370", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "nsDesignGroup": {"type": "String",
         "value": "ubuntu"}, "nsDesignVersion": {"type": "String", "value": "1.0.0"},
         "nfviSiteName": {"type": "String", "value": "ubuntu_NFVI"}}, "mode": "Incremental",
-        "provisioningState": "Accepted", "timestamp": "2024-03-25T18:11:29.4102358Z",
-        "duration": "PT0.0008498S", "correlationId": "a602f935-0405-4dda-b5b2-2c80a599d7c5",
+        "provisioningState": "Accepted", "timestamp": "2024-03-26T17:50:20.5990529Z",
+        "duration": "PT0.0007746S", "correlationId": "9dae32ec-f89f-48de-aec1-074ee6d8c1d2",
         "providers": [{"namespace": "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType":
         "publishers/configurationGroupSchemas", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkservicedesigngroups/networkservicedesignversions", "locations":
@@ -4223,7 +4225,7 @@ interactions:
         "resourceName": "automated-cli-tests-ubuntu-publisher/ubuntu/1.0.0"}]}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390287/operationStatuses/08584902165963162984?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475418/operationStatuses/08584901314650570735?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
@@ -4231,7 +4233,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:28 GMT
+      - Tue, 26 Mar 2024 17:50:19 GMT
       expires:
       - '-1'
       pragma:
@@ -4261,7 +4263,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902165963162984?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901314650570735?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Accepted"}'
@@ -4273,7 +4275,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:28 GMT
+      - Tue, 26 Mar 2024 17:50:19 GMT
       expires:
       - '-1'
       pragma:
@@ -4301,7 +4303,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902165963162984?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901314650570735?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -4313,7 +4315,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:11:59 GMT
+      - Tue, 26 Mar 2024 17:50:49 GMT
       expires:
       - '-1'
       pragma:
@@ -4341,7 +4343,7 @@ interactions:
       User-Agent:
       - AZURECLI/2.56.0 azsdk-python-azure-mgmt-resource/23.1.0b2 Python/3.8.10 (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584902165963162984?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584901314650570735?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -4353,7 +4355,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:12:28 GMT
+      - Tue, 26 Mar 2024 17:51:20 GMT
       expires:
       - '-1'
       pragma:
@@ -4384,16 +4386,16 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711390287",
-        "name": "AOSM_CLI_deployment_1711390287", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "17633006497835624407", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1711475418",
+        "name": "AOSM_CLI_deployment_1711475418", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "15149419403364783370", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-ubuntu-publisher"}, "acrArtifactStoreName":
         {"type": "String", "value": "ubuntu-acr"}, "nsDesignGroup": {"type": "String",
         "value": "ubuntu"}, "nsDesignVersion": {"type": "String", "value": "1.0.0"},
         "nfviSiteName": {"type": "String", "value": "ubuntu_NFVI"}}, "mode": "Incremental",
-        "provisioningState": "Succeeded", "timestamp": "2024-03-25T18:12:05.5262343Z",
-        "duration": "PT36.1168483S", "correlationId": "a602f935-0405-4dda-b5b2-2c80a599d7c5",
+        "provisioningState": "Succeeded", "timestamp": "2024-03-26T17:50:57.7471387Z",
+        "duration": "PT37.1488604S", "correlationId": "9dae32ec-f89f-48de-aec1-074ee6d8c1d2",
         "providers": [{"namespace": "Microsoft.Hybridnetwork", "resourceTypes": [{"resourceType":
         "publishers/configurationGroupSchemas", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkservicedesigngroups/networkservicedesignversions", "locations":
@@ -4413,7 +4415,7 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Mon, 25 Mar 2024 18:12:28 GMT
+      - Tue, 26 Mar 2024 17:51:20 GMT
       expires:
       - '-1'
       pragma:
