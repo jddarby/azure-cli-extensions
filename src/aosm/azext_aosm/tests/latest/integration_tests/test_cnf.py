@@ -17,6 +17,7 @@ from azext_aosm.tests.latest.integration_tests.utils import (
     get_path_to_test_chart,
 )
 
+# We use the TEMPLATE file as a jinja2 template to populate some input parameters at runtime.
 INPUT_TEMPLATE_NAME = "cnf_input_template.jsonc"
 INPUT_FILE_NAME = "cnf_input.jsonc"
 

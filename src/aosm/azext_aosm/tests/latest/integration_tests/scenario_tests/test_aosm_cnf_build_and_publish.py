@@ -33,6 +33,7 @@ from azext_aosm.tests.latest.integration_tests.scenario_tests.recording_processo
 
 logger = get_logger(__name__)
 
+# We use the TEMPLATE file as a jinja2 template to populate some input parameters at runtime.
 NFD_INPUT_TEMPLATE_NAME = "cnf_input_template.jsonc"
 NFD_INPUT_FILE_NAME = "cnf_input.jsonc"
 

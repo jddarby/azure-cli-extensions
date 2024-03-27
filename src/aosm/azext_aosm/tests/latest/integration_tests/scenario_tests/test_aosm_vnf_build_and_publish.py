@@ -31,6 +31,7 @@ from azext_aosm.tests.latest.integration_tests.utils import (
 
 logger = get_logger(__name__)
 
+# We use the TEMPLATE files as a jinja2 templates to populate some input parameters at runtime.
 NFD_INPUT_TEMPLATE_NAME = "vnf_input_template.jsonc"
 NFD_INPUT_FILE_NAME = "vnf_input.jsonc"
 NSD_INPUT_TEMPLATE_NAME = "vnf_nsd_input_template.jsonc"

@@ -359,6 +359,8 @@ class TestNSDGenerator(TestCase):
     )
     def test_build_multiple_instances(self, mock_get_mgmt_service_client):
         # Parameter is not used but we need to include it for the patch to work
+        # TODO: this test passes but it doesn't actually test anything because
+        # This functionality is currently broken
         """Test building the NSD bicep templates with multiple NFs allowed."""
         starting_directory = os.getcwd()
         with TemporaryDirectory() as test_dir:

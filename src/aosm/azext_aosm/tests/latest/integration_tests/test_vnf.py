@@ -22,6 +22,7 @@ INPUT_WITH_SAS_VHD_PARAMS = {
     "imageName": "ubuntu-vmImage",
 }
 
+# We use the TEMPLATE files as a jinja2 templates to populate some input parameters at runtime.
 NFD_INPUT_TEMPLATE_NAME = "vnf_input_template.jsonc"
 NFD_INPUT_FILE_NAME = "vnf_input.jsonc"
 VNF_INPUT_WITH_SAS_TOKEN_TEMPLATE_NAME = "vnf_input_with_sas_token_template.jsonc"
