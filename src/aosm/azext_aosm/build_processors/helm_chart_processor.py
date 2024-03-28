@@ -242,6 +242,9 @@ class HelmChartProcessor(BaseInputProcessor):
         """
         logger.debug("Generating artifact profile for Helm chart input.")
         image_pull_secrets_values_paths: Set[str] = set()
+        # It looks like self._find_image_pull_secrets_values_paths doesn't actually do anything
+        # Commenting out here (and the method itself), to allow for soak testing in case it is actually
+        # needed. After some soak time, they should be deleted if not needed.
         # self._find_image_pull_secrets_values_paths(
         #     self.input_artifact, image_pull_secrets_values_paths
         # )
