@@ -156,9 +156,6 @@ class NFDInput(BaseInput):
 
             return copy.deepcopy(schema)
 
-        logger.error(
-            "No deployment parameters schema found on the network function definition version."
-        )
         raise ValueError(
             "No deployment parameters schema found on the network function definition version."
         )

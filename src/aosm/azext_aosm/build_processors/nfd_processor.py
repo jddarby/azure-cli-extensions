@@ -5,12 +5,13 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from knack.log import get_logger
-from azure.cli.core.azclierror import ResourceNotFoundError
+from azure.cli.core.azclierror import InvalidArgumentValueError, ResourceNotFoundError
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.artifact import (BaseArtifact, LocalFileACRArtifact)
+from azext_aosm.common.constants import CGS_NAME
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
@@ -153,45 +154,124 @@ class NFDProcessor(BaseInputProcessor):
 
     def _generate_schema(
         self,
-        schema: Dict[str, Any],
+        cg_schema: Dict[str, Any],
         source_schema: Dict[str, Any],
-        values: Dict[str, Any],
+        default_values: Dict[str, Any],
+        param_prefix: Optional[str] = None,
     ) -> None:
         """
-        Generate the parameter schema.
+        Generate the config group schema.
 
-        This function recursively generates the parameter schema for the input artifact by updating
-        the schema parameter.
+        This method recursively generates the config group schema for the input artifact by updating
+        the cg_schema parameter.
 
-        :param schema: The schema to generate.
-        :type schema: Dict[str, Any]
-        :param source_schema: The source schema.
-        :type source_schema: Dict[str, Any]
-        :param values: The values to generate the schema from.
-        :type values: Dict[str, Any]
+        Parameters:
+            cg_schema: The schema to be modified. On first call of this method, it should contain any base nodes for the schema. This schema is passed by reference and modified in place.
+            source_schema: The source schema from which the config group schema is generated. E.g., for an NFD this will be the deployParameters schema. For an ARM template this will be the schema generated from the templates parameters
+            default_values: The default values used to determine whether a parameter should be hardcoded or provided by the user.
+            param_prefix: The prefix to be added to the parameter name. This is used for namespacing nested properties in the schema. On first call to this method this should be None.
         """
         if "properties" not in source_schema.keys():
             return
 
-        # Loop through each property in the schema.
-        for k, v in source_schema["properties"].items():
-            # If the property is not in the values, and is required, add it to the values.
-            # Temp fix for removing schema from deployParameters
-            if k == "deployParameters":
-                del v["items"]["$schema"]
-                del v["items"]["title"]
-            if (
-                "required" in source_schema
-                and k not in values
-                and k in source_schema["required"]
-            ):
-                if v["type"] == "object":
-                    print(f"Resolving object {k} for schema")
-                    self._generate_schema(schema, v, {})
+        # configObject is the root object and not needed for namespacing. It just adds confusion, so remove it.
+        # There's an edge case where it's not the root object (by coincidence someone else is also using
+        # "configObject"). This could be solved by removing the root configObject before starting this recursive
+        # algorithm. For now, not handling this edge case is acceptable.
+        if param_prefix == "configObject":
+            param_prefix = None
+
+        # Abbreviated 'prop' so as not to override built in 'property'.
+        for prop, details in source_schema["properties"].items():
+            if prop == "deployParameters":
+                # These arise due to pulling deployParameters from the NFD schema, but we don't want them in the
+                # middle of the config group schema.
+                del details["items"]["$schema"]
+                del details["items"]["title"]
+
+            param_name = prop if not param_prefix else f"{param_prefix}_{prop}"
+
+            # Note: We don't recurse into deployParams because it's an array. For arrays we just dump all the `details`
+            # as is (in this case the NFDV deployParams). This means if NFDV is expose all, NSDV is expose all. That's the
+            # behaviour we want for now, but this will need to be changed if we want anything more sophisticated.
+
+            # We have three types of parameter to handle in the following if statements:
+            # 1. Parameters that are always hardcoded
+            if prop in ["location", "publisherName", "nfdgName", "publisherResourceGroup"]:
+                continue
+            # 2. Required parameters (in 'required' array and no default given).
+            elif ("required" in source_schema and prop in source_schema["required"] and prop not in default_values):
+                if "properties" in details:
+                    self._generate_schema(cg_schema, details, {}, param_name)
                 else:
-                    schema["required"].append(k)
-                    schema["properties"][k] = v
-            # If the property is in the values, and is an object, generate the values mappings
-            # for the subschema.
-            if k in values and v["type"] == "object" and values[k]:
-                self._generate_schema(schema, v, values[k])
+                    cg_schema["required"].append(param_name)
+                    cg_schema["properties"][param_name] = details
+            # 3. Optional parameters that have child properties. These aren't added to the CG schema here, but
+            # we check their children
+            # Note, given we only have a single depth of params for CGS, this is probably unnecessary, but leaving
+            # in case we want to add more nesting in the future (e.g. more sophisticated array handling).
+            elif prop in default_values and "properties" in details:
+                self._generate_schema(cg_schema, details, default_values[prop], param_name)
+
+    def generate_values_mappings(
+        self,
+        schema: Dict[str, Any],
+        mapping: Dict[str, Any],
+        is_ret: bool = False,
+        param_prefix: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Override the BaseInputProcessor's method, see there for full docstring.
+
+            - Some parameters are always hardcoded, and therefore always in the initial mapping, so we skip these.
+            - There's no expose_all functionality as for NSD's we simply map `deployParameters` on to the CGV
+              `deployParameters`.
+        """
+
+        # configObject is the root object and not needed for namespacing. It just adds confusion, so remove it.
+        if param_prefix == "configObject":
+            param_prefix = None
+
+        for prop, prop_schema in schema["properties"].items():
+
+            param_name = prop if param_prefix is None else f"{param_prefix}_{prop}"
+
+            # We have three types of parameter to handle in the following if statements (analagous to
+            # generate_schema()):
+            # 1. Parameters that are always hardcoded
+            if prop in ["location", "publisherName", "nfdgName", "publisherResourceGroup"]:
+                continue
+            # 2. Required parameters (in 'required' array and no default given).
+            elif (
+                "required" in schema
+                and prop in schema["required"]
+                and prop not in mapping
+            ):
+                if "properties" in prop_schema:
+                    mapping[prop] = self.generate_values_mappings(
+                        prop_schema, {}, is_ret, param_name
+                    )
+                else:
+                    mapping[prop] = (
+                        f"{{configurationparameters('{CGS_NAME}').{self.name}.{param_name}}}"
+                        if is_ret
+                        else f"{{deployParameters.{self.name}.{param_name}}}"
+                    )
+            # 3. Optional parameters (i.e. they have a default in the mapping dict) that have child properties.
+            # These aren't added to the schema here, but we check their children.
+            # Note, given we only have a single depth of params for CGS, this is probably unnecessary, but leaving
+            # in case we want to add more nesting in the future (e.g. more sophisticated array handling).
+            elif prop in mapping and "properties" in prop_schema:
+                # Python evaluates {} as False, so we need to explicitly set to {}
+                default_subschema_mapping = mapping[prop] or {}
+                mapping[prop] = self.generate_values_mappings(
+                    prop_schema, default_subschema_mapping, is_ret, param_name
+                )
+
+        logger.debug(
+            "Output of generate_values_mappings for %s:\n%s",
+            self.name,
+            json.dumps(mapping, indent=4),
+        )
+
+        return mapping

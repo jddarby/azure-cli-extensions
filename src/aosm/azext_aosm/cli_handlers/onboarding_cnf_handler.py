@@ -255,7 +255,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             assert nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile is not None
             assert nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values is not None
 
-            deploy_params_schema.update(processor.generate_params_schema())
+            deploy_params_schema.update(processor.generate_schema())
 
             # Add supporting file: config mappings
             mapping_rules = (

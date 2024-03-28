@@ -257,6 +257,8 @@ class HelmChartProcessor(BaseInputProcessor):
             helm_artifact_profile=helm_artifact_profile,
         )
 
+    # I don't think this method actually does anything!!! Commenting out to start with, to see if anything breaks.
+    # If, after some soak, it turns out this method is really not needed, we can remove it.
     # def _find_image_pull_secrets_values_paths(
     #     self, chart: HelmChartInput, matches: Set[str]
     # ) -> None:

@@ -58,6 +58,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
     config: OnboardingNSDInputConfig
+    processors: list[AzureCoreArmBuildProcessor | NFDProcessor]
 
     @property
     def default_config_file_name(self) -> str:
@@ -224,7 +225,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             supporting_files.append(mapping_file)
 
             # Generate deployParameters schema properties
-            params_schema = processor.generate_params_schema()
+            params_schema = processor.generate_schema()
             schema_properties.update(params_schema)
 
             # List of NF RET names, for adding to required part of CGS
@@ -285,7 +286,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def _render_config_group_schema_contents(complete_schema, nf_names):
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": f"{CGS_NAME}",
+            "title": f"{CGS_NAME}",   # TODO: does this need to be an f-string?
             "type": "object",
             "properties": complete_schema,
             "required": nf_names,

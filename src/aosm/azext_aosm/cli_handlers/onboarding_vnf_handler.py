@@ -12,6 +12,8 @@ from knack.log import get_logger
 # from azext_aosm.configuration_models.onboarding_vnf_input_config import (
 #     OnboardingBaseVNFInputConfig,
 # )
+from azext_aosm.build_processors.arm_processor import BaseArmBuildProcessor
+from azext_aosm.build_processors.vhd_processor import VHDProcessor
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (OnboardingCoreVNFInputConfig, OnboardingNexusVNFInputConfig)
 from azext_aosm.definition_folder.builder.bicep_builder import (
@@ -37,6 +39,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
     config: OnboardingCoreVNFInputConfig | OnboardingNexusVNFInputConfig
+    processors: list[BaseArmBuildProcessor | VHDProcessor]
 
     @property
     def default_config_file_name(self) -> str:
@@ -98,7 +101,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             image_nf_application_list.extend(image_nf_application)
 
             # Generate deployParameters schema properties
-            params_schema = processor.generate_params_schema()
+            params_schema = processor.generate_schema()
             schema_properties.update(params_schema)
 
             # Generate local file for parameters, i.e imageParameters
