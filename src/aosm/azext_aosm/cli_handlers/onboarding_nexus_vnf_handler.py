@@ -75,7 +75,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
                 template_path=Path(arm_template.file_path).absolute(),
             )
             processor_list.append(
-                NexusArmBuildProcessor(arm_input.artifact_name, arm_input)
+                NexusArmBuildProcessor(arm_input.artifact_name, arm_input, expose_all_params=self.config.expose_all_parameters)
             )
         # For each image, instantiate image processor
         for image in self.config.images:
@@ -87,7 +87,7 @@ class OnboardingNexusVNFCLIHandler(OnboardingVNFCLIHandler):
                 source_acr_registry=source_acr_registry,
             )
             processor_list.append(
-                NexusImageProcessor(image_input.artifact_name, image_input)
+                NexusImageProcessor(image_input.artifact_name, image_input, expose_all_params=self.config.expose_all_parameters)
             )
 
         return processor_list

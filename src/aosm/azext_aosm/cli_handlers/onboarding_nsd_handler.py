@@ -105,8 +105,11 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     ).absolute(),
                 )
                 # TODO: generalise for nexus in nexus ready stories
+                # For NSDs, we don't have the option to expose ARM template parameters. This could be supported by
+                # adding an 'expose_all_parameters' option to NSD input.jsonc file, as we have for NFD input files.
+                # For now, we prefer this simpler interface for NSDs, but we might need to revisit in the future.
                 processor_list.append(
-                    AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+                    AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input, expose_all_params=False)
                 )
             elif resource_element.resource_element_type == "NF":
                 assert isinstance(resource_element.properties, NetworkFunctionPropertiesConfig)

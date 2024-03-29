@@ -44,10 +44,9 @@ class HelmChartProcessor(BaseInputProcessor):
     A class for processing Helm Chart inputs.
 
     :param name: The name of the artifact.
-    :type name: str
     :param input_artifact: The input artifact.
-    :type input_artifact: HelmChartInput
     """
+    input_artifact: HelmChartInput
 
     def __init__(
         self,
@@ -55,11 +54,11 @@ class HelmChartProcessor(BaseInputProcessor):
         input_artifact: HelmChartInput,
         source_registry: str,
         source_registry_namespace: str,
+        expose_all_params: bool,
     ):
-        super().__init__(name, input_artifact)
+        super().__init__(name, input_artifact, expose_all_params)
         self.source_registry = source_registry
         self.source_registry_namespace = source_registry_namespace
-        self.input_artifact: HelmChartInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """

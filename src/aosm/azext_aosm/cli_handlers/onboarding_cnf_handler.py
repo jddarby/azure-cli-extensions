@@ -115,6 +115,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
                 input_artifact=helm_input,
                 source_registry=self.config.images.source_registry,
                 source_registry_namespace=self.config.images.source_registry_namespace,
+                expose_all_params=self.config.expose_all_parameters,
             )
             processor_list.append(helm_processor)
         return processor_list

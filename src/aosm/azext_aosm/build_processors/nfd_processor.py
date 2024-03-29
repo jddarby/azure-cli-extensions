@@ -31,14 +31,12 @@ class NFDProcessor(BaseInputProcessor):
     A class for processing NFD inputs.
 
     :param name: The name of the artifact.
-    :type name: str
     :param input_artifact: The input artifact.
-    :type input_artifact: NFDInput
     """
+    input_artifact: NFDInput
 
     def __init__(self, name: str, input_artifact: NFDInput):
-        super().__init__(name, input_artifact)
-        self.input_artifact: NFDInput = input_artifact
+        super().__init__(name, input_artifact, expose_all_params=False)
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
         """
@@ -224,7 +222,7 @@ class NFDProcessor(BaseInputProcessor):
         Override the BaseInputProcessor's method, see there for full docstring.
 
             - Some parameters are always hardcoded, and therefore always in the initial mapping, so we skip these.
-            - There's no expose_all functionality as for NSD's we simply map `deployParameters` on to the CGV
+            - There's no expose_all_params functionality as for NSD's we simply map `deployParameters` on to the CGV
               `deployParameters`.
         """
 

@@ -27,14 +27,13 @@ class BaseInputProcessor(ABC):
     A base class for input processors.
 
     :param name: The name of the artifact.
-    :type name: str
     :param input_artifact: The input artifact.
-    :type input_artifact: BaseInput
     """
 
-    def __init__(self, name: str, input_artifact: BaseInput):
+    def __init__(self, name: str, input_artifact: BaseInput, expose_all_params: bool):
         self.name = name
         self.input_artifact = input_artifact
+        self.expose_all_params = expose_all_params
 
     @abstractmethod
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -83,7 +82,7 @@ class BaseInputProcessor(ABC):
         :return: A dictionary containing the schema.
         :rtype: Dict[str, Any]
         """
-        logger.info("Generating parameter schema for %s", self.name)
+        logger.info("Generating parameter schema for %s with expose_all_params set to %s", self.name, self.expose_all_params)
 
         base_params_schema = """
         {
@@ -142,9 +141,6 @@ class BaseInputProcessor(ABC):
         if "properties" not in source_schema.keys():
             return
 
-        # Temp test: expose all params as configurable
-        expose_all = True
-
         # Abbreviated 'prop' because 'property' is built in.
         for prop, details in source_schema["properties"].items():
             param_name = prop if not param_prefix else f"{param_prefix}_{prop}"
@@ -175,8 +171,8 @@ class BaseInputProcessor(ABC):
             elif prop in default_values and "properties" in details:
                 self._generate_schema(deploy_params_schema, details, default_values[prop], param_name)
             # 3. Other optional parameters. By default these are excluded from the schema to minimise the number of
-            # parameters the user needs to deal with in the schemas, but expose_all means we include them.
-            elif expose_all:
+            # parameters the user needs to deal with in the schemas, but expose_all_params means we include them.
+            elif self.expose_all_params:
                 if "properties" in details:
                     # default_values is an empty dict. If there were defaults, elif #2 would have caught them
                     self._generate_schema(deploy_params_schema, details, default_values={}, param_prefix=param_name)
@@ -223,8 +219,6 @@ class BaseInputProcessor(ABC):
                      not present in the mapping dictionary will be added (recursively) as a mapping to the user input.
             is_ret:  Whether the mapping is for a resource element template (RET).
         """
-        # Temp test:
-        expose_all = True
         if "properties" not in schema.keys():
             return mapping
 
@@ -263,7 +257,7 @@ class BaseInputProcessor(ABC):
                         else f"{{deployParameters.{self.name}.{param_name}}}"
                     )
             # 2. Optional parameters (i.e. they have a default in the mapping dict) that have child properties.
-            # These aren't added to the schema here, but we check their children.
+            #    These aren't added to the schema here, but we check their children.
             elif prop in mapping and "properties" in prop_schema:
                 # Python evaluates {} as False, so we need to explicitly set to {}
                 prop_mapping = mapping[prop] or {}
@@ -271,8 +265,9 @@ class BaseInputProcessor(ABC):
                     prop_schema, prop_mapping, is_ret, param_name
                 )
             # 3. Other optional parameters. By default these are hardcoded in the mapping to minimise the number of
-            # parameters the user needs to deal with, but expose_all means we map them from the user provided values.
-            elif expose_all:
+            #    parameters the user needs to deal with, but expose_all_params means we map them from the user
+            #    provided values.
+            elif self.expose_all_params:
                 if "properties" in prop_schema:
                     # mapping is an empty dict. If there were defaults in the mapping dict, the elif above would have caught them
                     mapping[prop] = self.generate_values_mappings(
