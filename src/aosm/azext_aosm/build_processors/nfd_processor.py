@@ -96,9 +96,7 @@ class NFDProcessor(BaseInputProcessor):
             )
             and self.input_artifact.network_function_definition.properties.network_function_template
         ):
-            print("nfs", self.input_artifact.network_function_definition.properties.network_function_template.network_function_applications[0])
             nf_application_names = [nf_app.name for nf_app in self.input_artifact.network_function_definition.properties.network_function_template.network_function_applications]
-            print("PROPERTIES", nf_application_names)
             if self.input_artifact.network_function_definition.properties.network_function_type == "ContainerizedNetworkFunction":
                 params = {
                     "nfvi_type":
