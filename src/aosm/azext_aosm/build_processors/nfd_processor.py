@@ -101,17 +101,20 @@ class NFDProcessor(BaseInputProcessor):
             # Split for line-too-long linting errors
             nf_type = self.input_artifact.network_function_definition.properties.network_function_type
             nf_templates = self.input_artifact.network_function_definition.properties.network_function_template
-            nf_application_names = [nf_app.name for nf_app in nf_templates.network_function_applications]
+
             if nf_type == "ContainerizedNetworkFunction":
+                nf_application_names = [nf_app.name for nf_app in nf_templates.network_function_applications]
                 params = {
                     "nfvi_type":
                     nf_templates.nfvi_type,
+                    "is_cnf": True,
                     "nf_application_names": nf_application_names
                 }
             elif nf_type == "VirtualNetworkFunction":
                 params = {
                     "nfvi_type":
                     nf_templates.nfvi_type,
+                    "is_cnf": False
                 }
             else:
                 raise ResourceNotFoundError("The NFDV provided has no network function type.")
