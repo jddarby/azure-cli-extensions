@@ -64,6 +64,8 @@ class NFDInput(BaseInput):
             publisher_name: str = split_id[8]
             nfdg_name: str = split_id[10]
             publisher_resource_group: str = split_id[4]
+        else:
+            raise ValueError("No Network Function ID found")
 
         logger.info("Getting default values for NFD Input")
 
@@ -87,7 +89,10 @@ class NFDInput(BaseInput):
             self.network_function_definition.properties
             and isinstance(
                 self.network_function_definition.properties,
-                (ContainerizedNetworkFunctionDefinitionVersion, VirtualNetworkFunctionDefinitionVersion),
+                (
+                    ContainerizedNetworkFunctionDefinitionVersion,
+                    VirtualNetworkFunctionDefinitionVersion,
+                ),
             )
             and self.network_function_definition.properties.network_function_template
             and self.network_function_definition.properties.network_function_template.nfvi_type

@@ -82,7 +82,11 @@ class BaseInputProcessor(ABC):
         :return: A dictionary containing the schema.
         :rtype: Dict[str, Any]
         """
-        logger.info("Generating parameter schema for %s with expose_all_params set to %s", self.name, self.expose_all_params)
+        logger.info(
+            "Generating parameter schema for %s with expose_all_params set to %s",
+            self.name,
+            self.expose_all_params,
+        )
 
         base_params_schema = """
         {
@@ -133,9 +137,9 @@ class BaseInputProcessor(ABC):
         Note there is no return value. The schema is passed by reference and modified in place.
 
         Parameters:
-            deploy_params_schema: The schema to be modified. On first call of this method, it should contain any base nodes for the schema. This schema is passed by reference and modified in place.
+            deploy_params_schema: The schema to be modified. On first call of this method, it should contain any base nodes for the schema. This schema is passed by reference and modified in place. This property is defined by the CLI in the base processor.
             source_schema: The source schema from which the deploy parameters schema is generated. E.g., for a Helm chart this may be the schema generated from the values.yaml file. For an ARM template this will be the schema generated from the template's parameters
-            default_values: The default values used to determine whether a parameter should be hardcoded or provided by the user.
+            default_values: The default values used to determine whether a parameter should be hardcoded or provided by the user. Defined by the input artifact classes from the config provided by the user. E.g. for helm charts this can be the default values file or the values.yaml file in the chart.
             param_prefix: The prefix to be added to the parameter name. This is used for namespacing nested properties in the schema. On first call to this method this should be None.
         """
         if "properties" not in source_schema.keys():
@@ -161,7 +165,7 @@ class BaseInputProcessor(ABC):
                         deploy_params_schema,
                         details,
                         default_values={},  # In this branch property_key is not in defaults, so pass empty dict.
-                        param_prefix=param_name
+                        param_prefix=param_name,
                     )
                 else:
                     deploy_params_schema["required"].append(param_name)
@@ -169,13 +173,20 @@ class BaseInputProcessor(ABC):
             # 2. Optional parameters that have child properties. These aren't added to the schema here (default
             # behaviour), but we check their children.
             elif prop in default_values and "properties" in details:
-                self._generate_schema(deploy_params_schema, details, default_values[prop], param_name)
+                self._generate_schema(
+                    deploy_params_schema, details, default_values[prop], param_name
+                )
             # 3. Other optional parameters. By default these are excluded from the schema to minimise the number of
             # parameters the user needs to deal with in the schemas, but expose_all_params means we include them.
             elif self.expose_all_params:
                 if "properties" in details:
                     # default_values is an empty dict. If there were defaults, elif #2 would have caught them
-                    self._generate_schema(deploy_params_schema, details, default_values={}, param_prefix=param_name)
+                    self._generate_schema(
+                        deploy_params_schema,
+                        details,
+                        default_values={},
+                        param_prefix=param_name,
+                    )
                 else:
                     if prop in default_values:
                         # AOSM wants null as a string
@@ -257,7 +268,7 @@ class BaseInputProcessor(ABC):
                         else f"{{deployParameters.{self.name}.{param_name}}}"
                     )
             # 2. Optional parameters (i.e. they have a default in the mapping dict) that have child properties.
-            #    These aren't added to the schema here, but we check their children.
+            #    These aren't added to the mapping here, but we check their children.
             elif prop in mapping and "properties" in prop_schema:
                 # Python evaluates {} as False, so we need to explicitly set to {}
                 prop_mapping = mapping[prop] or {}

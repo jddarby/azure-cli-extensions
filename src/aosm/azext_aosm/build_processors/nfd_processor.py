@@ -10,19 +10,30 @@ from typing import Any, Dict, List, Optional, Tuple
 from knack.log import get_logger
 from azure.cli.core.azclierror import InvalidArgumentValueError, ResourceNotFoundError
 from azext_aosm.build_processors.base_processor import BaseInputProcessor
-from azext_aosm.common.artifact import (BaseArtifact, LocalFileACRArtifact)
+from azext_aosm.common.artifact import BaseArtifact, LocalFileACRArtifact
 from azext_aosm.common.constants import CGS_NAME
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.nfd_input import NFDInput
 from azext_aosm.vendored_sdks.models import (
-    ArmResourceDefinitionResourceElementTemplate, ArtifactType,
-    DependsOnProfile, ManifestArtifactFormat, NetworkFunctionApplication,
-    NetworkFunctionDefinitionResourceElementTemplateDetails as
-    NFDResourceElementTemplate, NSDArtifactProfile,
-    ReferencedResource, TemplateType, ContainerizedNetworkFunctionDefinitionVersion,
-    VirtualNetworkFunctionDefinitionVersion)
-from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME, NSD_NF_TEMPLATE_FILENAME, NSD_TEMPLATE_FOLDER_NAME
+    ArmResourceDefinitionResourceElementTemplate,
+    ArtifactType,
+    DependsOnProfile,
+    ManifestArtifactFormat,
+    NetworkFunctionApplication,
+    NetworkFunctionDefinitionResourceElementTemplateDetails as NFDResourceElementTemplate,
+    NSDArtifactProfile,
+    ReferencedResource,
+    TemplateType,
+    ContainerizedNetworkFunctionDefinitionVersion,
+    VirtualNetworkFunctionDefinitionVersion,
+)
+from azext_aosm.common.constants import (
+    NSD_OUTPUT_FOLDER_FILENAME,
+    NSD_NF_TEMPLATE_FILENAME,
+    NSD_TEMPLATE_FOLDER_NAME,
+)
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+
 logger = get_logger(__name__)
 
 
@@ -33,6 +44,7 @@ class NFDProcessor(BaseInputProcessor):
     :param name: The name of the artifact.
     :param input_artifact: The input artifact.
     """
+
     input_artifact: NFDInput
 
     def __init__(self, name: str, input_artifact: NFDInput):
@@ -75,7 +87,9 @@ class NFDProcessor(BaseInputProcessor):
             ),
         )
 
-        template_path = get_template_path(NSD_TEMPLATE_FOLDER_NAME, NSD_NF_TEMPLATE_FILENAME)
+        template_path = get_template_path(
+            NSD_TEMPLATE_FOLDER_NAME, NSD_NF_TEMPLATE_FILENAME
+        )
 
         # This horrendous if statement is required because:
         # - the 'properties' and 'network_function_template' attributes are optional
@@ -96,8 +110,7 @@ class NFDProcessor(BaseInputProcessor):
             and self.input_artifact.network_function_definition.properties.network_function_template
         ):
             params = {
-                "nfvi_type":
-                self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type
+                "nfvi_type": self.input_artifact.network_function_definition.properties.network_function_template.nfvi_type
             }
         else:
             raise ResourceNotFoundError("The NFDV provided has no nfvi type.")
@@ -116,7 +129,9 @@ class NFDProcessor(BaseInputProcessor):
 
         :raises NotImplementedError: NFDs cannot be used to generate new NF application templates.
         """
-        raise NotImplementedError("NFDs cannot be used to generate new NF application templates.")
+        raise NotImplementedError(
+            "NFDs cannot be used to generate new NF application templates."
+        )
 
     def generate_resource_element_template(self) -> NFDResourceElementTemplate:
         """
@@ -164,9 +179,9 @@ class NFDProcessor(BaseInputProcessor):
         the cg_schema parameter.
 
         Parameters:
-            cg_schema: The schema to be modified. On first call of this method, it should contain any base nodes for the schema. This schema is passed by reference and modified in place.
-            source_schema: The source schema from which the config group schema is generated. E.g., for an NFD this will be the deployParameters schema. For an ARM template this will be the schema generated from the templates parameters
-            default_values: The default values used to determine whether a parameter should be hardcoded or provided by the user.
+            cg_schema: The schema to be modified. On first call of this method, it should contain any base nodes for the schema. This schema is passed by reference and modified in place. This property is defined by the CLI in the base processor.
+            source_schema: The source schema from which the config group schema is generated. E.g., for an NFD this will be the deployParameters schema and is created by the NFDInput class using a previously deployed NFDV properties. For an ARM template this will be the schema generated from the templates parameters
+            default_values: The default values used to determine whether a parameter should be hardcoded or provided by the user. These are generated by the CLI based on the NDFV properties.
             param_prefix: The prefix to be added to the parameter name. This is used for namespacing nested properties in the schema. On first call to this method this should be None.
         """
         if "properties" not in source_schema.keys():
@@ -195,10 +210,19 @@ class NFDProcessor(BaseInputProcessor):
 
             # We have three types of parameter to handle in the following if statements:
             # 1. Parameters that are always hardcoded
-            if prop in ["location", "publisherName", "nfdgName", "publisherResourceGroup"]:
+            if prop in [
+                "location",
+                "publisherName",
+                "nfdgName",
+                "publisherResourceGroup",
+            ]:
                 continue
             # 2. Required parameters (in 'required' array and no default given).
-            elif ("required" in source_schema and prop in source_schema["required"] and prop not in default_values):
+            elif (
+                "required" in source_schema
+                and prop in source_schema["required"]
+                and prop not in default_values
+            ):
                 if "properties" in details:
                     self._generate_schema(cg_schema, details, {}, param_name)
                 else:
@@ -209,7 +233,9 @@ class NFDProcessor(BaseInputProcessor):
             # Note, given we only have a single depth of params for CGS, this is probably unnecessary, but leaving
             # in case we want to add more nesting in the future (e.g. more sophisticated array handling).
             elif prop in default_values and "properties" in details:
-                self._generate_schema(cg_schema, details, default_values[prop], param_name)
+                self._generate_schema(
+                    cg_schema, details, default_values[prop], param_name
+                )
 
     def generate_values_mappings(
         self,
@@ -237,7 +263,12 @@ class NFDProcessor(BaseInputProcessor):
             # We have three types of parameter to handle in the following if statements (analagous to
             # generate_schema()):
             # 1. Parameters that are always hardcoded
-            if prop in ["location", "publisherName", "nfdgName", "publisherResourceGroup"]:
+            if prop in [
+                "location",
+                "publisherName",
+                "nfdgName",
+                "publisherResourceGroup",
+            ]:
                 continue
             # 2. Required parameters (in 'required' array and no default given).
             elif (
@@ -256,7 +287,7 @@ class NFDProcessor(BaseInputProcessor):
                         else f"{{deployParameters.{self.name}.{param_name}}}"
                     )
             # 3. Optional parameters (i.e. they have a default in the mapping dict) that have child properties.
-            # These aren't added to the schema here, but we check their children.
+            # These aren't added to the mapping here, but we check their children.
             # Note, given we only have a single depth of params for CGS, this is probably unnecessary, but leaving
             # in case we want to add more nesting in the future (e.g. more sophisticated array handling).
             elif prop in mapping and "properties" in prop_schema:
