@@ -27,7 +27,7 @@ from azure.mgmt.resource.features.v2015_12_01.models import (
     FeatureProperties,
     FeatureResult,
 )
-
+from azext_aosm.common.constants import CNF_TYPE, VNF_TYPE
 from azext_aosm.custom import (
     onboard_nsd_build,
     onboard_nsd_generate_config,
@@ -165,7 +165,7 @@ class NFDVs:
                 properties=NFDVProperties(
                     deploy_parameters=json.dumps(nginx_deploy_parameters),
                     network_function_template=networkFunctionTemplate,
-                    network_function_type="ContainerizedNetworkFunction"
+                    network_function_type=CNF_TYPE
                 ),
                 id="/subscriptions/00000/resourceGroups/rg/providers/Microsoft.HybridNetwork/publishers/pub/networkFunctionDefinitionGroups/nginx/networkFunctionDefinitionVersions/1.0.0",
             )
@@ -174,7 +174,7 @@ class NFDVs:
                 properties=NFDVProperties(
                     deploy_parameters=json.dumps(ubuntu_deploy_parameters),
                     network_function_template=networkFunctionTemplate,
-                    network_function_type="VirtualNetworkFunction"
+                    network_function_type=VNF_TYPE
                 ),
                 id="/subscriptions/00000/resourceGroups/rg/providers/Microsoft.HybridNetwork/publishers/pub/networkFunctionDefinitionGroups/ubuntu/networkFunctionDefinitionVersions/1.0.0",
             )
