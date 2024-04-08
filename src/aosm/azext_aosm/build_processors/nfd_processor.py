@@ -20,7 +20,9 @@ from azext_aosm.vendored_sdks.models import (
     NFDResourceElementTemplate, NSDArtifactProfile,
     ReferencedResource, TemplateType, ContainerizedNetworkFunctionDefinitionVersion,
     VirtualNetworkFunctionDefinitionVersion)
-from azext_aosm.common.constants import NSD_OUTPUT_FOLDER_FILENAME, NSD_NF_TEMPLATE_FILENAME, NSD_TEMPLATE_FOLDER_NAME
+from azext_aosm.common.constants import (
+    NSD_OUTPUT_FOLDER_FILENAME, NSD_NF_TEMPLATE_FILENAME,
+    NSD_TEMPLATE_FOLDER_NAME, VNF_TYPE, CNF_TYPE)
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 logger = get_logger(__name__)
 
@@ -102,7 +104,7 @@ class NFDProcessor(BaseInputProcessor):
             nf_type = self.input_artifact.network_function_definition.properties.network_function_type
             nf_templates = self.input_artifact.network_function_definition.properties.network_function_template
 
-            if nf_type == "ContainerizedNetworkFunction":
+            if nf_type == CNF_TYPE:
                 nf_application_names = [nf_app.name for nf_app in nf_templates.network_function_applications]
                 params = {
                     "nfvi_type":
@@ -110,14 +112,14 @@ class NFDProcessor(BaseInputProcessor):
                     "is_cnf": True,
                     "nf_application_names": nf_application_names
                 }
-            elif nf_type == "VirtualNetworkFunction":
+            elif nf_type == VNF_TYPE:
                 params = {
                     "nfvi_type":
                     nf_templates.nfvi_type,
                     "is_cnf": False
                 }
             else:
-                raise ResourceNotFoundError("The NFDV provided has no network function type.")
+                raise ResourceNotFoundError(f"The NFDV provided has invalid network function type: {nf_type}")
         else:
             raise ResourceNotFoundError("The NFDV provided has no nfvi type.")
         bicep_contents = render_bicep_contents_from_j2(template_path, params)
