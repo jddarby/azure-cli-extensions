@@ -51,6 +51,7 @@ from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBui
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
 
 from .onboarding_nfd_base_handler import OnboardingNFDBaseCLIHandler
+from azext_aosm.common.registry import ContainerRegistryHandler
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 
 logger = get_logger(__name__)
@@ -74,7 +75,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
         """Get the output folder file name."""
         return CNF_OUTPUT_FOLDER_FILENAME
 
-    def _get_input_config(self, input_config: Optional[dict] = None) -> OnboardingCNFInputConfig:
+    def _get_input_config(
+        self, input_config: Optional[dict] = None
+    ) -> OnboardingCNFInputConfig:
         """Get the configuration for the command."""
         if input_config is None:
             input_config = {}
@@ -90,8 +93,11 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
 
     def _get_processor_list(self) -> list[HelmChartProcessor]:
         processor_list = []
-        # for each helm package, instantiate helm processor
         assert isinstance(self.config, OnboardingCNFInputConfig)
+
+        registry_handler = ContainerRegistryHandler(self.config.image_sources)
+
+        # for each helm package, instantiate helm processor
         for helm_package in self.config.helm_packages:
             if helm_package.default_values:
                 if Path(helm_package.default_values).exists():
@@ -113,8 +119,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             helm_processor = HelmChartProcessor(
                 name=helm_package.name,
                 input_artifact=helm_input,
-                source_registry=self.config.images.source_registry,
-                source_registry_namespace=self.config.images.source_registry_namespace,
+                registry_handler=registry_handler,
                 expose_all_params=self.config.expose_all_parameters,
             )
             processor_list.append(helm_processor)
@@ -128,9 +133,9 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             try:
                 helm_processor.input_artifact.validate_template()
             except TemplateValidationError as error:
-                validation_errors[
-                    helm_processor.input_artifact.artifact_name
-                ] = str(error)
+                validation_errors[helm_processor.input_artifact.artifact_name] = str(
+                    error
+                )
 
         if validation_errors:
             # Create an error file using a j2 template
@@ -205,10 +210,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             CNF_TEMPLATE_FOLDER_NAME, CNF_MANIFEST_TEMPLATE_FILENAME
         )
 
-        params = {
-            "acr_artifacts": artifact_list,
-            "sa_artifacts": []
-        }
+        params = {"acr_artifacts": artifact_list, "sa_artifacts": []}
         bicep_contents = render_bicep_contents_from_j2(template_path, params)
 
         # Create Bicep element with manifest contents

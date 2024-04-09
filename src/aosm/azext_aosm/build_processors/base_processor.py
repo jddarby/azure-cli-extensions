@@ -247,8 +247,8 @@ class BaseInputProcessor(ABC):
             return mapping
 
         for prop, prop_schema in schema["properties"].items():
-            if "type" not in prop_schema:
-                if ["oneOf", "anyOf"] in prop_schema:
+            if isinstance(prop_schema, dict) and "type" not in prop_schema:
+                if "oneOf" in prop_schema or "anyOf" in prop_schema:
                     raise InvalidArgumentValueError(
                         f"The subschema '{prop}' does not contain a type.\n"
                         "It contains 'anyOf' or 'oneOf' logic, which is not supported by AOSM.\n"
@@ -293,7 +293,8 @@ class BaseInputProcessor(ABC):
             #    provided values.
             elif self.expose_all_params:
                 if "properties" in prop_schema:
-                    # mapping is an empty dict. If there were defaults in the mapping dict, the elif above would have caught them
+                    # Mapping is an empty dict. 
+                    # If there were defaults in the mapping dict, the elif above would have caught them
                     mapping[prop] = self.generate_values_mappings(
                         prop_schema, {}, is_ret, param_name
                     )
