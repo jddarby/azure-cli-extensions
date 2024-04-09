@@ -137,10 +137,23 @@ class BaseInputProcessor(ABC):
         Note there is no return value. The schema is passed by reference and modified in place.
 
         Parameters:
-            deploy_params_schema: The schema to be modified. On first call of this method, it should contain any base nodes for the schema. This schema is passed by reference and modified in place. This property is defined by the CLI in the base processor.
-            source_schema: The source schema from which the deploy parameters schema is generated. E.g., for a Helm chart this may be the schema generated from the values.yaml file. For an ARM template this will be the schema generated from the template's parameters
-            default_values: The default values used to determine whether a parameter should be hardcoded or provided by the user. Defined by the input artifact classes from the config provided by the user. E.g. for helm charts this can be the default values file or the values.yaml file in the chart.
-            param_prefix: The prefix to be added to the parameter name. This is used for namespacing nested properties in the schema. On first call to this method this should be None.
+            deploy_params_schema: 
+                The schema to be modified. On first call of this method, 
+                it should contain any base nodes for the schema. 
+                This schema is passed by reference and modified in place. 
+                This property is defined by the CLI in the base processor.
+            source_schema: 
+                The source schema from which the deploy parameters schema is generated. 
+                E.g., for a Helm chart this may be the schema generated from the values.yaml file. 
+                For an ARM template this will be the schema generated from the template's parameters
+            default_values: 
+                The default values used to determine whether a parameter should be hardcoded or provided by the user.
+                Defined by the input artifact classes from the config provided by the user. 
+                E.g. for helm charts this can be the default values file or the values.yaml file in the chart.
+            param_prefix: 
+                The prefix to be added to the parameter name. 
+                This is used for namespacing nested properties in the schema.
+                On first call to this method this should be None.
         """
         if "properties" not in source_schema.keys():
             return
