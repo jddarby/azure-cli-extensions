@@ -17,7 +17,7 @@ from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
     BASE_FOLDER_NAME,
     CGS_FILENAME,
     CGS_NAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
+    DEPLOY_PARAMETERS_FILENAME,
     MANIFEST_FOLDER_NAME,
     NSD_BASE_TEMPLATE_FILENAME,
     NSD_DEFINITION_FOLDER_NAME,
@@ -208,11 +208,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         # For each RET (arm template or NF), generate RET
         for processor in self.processors:
-            # Generate RET
             nf_ret = processor.generate_resource_element_template()
             ret_list.append(nf_ret)
 
-            # Adding supporting file: config mappings
+            # Add supporting file: config mappings
             deploy_values = nf_ret.configuration.parameter_values
             mapping_file = LocalFileBuilder(
                 Path(
@@ -224,7 +223,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             )
             supporting_files.append(mapping_file)
 
-            # Generate deploymentParameters schema properties
+            # Generate deployParameters schema properties
             params_schema = processor.generate_params_schema()
             schema_properties.update(params_schema)
 
@@ -242,7 +241,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             "nfvi_site_name": self.nfvi_site_name,
             "nf_rets": ret_list,
             "cgs_file": CGS_FILENAME,
-            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "deploy_parameters_file": DEPLOY_PARAMETERS_FILENAME,
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
         }
 

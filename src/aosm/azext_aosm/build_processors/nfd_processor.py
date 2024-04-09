@@ -115,9 +115,9 @@ class NFDProcessor(BaseInputProcessor):
         """
         Generate the network function application from the input.
 
-        :raises NotImplementedError: NFDs do not support deployment of NFs.
+        :raises NotImplementedError: NFDs cannot be used to generate new NF application templates.
         """
-        raise NotImplementedError("NFDs do not support deployment of NFs.")
+        raise NotImplementedError("NFDs cannot be used to generate new NF application templates.")
 
     def generate_resource_element_template(self) -> NFDResourceElementTemplate:
         """
@@ -177,7 +177,7 @@ class NFDProcessor(BaseInputProcessor):
         for k, v in source_schema["properties"].items():
             # If the property is not in the values, and is required, add it to the values.
             # Temp fix for removing schema from deployParameters
-            if k == "deploymentParameters":
+            if k == "deployParameters":
                 del v["items"]["$schema"]
                 del v["items"]["title"]
             if (

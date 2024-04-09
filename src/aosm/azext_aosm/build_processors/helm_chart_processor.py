@@ -103,7 +103,7 @@ class HelmChartProcessor(BaseInputProcessor):
         logger.debug("Getting artifact details for Helm chart input %s.", self.name)
         artifact_details: List[BaseArtifact] = []
 
-        # We only support local file artifacts for Helm charts
+        # Helm charts can only be local file artifacts
         helm_chart_details = LocalFileACRArtifact(
             artifact_name=self.input_artifact.artifact_name,
             artifact_type=ArtifactType.OCI_ARTIFACT.value,
@@ -112,8 +112,8 @@ class HelmChartProcessor(BaseInputProcessor):
         )
         artifact_details.append(helm_chart_details)
         for image_name, image_version in self._find_chart_images():
-            # We only support remote ACR artifacts for container images
-
+            
+            # Container images can only be remote ACR artifacts
             registry, namespace = self.registry_handler.find_registry_for_image(
                 image_name, image_version
             )
@@ -151,19 +151,20 @@ class HelmChartProcessor(BaseInputProcessor):
         """
         logger.debug("Generating NF application for Helm chart input %s.", self.name)
         artifact_profile = self._generate_artifact_profile()
-        # We want to remove the registry values paths and image pull secrets values paths from the values mappings
+        assert artifact_profile.helm_artifact_profile is not None
+
+        # Remove the registry values paths and image pull secrets values paths from the values mappings
         # as these values are supplied by NFM when it installs the chart.
-        if artifact_profile.helm_artifact_profile:
-            registry_values_paths = (
-                artifact_profile.helm_artifact_profile.registry_values_paths or []
-            )
-            image_pull_secrets_values_paths = (
-                artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
-                or []
-            )
-            mapping_rule_profile = self._generate_mapping_rule_profile(
-                registry_values_paths + image_pull_secrets_values_paths
-            )
+        registry_values_paths = (
+            artifact_profile.helm_artifact_profile.registry_values_paths or []
+        )
+        image_pull_secrets_values_paths = (
+            artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
+            or []
+        )
+        mapping_rule_profile = self._generate_mapping_rule_profile(
+            values_to_remove=registry_values_paths + image_pull_secrets_values_paths
+        )
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,

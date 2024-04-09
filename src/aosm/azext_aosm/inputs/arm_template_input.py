@@ -64,7 +64,7 @@ class ArmTemplateInput(BaseInput):
             data = json.load(_file)
 
         if "parameters" in data:
-            self._generate_schema_from_params(arm_template_schema, data["parameters"])
+            self._generate_schema_from_arm_params(arm_template_schema, data["parameters"])
         else:
             logger.warning(
                 "No parameters found in the template provided. "
@@ -78,7 +78,7 @@ class ArmTemplateInput(BaseInput):
 
         return copy.deepcopy(arm_template_schema)
 
-    def _generate_schema_from_params(
+    def _generate_schema_from_arm_params(
         self, schema: Dict[str, Any], parameters: Dict[str, Any]
     ) -> None:
         """
@@ -100,7 +100,7 @@ class ArmTemplateInput(BaseInput):
                     "required": [],
                 }
                 if "properties" in value:
-                    self._generate_schema_from_params(
+                    self._generate_schema_from_arm_params(
                         schema["properties"][key], value["properties"]
                     )
             else:
