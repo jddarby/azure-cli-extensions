@@ -10,8 +10,7 @@
             "name": "nginx-nfdg",
             "version": "1.0.0",
             "publisher_offering_location": "eastus",
-            "type": "cnf",
-            "multiple_instances": "False"
+            "type": "cnf"
         },
         {
             "publisher": "reference-publisher",
@@ -19,8 +18,7 @@
             "name": "ubuntu-nfdg",
             "version": "1.0.0",
             "publisher_offering_location": "eastus",
-            "type": "vnf",
-            "multiple_instances": false
+            "type": "vnf"
         }
     ],
     "nsd_name": "multinf",

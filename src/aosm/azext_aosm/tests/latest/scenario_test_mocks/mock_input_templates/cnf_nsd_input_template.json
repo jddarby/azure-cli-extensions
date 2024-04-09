@@ -9,7 +9,6 @@
             "version": "1.0.0",
             "publisher_offering_location": "uaenorth",
             "type": "cnf",
-            "multiple_instances": false,
             "publisher": "automated-cli-tests-nginx-publisher",
             "publisher_resource_group": "{{publisher_resource_group_name}}"
         }

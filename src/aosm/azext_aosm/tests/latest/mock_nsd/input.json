@@ -9,7 +9,6 @@
             "version": "1.0.0",
             "publisher_offering_location": "eastus",
             "type": "vnf",
-            "multiple_instances": false,
             "publisher": "jamie-mobile-publisher",
             "publisher_resource_group": "Jamie-publisher"
         }

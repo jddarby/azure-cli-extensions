@@ -9,7 +9,6 @@
             "version": "1.0.0",
             "publisher_offering_location": "uaenorth",
             "type": "vnf",
-            "multiple_instances": false,
             "publisher": "automated-cli-tests-ubuntu-publisher",
             "publisher_resource_group": "{{publisher_resource_group_name}}"
         }

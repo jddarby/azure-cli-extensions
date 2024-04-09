@@ -289,7 +289,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def _render_config_group_schema_contents(complete_schema, nf_names):
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": f"{CGS_NAME}",   # TODO: does this need to be an f-string?
+            "title": CGS_NAME,
             "type": "object",
             "properties": complete_schema,
             "required": nf_names,
