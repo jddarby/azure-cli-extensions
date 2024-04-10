@@ -15,6 +15,7 @@ parent_directory = os.path.abspath(os.path.join(code_directory, "../.."))
 arm_template_path = os.path.join(parent_directory, "mock_arm_templates", "simple-template.json")
 no_params_template_path = os.path.join(parent_directory, "mock_arm_templates", "no-params-template.json")
 
+
 class TestARMTemplateInput(TestCase):
     """Test the ARMTempalteInput class."""
 
@@ -77,14 +78,14 @@ class TestARMTemplateInput(TestCase):
         """Test getting the schema for the ARM template input when no parameters are found."""
         
         no_params_arm_input = ArmTemplateInput(
-        artifact_name="test-artifact-name",
-        artifact_version="1.1.1",
-        template_path=no_params_template_path,
-        default_config=None
+            artifact_name="test-artifact-name",
+            artifact_version="1.1.1",
+            template_path=no_params_template_path,
+            default_config=None
         )
         # Assert logger warning when no parameters in file
         with self.assertLogs(level='WARNING'):
-            schema = self.arm_input.get_schema()
+            schema = no_params_arm_input.get_schema()
             expected_schema = {
                 '$schema': 'https://json-schema.org/draft-07/schema#',
                 'properties': {},
@@ -95,7 +96,7 @@ class TestARMTemplateInput(TestCase):
             self.assertEqual(schema, expected_schema)
 
     def test_generate_schema_from_params_with_default_values(self):
-        """ Test _generate_schema_from_params for ARM template input.
+        """ Test _generate_schema_from_arm_params for ARM template input.
             With default values, which mean no required params
         """
         schema = {
@@ -109,7 +110,7 @@ class TestARMTemplateInput(TestCase):
             }
         }
         # pylint: disable=protected-access
-        self.arm_input._generate_schema_from_params(schema, data)
+        self.arm_input._generate_schema_from_arm_params(schema, data)
 
         expected_schema = {
             'properties':
@@ -132,12 +133,12 @@ class TestARMTemplateInput(TestCase):
             }
         }
         # pylint: disable=protected-access
-        self.arm_input._generate_schema_from_params(schema, data)
+        self.arm_input._generate_schema_from_arm_params(schema, data)
         expected_schema = {'properties': {'test': {'type': 'string'}}, 'required': ['test']}
         self.assertEqual(schema, expected_schema)
 
     def test_generate_schema_from_params_nested_properties(self):
-        """ Test _generate_schema_from_params for ARM template input.
+        """ Test _generate_schema_from_arm_params for ARM template input.
             With an object in the template, so we expect this to be called recursively
         """
         schema = {
@@ -156,7 +157,7 @@ class TestARMTemplateInput(TestCase):
             }
         }
         # pylint: disable=protected-access
-        self.arm_input._generate_schema_from_params(schema, data)
+        self.arm_input._generate_schema_from_arm_params(schema, data)
 
         # We expect vmImageRepositoryCredentials to be required and to have a nested schema
         expected_schema = {'properties':
