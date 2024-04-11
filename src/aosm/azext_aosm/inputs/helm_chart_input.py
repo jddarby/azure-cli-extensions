@@ -26,7 +26,7 @@ from azext_aosm.common.exceptions import (
     TemplateValidationError,
 )
 from azext_aosm.common.utils import check_tool_installed, extract_tarfile
-from azext_aosm.common.constants import CNF_VALUES_SCHEMA_FILENAME
+# from azext_aosm.common.constants import CNF_VALUES_SCHEMA_FILENAME
 from azext_aosm.inputs.base_input import BaseInput
 
 logger = get_logger(__name__)

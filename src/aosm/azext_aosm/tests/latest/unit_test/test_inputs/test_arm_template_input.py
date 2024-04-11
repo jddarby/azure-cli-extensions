@@ -65,7 +65,7 @@ class TestARMTemplateInput(TestCase):
         schema = self.arm_input.get_schema()
         expected_schema = {
             '$schema': 'https://json-schema.org/draft-07/schema#',
-            'properties': {'location': {'type': 'string'}},
+            'properties': {'location': {'type': 'string', 'default': 'uksouth'}},
             'required': [],
             'type': 'object'
         }
@@ -76,7 +76,7 @@ class TestARMTemplateInput(TestCase):
         read_data='{"$schema": "#", "resources": { } }'))
     def test_get_schema_no_parameters(self):
         """Test getting the schema for the ARM template input when no parameters are found."""
-        
+
         no_params_arm_input = ArmTemplateInput(
             artifact_name="test-artifact-name",
             artifact_version="1.1.1",
@@ -114,7 +114,7 @@ class TestARMTemplateInput(TestCase):
 
         expected_schema = {
             'properties':
-                {'test': {'type': 'string'}},
+                {'test': {'type': 'string', 'default': 'test'}},
                 'required': []}
 
         self.assertEqual(schema, expected_schema)

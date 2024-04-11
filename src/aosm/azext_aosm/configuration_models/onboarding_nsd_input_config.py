@@ -58,7 +58,8 @@ class NetworkFunctionPropertiesConfig:
     #     metadata={
     #         "comment": (
     #             "Set to true or false. Whether the NSD should allow arbitrary numbers of this type of NF. "
-    #             "If false only a single instance will be allowed. Only supported on VNFs, must be set to false on CNFs."
+    #             "If false only a single instance will be allowed. "
+    #             "Only supported on VNFs, must be set to false on CNFs."
     #         )
     #     },
     # )
