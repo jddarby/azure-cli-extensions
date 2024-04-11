@@ -157,7 +157,6 @@ class BaseInputProcessor(ABC):
         """
         if "properties" not in source_schema.keys():
             return
-
         # Abbreviated 'prop' because 'property' is built in.
         for prop, details in source_schema["properties"].items():
             param_name = prop if not param_prefix else f"{param_prefix}_{prop}"
@@ -207,6 +206,13 @@ class BaseInputProcessor(ABC):
                         if default_values[prop] is None:
                             default_values[prop] = "null"
                         details["default"] = default_values[prop]
+                    # If there is a default of '[resourceGroup().location]'
+                    # which is not allowed to be passed into CGVs
+                    if "default" in details and details["default"] == '[resourceGroup().location]':
+                        # Remove the default
+                        del details["default"]
+                        # Make the parameter required (to expose in CGVS without a default)
+                        deploy_params_schema["required"].append(param_name)
                     deploy_params_schema["properties"][param_name] = details
 
     def generate_values_mappings(
@@ -245,7 +251,6 @@ class BaseInputProcessor(ABC):
         """
         if "properties" not in schema.keys():
             return mapping
-
         for prop, prop_schema in schema["properties"].items():
             if isinstance(prop_schema, dict) and "type" not in prop_schema:
                 if "oneOf" in prop_schema or "anyOf" in prop_schema:

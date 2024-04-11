@@ -74,7 +74,6 @@ class ArmTemplateInput(BaseInput):
                 "No parameters found in the template provided. "
                 "Your NFD will have no deployParameters"
             )
-
         logger.debug(
             "Schema for ARM template input: %s",
             json.dumps(arm_template_schema, indent=4),
@@ -109,3 +108,5 @@ class ArmTemplateInput(BaseInput):
                     )
             else:
                 schema["properties"][key] = {"type": value["type"]}
+                if "defaultValue" in value:
+                    schema["properties"][key]["default"] = value["defaultValue"]
