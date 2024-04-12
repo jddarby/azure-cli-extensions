@@ -45,18 +45,18 @@ class HelmChartProcessor(BaseInputProcessor):
     A class for processing Helm Chart inputs.
 
     :param name: The name of the artifact.
-    :type name: str
     :param input_artifact: The input artifact.
-    :type input_artifact: HelmChartInput
     """
+    input_artifact: HelmChartInput
 
     def __init__(
         self,
         name: str,
         input_artifact: HelmChartInput,
+        expose_all_params: bool,
         registry_handler: ContainerRegistryHandler,
     ):
-        super().__init__(name, input_artifact)
+        super().__init__(name, input_artifact, expose_all_params)
         self.registry_handler = registry_handler
         self.input_artifact: HelmChartInput = input_artifact
 
@@ -112,7 +112,6 @@ class HelmChartProcessor(BaseInputProcessor):
         )
         artifact_details.append(helm_chart_details)
         for image_name, image_version in self._find_chart_images():
-            
             # Container images can only be remote ACR artifacts
             registry, namespace = self.registry_handler.find_registry_for_image(
                 image_name, image_version
@@ -243,9 +242,9 @@ class HelmChartProcessor(BaseInputProcessor):
         """
         logger.debug("Generating artifact profile for Helm chart input.")
         image_pull_secrets_values_paths: Set[str] = set()
-        self._find_image_pull_secrets_values_paths(
-            self.input_artifact, image_pull_secrets_values_paths
-        )
+        # self._find_image_pull_secrets_values_paths(
+        #     self.input_artifact, image_pull_secrets_values_paths
+        # )
 
         registry_values_paths = self._find_registry_values_paths()
 

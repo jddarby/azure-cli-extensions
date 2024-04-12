@@ -58,6 +58,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
     config: OnboardingNSDInputConfig
+    processors: list[AzureCoreArmBuildProcessor | NFDProcessor]
 
     @property
     def default_config_file_name(self) -> str:
@@ -104,8 +105,11 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     ).absolute(),
                 )
                 # TODO: generalise for nexus in nexus ready stories
+                # For NSDs, we don't have the option to expose ARM template parameters. This could be supported by
+                # adding an 'expose_all_parameters' option to NSD input.jsonc file, as we have for NFD input files.
+                # For now, we prefer this simpler interface for NSDs, but we might need to revisit in the future.
                 processor_list.append(
-                    AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+                    AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input, expose_all_params=False)
                 )
             elif resource_element.resource_element_type == "NF":
                 assert isinstance(resource_element.properties, NetworkFunctionPropertiesConfig)
@@ -224,7 +228,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             supporting_files.append(mapping_file)
 
             # Generate deployParameters schema properties
-            params_schema = processor.generate_params_schema()
+            params_schema = processor.generate_schema()
             schema_properties.update(params_schema)
 
             # List of NF RET names, for adding to required part of CGS
@@ -285,7 +289,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def _render_config_group_schema_contents(complete_schema, nf_names):
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": f"{CGS_NAME}",
+            "title": CGS_NAME,
             "type": "object",
             "properties": complete_schema,
             "required": nf_names,

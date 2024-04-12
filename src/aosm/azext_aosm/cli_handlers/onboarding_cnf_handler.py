@@ -119,7 +119,8 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             helm_processor = HelmChartProcessor(
                 name=helm_package.name,
                 input_artifact=helm_input,
-                registry_handler= registry_handler
+                registry_handler=registry_handler,
+                expose_all_params=self.config.expose_all_parameters,
             )
             processor_list.append(helm_processor)
         return processor_list
@@ -257,7 +258,7 @@ class OnboardingCNFCLIHandler(OnboardingNFDBaseCLIHandler):
             assert nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile is not None
             assert nf_application.deploy_parameters_mapping_rule_profile.helm_mapping_rule_profile.values is not None
 
-            deploy_params_schema.update(processor.generate_params_schema())
+            deploy_params_schema.update(processor.generate_schema())
 
             # Add supporting file: config mappings
             mapping_rules = (

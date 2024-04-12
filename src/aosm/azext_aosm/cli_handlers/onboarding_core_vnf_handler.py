@@ -75,7 +75,9 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
                 template_path=Path(arm_template.file_path).absolute(),
             )
             processor_list.append(
-                AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+                AzureCoreArmBuildProcessor(
+                    arm_input.artifact_name, arm_input,
+                    expose_all_params=self.config.expose_all_parameters)
             )
 
         # Instantiate vhd processor
@@ -96,6 +98,7 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
                 file_path=file_path,
                 blob_sas_uri=self.config.vhd.blob_sas_url,
             ),
+            expose_all_params=self.config.expose_all_parameters
         )
         processor_list.append(vhd_processor)
         return processor_list
