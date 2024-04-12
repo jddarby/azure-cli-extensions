@@ -113,7 +113,6 @@ class HelmChartProcessor(BaseInputProcessor):
         artifact_details.append(helm_chart_details)
         for image_name, image_version in self._find_chart_images():
             # Container images can only be remote ACR artifacts
-
             registry, namespace = self.registry_handler.find_registry_for_image(
                 image_name, image_version
             )
