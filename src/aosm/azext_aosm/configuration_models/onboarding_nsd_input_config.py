@@ -19,7 +19,6 @@ from azext_aosm.configuration_models.onboarding_base_input_config import (
 class NetworkFunctionPropertiesConfig:
     """Network function object for NSDs."""
 
-    # TODO: Improve publisher commment
     publisher: str = field(
         default="",
         metadata={"comment": "The name of the existing publisher for the NSD."},
