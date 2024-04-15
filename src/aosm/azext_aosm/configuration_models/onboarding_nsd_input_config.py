@@ -30,7 +30,11 @@ class NetworkFunctionPropertiesConfig:
     name: str = field(
         default="",
         metadata={
-            "comment": "The name of the existing Network Function Definition Group to deploy using this NSD."
+            "comment": (
+                "The name of the existing Network Function Definition Group"
+                " to deploy using this NSD.\n"
+                "This will be the same as the NF name if you published your NFDV using the CLI."
+            )
         },
     )
     version: str = field(
