@@ -59,6 +59,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     config: OnboardingNSDInputConfig
     processors: list[AzureCoreArmBuildProcessor | NFDProcessor]
+    nfvi_types: list = []
 
     @property
     def default_config_file_name(self) -> str:
@@ -122,6 +123,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 # I am concerned that if we have multiple NFs we will have clashing artifact names.
                 # I'm not changing the behaviour right now as it's too high risk, but we should look again here.
                 nfdv_object = self._get_nfdv(resource_element.properties)
+
+                # Add nfvi_type to list for creating nfvisFromSite later
+                self.nfvi_types.append(nfdv_object.properties.network_function_template.nfvi_type)
+
                 nfd_input = NFDInput(
                     # This would be the alternative if we swap from nsd name/version to nfd.
                     # artifact_name=resource_element.properties.name,
@@ -234,13 +239,18 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # List of NF RET names, for adding to required part of CGS
             nf_names.append(processor.name)
 
+
         template_path = get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_DEFINITION_TEMPLATE_FILENAME
         )
 
+        # If all NF RETs nfvi_types are AzureCore, only make one nfviFromSite object
+        if len(set(self.nfvi_types)) == 1 and self.nfvi_types[0] == 'AzureCore':
+            self.nfvi_types = set(self.nfvi_types)
+
         params = {
             "nsdv_description": self.config.nsdv_description,
-            "nfvi_type": self.config.nfvi_type,
+            "nfvi_types": self.nfvi_types,
             "cgs_name": CGS_NAME,
             "nfvi_site_name": self.nfvi_site_name,
             "nf_rets": ret_list,
