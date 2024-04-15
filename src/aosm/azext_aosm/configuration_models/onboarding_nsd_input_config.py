@@ -193,7 +193,13 @@ class OnboardingNSDInputConfig(OnboardingBaseInputConfig):
     resource_element_templates: "list[NetworkFunctionConfig | ArmTemplateConfig]" = (
         field(
             default_factory=lambda: [NetworkFunctionConfig(), ArmTemplateConfig()],
-            metadata={"comment": "List of Resource Element Templates."},
+            metadata={
+                "comment": (
+                    "List of Resource Element Templates (RETs).\n"
+                    "There must be at least one NF RET.\n"
+                    "ArmTemplate RETs are optional. Delete if not required."
+                )
+            },
         )
     )
 
