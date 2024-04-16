@@ -46,7 +46,7 @@ from azext_aosm.definition_folder.builder.json_builder import (
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
-from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion, NFVIType
+from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
@@ -59,8 +59,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     config: OnboardingNSDInputConfig
     processors: list[AzureCoreArmBuildProcessor | NFDProcessor]
-    nfvi_types: list[str] = []
-    
+    nfvi_types: list[Literal["AzureArcKubernetes"] | Literal["AzureOperatorNexus"] |
+                     Literal["AzureCore"] | Literal["Unknown"]] = []
+
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
@@ -125,8 +126,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 nfdv_object = self._get_nfdv(resource_element.properties)
 
                 # Add nfvi_type to list for creating nfvisFromSite later
-                # Until nfvisFromSite implementation is changed, we have decided to have
-                # a 1:1 mapping between NF RET and nfvisFromSite object
+                # There is a 1:1 mapping between NF RET and nfvisFromSite object,
+                # as we shouldn't build NSDVs that deploy different RETs against the same custom location
                 self.nfvi_types.append(nfdv_object.properties.network_function_template.nfvi_type)
 
                 nfd_input = NFDInput(
@@ -243,7 +244,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         # If all NF RETs nfvi_types are AzureCore, only make one nfviFromSite object
         # This is a design decision, for simplification of nfvisFromSite and also
-        # so that users are discouraged from using NFs across multiple locations
+        # so that users are discouraged from deploying NFs across multiple locations
+        # within a single SNS
         if all(nfvi_type == "AzureCore" for nfvi_type in self.nfvi_types):
             self.nfvi_types = ["AzureCore"]
 
