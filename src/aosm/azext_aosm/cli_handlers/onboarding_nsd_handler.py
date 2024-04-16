@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from knack.log import get_logger
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
@@ -46,7 +46,7 @@ from azext_aosm.definition_folder.builder.json_builder import (
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.nfd_input import NFDInput
-from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion
+from azext_aosm.vendored_sdks.models import NetworkFunctionDefinitionVersion, NFVIType
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.configuration_models.common_input import ArmTemplatePropertiesConfig
@@ -59,8 +59,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
     config: OnboardingNSDInputConfig
     processors: list[AzureCoreArmBuildProcessor | NFDProcessor]
-    nfvi_types: list = []
-
+    nfvi_types: list[str] = []
+    
     @property
     def default_config_file_name(self) -> str:
         """Get the default configuration file name."""
@@ -125,6 +125,8 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 nfdv_object = self._get_nfdv(resource_element.properties)
 
                 # Add nfvi_type to list for creating nfvisFromSite later
+                # Until nfvisFromSite implementation is changed, we have decided to have
+                # a 1:1 mapping between NF RET and nfvisFromSite object
                 self.nfvi_types.append(nfdv_object.properties.network_function_template.nfvi_type)
 
                 nfd_input = NFDInput(
@@ -239,14 +241,15 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             # List of NF RET names, for adding to required part of CGS
             nf_names.append(processor.name)
 
+        # If all NF RETs nfvi_types are AzureCore, only make one nfviFromSite object
+        # This is a design decision, for simplification of nfvisFromSite and also
+        # so that users are discouraged from using NFs across multiple locations
+        if all(nfvi_type == "AzureCore" for nfvi_type in self.nfvi_types):
+            self.nfvi_types = ["AzureCore"]
 
         template_path = get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_DEFINITION_TEMPLATE_FILENAME
         )
-
-        # If all NF RETs nfvi_types are AzureCore, only make one nfviFromSite object
-        if len(set(self.nfvi_types)) == 1 and self.nfvi_types[0] == 'AzureCore':
-            self.nfvi_types = set(self.nfvi_types)
 
         params = {
             "nsdv_description": self.config.nsdv_description,
