@@ -201,11 +201,10 @@ class BaseInputProcessor(ABC):
                     )
                 else:
                     if prop in default_values:
-                        # AOSM wants null as a string
-                        # TODO: Flag with RP that this is a bug?
+                        # If default is None, make param required
                         if default_values[prop] is None:
-                            default_values[prop] = "null"
-                        details["default"] = default_values[prop]
+                            deploy_params_schema["required"].append(param_name)
+
                     # If there is a default of '[resourceGroup().location]'
                     # which is not allowed to be passed into CGVs
                     if "default" in details and details["default"] == '[resourceGroup().location]':
