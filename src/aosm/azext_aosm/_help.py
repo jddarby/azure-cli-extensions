@@ -33,20 +33,20 @@ helps[
     parameters:
       - name: --definition-type
         type: string
-        short-summary: Type of network function definition to be built.
+        short-summary: Required. Type of network function definition to be built.
         long-summary: |
           The type of AOSM definition to be built. The generate config file differs depending on type. This can be one of the following values:
-          - vnf: Virtual Network Function
-          - cnf: Container Network Function
+          - cnf: Containerised Network Function
+          - vnf: Virtual Network Function on Azure Core
           - vnf-nexus: Virtual Network Function on Nexus
       - name: --output-file
         type: string
-        short-summary: The name of the output file to write the generated config text to.
+        short-summary: Optional. The name of the output file to write the generated config text to.
     examples:
-      - name: Generate a configuration file for a Virtual Network Function.
-        text: az aosm nfd generate-config --definition-type vnf
       - name: Generate a configuration file for a Containerised Network Function.
         text: az aosm nfd generate-config --definition-type cnf
+      - name: Generate a configuration file for a Virtual Network Function.
+        text: az aosm nfd generate-config --definition-type vnf
       - name: Generate a configuration file for a Virtual Network Function for use on Azure Nexus.
         text: az aosm nfd generate-config --definition-type vnf-nexus
       - name: Generate a configuration file for a Virtual Network Function and write to a specific file.
@@ -63,22 +63,22 @@ helps[
     parameters:
       - name: --definition-type
         type: string
-        short-summary: Type of network function definition to be built.
+        short-summary: Required. Type of network function definition to be built.
         long-summary: |
           The type of AOSM definition to be built. The generate config file differs depending on type. This can be one of the following values:
-          - vnf: Virtual Network Function
-          - cnf: Container Network Function
+          - cnf: Containerised Network Function
+          - vnf: Virtual Network Function on Azure Core
           - vnf-nexus: Virtual Network Function on Nexus
       - name: --config-file
         type: string
-        short-summary: The path to the configuration file.
+        short-summary: Required. The path to the configuration file.
         long-summary: |
           The path to the configuration file. This is a JSONC file that contains the required parameters for building the NFD.
     examples:
-      - name: Build a Virtual Network Function.
-        text: az aosm nfd build --definition-type vnf --config-file my-vnf-input-config.jsonc
       - name: Build a Containerised Network Function.
         text: az aosm nfd build --definition-type cnf --config-file my-cnf-input-config.jsonc
+      - name: Build a Virtual Network Function for use on Azure Core.
+        text: az aosm nfd build --definition-type vnf --config-file my-vnf-input-config.jsonc
       - name: Build a Virtual Network Function for use on Azure Nexus.
         text: az aosm nfd build --definition-type vnf-nexus --config-file my-vnf-nexus-input-config.jsonc
 """
@@ -93,25 +93,25 @@ helps[
     parameters:
       - name: --definition-type
         type: string
-        short-summary: Type of network function definition to be built.
+        short-summary: Required. Type of network function definition to be built.
         long-summary: |
           The type of AOSM definition to be built. The generate config file differs depending on type. This can be one of the following values:
-          - vnf: Virtual Network Function
-          - cnf: Container Network Function
+          - cnf: Containerised Network Function
+          - vnf: Virtual Network Function on Azure Core
           - vnf-nexus: Virtual Network Function on Nexus
       - name: --build-output-folder
         type: string
-        short-summary: Path to the folder to publish, created by the build command.
+        short-summary: Required. Path to the folder to publish, created by the build command.
       - name: --no-subscription-permissions
         type: flag
-        short-summary: Pass this flag if you do not have permission to import to the Publisher subscription.
+        short-summary: Optional. Pass this flag if you do not have permission to import to the Publisher subscription.
         long-summary: |
           Applies only when publishing CNFs - ignored for VNF. Pass this flag if you do not have permission to import to the Publisher subscription (Contributor role + AcrPush role, or a custom role that allows the importImage action and AcrPush over the whole subscription). Using this flag causes image artifacts to be pulled to your local machine and then pushed to the Artifact Store. This is slower than a copy entirely within Azure, but is an alterative if you do not have the required permissions.
     examples:
-      - name: Publish a Virtual Network Function.
-        text: az aosm nfd publish --definition-type vnf --build-output-folder my-vnf-output-folder
       - name: Publish a Containerised Network Function.
         text: az aosm nfd publish --definition-type cnf --build-output-folder my-cnf-output-folder
+      - name: Publish a Virtual Network Function for use on Azure Core.
+        text: az aosm nfd publish --definition-type vnf --build-output-folder my-vnf-output-folder
       - name: Publish a Virtual Network Function for use on Azure Nexus.
         text: az aosm nfd publish --definition-type vnf-nexus --build-output-folder my-vnf-nexus-output-folder
       - name: Publish a Containerised Network Function when you do not have the required import permissions.
@@ -137,7 +137,7 @@ helps[
     parameters:
       - name: --output-file
         type: string
-        short-summary: The name of the output file to write the generated config text to.
+        short-summary: Optional. The name of the output file to write the generated config text to.
     examples:
       - name: Generate a configuration file for a Network Service Design.
         text: az aosm nsd generate-config
@@ -155,7 +155,7 @@ helps[
     parameters:
       - name: --config-file
         type: string
-        short-summary: The path to the configuration file.
+        short-summary: Required. The path to the configuration file.
         long-summary: |
           The path to the configuration file. This is a JSONC file that contains the required parameters for building the NFD.
     examples:
@@ -173,7 +173,7 @@ helps[
     parameters:
       - name: --build-output-folder
         type: string
-        short-summary: Path to the folder to publish, created by the build command.
+        short-summary: Required. Path to the folder to publish, created by the build command.
     examples:
       - name: Publish a Network Service Design.
         text: az aosm nsd publish --build-output-folder my-nsd-output-folder
