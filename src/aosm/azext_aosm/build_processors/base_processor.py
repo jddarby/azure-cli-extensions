@@ -201,10 +201,13 @@ class BaseInputProcessor(ABC):
                     )
                 else:
                     if prop in default_values:
-                        # If default is None, make param required
+                        # RP does not accept null values as defaults,
+                        # which will fail the NFDV publish
+                        # So if there is null default, add to required
                         if default_values[prop] is None:
                             deploy_params_schema["required"].append(param_name)
-
+                        else:
+                            details["default"] = default_values[prop]
                     # If there is a default of '[resourceGroup().location]'
                     # which is not allowed to be passed into CGVs
                     if "default" in details and details["default"] == '[resourceGroup().location]':
