@@ -136,6 +136,17 @@ class BaseInputProcessor(ABC):
 
         Note there is no return value. The schema is passed by reference and modified in place.
 
+        The parameters are handled as follows:
+        1. Required parameters (in 'required' array and no default given):
+            - If there are child properties, recursively check those first.
+            - Otherwise, add to the schema and the 'required' array.
+        2. Optional parameters that have child properties:
+            - Not added to the schema at this point, but we check their children and if they meet requirements for
+              being added to the schema, they will be added then.
+        3. Other optional parameters when expose_all_params = True:
+            - If there are child properties, recursively check those first.
+            - Added to the schema with a default value.
+
         Parameters:
             deploy_params_schema:
                 The schema to be modified. On first call of this method,
@@ -162,7 +173,13 @@ class BaseInputProcessor(ABC):
             param_name = prop if not param_prefix else f"{param_prefix}_{prop}"
 
             # Note: We don't recurse into arrays. For arrays we just dump all the `details` as is.
-            # This is because arrays are 'tricky'. This approach may need to be revisited at some point.
+            # Originally this was because arrays were deemed 'tricky' (may or may not be true).
+            # The risk is that arrays can contain objects, but as we don't want to recurse into those objects, we're
+            # not assessing them. I _think_ this means (though haven't given this a lot of thought):
+            #  - We may include optional properties when we could exclude them.
+            #  - We won't miss required properties (as we include everything in arrays).
+            # This approach was probably "good enough" to get started, but may need to be revisited at some point, for
+            # example if we want to allow more fine tuning of the included optional parameters.
 
             # We have three types of parameter to handle in the following if statements:
             # 1. Required parameters (in 'required' array and no default given).
@@ -171,7 +188,6 @@ class BaseInputProcessor(ABC):
                 and "required" in source_schema
                 and prop in source_schema["required"]
             ):
-                # Note: we only recurse into objects, not arrays. For now, this is sufficient.
                 if "properties" in details:
                     self._generate_schema(
                         deploy_params_schema,
@@ -202,16 +218,16 @@ class BaseInputProcessor(ABC):
                 else:
                     if prop in default_values:
                         # AOSM wants null as a string
-                        # TODO: Flag with RP that this is a bug?
                         if default_values[prop] is None:
                             default_values[prop] = "null"
                         details["default"] = default_values[prop]
-                    # If there is a default of '[resourceGroup().location]'
-                    # which is not allowed to be passed into CGVs
+                    # Special case: a default of '[resourceGroup().location]' may be present from ARM template
+                    # parameters, but this must not be passed into the schema as it's clearly not valid there.
+                    # There may be other dynamic ARM template defaults like this, in which case a more elegant
+                    # solution may be needed.
                     if "default" in details and details["default"] == '[resourceGroup().location]':
-                        # Remove the default
                         del details["default"]
-                        # Make the parameter required (to expose in CGVS without a default)
+                        # Make the parameter required as it no longer has a default
                         deploy_params_schema["required"].append(param_name)
                     deploy_params_schema["properties"][param_name] = details
 

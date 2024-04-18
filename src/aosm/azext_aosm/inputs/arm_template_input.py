@@ -93,20 +93,20 @@ class ArmTemplateInput(BaseInput):
         :type parameters: Dict[str, Any]
         """
         logger.debug("Generating schema from parameters")
-        for key, value in parameters.items():
-            if "defaultValue" not in value:
-                schema["required"].append(key)
-            if value["type"] in ("object", "secureObject"):
-                schema["properties"][key] = {
+        for parameter_name, parameter_value in parameters.items():
+            if "defaultValue" not in parameter_value:
+                schema["required"].append(parameter_name)
+            if parameter_value["type"] in ("object", "secureObject"):
+                schema["properties"][parameter_name] = {
                     "type": "object",
                     "properties": {},
                     "required": [],
                 }
-                if "properties" in value:
+                if "properties" in parameter_value:
                     self._generate_schema_from_arm_params(
-                        schema["properties"][key], value["properties"]
+                        schema["properties"][parameter_name], parameter_value["properties"]
                     )
             else:
-                schema["properties"][key] = {"type": value["type"]}
-                if "defaultValue" in value:
-                    schema["properties"][key]["default"] = value["defaultValue"]
+                schema["properties"][parameter_name] = {"type": parameter_value["type"]}
+                if "defaultValue" in parameter_value:
+                    schema["properties"][parameter_name]["default"] = parameter_value["defaultValue"]
