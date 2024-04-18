@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from knack.log import get_logger
 from azext_aosm.build_processors.nfd_processor import NFDProcessor
@@ -17,7 +17,7 @@ from azext_aosm.common.constants import (  # NSD_DEFINITION_TEMPLATE_FILENAME,
     BASE_FOLDER_NAME,
     CGS_FILENAME,
     CGS_NAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
+    DEPLOY_PARAMETERS_FILENAME,
     MANIFEST_FOLDER_NAME,
     NSD_BASE_TEMPLATE_FILENAME,
     NSD_DEFINITION_FOLDER_NAME,
@@ -58,6 +58,9 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for publishing NFDs."""
 
     config: OnboardingNSDInputConfig
+    processors: list[AzureCoreArmBuildProcessor | NFDProcessor]
+    nfvi_types: list[Literal["AzureArcKubernetes"] | Literal["AzureOperatorNexus"] |
+                     Literal["AzureCore"] | Literal["Unknown"]] = []
 
     @property
     def default_config_file_name(self) -> str:
@@ -104,8 +107,11 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                     ).absolute(),
                 )
                 # TODO: generalise for nexus in nexus ready stories
+                # For NSDs, we don't have the option to expose ARM template parameters. This could be supported by
+                # adding an 'expose_all_parameters' option to NSD input.jsonc file, as we have for NFD input files.
+                # For now, we prefer this simpler interface for NSDs, but we might need to revisit in the future.
                 processor_list.append(
-                    AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+                    AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input, expose_all_params=False)
                 )
             elif resource_element.resource_element_type == "NF":
                 assert isinstance(resource_element.properties, NetworkFunctionPropertiesConfig)
@@ -118,6 +124,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
                 # I am concerned that if we have multiple NFs we will have clashing artifact names.
                 # I'm not changing the behaviour right now as it's too high risk, but we should look again here.
                 nfdv_object = self._get_nfdv(resource_element.properties)
+
+                # Add nfvi_type to list for creating nfvisFromSite later
+                # There is a 1:1 mapping between NF RET and nfvisFromSite object,
+                # as we shouldn't build NSDVs that deploy different RETs against the same custom location
+                self.nfvi_types.append(nfdv_object.properties.network_function_template.nfvi_type)
+
                 nfd_input = NFDInput(
                     # This would be the alternative if we swap from nsd name/version to nfd.
                     # artifact_name=resource_element.properties.name,
@@ -208,11 +220,10 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         # For each RET (arm template or NF), generate RET
         for processor in self.processors:
-            # Generate RET
             nf_ret = processor.generate_resource_element_template()
             ret_list.append(nf_ret)
 
-            # Adding supporting file: config mappings
+            # Add supporting file: config mappings
             deploy_values = nf_ret.configuration.parameter_values
             mapping_file = LocalFileBuilder(
                 Path(
@@ -224,12 +235,19 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
             )
             supporting_files.append(mapping_file)
 
-            # Generate deploymentParameters schema properties
-            params_schema = processor.generate_params_schema()
+            # Generate deployParameters schema properties
+            params_schema = processor.generate_schema()
             schema_properties.update(params_schema)
 
             # List of NF RET names, for adding to required part of CGS
             nf_names.append(processor.name)
+
+        # If all NF RETs nfvi_types are AzureCore, only make one nfviFromSite object
+        # This is a design decision, for simplification of nfvisFromSite and also
+        # so that users are discouraged from deploying NFs across multiple locations
+        # within a single SNS
+        if all(nfvi_type == "AzureCore" for nfvi_type in self.nfvi_types):
+            self.nfvi_types = ["AzureCore"]
 
         template_path = get_template_path(
             NSD_TEMPLATE_FOLDER_NAME, NSD_DEFINITION_TEMPLATE_FILENAME
@@ -237,12 +255,12 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
 
         params = {
             "nsdv_description": self.config.nsdv_description,
-            "nfvi_type": self.config.nfvi_type,
+            "nfvi_types": self.nfvi_types,
             "cgs_name": CGS_NAME,
             "nfvi_site_name": self.nfvi_site_name,
             "nf_rets": ret_list,
             "cgs_file": CGS_FILENAME,
-            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "deploy_parameters_file": DEPLOY_PARAMETERS_FILENAME,
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME,
         }
 
@@ -286,7 +304,7 @@ class OnboardingNSDCLIHandler(OnboardingBaseCLIHandler):
     def _render_config_group_schema_contents(complete_schema, nf_names):
         params_content = {
             "$schema": "https://json-schema.org/draft-07/schema#",
-            "title": f"{CGS_NAME}",
+            "title": CGS_NAME,
             "type": "object",
             "properties": complete_schema,
             "required": nf_names,

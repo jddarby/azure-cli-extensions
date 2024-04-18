@@ -11,13 +11,12 @@ from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
-from azext_aosm.build_processors.base_processor import BaseInputProcessor
 from azext_aosm.common.constants import (
     BASE_FOLDER_NAME,
     VNF_CORE_BASE_TEMPLATE_FILENAME,
     VNF_TEMPLATE_FOLDER_NAME,
     VNF_OUTPUT_FOLDER_FILENAME,
-    DEPLOYMENT_PARAMETERS_FILENAME,
+    DEPLOY_PARAMETERS_FILENAME,
     VHD_PARAMETERS_FILENAME,
     TEMPLATE_PARAMETERS_FILENAME
 )
@@ -66,25 +65,34 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             arm_input = ArmTemplateInput(
                 artifact_name=arm_template.artifact_name,
                 artifact_version=arm_template.version,
-                default_config=None,
+                default_config={"imageName": self.config.nf_name + "Image"},
                 template_path=Path(arm_template.file_path).absolute(),
             )
             processor_list.append(
-                AzureCoreArmBuildProcessor(arm_input.artifact_name, arm_input)
+                AzureCoreArmBuildProcessor(
+                    arm_input.artifact_name, arm_input,
+                    expose_all_params=self.config.expose_all_parameters)
             )
 
         # Instantiate vhd processor
         if not self.config.vhd.artifact_name:
             self.config.vhd.artifact_name = self.config.nf_name + "-vhd"
+
+        if self.config.vhd.file_path:
+            file_path = Path(self.config.vhd.file_path).absolute()
+        else:
+            file_path = None
+
         vhd_processor = VHDProcessor(
             name=self.config.vhd.artifact_name,
             input_artifact=VHDFileInput(
                 artifact_name=self.config.vhd.artifact_name,
                 artifact_version=self.config.vhd.version,
                 default_config=self._get_default_config(self.config.vhd),
-                file_path=Path(self.config.vhd.file_path).absolute(),
+                file_path=file_path,
                 blob_sas_uri=self.config.vhd.blob_sas_url,
             ),
+            expose_all_params=self.config.expose_all_parameters
         )
         processor_list.append(vhd_processor)
         return processor_list
@@ -116,6 +124,9 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             default_config.update({"image_hyper_v_generation": "V1"})
         if vhd.image_api_version:
             default_config.update({"image_api_version": vhd.image_api_version})
+
+        # Add imageName
+        default_config["imageName"] = self.config.nf_name + 'Image'
         return default_config
 
     def _generate_type_specific_nf_application(self, processor) -> Tuple[List, List]:
@@ -162,7 +173,7 @@ class OnboardingCoreVNFCLIHandler(OnboardingVNFCLIHandler):
             "acr_nf_applications": arm_nf_application_list,
             "sa_nf_applications": image_nf_application_list,
             "nexus_image_nf_applications": [],
-            "deployment_parameters_file": DEPLOYMENT_PARAMETERS_FILENAME,
+            "deploy_parameters_file": DEPLOY_PARAMETERS_FILENAME,
             "vhd_parameters_file": VHD_PARAMETERS_FILENAME,
             "template_parameters_file": TEMPLATE_PARAMETERS_FILENAME
         }

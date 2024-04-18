@@ -1,3 +1,7 @@
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
 import copy
 import json
 from pathlib import Path
@@ -64,13 +68,12 @@ class ArmTemplateInput(BaseInput):
             data = json.load(_file)
 
         if "parameters" in data:
-            self._generate_schema_from_params(arm_template_schema, data["parameters"])
+            self._generate_schema_from_arm_params(arm_template_schema, data["parameters"])
         else:
             logger.warning(
                 "No parameters found in the template provided. "
                 "Your NFD will have no deployParameters"
             )
-
         logger.debug(
             "Schema for ARM template input: %s",
             json.dumps(arm_template_schema, indent=4),
@@ -78,7 +81,7 @@ class ArmTemplateInput(BaseInput):
 
         return copy.deepcopy(arm_template_schema)
 
-    def _generate_schema_from_params(
+    def _generate_schema_from_arm_params(
         self, schema: Dict[str, Any], parameters: Dict[str, Any]
     ) -> None:
         """
@@ -100,8 +103,10 @@ class ArmTemplateInput(BaseInput):
                     "required": [],
                 }
                 if "properties" in value:
-                    self._generate_schema_from_params(
+                    self._generate_schema_from_arm_params(
                         schema["properties"][key], value["properties"]
                     )
             else:
                 schema["properties"][key] = {"type": value["type"]}
+                if "defaultValue" in value:
+                    schema["properties"][key]["default"] = value["defaultValue"]

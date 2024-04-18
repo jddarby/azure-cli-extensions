@@ -17,6 +17,7 @@ from azext_aosm.common.artifact import (
 )
 from azext_aosm.definition_folder.builder.local_file_builder import LocalFileBuilder
 from azext_aosm.inputs.helm_chart_input import HelmChartInput
+from azext_aosm.common.registry import ContainerRegistryHandler
 from azext_aosm.vendored_sdks.models import (
     ApplicationEnablement,
     ArtifactType,
@@ -44,21 +45,19 @@ class HelmChartProcessor(BaseInputProcessor):
     A class for processing Helm Chart inputs.
 
     :param name: The name of the artifact.
-    :type name: str
     :param input_artifact: The input artifact.
-    :type input_artifact: HelmChartInput
     """
+    input_artifact: HelmChartInput
 
     def __init__(
         self,
         name: str,
         input_artifact: HelmChartInput,
-        source_registry: str,
-        source_registry_namespace: str,
+        expose_all_params: bool,
+        registry_handler: ContainerRegistryHandler,
     ):
-        super().__init__(name, input_artifact)
-        self.source_registry = source_registry
-        self.source_registry_namespace = source_registry_namespace
+        super().__init__(name, input_artifact, expose_all_params)
+        self.registry_handler = registry_handler
         self.input_artifact: HelmChartInput = input_artifact
 
     def get_artifact_manifest_list(self) -> List[ManifestArtifactFormat]:
@@ -104,7 +103,7 @@ class HelmChartProcessor(BaseInputProcessor):
         logger.debug("Getting artifact details for Helm chart input %s.", self.name)
         artifact_details: List[BaseArtifact] = []
 
-        # We only support local file artifacts for Helm charts
+        # Helm charts can only be local file artifacts
         helm_chart_details = LocalFileACRArtifact(
             artifact_name=self.input_artifact.artifact_name,
             artifact_type=ArtifactType.OCI_ARTIFACT.value,
@@ -113,14 +112,20 @@ class HelmChartProcessor(BaseInputProcessor):
         )
         artifact_details.append(helm_chart_details)
         for image_name, image_version in self._find_chart_images():
-            # We only support remote ACR artifacts for container images
+            # Container images can only be remote ACR artifacts
+            registry, namespace = self.registry_handler.find_registry_for_image(
+                image_name, image_version
+            )
+            if registry is None or namespace is None:
+                continue
+
             artifact_details.append(
                 RemoteACRArtifact(
                     artifact_name=image_name,
                     artifact_type=ArtifactType.OCI_ARTIFACT.value,
                     artifact_version=image_version,
-                    source_registry=self.source_registry,
-                    source_registry_namespace=self.source_registry_namespace,
+                    source_registry=registry,
+                    registry_namespace=namespace,
                 )
             )
 
@@ -145,19 +150,20 @@ class HelmChartProcessor(BaseInputProcessor):
         """
         logger.debug("Generating NF application for Helm chart input %s.", self.name)
         artifact_profile = self._generate_artifact_profile()
-        # We want to remove the registry values paths and image pull secrets values paths from the values mappings
+        assert artifact_profile.helm_artifact_profile is not None
+
+        # Remove the registry values paths and image pull secrets values paths from the values mappings
         # as these values are supplied by NFM when it installs the chart.
-        if artifact_profile.helm_artifact_profile:
-            registry_values_paths = (
-                artifact_profile.helm_artifact_profile.registry_values_paths or []
-            )
-            image_pull_secrets_values_paths = (
-                artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
-                or []
-            )
-            mapping_rule_profile = self._generate_mapping_rule_profile(
-                registry_values_paths + image_pull_secrets_values_paths
-            )
+        registry_values_paths = (
+            artifact_profile.helm_artifact_profile.registry_values_paths or []
+        )
+        image_pull_secrets_values_paths = (
+            artifact_profile.helm_artifact_profile.image_pull_secrets_values_paths
+            or []
+        )
+        mapping_rule_profile = self._generate_mapping_rule_profile(
+            values_to_remove=registry_values_paths + image_pull_secrets_values_paths
+        )
 
         return AzureArcKubernetesHelmApplication(
             name=self.name,
@@ -236,9 +242,9 @@ class HelmChartProcessor(BaseInputProcessor):
         """
         logger.debug("Generating artifact profile for Helm chart input.")
         image_pull_secrets_values_paths: Set[str] = set()
-        self._find_image_pull_secrets_values_paths(
-            self.input_artifact, image_pull_secrets_values_paths
-        )
+        # self._find_image_pull_secrets_values_paths(
+        #     self.input_artifact, image_pull_secrets_values_paths
+        # )
 
         registry_values_paths = self._find_registry_values_paths()
 
