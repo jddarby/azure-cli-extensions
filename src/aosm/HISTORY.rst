@@ -26,7 +26,6 @@ Release History
 * Fixed: Manifest name built from ACR name, so clashes
 * Fixed: Nexus image version must be semver
 * Fixed: Sensible error when no type given in helm chart schema
-* No changes, building wheel from correct branch
 * Fixed: customLocation missing from Nexus
 * Fixed: helm charts not uploading correctly
 * Added: Nexus support
