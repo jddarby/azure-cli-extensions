@@ -203,7 +203,8 @@ class BaseInputProcessor(ABC):
                     if prop in default_values:
                         # RP does not accept null values as defaults,
                         # which will fail the NFDV publish
-                        # So if there is null default, add to required
+                        # To workaround this we don't set a default, so must add to required params instead
+
                         if default_values[prop] is None:
                             deploy_params_schema["required"].append(param_name)
                         else:
