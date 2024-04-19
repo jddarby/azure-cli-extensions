@@ -5,6 +5,9 @@ Release History
 
 2.0.0b1
 ++++++++
+* Renamed nfdvName to nfdv in CGVs
+* Added useful comments to input files
+* Added 1:1 mapping between NFVIsFromSite and NF RETs
 * Added expose_all parameter in input file to expose all parameters in deployParameters and CGS
 * Removed multiple_instances and depends_on from input file
 * Added: mutating webhook for injectArtifactStoreDetails
