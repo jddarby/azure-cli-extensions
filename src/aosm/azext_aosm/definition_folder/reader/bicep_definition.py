@@ -179,10 +179,10 @@ class BicepDefinitionElement(BaseDefinitionElement):
             publisher_exists = False
         
         try:
-            command_context.aosm_client.artifact_store.get(
+            command_context.aosm_client.artifact_stores.get(
                 resource_group_name=config.publisherResourceGroupName,
                 publisher_name=config.publisherName,
-                artifact_store_name=config.saArtifactStoreName,
+                artifact_store_name=config.acrArtifactStoreName,
             )
             artifact_store_exists = True
             BaseResourcesExist.ARTIFACT_STORE = True
