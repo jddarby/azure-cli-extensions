@@ -39,6 +39,9 @@ class ManifestsExist(str, Enum):
     NONE = "none"
     SOME = "some"
 
+class BaseResourcesExist:
+    PUBLISHER = False
+    ARTIFACT_STORE = False
 
 CNF_TYPE = "ContainerizedNetworkFunction"
 VNF_TYPE = "VirtualNetworkFunction"

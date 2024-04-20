@@ -19,7 +19,9 @@ from azext_aosm.configuration_models.common_parameters_config import \
     BaseCommonParametersConfig, CoreVNFCommonParametersConfig
 from azext_aosm.definition_folder.reader.base_definition import \
     BaseDefinitionElement
-from azext_aosm.common.constants import ManifestsExist
+from azext_aosm.common.constants import (
+    ManifestsExist,
+    BaseResourcesExist,)
 
 logger = get_logger(__name__)
 
@@ -153,6 +155,43 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
         return ManifestsExist.NONE
 
+    @staticmethod
+    def _base_Resources_exist(
+        config: BaseCommonParametersConfig, command_context: CommandContext
+    ) -> BaseResourcesExist:
+        """
+
+        Returns True if all required manifests exist, False if none do, and raises an
+        AzCLIError if some but not all exist.
+
+        Current code only allows one manifest for ACR, and one manifest for SA (if applicable),
+        so that's all we check for.
+        """
+        try:
+            command_context.aosm_client.publishers.get(
+                resource_group_name=config.publisherResourceGroupName,
+                publisher_name=config.publisherName,
+            )
+            publisher_exists = True
+            BaseResourcesExist.PUBLISHER = True
+
+        except azure_exceptions.ResourceNotFoundError:
+            publisher_exists = False
+        
+        try:
+            command_context.aosm_client.artifact_store.get(
+                resource_group_name=config.publisherResourceGroupName,
+                publisher_name=config.publisherName,
+                artifact_store_name=config.saArtifactStoreName,
+            )
+            artifact_store_exists = True
+            BaseResourcesExist.ARTIFACT_STORE = True
+
+        except azure_exceptions.ResourceNotFoundError:
+            artifact_store_exists = False
+        
+        return BaseResourcesExist
+
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
@@ -168,6 +207,14 @@ class BicepDefinitionElement(BaseDefinitionElement):
         # Currently, _only_ manifests are special, but if we need to add any more custom code,
         # breaking this into a separate class (like we do for artifacts) is probably the right
         # thing to do.
+        if self.path.name == "base":
+            base_resources_exist = self._base_Resources_exist(
+                config=config, command_context=command_context
+            )
+            if base_resources_exist.PUBLISHER and base_resources_exist.ARTIFACT_STORE:
+                logger.info("Base resources already exist; skipping deployment.")
+                return
+
         if self.path.name == "artifactManifest":
             manifests_exist = self._artifact_manifests_exist(
                 config=config, command_context=command_context
