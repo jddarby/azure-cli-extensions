@@ -122,22 +122,23 @@ class HelmChartInput(BaseInput):
         :rtype: HelmChartInput
         """
         logger.debug("Creating Helm chart input from chart path '%s'", chart_path)
-        temp_dir = Path(tempfile.mkdtemp())
+
         if not chart_path.exists():
             raise FileNotFoundError(
                 f"ERROR: The Helm chart '{chart_path}' does not exist."
             )
-        logger.debug("Unpacking Helm chart to %s", temp_dir)
+
         if chart_path.is_dir():
-            unpacked_chart_path = Path(chart_path)
+            name, version = HelmChartInput._get_name_and_version(Path(chart_path))
         else:
+            temp_dir = Path(tempfile.mkdtemp())
+            logger.debug("Unpacking Helm chart to %s", temp_dir)
             unpacked_chart_path = extract_tarfile(chart_path, temp_dir)
 
-        name, version = HelmChartInput._get_name_and_version(unpacked_chart_path)
-
-        shutil.rmtree(temp_dir)
-
-        logger.debug("Deleted temporary directory %s", temp_dir)
+            name, version = HelmChartInput._get_name_and_version(unpacked_chart_path)
+            
+            shutil.rmtree(temp_dir)
+            logger.debug("Deleted temporary directory %s", temp_dir)
 
         return HelmChartInput(
             artifact_name=name,
