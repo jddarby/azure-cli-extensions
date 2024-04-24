@@ -19,6 +19,7 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.artifact_builder import ArtifactDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.json_builder import JSONDefinitionElementBuilder
 
 from azext_aosm.common.constants import (
     ARTIFACT_LIST_FILENAME,
@@ -204,6 +205,7 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
             Path(VNF_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
         return base_file
+
     @abstractmethod
     def _get_nfd_template_params(self, arm_nf_application_list, image_nf_application_list):
         return NotImplementedError

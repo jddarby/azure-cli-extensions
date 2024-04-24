@@ -3,19 +3,14 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from __future__ import annotations
-
-import json
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from knack.log import get_logger
 
 from azext_aosm.build_processors.arm_processor import AzureCoreArmBuildProcessor
 from azext_aosm.build_processors.vhd_processor import VHDProcessor
 from azext_aosm.common.constants import (
-    BASE_FOLDER_NAME,
     VNF_CORE_BASE_TEMPLATE_FILENAME,
-    VNF_TEMPLATE_FOLDER_NAME,
-    VNF_OUTPUT_FOLDER_FILENAME,
     DEPLOY_PARAMETERS_FILENAME,
     VHD_PARAMETERS_FILENAME,
     TEMPLATE_PARAMETERS_FILENAME
@@ -26,16 +21,8 @@ from azext_aosm.configuration_models.onboarding_vnf_input_config import (
 from azext_aosm.configuration_models.common_parameters_config import (
     CoreVNFCommonParametersConfig,
 )
-from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.json_builder import (
-    JSONDefinitionElementBuilder,
-)
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 from azext_aosm.inputs.vhd_file_input import VHDFileInput
-from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
-
 from .onboarding_vnf_handler import OnboardingVNFCLIHandler
 logger = get_logger(__name__)
 
