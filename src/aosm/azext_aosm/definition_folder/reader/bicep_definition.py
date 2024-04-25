@@ -229,12 +229,6 @@ class BicepDefinitionElement(BaseDefinitionElement):
     ):
         """Deploy the element."""
         # TODO: Deploying base takes about 4 minutes, even if everything is already deployed.
-        # We should have a check to see if it's already deployed and skip it if so.
-        # The following can be used to speed up testing by skipping base deploy: TODO: remove this
-        # if self.path.name == "base":
-        #     print("Temporarily skip base for debugging")
-        #     return
-
         # artifact manifests return an error if it already exists, so they need special handling.
         # Currently, _only_ manifests are special, but if we need to add any more custom code,
         # breaking this into a separate class (like we do for artifacts) is probably the right
