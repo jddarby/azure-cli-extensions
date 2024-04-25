@@ -39,8 +39,6 @@ class ManifestsExist(str, Enum):
     NONE = "none"
     SOME = "some"
 
-class BaseResourcesExist:
-    BASE_RESOURCES_EXIST = False
 
 CNF_TYPE = "ContainerizedNetworkFunction"
 VNF_TYPE = "VirtualNetworkFunction"

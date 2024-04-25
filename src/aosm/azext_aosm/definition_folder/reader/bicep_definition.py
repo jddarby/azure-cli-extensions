@@ -15,13 +15,17 @@ from azure.mgmt.resource.resources.models import DeploymentExtended
 from knack.log import get_logger
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.utils import convert_bicep_to_arm
-from azext_aosm.configuration_models.common_parameters_config import \
-    BaseCommonParametersConfig, CoreVNFCommonParametersConfig, NFDCommonParametersConfig, NexusVNFCommonParametersConfig, NSDCommonParametersConfig
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+    CoreVNFCommonParametersConfig,
+    NFDCommonParametersConfig,
+    NSDCommonParametersConfig
+)
 from azext_aosm.definition_folder.reader.base_definition import \
     BaseDefinitionElement
 from azext_aosm.common.constants import (
     ManifestsExist,
-    BaseResourcesExist,)
+)
 
 logger = get_logger(__name__)
 
@@ -158,7 +162,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
     @staticmethod
     def _base_Resources_exist(
         config: BaseCommonParametersConfig, command_context: CommandContext
-    ) -> BaseResourcesExist:
+    ) -> bool:
         """
 
         Returns True if all required manifests exist, False if none do, and raises an
@@ -167,7 +171,6 @@ class BicepDefinitionElement(BaseDefinitionElement):
         Current code only allows one manifest for ACR, and one manifest for SA (if applicable),
         so that's all we check for.
         """
-        base_resources_exist = BaseResourcesExist.BASE_RESOURCES_EXIST
         try:
             command_context.aosm_client.publishers.get(
                 resource_group_name=config.publisherResourceGroupName,
@@ -186,7 +189,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             base_resources_exist = True
         except azure_exceptions.ResourceNotFoundError:
             base_resources_exist = False
-        
+
         if isinstance(config, NFDCommonParametersConfig):
             try:
                 command_context.aosm_client.network_function_definition_groups.get(
@@ -197,7 +200,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
                 base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
                 base_resources_exist = False
-            
+
         if isinstance(config, CoreVNFCommonParametersConfig):
             try:
                 command_context.aosm_client.artifact_stores.get(
@@ -208,7 +211,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
                 base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
                 base_resources_exist = False
-        
+
         if isinstance(config, NSDCommonParametersConfig):
             try:
                 command_context.aosm_client.network_service_design_groups.get(
@@ -220,8 +223,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             except azure_exceptions.ResourceNotFoundError:
                 base_resources_exist = False
 
-        BaseResourcesExist.BASE_RESOURCES_EXIST = base_resources_exist
-        return BaseResourcesExist
+        return base_resources_exist
 
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
@@ -242,7 +244,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             base_resources_exist = self._base_Resources_exist(
                 config=config, command_context=command_context
             )
-            if base_resources_exist.BASE_RESOURCES_EXIST:
+            if base_resources_exist:
                 logger.info("Base resources already exist; skipping deployment.")
                 return
 
