@@ -16,7 +16,7 @@ from knack.log import get_logger
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.utils import convert_bicep_to_arm
 from azext_aosm.configuration_models.common_parameters_config import \
-    BaseCommonParametersConfig, CoreVNFCommonParametersConfig
+    BaseCommonParametersConfig, CoreVNFCommonParametersConfig, NFDCommonParametersConfig, NexusVNFCommonParametersConfig, NSDCommonParametersConfig
 from azext_aosm.definition_folder.reader.base_definition import \
     BaseDefinitionElement
 from azext_aosm.common.constants import (
@@ -167,29 +167,60 @@ class BicepDefinitionElement(BaseDefinitionElement):
         Current code only allows one manifest for ACR, and one manifest for SA (if applicable),
         so that's all we check for.
         """
+        base_resources_exist = BaseResourcesExist.BASE_RESOURCES_EXIST
         try:
             command_context.aosm_client.publishers.get(
                 resource_group_name=config.publisherResourceGroupName,
                 publisher_name=config.publisherName,
             )
-            publisher_exists = True
-            BaseResourcesExist.PUBLISHER = True
-
+            base_resources_exist = True
         except azure_exceptions.ResourceNotFoundError:
-            publisher_exists = False
-        
+            base_resources_exist = False
+
         try:
             command_context.aosm_client.artifact_stores.get(
                 resource_group_name=config.publisherResourceGroupName,
                 publisher_name=config.publisherName,
                 artifact_store_name=config.acrArtifactStoreName,
             )
-            artifact_store_exists = True
-            BaseResourcesExist.ARTIFACT_STORE = True
-
+            base_resources_exist = True
         except azure_exceptions.ResourceNotFoundError:
-            artifact_store_exists = False
+            base_resources_exist = False
         
+        if isinstance(config, NFDCommonParametersConfig):
+            try:
+                command_context.aosm_client.nfDefinitionGroups.get(
+                    resource_group_name=config.publisherResourceGroupName,
+                    publisher_name=config.publisherName,
+                    nf_name=config.nfDefinitionGroup,
+                )
+                base_resources_exist = True
+            except azure_exceptions.ResourceNotFoundError:
+                base_resources_exist = False
+            
+        if isinstance(config, CoreVNFCommonParametersConfig):
+            try:
+                command_context.aosm_client.artifact_stores.get(
+                    resource_group_name=config.publisherResourceGroupName,
+                    publisher_name=config.publisherName,
+                    artifact_store_name=config.saArtifactStoreName,
+                )
+                base_resources_exist = True
+            except azure_exceptions.ResourceNotFoundError:
+                base_resources_exist = False
+        
+        if isinstance(config, NSDCommonParametersConfig):
+            try:
+                command_context.aosm_client.nsDesignGroups.get(
+                    resource_group_name=config.publisherResourceGroupName,
+                    publisher_name=config.publisherName,
+                    nsd_name=config.nsDesignGroup,
+                )
+                base_resources_exist = True
+            except azure_exceptions.ResourceNotFoundError:
+                base_resources_exist = False
+
+        BaseResourcesExist.BASE_RESOURCES_EXIST = base_resources_exist
         return BaseResourcesExist
 
     def deploy(

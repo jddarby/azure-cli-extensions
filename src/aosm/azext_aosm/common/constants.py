@@ -40,8 +40,7 @@ class ManifestsExist(str, Enum):
     SOME = "some"
 
 class BaseResourcesExist:
-    PUBLISHER = False
-    ARTIFACT_STORE = False
+    BASE_RESOURCES_EXIST = False
 
 CNF_TYPE = "ContainerizedNetworkFunction"
 VNF_TYPE = "VirtualNetworkFunction"
