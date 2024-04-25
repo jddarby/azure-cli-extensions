@@ -175,9 +175,8 @@ class BicepDefinitionElement(BaseDefinitionElement):
                 resource_group_name=config.publisherResourceGroupName,
                 publisher_name=config.publisherName,
             )
-            base_resources_exist = True
         except azure_exceptions.ResourceNotFoundError:
-            base_resources_exist = False
+            return False
 
         try:
             command_context.aosm_client.artifact_stores.get(
@@ -185,9 +184,8 @@ class BicepDefinitionElement(BaseDefinitionElement):
                 publisher_name=config.publisherName,
                 artifact_store_name=config.acrArtifactStoreName,
             )
-            base_resources_exist = True
         except azure_exceptions.ResourceNotFoundError:
-            base_resources_exist = False
+            return False
 
         if isinstance(config, NFDCommonParametersConfig):
             try:
@@ -196,9 +194,8 @@ class BicepDefinitionElement(BaseDefinitionElement):
                     publisher_name=config.publisherName,
                     network_function_definition_group_name=config.nfDefinitionGroup,
                 )
-                base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
-                base_resources_exist = False
+                return False
 
         if isinstance(config, CoreVNFCommonParametersConfig):
             try:
@@ -207,9 +204,8 @@ class BicepDefinitionElement(BaseDefinitionElement):
                     publisher_name=config.publisherName,
                     artifact_store_name=config.saArtifactStoreName,
                 )
-                base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
-                base_resources_exist = False
+                return False
 
         if isinstance(config, NSDCommonParametersConfig):
             try:
@@ -218,11 +214,10 @@ class BicepDefinitionElement(BaseDefinitionElement):
                     publisher_name=config.publisherName,
                     network_service_design_group_name=config.nsDesignGroup,
                 )
-                base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
-                base_resources_exist = False
+                return False
 
-        return base_resources_exist
+        return True
 
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
