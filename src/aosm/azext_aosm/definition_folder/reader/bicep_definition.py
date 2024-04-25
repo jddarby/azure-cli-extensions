@@ -189,10 +189,10 @@ class BicepDefinitionElement(BaseDefinitionElement):
         
         if isinstance(config, NFDCommonParametersConfig):
             try:
-                command_context.aosm_client.nfDefinitionGroups.get(
+                command_context.aosm_client.network_function_definition_groups.get(
                     resource_group_name=config.publisherResourceGroupName,
                     publisher_name=config.publisherName,
-                    nf_name=config.nfDefinitionGroup,
+                    network_function_definition_group_name=config.nfDefinitionGroup,
                 )
                 base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
@@ -211,10 +211,10 @@ class BicepDefinitionElement(BaseDefinitionElement):
         
         if isinstance(config, NSDCommonParametersConfig):
             try:
-                command_context.aosm_client.nsDesignGroups.get(
+                command_context.aosm_client.network_service_design_groups.get(
                     resource_group_name=config.publisherResourceGroupName,
                     publisher_name=config.publisherName,
-                    nsd_name=config.nsDesignGroup,
+                    network_service_design_group_name=config.nsDesignGroup,
                 )
                 base_resources_exist = True
             except azure_exceptions.ResourceNotFoundError:
@@ -242,7 +242,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             base_resources_exist = self._base_Resources_exist(
                 config=config, command_context=command_context
             )
-            if base_resources_exist.PUBLISHER and base_resources_exist.ARTIFACT_STORE:
+            if base_resources_exist.BASE_RESOURCES_EXIST:
                 logger.info("Base resources already exist; skipping deployment.")
                 return
 
