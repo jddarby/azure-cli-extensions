@@ -160,7 +160,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
         return ManifestsExist.NONE
 
     @staticmethod
-    def _base_Resources_exist(
+    def _base_resources_exist(
         config: BaseCommonParametersConfig, command_context: CommandContext
     ) -> bool:
         """
@@ -240,7 +240,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
         # breaking this into a separate class (like we do for artifacts) is probably the right
         # thing to do.
         if self.path.name == "base":
-            base_resources_exist = self._base_Resources_exist(
+            base_resources_exist = self._base_resources_exist(
                 config=config, command_context=command_context
             )
             if base_resources_exist:
