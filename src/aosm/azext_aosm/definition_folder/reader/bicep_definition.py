@@ -165,8 +165,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
     ) -> bool:
         """
 
-        Returns True if all required manifests exist, False if none do, and raises an
-        AzCLIError if some but not all exist.
+        Returns True if all base resources exist, False if even one does not.
 
         Current code only allows one manifest for ACR, and one manifest for SA (if applicable),
         so that's all we check for.
