@@ -12,6 +12,17 @@ from knack.log import get_logger
 from azext_aosm.common.constants import BASE_SCHEMA
 from azext_aosm.inputs.base_input import BaseInput
 
+from azext_aosm.common.constants import (
+    BASE_FOLDER_NAME,
+    VNF_CORE_BASE_TEMPLATE_FILENAME,
+    VNF_TEMPLATE_FOLDER_NAME,
+    VNF_OUTPUT_FOLDER_FILENAME,
+    DEPLOY_PARAMETERS_FILENAME,
+    VHD_PARAMETERS_FILENAME,
+    TEMPLATE_PARAMETERS_FILENAME,
+    VALID_VNF_TEMPLATE_RESOURCE_TYPES    
+)
+
 logger = get_logger(__name__)
 
 
@@ -110,3 +121,17 @@ class ArmTemplateInput(BaseInput):
                 schema["properties"][key] = {"type": value["type"]}
                 if "defaultValue" in value:
                     schema["properties"][key]["default"] = value["defaultValue"]
+
+
+    def validate_resource_types(self):
+        with open(Path(self.template_path).absolute()) as f:
+            data = json.load(f)
+            arm_resource_types = [resource['type'] for resource in data['resources']]            
+            for resource_type in arm_resource_types:
+                resource_type_prefix = resource_type.split('/')[0]
+                print("********RT is",resource_type)
+                if resource_type_prefix not in VALID_VNF_TEMPLATE_RESOURCE_TYPES:
+                    print("Invalid resource type found in ARM template: ", resource_type)
+                    return False
+
+        return True

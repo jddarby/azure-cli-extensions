@@ -18,7 +18,7 @@ from azext_aosm.common.constants import (
     VNF_OUTPUT_FOLDER_FILENAME,
     DEPLOY_PARAMETERS_FILENAME,
     VHD_PARAMETERS_FILENAME,
-    TEMPLATE_PARAMETERS_FILENAME
+    TEMPLATE_PARAMETERS_FILENAME        
 )
 from azext_aosm.configuration_models.onboarding_vnf_input_config import (
     OnboardingCoreVNFInputConfig,

@@ -2,7 +2,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+
 from __future__ import annotations
+import json
 
 from pathlib import Path
 from abc import abstractmethod
@@ -19,7 +21,6 @@ from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.artifact_builder import ArtifactDefinitionElementBuilder
-
 from azext_aosm.common.constants import (
     ARTIFACT_LIST_FILENAME,
     NF_DEFINITION_FOLDER_NAME,
@@ -178,3 +179,16 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     @abstractmethod
     def _generate_type_specific_artifact_manifest(self, processor):
         return NotImplementedError
+    
+    def _validate_arm_template(self):
+        for processor in self.processors:
+            if isinstance(processor, BaseArmBuildProcessor):
+                processor.input_artifact.validate_resource_types()
+            
+    def pre_validate_build(self):
+        """Run all validation functions required before building the vnf."""
+        logger.debug("Pre-validating build")
+
+        self._validate_arm_template()
+      
+
