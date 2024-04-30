@@ -95,8 +95,6 @@ VALID_VNF_TEMPLATE_RESOURCE_TYPES = [
     'Microsoft.ManagedIdentity'
 ]
 
-
-
 #################
 # OLD CONSTANTS #
 #################

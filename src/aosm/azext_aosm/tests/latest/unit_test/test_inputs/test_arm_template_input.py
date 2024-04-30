@@ -10,6 +10,10 @@ from unittest.mock import mock_open, patch
 
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 
+from azext_aosm.common.exceptions import (
+   InvalidARMResourceType
+)
+
 code_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(code_directory, "../.."))
 arm_template_path = os.path.join(parent_directory, "mock_arm_templates", "simple-template.json")
@@ -172,7 +176,7 @@ class TestARMTemplateInput(TestCase):
         self.assertEqual(schema, expected_schema)
 
     def test_validate_arm_templates_invalid(self):                       
-        """Test the validate_resource_types method."""
+        """Test the validate_resource_types method with invalid resource type."""
         arm_template_input = self.arm_input
 
         invalid_arm_input = ArmTemplateInput(
@@ -181,13 +185,11 @@ class TestARMTemplateInput(TestCase):
             template_path=invalid_arm_template_path,
             default_config=None
         )        
-        result = invalid_arm_input.validate_resource_types()
-
-        # Assert the result
-        self.assertFalse(result)
-
+        with self.assertRaises(InvalidARMResourceType):
+            invalid_arm_input.validate_resource_types()
+       
     def test_validate_arm_templates_valid(self):                       
-        """Test the validate_resource_types method."""
+        """Test the validate_resource_types method with valid resource types."""
         arm_template_input = self.arm_input
 
         invalid_arm_input = ArmTemplateInput(
@@ -196,7 +198,4 @@ class TestARMTemplateInput(TestCase):
             template_path=valid_arm_template_path,
             default_config=None
         )        
-        result = invalid_arm_input.validate_resource_types()
-
-        # Assert the result
-        self.assertTrue(result)        
+        invalid_arm_input.validate_resource_types()
