@@ -199,10 +199,10 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
         if isinstance(config, CoreVNFCommonParametersConfig):
             try:
-                command_context.aosm_client.artifact_stores.get(
+                command_context.aosm_client.storage_accounts.get(
                     resource_group_name=config.publisherResourceGroupName,
                     publisher_name=config.publisherName,
-                    artifact_store_name=config.saArtifactStoreName,
+                    storgae_account_name=config.saArtifactStoreName,
                 )
             except azure_exceptions.ResourceNotFoundError:
                 return False
