@@ -65,12 +65,39 @@ class TestBicepDefinitionElement(unittest.TestCase):
                 result = BicepDefinitionElement._base_resources_exist(config, self.command_context)
                 self.assertTrue(result)
     
-    def test_base_resources_exist_few_base_resources_missing(self):
+    def test_base_resources_exist_publisher_missing(self):
         for resource_type, config in self.resources.items():
             with self.subTest(resource_type=resource_type):
                 self.command_context.aosm_client.publishers.get.side_effect = self.mock_exception
                 result = BicepDefinitionElement._base_resources_exist(config, self.command_context)
                 self.assertFalse(result)
+
+    def test_base_resources_exist_artifact_store_missing(self):
+        for resource_type, config in self.resources.items():
+            with self.subTest(resource_type=resource_type):
+                self.command_context.aosm_client.artifact_stores.get.side_effect = self.mock_exception
+                result = BicepDefinitionElement._base_resources_exist(config, self.command_context)
+                self.assertFalse(result)
+    
+    def test_base_resources_exist_nfd_group_missing(self):
+        for resource_type, config in self.resources.items():
+            if(resource_type != "nsd"):
+                with self.subTest(resource_type=resource_type):
+                    self.command_context.aosm_client.network_function_definition_groups.get.side_effect = self.mock_exception
+                    result = BicepDefinitionElement._base_resources_exist(config, self.command_context)
+                    self.assertFalse(result)
+
+    def test_base_resources_exist_sa_store_missing_vnf(self):
+        self.config = self.resources["vnf"]
+        self.command_context.aosm_client.storage_accounts.get.side_effect = self.mock_exception
+        result = BicepDefinitionElement._base_resources_exist(self.config, self.command_context)
+        self.assertFalse(result)
+
+    def test_base_resources_exist_nsd_group_missing(self):
+        self.config = self.resources["nsd"]
+        self.command_context.aosm_client.network_service_design_groups.get.side_effect = self.mock_exception
+        result = BicepDefinitionElement._base_resources_exist(self.config, self.command_context)
+        self.assertFalse(result)
 
     def test_base_resources_exist_all_base_resources_missing_cnf(self):
         self.config = self.resources["cnf"]
