@@ -136,7 +136,7 @@ class HelmChartInput(BaseInput):
             unpacked_chart_path = extract_tarfile(chart_path, temp_dir)
 
             name, version = HelmChartInput._get_name_and_version(unpacked_chart_path)
-            
+
             shutil.rmtree(temp_dir)
             logger.debug("Deleted temporary directory %s", temp_dir)
 
