@@ -11,6 +11,10 @@ from knack.log import get_logger
 
 from azext_aosm.common.constants import BASE_SCHEMA
 from azext_aosm.inputs.base_input import BaseInput
+from azext_aosm.common.constants import (
+    VALID_VNF_TEMPLATE_RESOURCE_TYPES
+)
+from azure.cli.core.azclierror import InvalidTemplateError
 
 logger = get_logger(__name__)
 
@@ -110,3 +114,15 @@ class ArmTemplateInput(BaseInput):
                 schema["properties"][key] = {"type": value["type"]}
                 if "defaultValue" in value:
                     schema["properties"][key]["default"] = value["defaultValue"]
+
+    def validate_resource_types(self):
+        with open(Path(self.template_path).absolute()) as f:
+            data = json.load(f)
+            arm_resource_types = [resource['type'] for resource in data['resources']]
+            for resource_type in arm_resource_types:
+                resource_type_prefix = resource_type.split('/')[0] if '/' in resource_type else resource_type
+                if resource_type_prefix not in VALID_VNF_TEMPLATE_RESOURCE_TYPES:
+                    raise InvalidTemplateError(
+                        f"ERROR: The resource type '{resource_type_prefix}' "
+                        " used in the ARM template is not valid. "
+                        f" Valid types are: {', '.join(VALID_VNF_TEMPLATE_RESOURCE_TYPES)}")

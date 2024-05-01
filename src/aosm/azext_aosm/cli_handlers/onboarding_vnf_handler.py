@@ -2,8 +2,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
+
 from __future__ import annotations
 import json
+
 from pathlib import Path
 from abc import abstractmethod
 from typing import Optional
@@ -217,6 +219,17 @@ class OnboardingVNFCLIHandler(OnboardingNFDBaseCLIHandler):
     @abstractmethod
     def _generate_type_specific_artifact_manifest(self, processor):
         return NotImplementedError
+
+    def _validate_arm_template(self):
+        for processor in self.processors:
+            if isinstance(processor, BaseArmBuildProcessor):
+                processor.input_artifact.validate_resource_types()
+
+    def pre_validate_build(self):
+        """Run all validation functions required before building the vnf."""
+        logger.debug("Pre-validating build")
+
+        self._validate_arm_template()
 
     @property
     def input_config(self):

@@ -85,6 +85,16 @@ CNF_TEMPLATE_FOLDER_NAME = "cnf"
 
 NEXUS_IMAGE_REGEX = r"^[\~]?(\d+)\.(\d+)\.(\d+)$"
 
+VALID_VNF_TEMPLATE_RESOURCE_TYPES = [
+    'Microsoft.Compute',
+    'Microsoft.Network',
+    'Microsoft.NetworkCloud',
+    'Microsoft.Storage',
+    'Microsoft.NetworkFabric',
+    'Microsoft.Authorization',
+    'Microsoft.ManagedIdentity'
+]
+
 #################
 # OLD CONSTANTS #
 #################

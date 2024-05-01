@@ -10,11 +10,14 @@ from unittest.mock import mock_open, patch
 
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 
+from azure.cli.core.azclierror import InvalidTemplateError
+
 code_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(code_directory, "../.."))
 arm_template_path = os.path.join(parent_directory, "mock_arm_templates", "simple-template.json")
 no_params_template_path = os.path.join(parent_directory, "mock_arm_templates", "no-params-template.json")
-
+valid_arm_template_path = os.path.join(parent_directory, "mock_arm_templates", "valid-template.json")
+invalid_arm_template_path = os.path.join(parent_directory, "mock_arm_templates", "invalid-template.json")
 
 class TestARMTemplateInput(TestCase):
     """Test the ARMTempalteInput class."""
@@ -169,3 +172,28 @@ class TestARMTemplateInput(TestCase):
                             },
                            'required': ['test', 'vmImageRepositoryCredentials']}
         self.assertEqual(schema, expected_schema)
+
+    def test_validate_arm_templates_invalid(self):                       
+        """Test the validate_resource_types method with invalid resource type."""
+        arm_template_input = self.arm_input
+
+        invalid_arm_input = ArmTemplateInput(
+            artifact_name="test-artifact-name",
+            artifact_version="1.1.1",
+            template_path=invalid_arm_template_path,
+            default_config=None
+        )        
+        with self.assertRaises(InvalidTemplateError):
+            invalid_arm_input.validate_resource_types()
+       
+    def test_validate_arm_templates_valid(self):                       
+        """Test the validate_resource_types method with valid resource types."""
+        arm_template_input = self.arm_input
+
+        invalid_arm_input = ArmTemplateInput(
+            artifact_name="test-artifact-name1",
+            artifact_version="1.1.1",
+            template_path=valid_arm_template_path,
+            default_config=None
+        )        
+        invalid_arm_input.validate_resource_types()
