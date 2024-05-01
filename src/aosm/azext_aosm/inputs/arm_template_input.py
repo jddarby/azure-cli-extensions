@@ -14,10 +14,7 @@ from azext_aosm.inputs.base_input import BaseInput
 from azext_aosm.common.constants import (
     VALID_VNF_TEMPLATE_RESOURCE_TYPES
 )
-
-from azext_aosm.common.exceptions import (
-    InvalidARMResourceType
-)
+from azure.cli.core.azclierror import InvalidTemplateError
 
 logger = get_logger(__name__)
 
@@ -125,7 +122,7 @@ class ArmTemplateInput(BaseInput):
             for resource_type in arm_resource_types:
                 resource_type_prefix = resource_type.split('/')[0] if '/' in resource_type else resource_type
                 if resource_type_prefix not in VALID_VNF_TEMPLATE_RESOURCE_TYPES:
-                    raise InvalidARMResourceType(
+                    raise InvalidTemplateError(
                         f"ERROR: The resource type '{resource_type_prefix}' "
                         " used in the ARM template is not valid. "
                         f" Valid types are: {', '.join(VALID_VNF_TEMPLATE_RESOURCE_TYPES)}")

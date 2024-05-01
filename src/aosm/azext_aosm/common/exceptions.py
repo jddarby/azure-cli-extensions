@@ -27,7 +27,3 @@ class DefaultValuesNotFoundError(UserFault):
 
 class TemplateValidationError(Exception):
     """Raised when template validation fails"""
-
-
-class InvalidARMResourceType(Exception):
-    """Raise when Resource type used in the ARM template is not in the allowed list"""

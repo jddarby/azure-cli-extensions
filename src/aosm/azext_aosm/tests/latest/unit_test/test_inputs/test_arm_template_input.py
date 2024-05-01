@@ -10,9 +10,7 @@ from unittest.mock import mock_open, patch
 
 from azext_aosm.inputs.arm_template_input import ArmTemplateInput
 
-from azext_aosm.common.exceptions import (
-   InvalidARMResourceType
-)
+from azure.cli.core.azclierror import InvalidTemplateError
 
 code_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(code_directory, "../.."))
@@ -185,7 +183,7 @@ class TestARMTemplateInput(TestCase):
             template_path=invalid_arm_template_path,
             default_config=None
         )        
-        with self.assertRaises(InvalidARMResourceType):
+        with self.assertRaises(InvalidTemplateError):
             invalid_arm_input.validate_resource_types()
        
     def test_validate_arm_templates_valid(self):                       
