@@ -4,6 +4,7 @@ Release History
 ===============
 2.0.0b2
 ++++++++
+* added sns generate-config command
 * added a check to make sure resource type used in ARM template are in allowed list
 2.0.0b1
 ++++++++
