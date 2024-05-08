@@ -56,3 +56,11 @@ class NSDCommonParametersConfig(BaseCommonParametersConfig):
     nsDesignGroup: str
     nsDesignVersion: str
     nfviSiteName: str
+
+
+@dataclass(frozen=True)
+class SNSCommonParametersConfig():
+    """Common parameters configuration for SNS."""
+    location: str
+    operator_resource_group: str
+    site_name: str
