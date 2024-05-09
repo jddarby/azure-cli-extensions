@@ -2,7 +2,9 @@
 
 Release History
 ===============
-
+2.0.0b2
+++++++++
+* added a check to make sure resource type used in ARM template are in allowed list
 2.0.0b1
 ++++++++
 * Renamed nfdvName to nfdv in CGVs
@@ -35,6 +37,7 @@ Release History
 * Added validation of the values file for helm charts when using the `az aosm nfd build` command for the `cnf` definition type
 * Fixed helm chart image parsing in the `az aosm nfd build` command for the `cnf` definition type. This means that the images can now be extracted correctly from the helm chart.
 * Fixed: infinite loop bug when retrying failed artifact uploads to the ACR
+* Added a check to determine if all base resources are already deployed. If they all are, the deployment of base bicep is skipped.
 
 1.0.0b4
 ++++++++

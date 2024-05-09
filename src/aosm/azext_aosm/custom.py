@@ -31,7 +31,7 @@ def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
         handler = OnboardingNexusVNFCLIHandler()
     else:
         raise UnrecognizedArgumentError(
-            "Invalid definition type, valid values are 'cnf', 'vnf' or 'vnfnexus'")
+            "Invalid definition type, valid values are 'cnf', 'vnf' or 'vnf-nexus'")
     handler.generate_config(output_file)
 
 
@@ -49,7 +49,7 @@ def onboard_nfd_build(
         handler = OnboardingNexusVNFCLIHandler(config_file_path=Path(config_file))
     else:
         raise UnrecognizedArgumentError(
-            "Invalid definition type, valid values are 'cnf', 'vnf' or 'vnfnexus'")
+            "Invalid definition type, valid values are 'cnf', 'vnf' or 'vnf-nexus'")
     handler.build()
 
 
@@ -80,7 +80,7 @@ def onboard_nfd_publish(
             all_deploy_params_file_path=Path(build_output_folder, ALL_PARAMETERS_FILE_NAME))
     else:
         raise UnrecognizedArgumentError(
-            "Invalid definition type, valid values are 'cnf', 'vnf' or 'vnfnexus'")
+            "Invalid definition type, valid values are 'cnf', 'vnf' or 'vnf-nexus'")
     handler.publish(command_context=command_context)
 
 

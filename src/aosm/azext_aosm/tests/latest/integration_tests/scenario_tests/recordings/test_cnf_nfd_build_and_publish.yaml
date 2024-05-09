@@ -13,8 +13,8 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: HEAD
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001?api-version=2022-09-01
   response:
@@ -26,22 +26,75 @@ interactions:
       content-length:
       - '0'
       date:
-      - Tue, 16 Apr 2024 13:00:40 GMT
+      - Tue, 30 Apr 2024 10:33:22 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: D28638F68F3F43E2BFC00BA57AECB72F Ref B: CO6AA3150220029 Ref C: 2024-04-30T10:33:22Z'
     status:
       code: 204
       message: No Content
 - request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      CommandName:
+      - aosm nfd publish
+      Connection:
+      - keep-alive
+      ParameterSetName:
+      - -b --definition-type
+      User-Agent:
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
+    method: GET
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-nginx-publisher?api-version=2023-09-01
+  response:
+    body:
+      string: '{"error": {"code": "ResourceNotFound", "message": "The Resource ''Microsoft.HybridNetwork/publishers/automated-cli-tests-nginx-publisher''
+        under resource group ''cli_test_cnf_nfd_000001'' was not found. For more details
+        please go to https://aka.ms/ARMResourceNotFoundFix"}}'
+    headers:
+      cache-control:
+      - no-cache
+      content-length:
+      - '269'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 30 Apr 2024 10:33:22 GMT
+      expires:
+      - '-1'
+      pragma:
+      - no-cache
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
+      x-content-type-options:
+      - nosniff
+      x-ms-failure-cause:
+      - gateway
+      x-msedge-ref:
+      - 'Ref A: EC0636FFAB1F410E9E78655787223217 Ref B: CO6AA3150219027 Ref C: 2024-04-30T10:33:22Z'
+    status:
+      code: 404
+      message: Not Found
+- request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.26.54.24096", "templateHash": "15628236071821911085"}}, "parameters": {"location":
+      "0.26.170.59819", "templateHash": "10367121729954115364"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of a publisher, expected to be in the resource group where you deploy
       the template"}}, "acrArtifactStoreName": {"type": "string", "metadata": {"description":
@@ -70,26 +123,26 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1890'
+      - '1891'
       Content-Type:
       - application/json
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: POST
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272445",
-        "name": "AOSM_CLI_deployment_1713272445", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "15628236071821911085", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473205",
+        "name": "AOSM_CLI_deployment_1714473205", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "10367121729954115364", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "nfDefinitionGroup": {"type": "String", "value":
         "nginx"}}, "mode": "Incremental", "provisioningState": "Succeeded", "timestamp":
-        "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId": "494dfe8c-15d2-4a98-a99a-137a523a1c25",
+        "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId": "28df1bdb-0625-40d6-9040-6a31051f246c",
         "providers": [{"namespace": "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType":
         "publishers", "locations": ["uksouth"]}, {"resourceType": "publishers/artifactStores",
         "locations": ["uksouth"]}, {"resourceType": "publishers/networkFunctionDefinitionGroups",
@@ -113,24 +166,28 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:00:44 GMT
+      - Tue, 30 Apr 2024 10:33:27 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
       - '1199'
+      x-msedge-ref:
+      - 'Ref A: 9EEF720222B94338A55B28A731B7863B Ref B: CO6AA3150218037 Ref C: 2024-04-30T10:33:25Z'
     status:
       code: 200
       message: OK
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.26.54.24096", "templateHash": "15628236071821911085"}}, "parameters": {"location":
+      "0.26.170.59819", "templateHash": "10367121729954115364"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of a publisher, expected to be in the resource group where you deploy
       the template"}}, "acrArtifactStoreName": {"type": "string", "metadata": {"description":
@@ -159,27 +216,27 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1890'
+      - '1891'
       Content-Type:
       - application/json
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: PUT
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272445",
-        "name": "AOSM_CLI_deployment_1713272445", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "15628236071821911085", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473205",
+        "name": "AOSM_CLI_deployment_1714473205", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "10367121729954115364", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "nfDefinitionGroup": {"type": "String", "value":
         "nginx"}}, "mode": "Incremental", "provisioningState": "Accepted", "timestamp":
-        "2024-04-16T13:00:45.5609042Z", "duration": "PT0.0008285S", "correlationId":
-        "982295a5-7b5c-463b-8d28-52f53624ef6c", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "2024-04-30T10:33:33.4267894Z", "duration": "PT0.0002751S", "correlationId":
+        "be845226-1fdc-4827-baba-0485962c9bb8", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers", "locations": ["uksouth"]},
         {"resourceType": "publishers/artifactStores", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkFunctionDefinitionGroups", "locations": ["uksouth"]}]}],
@@ -194,7 +251,7 @@ interactions:
         "resourceName": "automated-cli-tests-nginx-publisher/nginx"}]}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272445/operationStatuses/08584883344401524198?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473205/operationStatuses/08584871336743247621?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
@@ -202,17 +259,21 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:00:44 GMT
+      - Tue, 30 Apr 2024 10:33:33 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
       - '1199'
+      x-msedge-ref:
+      - 'Ref A: 27777AB7E467463A98FB531E1449C23E Ref B: CO6AA3150218039 Ref C: 2024-04-30T10:33:28Z'
     status:
       code: 201
       message: Created
@@ -230,10 +291,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -245,15 +306,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:00:44 GMT
+      - Tue, 30 Apr 2024 10:33:35 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 329853AD7D9B4EF89594470AC52ABC26 Ref B: CO6AA3150219021 Ref C: 2024-04-30T10:33:34Z'
     status:
       code: 200
       message: OK
@@ -271,10 +336,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -286,15 +351,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:01:15 GMT
+      - Tue, 30 Apr 2024 10:34:05 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 791756FC29FE45A4A5EB878B6390AF0C Ref B: CO6AA3150219027 Ref C: 2024-04-30T10:34:05Z'
     status:
       code: 200
       message: OK
@@ -312,10 +381,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -327,15 +396,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:01:45 GMT
+      - Tue, 30 Apr 2024 10:34:35 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 794BA12B227E487297C72437EDA20BB9 Ref B: CO6AA3150219045 Ref C: 2024-04-30T10:34:36Z'
     status:
       code: 200
       message: OK
@@ -353,10 +426,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -368,15 +441,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:02:15 GMT
+      - Tue, 30 Apr 2024 10:35:07 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 196FEBCCB1524F2B917788E5664A6EC4 Ref B: CO6AA3150219035 Ref C: 2024-04-30T10:35:06Z'
     status:
       code: 200
       message: OK
@@ -394,10 +471,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -409,15 +486,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:02:44 GMT
+      - Tue, 30 Apr 2024 10:35:37 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: BD7B7B00CC2E4D6580E6A5EB37D24056 Ref B: CO6AA3150220037 Ref C: 2024-04-30T10:35:37Z'
     status:
       code: 200
       message: OK
@@ -435,10 +516,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -450,15 +531,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:03:12 GMT
+      - Tue, 30 Apr 2024 10:36:08 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 740FD761516140A49759BFC665C92347 Ref B: CO6AA3150218019 Ref C: 2024-04-30T10:36:08Z'
     status:
       code: 200
       message: OK
@@ -476,10 +561,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -491,15 +576,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:03:42 GMT
+      - Tue, 30 Apr 2024 10:36:38 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 44CD05BC36AF41C187533D1CE61B0FCE Ref B: CO6AA3150219019 Ref C: 2024-04-30T10:36:39Z'
     status:
       code: 200
       message: OK
@@ -517,10 +606,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -532,15 +621,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:13 GMT
+      - Tue, 30 Apr 2024 10:37:10 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 648DB4148F004AEB88612483624E32A5 Ref B: CO6AA3150218027 Ref C: 2024-04-30T10:37:09Z'
     status:
       code: 200
       message: OK
@@ -558,10 +651,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883344401524198?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871336743247621?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -573,15 +666,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:43 GMT
+      - Tue, 30 Apr 2024 10:37:41 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: B203D446009A4AD996FD0F712ECF8D89 Ref B: CO6AA3150217019 Ref C: 2024-04-30T10:37:40Z'
     status:
       code: 200
       message: OK
@@ -599,21 +696,21 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272445",
-        "name": "AOSM_CLI_deployment_1713272445", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "15628236071821911085", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473205",
+        "name": "AOSM_CLI_deployment_1714473205", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "10367121729954115364", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "nfDefinitionGroup": {"type": "String", "value":
         "nginx"}}, "mode": "Incremental", "provisioningState": "Succeeded", "timestamp":
-        "2024-04-16T13:04:32.594907Z", "duration": "PT3M47.0348313S", "correlationId":
-        "982295a5-7b5c-463b-8d28-52f53624ef6c", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "2024-04-30T10:37:27.7733078Z", "duration": "PT3M54.3467935S", "correlationId":
+        "be845226-1fdc-4827-baba-0485962c9bb8", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers", "locations": ["uksouth"]},
         {"resourceType": "publishers/artifactStores", "locations": ["uksouth"]}, {"resourceType":
         "publishers/networkFunctionDefinitionGroups", "locations": ["uksouth"]}]}],
@@ -633,19 +730,23 @@ interactions:
       cache-control:
       - no-cache
       content-length:
-      - '3053'
+      - '3054'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:43 GMT
+      - Tue, 30 Apr 2024 10:37:41 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 501055DE78014574AE513C09915C7A18 Ref B: CO6AA3150218047 Ref C: 2024-04-30T10:37:41Z'
     status:
       code: 200
       message: OK
@@ -663,8 +764,8 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-nginx-publisher/artifactStores/nginx-acr/artifactManifests/nginx-acr-manifest-1-0-0?api-version=2023-09-01
   response:
@@ -680,24 +781,28 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:43 GMT
+      - Tue, 30 Apr 2024 10:37:41 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-failure-cause:
       - gateway
+      x-msedge-ref:
+      - 'Ref A: AD689F6750384965B1309267B909DD46 Ref B: CO6AA3150218021 Ref C: 2024-04-30T10:37:42Z'
     status:
       code: 404
       message: Not Found
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.26.54.24096", "templateHash": "14797403328055843136"}}, "parameters": {"location":
+      "0.26.170.59819", "templateHash": "12600420176313960646"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of an existing publisher, expected to be in the resource group where you
       deploy the template"}}, "acrArtifactStoreName": {"type": "string", "metadata":
@@ -723,27 +828,27 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1521'
+      - '1522'
       Content-Type:
       - application/json
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: POST
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272688",
-        "name": "AOSM_CLI_deployment_1713272688", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "14797403328055843136", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473465",
+        "name": "AOSM_CLI_deployment_1714473465", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "12600420176313960646", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "acrManifestName": {"type": "String", "value":
         "nginx-acr-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
         "Succeeded", "timestamp": "0001-01-01T00:00:00Z", "duration": "PT0S", "correlationId":
-        "41bfd32f-0640-436c-aa3c-2f164faadd1c", "providers": [{"namespace": "Microsoft.HybridNetwork",
+        "b93e7b98-ed16-43e1-a360-ed961567847b", "providers": [{"namespace": "Microsoft.HybridNetwork",
         "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": [], "validatedResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-nginx-publisher/artifactStores/nginx-acr/artifactManifests/nginx-acr-manifest-1-0-0"}]}}'
@@ -755,24 +860,28 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:48 GMT
+      - Tue, 30 Apr 2024 10:37:47 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1198'
+      - '1199'
+      x-msedge-ref:
+      - 'Ref A: 78915204D3944E6CB8F964D08E46D1B5 Ref B: CO6AA3150220027 Ref C: 2024-04-30T10:37:44Z'
     status:
       code: 200
       message: OK
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.26.54.24096", "templateHash": "14797403328055843136"}}, "parameters": {"location":
+      "0.26.170.59819", "templateHash": "12600420176313960646"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of an existing publisher, expected to be in the resource group where you
       deploy the template"}}, "acrArtifactStoreName": {"type": "string", "metadata":
@@ -798,50 +907,54 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1521'
+      - '1522'
       Content-Type:
       - application/json
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: PUT
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272688",
-        "name": "AOSM_CLI_deployment_1713272688", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "14797403328055843136", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473465",
+        "name": "AOSM_CLI_deployment_1714473465", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "12600420176313960646", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "acrManifestName": {"type": "String", "value":
         "nginx-acr-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
-        "Accepted", "timestamp": "2024-04-16T13:04:49.5854159Z", "duration": "PT0.0008638S",
-        "correlationId": "b9f98d1b-8ccb-41a6-9fb2-e0969f882f6a", "providers": [{"namespace":
+        "Accepted", "timestamp": "2024-04-30T10:37:52.4334892Z", "duration": "PT0.0007971S",
+        "correlationId": "5dc45d5c-733b-4adc-9582-d450a9641663", "providers": [{"namespace":
         "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": []}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272688/operationStatuses/08584883341960697191?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473465/operationStatuses/08584871334152176343?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
-      - '980'
+      - '982'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:48 GMT
+      - Tue, 30 Apr 2024 10:37:52 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1198'
+      - '1199'
+      x-msedge-ref:
+      - 'Ref A: 7C528FBD90D342C585709FED2F83CE89 Ref B: CO6AA3150220045 Ref C: 2024-04-30T10:37:48Z'
     status:
       code: 201
       message: Created
@@ -859,10 +972,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883341960697191?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871334152176343?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -874,15 +987,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:04:48 GMT
+      - Tue, 30 Apr 2024 10:37:53 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 1697E45CE8874440BB474FE44B116D50 Ref B: CO6AA3150220025 Ref C: 2024-04-30T10:37:53Z'
     status:
       code: 200
       message: OK
@@ -900,10 +1017,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883341960697191?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871334152176343?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -915,15 +1032,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:05:17 GMT
+      - Tue, 30 Apr 2024 10:38:24 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: B5BE6FDB2CBE4F399BABE2629A3271BD Ref B: CO6AA3150220017 Ref C: 2024-04-30T10:38:24Z'
     status:
       code: 200
       message: OK
@@ -941,10 +1062,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883341960697191?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871334152176343?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -956,15 +1077,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:05:47 GMT
+      - Tue, 30 Apr 2024 10:38:55 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: F86AB9A586E34487AB4750AFD8304126 Ref B: CO6AA3150219027 Ref C: 2024-04-30T10:38:55Z'
     status:
       code: 200
       message: OK
@@ -982,10 +1107,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883341960697191?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871334152176343?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -997,15 +1122,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:06:17 GMT
+      - Tue, 30 Apr 2024 10:39:26 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 2F830F8A760549F387384FAE05E468B8 Ref B: CO6AA3150219029 Ref C: 2024-04-30T10:39:25Z'
     status:
       code: 200
       message: OK
@@ -1023,21 +1152,21 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272688",
-        "name": "AOSM_CLI_deployment_1713272688", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "14797403328055843136", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473465",
+        "name": "AOSM_CLI_deployment_1714473465", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "12600420176313960646", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "acrManifestName": {"type": "String", "value":
         "nginx-acr-manifest-1-0-0"}}, "mode": "Incremental", "provisioningState":
-        "Succeeded", "timestamp": "2024-04-16T13:06:10.9595899Z", "duration": "PT1M21.3750378S",
-        "correlationId": "b9f98d1b-8ccb-41a6-9fb2-e0969f882f6a", "providers": [{"namespace":
+        "Succeeded", "timestamp": "2024-04-30T10:39:17.0774806Z", "duration": "PT1M24.6447885S",
+        "correlationId": "5dc45d5c-733b-4adc-9582-d450a9641663", "providers": [{"namespace":
         "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType": "publishers/artifactStores/artifactManifests",
         "locations": ["uksouth"]}]}], "dependencies": [], "outputResources": [{"id":
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-nginx-publisher/artifactStores/nginx-acr/artifactManifests/nginx-acr-manifest-1-0-0"}]}}'
@@ -1049,15 +1178,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:06:17 GMT
+      - Tue, 30 Apr 2024 10:39:26 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 8666BF8825B445238F03AB435EDCEB2F Ref B: CO6AA3150219039 Ref C: 2024-04-30T10:39:26Z'
     status:
       code: 200
       message: OK
@@ -1077,15 +1210,15 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: POST
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.HybridNetwork/publishers/automated-cli-tests-nginx-publisher/artifactStores/nginx-acr/artifactManifests/nginx-acr-manifest-1-0-0/listCredential?api-version=2023-09-01
   response:
     body:
       string: '{"username": "nginx-acr-manifest-1-0-0", "acrToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "acrServerUrl": "https://automatedclitestsnginxpublishernginxacr72dc38a622.azurecr.io",
-        "repositories": ["nginxdemo", "nginx"], "expiry": "2024-04-17T13:06:20.2909529+00:00",
+        "acrServerUrl": "https://automatedclitestsnginxpublishernginxacr192431245e.azurecr.io",
+        "repositories": ["nginxdemo", "nginx"], "expiry": "2024-05-01T10:39:30.3885457+00:00",
         "credentialType": "AzureContainerRegistryScopedToken"}'
     headers:
       cache-control:
@@ -1095,13 +1228,15 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:06:19 GMT
+      - Tue, 30 Apr 2024 10:39:30 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-build-version:
@@ -1110,13 +1245,15 @@ interactions:
       - 'True'
       x-ms-ratelimit-remaining-subscription-writes:
       - '1199'
+      x-msedge-ref:
+      - 'Ref A: 17968283A3C44269B0C66FF9F4621872 Ref B: CO6AA3150219035 Ref C: 2024-04-30T10:39:27Z'
     status:
       code: 200
       message: OK
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.26.54.24096", "templateHash": "13894353345379066482"}}, "parameters": {"location":
+      "0.26.170.59819", "templateHash": "8222130002561750249"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of an existing publisher, expected to be in the resource group where you
       deploy the template"}}, "acrArtifactStoreName": {"type": "string", "metadata":
@@ -1166,21 +1303,21 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: POST
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/validate?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272806",
-        "name": "AOSM_CLI_deployment_1713272806", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "13894353345379066482", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473609",
+        "name": "AOSM_CLI_deployment_1714473609", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "8222130002561750249", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "nfDefinitionGroup": {"type": "String", "value":
         "nginx"}, "nfDefinitionVersion": {"type": "String", "value": "1.0.0"}}, "mode":
         "Incremental", "provisioningState": "Succeeded", "timestamp": "0001-01-01T00:00:00Z",
-        "duration": "PT0S", "correlationId": "7c85e7d3-2f12-4532-8c6e-4a21869726f0",
+        "duration": "PT0S", "correlationId": "a4831cef-d960-4fad-a7a2-c75f7b1622e0",
         "providers": [{"namespace": "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType":
         "publishers/networkFunctionDefinitionGroups/networkFunctionDefinitionVersions",
         "locations": ["uksouth"]}]}], "dependencies": [], "validatedResources": [{"id":
@@ -1189,28 +1326,32 @@ interactions:
       cache-control:
       - no-cache
       content-length:
-      - '1329'
+      - '1328'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:06:44 GMT
+      - Tue, 30 Apr 2024 10:40:10 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1197'
+      - '1199'
+      x-msedge-ref:
+      - 'Ref A: 9B9F6DFF2291462496ADFB5C241124DC Ref B: CO6AA3150217049 Ref C: 2024-04-30T10:40:08Z'
     status:
       code: 200
       message: OK
 - request:
     body: '{"properties": {"template": {"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0", "metadata": {"_generator": {"name": "bicep", "version":
-      "0.26.54.24096", "templateHash": "13894353345379066482"}}, "parameters": {"location":
+      "0.26.170.59819", "templateHash": "8222130002561750249"}}, "parameters": {"location":
       {"type": "string"}, "publisherName": {"type": "string", "metadata": {"description":
       "Name of an existing publisher, expected to be in the resource group where you
       deploy the template"}}, "acrArtifactStoreName": {"type": "string", "metadata":
@@ -1260,45 +1401,49 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: PUT
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272806",
-        "name": "AOSM_CLI_deployment_1713272806", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "13894353345379066482", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473609",
+        "name": "AOSM_CLI_deployment_1714473609", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "8222130002561750249", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "nfDefinitionGroup": {"type": "String", "value":
         "nginx"}, "nfDefinitionVersion": {"type": "String", "value": "1.0.0"}}, "mode":
-        "Incremental", "provisioningState": "Accepted", "timestamp": "2024-04-16T13:06:45.8173784Z",
-        "duration": "PT0.0008056S", "correlationId": "be87c359-0934-48ea-bc12-fa9aa4197fde",
+        "Incremental", "provisioningState": "Accepted", "timestamp": "2024-04-30T10:40:15.693914Z",
+        "duration": "PT0.0009238S", "correlationId": "4cb4c8dc-2860-42c2-9676-f89573b50a33",
         "providers": [{"namespace": "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType":
         "publishers/networkFunctionDefinitionGroups/networkFunctionDefinitionVersions",
         "locations": ["uksouth"]}]}], "dependencies": []}}'
     headers:
       azure-asyncoperation:
-      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272806/operationStatuses/08584883340798271292?api-version=2022-09-01
+      - https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473609/operationStatuses/08584871332719068779?api-version=2022-09-01
       cache-control:
       - no-cache
       content-length:
-      - '1059'
+      - '1057'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:06:45 GMT
+      - Tue, 30 Apr 2024 10:40:16 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
       x-ms-ratelimit-remaining-subscription-writes:
-      - '1197'
+      - '1199'
+      x-msedge-ref:
+      - 'Ref A: F980E35883C44FD281A4E6B1B65FEE6B Ref B: CO6AA3150219037 Ref C: 2024-04-30T10:40:11Z'
     status:
       code: 201
       message: Created
@@ -1316,51 +1461,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883340798271292?api-version=2022-09-01
-  response:
-    body:
-      string: '{"status": "Accepted"}'
-    headers:
-      cache-control:
-      - no-cache
-      content-length:
-      - '22'
-      content-type:
-      - application/json; charset=utf-8
-      date:
-      - Tue, 16 Apr 2024 13:06:45 GMT
-      expires:
-      - '-1'
-      pragma:
-      - no-cache
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains
-      x-content-type-options:
-      - nosniff
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      CommandName:
-      - aosm nfd publish
-      Connection:
-      - keep-alive
-      ParameterSetName:
-      - -b --definition-type
-      User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
-    method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883340798271292?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871332719068779?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -1372,15 +1476,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:07:14 GMT
+      - Tue, 30 Apr 2024 10:40:17 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: FA6A94470D6C423B8650C8DA4E7A5FAD Ref B: CO6AA3150219045 Ref C: 2024-04-30T10:40:16Z'
     status:
       code: 200
       message: OK
@@ -1398,10 +1506,10 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883340798271292?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871332719068779?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Running"}'
@@ -1413,15 +1521,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:07:44 GMT
+      - Tue, 30 Apr 2024 10:40:48 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 1DD159F539B2491BA05494E90BA10442 Ref B: CO6AA3150219027 Ref C: 2024-04-30T10:40:47Z'
     status:
       code: 200
       message: OK
@@ -1439,10 +1551,55 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
-    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584883340798271292?api-version=2022-09-01
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871332719068779?api-version=2022-09-01
+  response:
+    body:
+      string: '{"status": "Running"}'
+    headers:
+      cache-control:
+      - no-cache
+      content-length:
+      - '21'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 30 Apr 2024 10:41:19 GMT
+      expires:
+      - '-1'
+      pragma:
+      - no-cache
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
+      x-content-type-options:
+      - nosniff
+      x-msedge-ref:
+      - 'Ref A: 1BD4CB5D5BC549F59D5AE6D12A9E5DD7 Ref B: CO6AA3150219017 Ref C: 2024-04-30T10:41:18Z'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      CommandName:
+      - aosm nfd publish
+      Connection:
+      - keep-alive
+      ParameterSetName:
+      - -b --definition-type
+      User-Agent:
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
+    method: GET
+    uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584871332719068779?api-version=2022-09-01
   response:
     body:
       string: '{"status": "Succeeded"}'
@@ -1454,15 +1611,19 @@ interactions:
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:08:14 GMT
+      - Tue, 30 Apr 2024 10:41:49 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: 002C8801D70547409B8B375D0C1911DF Ref B: CO6AA3150219011 Ref C: 2024-04-30T10:41:49Z'
     status:
       code: 200
       message: OK
@@ -1480,21 +1641,21 @@ interactions:
       ParameterSetName:
       - -b --definition-type
       User-Agent:
-      - AZURECLI/2.57.0.post20240219064455 azsdk-python-core/1.30.0 Python/3.8.10
-        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.29)
+      - AZURECLI/2.59.0.post20240417071921 azsdk-python-core/1.30.1 Python/3.10.12
+        (Linux-5.15.146.1-microsoft-standard-WSL2-x86_64-with-glibc2.35)
     method: GET
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/mock-deployment?api-version=2022-09-01
   response:
     body:
-      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1713272806",
-        "name": "AOSM_CLI_deployment_1713272806", "type": "Microsoft.Resources/deployments",
-        "properties": {"templateHash": "13894353345379066482", "parameters": {"location":
+      string: '{"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/cli_test_cnf_nfd_000001/providers/Microsoft.Resources/deployments/AOSM_CLI_deployment_1714473609",
+        "name": "AOSM_CLI_deployment_1714473609", "type": "Microsoft.Resources/deployments",
+        "properties": {"templateHash": "8222130002561750249", "parameters": {"location":
         {"type": "String", "value": "uksouth"}, "publisherName": {"type": "String",
         "value": "automated-cli-tests-nginx-publisher"}, "acrArtifactStoreName": {"type":
         "String", "value": "nginx-acr"}, "nfDefinitionGroup": {"type": "String", "value":
         "nginx"}, "nfDefinitionVersion": {"type": "String", "value": "1.0.0"}}, "mode":
-        "Incremental", "provisioningState": "Succeeded", "timestamp": "2024-04-16T13:08:06.9694954Z",
-        "duration": "PT1M21.1529226S", "correlationId": "be87c359-0934-48ea-bc12-fa9aa4197fde",
+        "Incremental", "provisioningState": "Succeeded", "timestamp": "2024-04-30T10:41:41.072492Z",
+        "duration": "PT1M25.3795018S", "correlationId": "4cb4c8dc-2860-42c2-9676-f89573b50a33",
         "providers": [{"namespace": "Microsoft.HybridNetwork", "resourceTypes": [{"resourceType":
         "publishers/networkFunctionDefinitionGroups/networkFunctionDefinitionVersions",
         "locations": ["uksouth"]}]}], "dependencies": [], "outputResources": [{"id":
@@ -1503,19 +1664,23 @@ interactions:
       cache-control:
       - no-cache
       content-length:
-      - '1345'
+      - '1343'
       content-type:
       - application/json; charset=utf-8
       date:
-      - Tue, 16 Apr 2024 13:08:14 GMT
+      - Tue, 30 Apr 2024 10:41:49 GMT
       expires:
       - '-1'
       pragma:
       - no-cache
       strict-transport-security:
       - max-age=31536000; includeSubDomains
+      x-cache:
+      - CONFIG_NOCACHE
       x-content-type-options:
       - nosniff
+      x-msedge-ref:
+      - 'Ref A: B3A83603B8514BF48AE3912D53B67863 Ref B: CO6AA3150217021 Ref C: 2024-04-30T10:41:49Z'
     status:
       code: 200
       message: OK
