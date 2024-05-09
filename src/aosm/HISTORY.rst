@@ -4,7 +4,9 @@ Release History
 ===============
 2.0.0b2
 ++++++++
-* added a check to make sure resource type used in ARM template are in allowed list
+* Added check to make sure resource type used in ARM template are in allowed list
+* Fixed multi NF RETs issue in nsdvs
+
 2.0.0b1
 ++++++++
 * Renamed nfdvName to nfdv in CGVs
