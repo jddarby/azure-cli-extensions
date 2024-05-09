@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Highly Confidential Material
+//
+// Bicep template to create a Site.
+//
+// Requires an existing NSDV from which the values will be populated.
+param location string
+@description('The site name where the NFVI is deployed')
+param siteName string
+@description('The nfvi details for the site')
+param nfviList array = []
+
+resource site 'Microsoft.HybridNetwork/sites@2023-09-01' = {
+  name: siteName
+  location: location
+  properties: {
+    nfvis: nfviList
+  }
+}

@@ -1,0 +1,144 @@
+from pathlib import Path
+from azure.mgmt.resource import ResourceManagementClient
+from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
+from azext_aosm.common.command_context import CommandContext
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+    CoreVNFCommonParametersConfig,
+    NFDCommonParametersConfig,
+    NSDCommonParametersConfig
+)
+from azext_aosm.definition_folder.reader.base_definition import \
+    BaseDefinitionElement
+from typing import Literal, Optional
+from azext_aosm.configuration_models.onboarding_nsd_input_config import (
+    OnboardingNSDInputConfig,
+)
+from azext_aosm.definition_folder.builder.bicep_builder import (
+    BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.deploy_input_builder import DeploymentInputDefinitionElementBuilder
+from azext_aosm.vendored_sdks.models import (
+    NetworkServiceDesignVersion,
+)
+from azext_aosm.configuration_models.sns_parameters_config import SNSCommonParametersConfig
+
+from azext_aosm.configuration_models.onboarding_sns_input_config import (
+    OnboardingSNSInputConfig,
+    NsdReference,
+)
+from azext_aosm.common.constants import (
+    SNS_OUTPUT_FOLDER_FILENAME,
+    SNS_INPUT_FILENAME,
+    SNS_OUTPUT_FOLDER_FILENAME,
+    SNS_DEFINITION_FOLDER_NAME,
+    SNS_TEMPLATE_FOLDER_NAME,
+    SNS_DEFINITION_TEMPLATE_FILENAME,
+)
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+
+class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
+    """CLI handler for deploying SNSs."""
+
+    config: OnboardingSNSInputConfig | SNSCommonParametersConfig
+
+    @property
+    def default_config_file_name(self) -> str:
+        """Get the default configuration file name."""
+        return SNS_INPUT_FILENAME
+
+    @property
+    def output_folder_file_name(self) -> str:
+        """Get the output folder file name."""
+        return SNS_OUTPUT_FOLDER_FILENAME
+
+    def build(self):
+        """Build the definition."""
+        self.definition_folder_builder.add_element(self.build_deploy_input())
+        self.definition_folder_builder.add_element(self.build_resource_bicep())
+        self.definition_folder_builder.write()
+
+    def _get_processor_list(self) -> list:
+        return []
+
+    def _get_input_config(self, input_config: Optional[dict] = None) -> OnboardingSNSInputConfig:
+        """Get the configuration for the command."""
+        if input_config is None:
+            input_config = {}
+        return OnboardingSNSInputConfig(**input_config)
+
+    def _get_params_config(self, config_file: Path) -> SNSCommonParametersConfig:
+        """Get the configuration for the command."""
+        with open(config_file, "r", encoding="utf-8") as _file:
+            params_dict = json.load(_file)
+        if params_dict is None:
+            params_dict = {}
+        return SNSCommonParametersConfig(**params_dict)
+
+    def build_deploy_input(self) -> DeploymentInputDefinitionElementBuilder:
+        """Pre-validate the build."""
+        nsdv = self._get_nsdv()
+        deployment_input_file = DeploymentInputDefinitionElementBuilder(
+            Path(SNS_OUTPUT_FOLDER_FILENAME), nsdv.properties.nfvis_from_site
+        )
+        return deployment_input_file
+
+    def _get_nsdv(self) -> NetworkServiceDesignVersion:
+        """Get the existing NSDV resource object."""
+        print(
+            f"Reading existing NSDV resource object {self.config.nsd_reference.nsd_version} from group {self.config.nsd_reference.nsd_name}"
+        )
+        assert isinstance(self.aosm_client, HybridNetworkManagementClient)
+        nsdv_object = self.aosm_client.network_service_design_versions.get(
+            resource_group_name=self.config.nsd_reference.publisher_resource_group_name,
+            publisher_name=self.config.nsd_reference.publisher_name,
+            network_service_design_group_name=self.config.nsd_reference.nsd_name,
+            network_service_design_version_name=self.config.nsd_reference.nsd_version,
+        )
+        return nsdv_object
+
+    def build_resource_bicep(self) -> BicepDefinitionElementBuilder:
+        """Build the resource bicep file."""
+        template_path = get_template_path(
+            SNS_TEMPLATE_FOLDER_NAME, SNS_DEFINITION_TEMPLATE_FILENAME
+        )
+        params = {}
+
+        bicep_contents = render_bicep_contents_from_j2(
+            template_path, params
+        )
+        # Generate the nsd bicep file
+        bicep_file = BicepDefinitionElementBuilder(
+            Path(SNS_OUTPUT_FOLDER_FILENAME, SNS_DEFINITION_FOLDER_NAME), bicep_contents
+        )
+
+        return bicep_file
+    
+    def build_base_bicep(self):
+        # TODO: Implement
+        raise NotImplementedError
+
+    def deploy(self):
+        # TODO: Implement this method
+        raise NotImplementedError
+
+    def build_all_parameters_json(self):
+        # TODO: Implement this method
+        raise NotImplementedError
+
+    def build_artifact_list(self):
+        # TODO: Implement this method
+        raise NotImplementedError
+
+    def build_manifest_bicep(self) -> BicepDefinitionElementBuilder:
+        # TODO: Implement this method
+        raise NotImplementedError
+
+    def build_resource_bicep(self) -> BicepDefinitionElementBuilder:
+        # TODO: Implement this method
+        raise NotImplementedError
+    
+    def build_base_bicep(self) -> BicepDefinitionElementBuilder:
+        # TODO: Implement this method
+        raise NotImplementedError

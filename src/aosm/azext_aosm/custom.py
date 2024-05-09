@@ -14,6 +14,7 @@ from azext_aosm.cli_handlers.onboarding_cnf_handler import OnboardingCNFCLIHandl
 from azext_aosm.cli_handlers.onboarding_vnf_handler import OnboardingVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_core_vnf_handler import OnboardingCoreVNFCLIHandler
 from azext_aosm.cli_handlers.onboarding_nexus_vnf_handler import OnboardingNexusVNFCLIHandler
+from azext_aosm.cli_handlers.onboarding_sns_handler import OnboardingSNSCLIHandler
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME, CNF, VNF, VNF_NEXUS
@@ -135,3 +136,10 @@ def onboard_nsd_publish(
 #     command_context = CommandContext(cmd.cli_ctx)
 #     handler = OnboardingNSDCLIHandler(config_file)
 #     handler.delete(command_context=command_context)
+
+def onboard_sns_build(config_file: Path, cmd: AzCliCommand):
+    """Build the SNS definition."""
+    command_context = CommandContext(cli_ctx=cmd.cli_ctx)
+    handler = OnboardingSNSCLIHandler(config_file_path=Path(config_file),
+                                      aosm_client=command_context.aosm_client)
+    handler.build()
