@@ -17,6 +17,7 @@ from azext_aosm.definition_folder.reader.artifact_definition import (
 )
 from azext_aosm.definition_folder.reader.base_definition import BaseDefinitionElement
 from azext_aosm.definition_folder.reader.bicep_definition import BicepDefinitionElement
+from azext_aosm.configuration_models.sns_parameters_config import SNSCommonParametersConfig
 
 logger = get_logger(__name__)
 
@@ -78,11 +79,15 @@ class DefinitionFolder:
         - Check for existence of resource group specified in allDeployParameters.json.
         - Create resource group if doesn't exist.
         """
+        if isinstance(config, SNSCommonParametersConfig):
+            resource_group = config.operatorResourceGroupName
+        else:
+            resource_group = config.publisherResourceGroupName
         resources_client = command_context.resources_client
-        if not resources_client.resource_groups.check_existence(config.publisherResourceGroupName):
+        if not resources_client.resource_groups.check_existence(resource_group):
             rg_params = ResourceGroup(location=config.location)
             resources_client.resource_groups.create_or_update(
-                resource_group_name=config.publisherResourceGroupName,
+                resource_group_name=resource_group,
                 parameters=rg_params
             )
 

@@ -3,8 +3,10 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 import time
+import json
 from dataclasses import asdict
 from typing import Any, Dict
+from pathlib import Path
 
 from azure.cli.core import AzCli
 from azure.cli.core.azclierror import AzCLIError
@@ -274,6 +276,25 @@ class BicepDefinitionElement(BaseDefinitionElement):
             for (k, v) in asdict(config).items()
             if k in parameters_in_template
         }
+
+        if(self.path.name == "snsDefinition"):
+            resource_group_name = config.operatorResourceGroupName
+            with open(Path(self.path).parent / 'deploy_input.jsonc', 'r') as f:
+                data = json.load(f)
+
+            # Get the 'nfvis' value
+            nfvis_value = data.get('nfvis', [])
+
+            # Ensure 'nfvis_value' is an object
+            if isinstance(nfvis_value, str):
+                nfvis_value = json.loads(nfvis_value)
+            
+            logger.debug("NFVIS Value: %s", nfvis_value)
+
+            parameters['nfviList'] = {"value": nfvis_value}
+        else:
+            resource_group_name = config.publisherResourceGroupName
+        
         logger.debug("All parameters provided by user: %s", config)
         logger.debug(
             "Parameters required by %s in built ARM template:%s ",
@@ -286,7 +307,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             cli_ctx=command_context.cli_ctx,
             template=arm_json,
             parameters=parameters,
-            resource_group=config.publisherResourceGroupName,
+            resource_group=resource_group_name,
             resource_client=command_context.resources_client,
         )
 

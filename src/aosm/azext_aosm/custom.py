@@ -143,3 +143,21 @@ def onboard_sns_build(config_file: Path, cmd: AzCliCommand):
     handler = OnboardingSNSCLIHandler(config_file_path=Path(config_file),
                                       aosm_client=command_context.aosm_client)
     handler.build()
+
+def onboard_sns_deploy(
+    cmd: AzCliCommand,
+    build_output_folder: Path,
+    no_subscription_permissions: bool = False,
+):
+    """Deploy the SNS definition."""
+    command_context = CommandContext(
+        cli_ctx=cmd.cli_ctx,
+        cli_options={
+            "no_subscription_permissions": no_subscription_permissions,
+            "definition_folder": Path(build_output_folder),
+        },
+    )
+    handler = OnboardingSNSCLIHandler(
+        all_deploy_params_file_path=Path(build_output_folder, ALL_PARAMETERS_FILE_NAME)
+    )
+    handler.deploy(command_context=command_context)

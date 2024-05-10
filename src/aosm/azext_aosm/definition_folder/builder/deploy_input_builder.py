@@ -47,7 +47,9 @@ class DeploymentInputDefinitionElementBuilder(JSONDefinitionElementBuilder):
             nfvi_dict = {
                 "name": self.nfvis[nfvi].name,
                 "nfviType": self.nfvis[nfvi].type,
-                "customLocationReference": ""
+                "customLocationReference": {
+                    "id": ""
+                }
             }
             nfvis_list.append(nfvi_dict)
         (self.path / "deploy_input.jsonc").write_text(json.dumps({"nfvis": nfvis_list}, indent=4))

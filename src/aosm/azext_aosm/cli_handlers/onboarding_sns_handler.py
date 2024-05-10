@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 from azure.mgmt.resource import ResourceManagementClient
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.command_context import CommandContext
@@ -37,6 +38,7 @@ from azext_aosm.common.constants import (
 )
 from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+from azext_aosm.definition_folder.reader.definition_folder import DefinitionFolder
 
 class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for deploying SNSs."""
@@ -114,13 +116,17 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
         )
 
         return bicep_file
+
+    def deploy(self, command_context: CommandContext):
+        """Publish the definition contained in the specified definition folder."""
+        definition_folder = DefinitionFolder(
+            command_context.cli_options["definition_folder"]
+        )
+        assert isinstance(self.config, SNSCommonParametersConfig)
+        definition_folder.deploy(config=self.config, command_context=command_context)
     
     def build_base_bicep(self):
         # TODO: Implement
-        raise NotImplementedError
-
-    def deploy(self):
-        # TODO: Implement this method
         raise NotImplementedError
 
     def build_all_parameters_json(self):
@@ -132,10 +138,6 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
         raise NotImplementedError
 
     def build_manifest_bicep(self) -> BicepDefinitionElementBuilder:
-        # TODO: Implement this method
-        raise NotImplementedError
-
-    def build_resource_bicep(self) -> BicepDefinitionElementBuilder:
         # TODO: Implement this method
         raise NotImplementedError
     
