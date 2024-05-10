@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Optional
-from typing import Dict
 
 from knack.log import get_logger
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
@@ -25,7 +24,6 @@ from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
 from azext_aosm.configuration_models.onboarding_sns_input_config import SiteNetworkServicePropertiesConfig
-from azext_aosm.configuration_models.onboarding_sns_input_config import NSDVReferenceConfig
 logger = get_logger(__name__)
 
 
@@ -68,11 +66,13 @@ class SNSCLIHandler(OnboardingBaseCLIHandler):
 
     def build_all_parameters_json(self) -> JSONDefinitionElementBuilder:
         """Build all parameters json."""
-        params_content: Dict[str, str] = {}
-        for property_name, value in vars(self.config).items():
-            params_content[property_name] = value
+        params_content = {
+            "location": self.config.location,
+            "operatorResourceGroupName": self.config.operator_resource_group_name,
+            "siteName": self.config.site_name
+        }
         base_file = JSONDefinitionElementBuilder(
-            Path(SNS_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4, default=NSDVReferenceConfig.to_dict)
+            Path(SNS_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
         return base_file
 

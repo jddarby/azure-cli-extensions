@@ -55,6 +55,7 @@ class SiteNetworkServicePropertiesConfig:
             self.nsd_reference = {}
         self.nsd_reference = NSDVReferenceConfig(**self.nsd_reference)
 
+
 @dataclass
 class NSDVReferenceConfig:
     """NSDV Reference."""
