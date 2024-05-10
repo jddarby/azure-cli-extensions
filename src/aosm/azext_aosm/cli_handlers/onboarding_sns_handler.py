@@ -25,7 +25,7 @@ from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
 from azext_aosm.configuration_models.onboarding_sns_input_config import SiteNetworkServicePropertiesConfig
-
+from azext_aosm.configuration_models.onboarding_sns_input_config import NSDVReferenceConfig
 logger = get_logger(__name__)
 
 
@@ -72,9 +72,8 @@ class SNSCLIHandler(OnboardingBaseCLIHandler):
         for property_name, value in vars(self.config).items():
             params_content[property_name] = value
         base_file = JSONDefinitionElementBuilder(
-            Path(SNS_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
+            Path(SNS_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4, default=NSDVReferenceConfig.to_dict)
         )
-
         return base_file
 
     def _get_processor_list(self):
