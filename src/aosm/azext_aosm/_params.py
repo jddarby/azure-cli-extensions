@@ -145,3 +145,21 @@ def load_arguments(self: AzCommandsLoader, _):
                 "Requires Docker to be installed locally."
             ),
         )
+
+    with self.argument_context("aosm sns") as c:
+        c.argument(
+            "output_file",
+            options_list=["--output-file"],
+            help="The name of the output file to write the generated config text to.",
+            required=False,
+        )
+        c.argument(
+            "config_file",
+            options_list=["--config-file", "-f"],
+            type=file_type,
+            completer=FilesCompleter(allowednames="*.jsonc"),
+            help=(
+                "The path to the configuration file. This is a JSONC file that contains"
+                " the required parameters for building the NSD."
+            ),
+        )
