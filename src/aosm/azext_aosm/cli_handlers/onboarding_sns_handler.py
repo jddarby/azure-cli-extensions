@@ -7,57 +7,34 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Optional
-from azure.mgmt.resource import ResourceManagementClient
+
+from knack.log import get_logger
+
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.command_context import CommandContext
-from azext_aosm.configuration_models.common_parameters_config import (
-    BaseCommonParametersConfig,
-    CoreVNFCommonParametersConfig,
-    NFDCommonParametersConfig,
-    NSDCommonParametersConfig
-)
-from azext_aosm.definition_folder.reader.base_definition import \
-    BaseDefinitionElement
-from typing import Literal, Optional
-from azext_aosm.configuration_models.onboarding_nsd_input_config import (
-    OnboardingNSDInputConfig,
-)
-from knack.log import get_logger
-from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
-from azext_aosm.common.constants import (
-    SNS_OUTPUT_FOLDER_FILENAME,
-    SNS_INPUT_FILENAME
-)
-from azext_aosm.configuration_models.common_parameters_config import (
-    SNSCommonParametersConfig,
-)
-from azext_aosm.definition_folder.builder.bicep_builder import (
-    BicepDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.json_builder import (
-    JSONDefinitionElementBuilder,
-)
-from azext_aosm.definition_folder.builder.deploy_input_builder import DeploymentInputDefinitionElementBuilder
-from azext_aosm.vendored_sdks.models import (
-    NetworkServiceDesignVersion,
-)
-from azext_aosm.configuration_models.sns_parameters_config import SNSCommonParametersConfig
-
-from azext_aosm.configuration_models.onboarding_sns_input_config import (
-    OnboardingSNSInputConfig,
-    NSDVReferenceConfig,
-)
 from azext_aosm.common.constants import (
     SNS_OUTPUT_FOLDER_FILENAME,
     SNS_INPUT_FILENAME,
-    SNS_OUTPUT_FOLDER_FILENAME,
     SNS_DEFINITION_FOLDER_NAME,
     SNS_TEMPLATE_FOLDER_NAME,
     SNS_DEFINITION_TEMPLATE_FILENAME,
 )
-from azext_aosm.vendored_sdks import HybridNetworkManagementClient
 from azext_aosm.common.utils import render_bicep_contents_from_j2, get_template_path
+from azext_aosm.configuration_models.onboarding_sns_input_config import (
+    OnboardingSNSInputConfig,
+)
+from azext_aosm.configuration_models.sns_parameters_config import SNSCommonParametersConfig
+from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.deploy_input_builder import DeploymentInputDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
+)
 from azext_aosm.definition_folder.reader.definition_folder import DefinitionFolder
+from azext_aosm.vendored_sdks import HybridNetworkManagementClient
+from azext_aosm.vendored_sdks.models import (
+    NetworkServiceDesignVersion,
+)
+
 
 class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for deploying SNSs."""
@@ -110,7 +87,9 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
     def _get_nsdv(self) -> NetworkServiceDesignVersion:
         """Get the existing NSDV resource object."""
         print(
-            f"Reading existing NSDV resource object {self.config.nsd_reference.nsd_version} from group {self.config.nsd_reference.nsd_name}"
+            f"Reading existing NSDV resource object "
+            f"{self.config.nsd_reference.nsd_version} from group "
+            f"{self.config.nsd_reference.nsd_name}"
         )
         assert isinstance(self.aosm_client, HybridNetworkManagementClient)
         nsdv_object = self.aosm_client.network_service_design_versions.get(
@@ -145,7 +124,7 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
         )
         assert isinstance(self.config, SNSCommonParametersConfig)
         definition_folder.deploy(config=self.config, command_context=command_context)
-  
+
     def build_all_parameters_json(self) -> JSONDefinitionElementBuilder:
         """Build all parameters json."""
         params_content = {
@@ -157,13 +136,9 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
             Path(SNS_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
         )
         return base_file
-    
+
     def build_base_bicep(self):
         # TODO: Implement
-        raise NotImplementedError
-
-    def build_all_parameters_json(self):
-        # TODO: Implement this method
         raise NotImplementedError
 
     def build_artifact_list(self):
@@ -171,9 +146,5 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
         raise NotImplementedError
 
     def build_manifest_bicep(self) -> BicepDefinitionElementBuilder:
-        # TODO: Implement this method
-        raise NotImplementedError
-    
-    def build_base_bicep(self) -> BicepDefinitionElementBuilder:
         # TODO: Implement this method
         raise NotImplementedError

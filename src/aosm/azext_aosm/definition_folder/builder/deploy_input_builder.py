@@ -5,13 +5,8 @@
 
 import json
 from pathlib import Path
-from typing import Dict, List
-
+from typing import Dict
 from knack.log import get_logger
-
-from azext_aosm.common.artifact import BaseArtifact
-
-from .base_builder import BaseDefinitionElementBuilder
 from azext_aosm.vendored_sdks.models import (
     NfviDetails,
 )

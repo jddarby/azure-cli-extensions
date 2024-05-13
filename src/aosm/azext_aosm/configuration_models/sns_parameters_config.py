@@ -10,19 +10,9 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class NSDReference:
-    publisherName: str
-    publisherResourceGroupName: str
-    nsdName: str
-    nsdVersion: str
-
-@dataclass(frozen=True)
 class SNSCommonParametersConfig(ABC):
     """Base common parameters configuration."""
 
     location: str
     operatorResourceGroupName: str
     siteName: str
-    nsdReference: NSDReference
-    snsName: Optional[str] = None
-
