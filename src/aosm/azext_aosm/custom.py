@@ -18,7 +18,7 @@ from azext_aosm.cli_handlers.onboarding_sns_handler import OnboardingSNSCLIHandl
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME, CNF, VNF, VNF_NEXUS
-from azext_aosm.cli_handlers.onboarding_sns_handler import SNSCLIHandler
+from azext_aosm.cli_handlers.onboarding_sns_handler import OnboardingSNSCLIHandler
 
 
 def onboard_nfd_generate_config(definition_type: str, output_file: str | None):

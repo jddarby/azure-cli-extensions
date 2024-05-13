@@ -21,7 +21,7 @@ from azext_aosm.definition_folder.reader.base_definition import \
 from typing import Literal, Optional
 from azext_aosm.configuration_models.onboarding_nsd_input_config import (
     OnboardingNSDInputConfig,
-
+)
 from knack.log import get_logger
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.constants import (
@@ -45,7 +45,7 @@ from azext_aosm.configuration_models.sns_parameters_config import SNSCommonParam
 
 from azext_aosm.configuration_models.onboarding_sns_input_config import (
     OnboardingSNSInputConfig,
-    NsdReference,
+    NSDVReferenceConfig,
 )
 from azext_aosm.common.constants import (
     SNS_OUTPUT_FOLDER_FILENAME,

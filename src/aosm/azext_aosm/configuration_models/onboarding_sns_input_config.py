@@ -27,7 +27,7 @@ class OnboardingSNSInputConfig:
         default="",
         metadata={"comment": "Name of the site."},
     )
-    nsd_reference: NsdReference = (
+    nsd_reference: NSDVReferenceConfig = (
         field(
             default=None,
             metadata={
