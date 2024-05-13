@@ -18,6 +18,7 @@ from azext_aosm.cli_handlers.onboarding_sns_handler import OnboardingSNSCLIHandl
 from azext_aosm.cli_handlers.onboarding_nsd_handler import OnboardingNSDCLIHandler
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.constants import ALL_PARAMETERS_FILE_NAME, CNF, VNF, VNF_NEXUS
+from azext_aosm.cli_handlers.onboarding_sns_handler import SNSCLIHandler
 
 
 def onboard_nfd_generate_config(definition_type: str, output_file: str | None):
@@ -130,6 +131,19 @@ def onboard_nsd_publish(
     )
     handler.publish(command_context=command_context)
 
+
+def onboard_sns_generate_config(output_file: str | None):
+    """Generate config file for onboarding SNS."""
+    handler = SNSCLIHandler()
+    handler.generate_config(output_file)
+
+
+def onboard_sns_build(config_file: Path, cmd: AzCliCommand):
+    """Build the Site Network Service."""
+    command_context = CommandContext(cli_ctx=cmd.cli_ctx)
+    handler = SNSCLIHandler(config_file_path=Path(config_file),
+                            aosm_client=command_context.aosm_client)
+    handler.build()
 
 # def onboard_nsd_delete(cmd: AzCliCommand, config_file: str):
 #     """Delete the NSD definition."""

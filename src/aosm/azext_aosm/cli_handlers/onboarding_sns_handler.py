@@ -1,5 +1,12 @@
-from pathlib import Path
+# --------------------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See License.txt in the project root for license information.
+# --------------------------------------------------------------------------------------------
+from __future__ import annotations
+
 import json
+from pathlib import Path
+from typing import Optional
 from azure.mgmt.resource import ResourceManagementClient
 from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
 from azext_aosm.common.command_context import CommandContext
@@ -14,9 +21,21 @@ from azext_aosm.definition_folder.reader.base_definition import \
 from typing import Literal, Optional
 from azext_aosm.configuration_models.onboarding_nsd_input_config import (
     OnboardingNSDInputConfig,
+
+from knack.log import get_logger
+from azext_aosm.cli_handlers.onboarding_nfd_base_handler import OnboardingBaseCLIHandler
+from azext_aosm.common.constants import (
+    SNS_OUTPUT_FOLDER_FILENAME,
+    SNS_INPUT_FILENAME
+)
+from azext_aosm.configuration_models.common_parameters_config import (
+    SNSCommonParametersConfig,
 )
 from azext_aosm.definition_folder.builder.bicep_builder import (
     BicepDefinitionElementBuilder,
+)
+from azext_aosm.definition_folder.builder.json_builder import (
+    JSONDefinitionElementBuilder,
 )
 from azext_aosm.definition_folder.builder.deploy_input_builder import DeploymentInputDefinitionElementBuilder
 from azext_aosm.vendored_sdks.models import (
@@ -44,6 +63,7 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
     """CLI handler for deploying SNSs."""
 
     config: OnboardingSNSInputConfig | SNSCommonParametersConfig
+    logger = get_logger(__name__)
 
     @property
     def default_config_file_name(self) -> str:
@@ -57,8 +77,9 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
 
     def build(self):
         """Build the definition."""
-        self.definition_folder_builder.add_element(self.build_deploy_input())
         self.definition_folder_builder.add_element(self.build_resource_bicep())
+        self.definition_folder_builder.add_element(self.build_deploy_input())
+        self.definition_folder_builder.add_element(self.build_all_parameters_json())
         self.definition_folder_builder.write()
 
     def _get_processor_list(self) -> list:
@@ -124,6 +145,18 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
         )
         assert isinstance(self.config, SNSCommonParametersConfig)
         definition_folder.deploy(config=self.config, command_context=command_context)
+  
+    def build_all_parameters_json(self) -> JSONDefinitionElementBuilder:
+        """Build all parameters json."""
+        params_content = {
+            "location": self.config.location,
+            "operatorResourceGroupName": self.config.operator_resource_group_name,
+            "siteName": self.config.site_name
+        }
+        base_file = JSONDefinitionElementBuilder(
+            Path(SNS_OUTPUT_FOLDER_FILENAME), json.dumps(params_content, indent=4)
+        )
+        return base_file
     
     def build_base_bicep(self):
         # TODO: Implement

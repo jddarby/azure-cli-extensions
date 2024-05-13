@@ -101,6 +101,9 @@ VALID_VNF_TEMPLATE_RESOURCE_TYPES = [
     'Microsoft.ManagedIdentity'
 ]
 
+SNS_OUTPUT_FOLDER_FILENAME = "sns-cli-output"
+SNS_INPUT_FILENAME = "sns-input.jsonc"
+
 #################
 # OLD CONSTANTS #
 #################

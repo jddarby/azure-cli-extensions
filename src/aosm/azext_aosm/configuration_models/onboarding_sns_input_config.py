@@ -2,99 +2,17 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
 from __future__ import annotations
 
-from abc import ABC
 from dataclasses import dataclass, field
 
 from azure.cli.core.azclierror import ValidationError
+import semver
+
 
 @dataclass
-class PreexistingCgv:
-    name: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "Name of the cgv."
-            )
-        },
-    )
-    resource_group: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "If left blank, resource group is assumed to be same as operator_resource_group"
-            )
-        },
-    )
-    configuration_group_schema_name: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "Name of the configuration group schema."
-            )
-        },
-    )
-
-    def validate(self):
-        """Validate the configuration."""
-        if not self.name:
-            raise ValidationError("CGV name must be set")
-        if not self.configuration_group_schema_name:
-            raise ValidationError("Configuration group schema name must be set")
-
-@dataclass
-class NsdReference:
-    publisher_name: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "Name of the Publisher resource you want your definition published to.\n"
-                "Will be created if it does not exist."
-            )
-        },
-    )
-    publisher_resource_group_name: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "Resource group for the Publisher resource.\n"
-                "Will be created if it does not exist."
-            )
-        },
-    )
-    nsd_name: str = field(
-        default="",
-        metadata={
-            "comment": (
-                "Network Service Design (NSD) name. "
-                "This is the collection of Network Service Design Versions. Will be created if it does not exist."
-            )
-        },
-    )
-    nsd_version: str = field(
-        default="",
-        metadata={
-            "comment": "Version of the NSD to be created. This should be in the format A.B.C"
-        },
-    )
-
-    def validate(self):
-        """Validate the configuration."""
-        if not self.publisher_name:
-            raise ValidationError("Publisher name must be set")
-        if not self.publisher_resource_group_name:
-            raise ValidationError("Publisher resource group name must be set")
-        if not self.nsd_name:
-            raise ValidationError("NSD group name must be set")
-        if not self.nsd_version:
-            raise ValidationError("NSD version must be set")
-
-@dataclass
-class OnboardingSNSInputConfig(ABC):
-    """Base input configuration for onboarding commands."""
-
+class OnboardingSNSInputConfig:
+    """SNS Object."""
     location: str = field(
         default="",
         metadata={
@@ -103,34 +21,20 @@ class OnboardingSNSInputConfig(ABC):
     )
     operator_resource_group_name: str = field(
         default="",
-        metadata={
-            "comment": (
-                "Resource group for the operator resources.\n"
-                "Will be created if it does not exist."
-            )
-        },
-    )
-    sns_name: str = field(
-        default="",
-        metadata={
-            "comment": "Name of the sns."}
+        metadata={"comment": "The resource group that the operator resources will be hosted in."},
     )
     site_name: str = field(
         default="",
-        metadata={
-            "comment": "Name of the site."}
+        metadata={"comment": "Name of the site."},
     )
     nsd_reference: NsdReference = (
         field(
-            default_factory=NsdReference,
+            default=None,
             metadata={
-                "comment": (
-                    "Reference to the NSD to be used for the SNS."
-                )
+                "comment": ("Information regarding NSDV to be used in SNS.")
             },
         )
     )
-    # preexisting_cgvs: List[PreexistingCgv] = field(default_factory=list)# # TODO: Add detailed comment for this
 
     def validate(self):
         """Validate the configuration."""
@@ -139,10 +43,65 @@ class OnboardingSNSInputConfig(ABC):
         if not self.operator_resource_group_name:
             raise ValidationError("Operator resource group name must be set")
         if not self.site_name:
-            raise ValidationError("Site name must be set")
+            raise ValidationError(
+                "site name must be set"
+            )
         if not self.nsd_reference:
-            raise ValidationError("NSD reference must be set")
-    
+            raise ValidationError("At least one Network Service Design Version must be included.")
+        self.nsd_reference.validate()
+
     def __post_init__(self):
-        if self.nsd_reference and isinstance(self.nsd_reference, dict):
-            self.nsd_reference = NsdReference(**self.nsd_reference)
+        if self.nsd_reference is None:
+            self.nsd_reference = {}
+        self.nsd_reference = NSDVReferenceConfig(**self.nsd_reference)
+
+
+@dataclass
+class NSDVReferenceConfig:
+    """NSDV Reference."""
+    publisher_name: str = field(
+        default="",
+        metadata={
+            "comment": "Name of the Publisher resource where Network Service Design resource to be used in SNS exists"
+        },
+    )
+    publisher_resource_group_name: str = field(
+        default="",
+        metadata={"comment": "The resource group that the publisher NSDV is hosted in. "},
+    )
+    nsd_name: str = field(
+        default="",
+        metadata={"comment": "Network Service Design"
+                  "(NSD) to be used from the publisher. This is the collection of Network Service Design Versions. "},
+    )
+    nsd_version: str = field(
+        default="",
+        metadata={"comment": "Version of the NSD to be used which is in the format A.B.C "},
+    )
+
+    def validate(self):
+        """Validate the configuration."""
+        if not self.publisher_name:
+            raise ValidationError("Publisher Name must be set")
+        if not self.publisher_resource_group_name:
+            raise ValidationError("Publisher Resource Group must be set")
+        if not self.nsd_name:
+            raise ValidationError(
+                "NSD Name must be set"
+            )
+        if not self.nsd_version:
+            raise ValidationError(
+                "NSD Version must be set"
+            )
+        try:
+            semver.VersionInfo.parse(self.nsd_version)
+        except ValueError:
+            raise ValidationError(f"{self.nsd_version} is not a valid semantic version")
+
+    def to_dict(self):
+        return {
+            'publisher_name': self.publisher_name,
+            'publisher_resource_group_name': self.publisher_resource_group_name,
+            'nsd_name': self.nsd_name,
+            'nsd_version': self.nsd_version
+        }
