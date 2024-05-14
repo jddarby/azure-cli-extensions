@@ -7,8 +7,8 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from azext_aosm.definition_folder.builder.deploy_input_builder import (
-    DeploymentInputDefinitionElementBuilder,
+from azext_aosm.definition_folder.builder.sns_deploy_input_builder import (
+    SNSDeploymentInputDefinitionElementBuilder,
 )
 from azext_aosm.vendored_sdks.models import NfviDetails
 
@@ -27,7 +27,7 @@ class TestDeploymentInputDefinitionElementBuilder(TestCase):
         nfvis = {"nfvi1": nfvi_1, "nfvi2": nfvi_2}
 
         # Create a DeploymentInputDefinitionElementBuilder.
-        deployment_input_definition_element_builder = DeploymentInputDefinitionElementBuilder(
+        deployment_input_definition_element_builder = SNSDeploymentInputDefinitionElementBuilder(
             Path("/some/folder"), nfvis
         )
 

@@ -52,7 +52,7 @@ class TestOnboardingSNSCLIHandler(unittest.TestCase):
         mock_definition_folder.assert_called_once_with(mock_command_context_instance.cli_options["definition_folder"])
         mock_definition_folder_instance.deploy.assert_called_once_with(config=handler.config, command_context=mock_command_context_instance)
 
-    @patch('azext_aosm.cli_handlers.onboarding_sns_handler.DeploymentInputDefinitionElementBuilder')
+    @patch('azext_aosm.cli_handlers.onboarding_sns_handler.SNSDeploymentInputDefinitionElementBuilder')
     @patch('azext_aosm.cli_handlers.onboarding_sns_handler.OnboardingSNSCLIHandler._get_nsdv')
     def test_build_deploy_input(self, mock_get_nsdv, mock_deployment_input_builder):
         # Arrange

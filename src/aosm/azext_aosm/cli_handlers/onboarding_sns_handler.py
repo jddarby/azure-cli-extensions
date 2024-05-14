@@ -25,7 +25,7 @@ from azext_aosm.configuration_models.onboarding_sns_input_config import (
 )
 from azext_aosm.configuration_models.sns_parameters_config import SNSCommonParametersConfig
 from azext_aosm.definition_folder.builder.bicep_builder import BicepDefinitionElementBuilder
-from azext_aosm.definition_folder.builder.deploy_input_builder import DeploymentInputDefinitionElementBuilder
+from azext_aosm.definition_folder.builder.sns_deploy_input_builder import SNSDeploymentInputDefinitionElementBuilder
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
@@ -76,17 +76,17 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
             params_dict = {}
         return SNSCommonParametersConfig(**params_dict)
 
-    def build_deploy_input(self) -> DeploymentInputDefinitionElementBuilder:
+    def build_deploy_input(self) -> SNSDeploymentInputDefinitionElementBuilder:
         """Pre-validate the build."""
         nsdv = self._get_nsdv()
-        deployment_input_file = DeploymentInputDefinitionElementBuilder(
+        deployment_input_file = SNSDeploymentInputDefinitionElementBuilder(
             Path(SNS_OUTPUT_FOLDER_FILENAME), nsdv.properties.nfvis_from_site
         )
         return deployment_input_file
 
     def _get_nsdv(self) -> NetworkServiceDesignVersion:
         """Get the existing NSDV resource object."""
-        print(
+        logger.debug(
             f"Reading existing NSDV resource object "
             f"{self.config.nsd_reference.nsd_version} from group "
             f"{self.config.nsd_reference.nsd_name}"

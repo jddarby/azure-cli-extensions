@@ -13,11 +13,12 @@ from azext_aosm.vendored_sdks.models import (
 from azext_aosm.definition_folder.builder.json_builder import (
     JSONDefinitionElementBuilder,
 )
+from azext_aosm.common.constants import SNS_DEPLOYMENT_INPUT_FILENAME
 
 logger = get_logger(__name__)
 
 
-class DeploymentInputDefinitionElementBuilder(JSONDefinitionElementBuilder):
+class SNSDeploymentInputDefinitionElementBuilder(JSONDefinitionElementBuilder):
     """Deployment input builder"""
 
     nfvis: Dict[str, NfviDetails]
@@ -47,4 +48,4 @@ class DeploymentInputDefinitionElementBuilder(JSONDefinitionElementBuilder):
                 }
             }
             nfvis_list.append(nfvi_dict)
-        (self.path / "deploy_input.jsonc").write_text(json.dumps({"nfvis": nfvis_list}, indent=4))
+        (self.path / SNS_DEPLOYMENT_INPUT_FILENAME).write_text(json.dumps({"nfvis": nfvis_list}, indent=4))

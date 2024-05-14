@@ -88,6 +88,7 @@ SNS_INPUT_FILENAME = "sns-input.jsonc"
 SNS_DEFINITION_TEMPLATE_FILENAME = "snsdefinition.bicep.j2"
 SNS_TEMPLATE_FOLDER_NAME = "sns"
 SNS_DEFINITION_FOLDER_NAME = "snsDefinition"
+SNS_DEPLOYMENT_INPUT_FILENAME = "deploy_input.jsonc"
 
 NEXUS_IMAGE_REGEX = r"^[\~]?(\d+)\.(\d+)\.(\d+)$"
 
