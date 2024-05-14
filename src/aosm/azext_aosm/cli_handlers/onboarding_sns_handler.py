@@ -86,10 +86,10 @@ class OnboardingSNSCLIHandler(OnboardingBaseCLIHandler):
 
     def _get_nsdv(self) -> NetworkServiceDesignVersion:
         """Get the existing NSDV resource object."""
-        logger.debug(
-            f"Reading existing NSDV resource object "
-            f"{self.config.nsd_reference.nsd_version} from group "
-            f"{self.config.nsd_reference.nsd_name}"
+        self.logger.debug(
+            "Reading existing NSDV resource object %s from group %s",
+            self.config.nsd_reference.nsd_version,
+            self.config.nsd_reference.nsd_name
         )
         assert isinstance(self.aosm_client, HybridNetworkManagementClient)
         nsdv_object = self.aosm_client.network_service_design_versions.get(
