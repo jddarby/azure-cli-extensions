@@ -11,7 +11,7 @@ import semver
 
 
 @dataclass
-class SiteNetworkServicePropertiesConfig:
+class OnboardingSNSInputConfig:
     """SNS Object."""
     location: str = field(
         default="",

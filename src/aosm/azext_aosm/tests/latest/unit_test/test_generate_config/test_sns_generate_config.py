@@ -3,13 +3,13 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 from unittest import TestCase
-from azext_aosm.configuration_models.onboarding_sns_input_config import SiteNetworkServicePropertiesConfig, NSDVReferenceConfig
+from azext_aosm.configuration_models.onboarding_sns_input_config import OnboardingSNSInputConfig, NSDVReferenceConfig
 from azure.cli.core.azclierror import ValidationError
 
-class TestSiteNetworkServicePropertiesConfig(TestCase):
+class TestOnboardingSNSInputConfig(TestCase):
     def setUp(self):
         self.nsdv_config = NSDVReferenceConfig(publisher_name="publisher", publisher_resource_group_name="resource_group", nsd_name="nsd", nsd_version="1.0.0")
-        self.sns_config = SiteNetworkServicePropertiesConfig(location="location", operator_resource_group_name="resource_group", site_name="site", nsd_reference=self.nsdv_config.to_dict())
+        self.sns_config = OnboardingSNSInputConfig(location="location", operator_resource_group_name="resource_group", site_name="site", nsd_reference=self.nsdv_config.to_dict())
 
     def test_validate_sns_config_all_fields_set(self):
         try:
