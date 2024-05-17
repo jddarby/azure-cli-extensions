@@ -324,12 +324,12 @@ interactions:
     uri: https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/cli_test_vnf_nsd_000001/providers/Microsoft.Resources/deployments/mock-deployment/operationStatuses/08584856522487629567?api-version=2022-09-01
   response:
     body:
-      string: '{"status": "Accepted"}'
+      string: '{"status": "Running"}'
     headers:
       cache-control:
       - no-cache
       content-length:
-      - '22'
+      - '21'
       content-type:
       - application/json; charset=utf-8
       date:
@@ -4291,7 +4291,7 @@ interactions:
       transfer-encoding:
       - chunked
       x-ms-ratelimit-remaining-calls-per-second:
-      - '333.3'
+      - '333.316667'
     status:
       code: 200
       message: OK
