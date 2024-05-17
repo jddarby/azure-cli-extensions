@@ -43,7 +43,7 @@ output_folder = ((Path(__file__).parent) / "nsd_output").resolve()
 NSD_INPUT_FILE_NAME = "nsd_core_input.jsonc"
 
 CGV_DATA = {
-    "ubuntu": {
+    "ubuntu-vm": {
         "nfdv": "1.0.0",
         "deployParameters": [
             {
@@ -59,7 +59,7 @@ CGV_DATA = {
 
 
 MULTIPLE_INSTANCES_CGV_DATA = {
-    "ubuntu": {
+    "ubuntu-vm": {
         "nfdv": "1.0.0",
         "deployParameters": [
             {
@@ -88,7 +88,7 @@ MULTIPLE_NFs_CGV_DATA = {
             {"service_port": 5222, "serviceAccount_create": False}
         ],
     },
-    "ubuntu": {
+    "ubuntu-vm": {
         "nfdv": "1.0.0",
         "managedIdentity": "managed_identity",
         "deployParameters": {

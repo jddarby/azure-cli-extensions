@@ -78,7 +78,7 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
     // to the values in the CG schemas.
     resourceElementTemplates: [
       {
-        name: 'ubuntu'
+        name: 'ubuntu-vm'
         // The type of resource element can be ArmResourceDefinition, ConfigurationDefinition or NetworkFunctionDefinition.
         type: 'NetworkFunctionDefinition'
         // The configuration object may be different for different types of resource element.
@@ -88,13 +88,13 @@ resource nsdVersion 'Microsoft.Hybridnetwork/publishers/networkservicedesigngrou
             artifactStoreReference: {
               id: acrArtifactStore.id
             }
-            artifactName: 'ubuntu'
+            artifactName: 'ubuntu-vm'
             artifactVersion: '1.0.0'
           }
           templateType: 'ArmTemplate'
           // The parameter values map values from the CG schema, to values required by the template
           // deployed by this resource element.
-          parameterValues: string(loadJsonContent('ubuntu-mappings.json'))
+          parameterValues: string(loadJsonContent('ubuntu-vm-mappings.json'))
         }
         dependsOnProfile: {
           installDependsOn: []

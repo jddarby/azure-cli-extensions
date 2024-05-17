@@ -31,7 +31,7 @@ resource acrArtifactManifest 'Microsoft.Hybridnetwork/publishers/artifactStores/
   properties: {
     artifacts: [
       {
-        artifactName: 'ubuntu'
+        artifactName: 'ubuntu-vm'
         artifactType: 'OCIArtifact'
         artifactVersion: '1.0.0'
       }
