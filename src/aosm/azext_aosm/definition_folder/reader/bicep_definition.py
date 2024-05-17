@@ -3,8 +3,10 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 import time
+import json
 from dataclasses import asdict
 from typing import Any, Dict
+from pathlib import Path
 
 from azure.cli.core import AzCli
 from azure.cli.core.azclierror import AzCLIError
@@ -15,11 +17,17 @@ from azure.mgmt.resource.resources.models import DeploymentExtended
 from knack.log import get_logger
 from azext_aosm.common.command_context import CommandContext
 from azext_aosm.common.utils import convert_bicep_to_arm
-from azext_aosm.configuration_models.common_parameters_config import \
-    BaseCommonParametersConfig, CoreVNFCommonParametersConfig
+from azext_aosm.configuration_models.common_parameters_config import (
+    BaseCommonParametersConfig,
+    CoreVNFCommonParametersConfig,
+    NFDCommonParametersConfig,
+    NSDCommonParametersConfig
+)
 from azext_aosm.definition_folder.reader.base_definition import \
     BaseDefinitionElement
-from azext_aosm.common.constants import ManifestsExist
+from azext_aosm.common.constants import (
+    ManifestsExist,
+)
 
 logger = get_logger(__name__)
 
@@ -153,21 +161,83 @@ class BicepDefinitionElement(BaseDefinitionElement):
 
         return ManifestsExist.NONE
 
+    @staticmethod
+    def _base_resources_exist(
+        config: BaseCommonParametersConfig, command_context: CommandContext
+    ) -> bool:
+        """
+
+        Returns True if all base resources exist, False if even one does not.
+
+        Current code only allows one manifest for ACR, and one manifest for SA (if applicable),
+        so that's all we check for.
+        """
+        try:
+            command_context.aosm_client.publishers.get(
+                resource_group_name=config.publisherResourceGroupName,
+                publisher_name=config.publisherName,
+            )
+        except azure_exceptions.ResourceNotFoundError:
+            return False
+
+        try:
+            command_context.aosm_client.artifact_stores.get(
+                resource_group_name=config.publisherResourceGroupName,
+                publisher_name=config.publisherName,
+                artifact_store_name=config.acrArtifactStoreName,
+            )
+        except azure_exceptions.ResourceNotFoundError:
+            return False
+
+        if isinstance(config, NFDCommonParametersConfig):
+            try:
+                command_context.aosm_client.network_function_definition_groups.get(
+                    resource_group_name=config.publisherResourceGroupName,
+                    publisher_name=config.publisherName,
+                    network_function_definition_group_name=config.nfDefinitionGroup,
+                )
+            except azure_exceptions.ResourceNotFoundError:
+                return False
+
+        if isinstance(config, CoreVNFCommonParametersConfig):
+            try:
+                command_context.aosm_client.storage_accounts.get(
+                    resource_group_name=config.publisherResourceGroupName,
+                    publisher_name=config.publisherName,
+                    storgae_account_name=config.saArtifactStoreName,
+                )
+            except azure_exceptions.ResourceNotFoundError:
+                return False
+
+        if isinstance(config, NSDCommonParametersConfig):
+            try:
+                command_context.aosm_client.network_service_design_groups.get(
+                    resource_group_name=config.publisherResourceGroupName,
+                    publisher_name=config.publisherName,
+                    network_service_design_group_name=config.nsDesignGroup,
+                )
+            except azure_exceptions.ResourceNotFoundError:
+                return False
+
+        return True
+
     def deploy(
         self, config: BaseCommonParametersConfig, command_context: CommandContext
     ):
         """Deploy the element."""
         # TODO: Deploying base takes about 4 minutes, even if everything is already deployed.
-        # We should have a check to see if it's already deployed and skip it if so.
-        # The following can be used to speed up testing by skipping base deploy: TODO: remove this
-        # if self.path.name == "base":
-        #     print("Temporarily skip base for debugging")
-        #     return
-
         # artifact manifests return an error if it already exists, so they need special handling.
         # Currently, _only_ manifests are special, but if we need to add any more custom code,
         # breaking this into a separate class (like we do for artifacts) is probably the right
         # thing to do.
+        if self.path.name == "base":
+            base_resources_exist = self._base_resources_exist(
+                config=config, command_context=command_context
+            )
+            if base_resources_exist:
+                logger.info("Base resources already exist; skipping deployment.")
+                return
+
         if self.path.name == "artifactManifest":
             manifests_exist = self._artifact_manifests_exist(
                 config=config, command_context=command_context
@@ -206,6 +276,25 @@ class BicepDefinitionElement(BaseDefinitionElement):
             for (k, v) in asdict(config).items()
             if k in parameters_in_template
         }
+
+        if self.path.name == "snsDefinition":
+            resource_group_name = config.operatorResourceGroupName
+            with open(Path(self.path).parent / 'deploy_input.jsonc', 'r') as f:
+                data = json.load(f)
+
+            # Get the 'nfvis' value
+            nfvis_value = data.get('nfvis', [])
+
+            # Ensure 'nfvis_value' is an object
+            if isinstance(nfvis_value, str):
+                nfvis_value = json.loads(nfvis_value)
+
+            logger.debug("NFVIS Value: %s", nfvis_value)
+
+            parameters['nfviList'] = {"value": nfvis_value}
+        else:
+            resource_group_name = config.publisherResourceGroupName
+
         logger.debug("All parameters provided by user: %s", config)
         logger.debug(
             "Parameters required by %s in built ARM template:%s ",
@@ -218,7 +307,7 @@ class BicepDefinitionElement(BaseDefinitionElement):
             cli_ctx=command_context.cli_ctx,
             template=arm_json,
             parameters=parameters,
-            resource_group=config.publisherResourceGroupName,
+            resource_group=resource_group_name,
             resource_client=command_context.resources_client,
         )
 
