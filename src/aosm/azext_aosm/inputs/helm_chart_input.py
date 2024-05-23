@@ -18,7 +18,7 @@ import ruamel.yaml
 import yaml
 from knack.log import get_logger
 from ruamel.yaml.error import ReusedAnchorWarning
-
+from ruamel.yaml import CommentedMap, CommentedSeq
 from azext_aosm.common.exceptions import (
     DefaultValuesNotFoundError,
     MissingChartDependencyError,
@@ -30,7 +30,7 @@ from azext_aosm.common.utils import check_tool_installed, extract_tarfile
 from azext_aosm.inputs.base_input import BaseInput
 
 logger = get_logger(__name__)
-yaml_processor = ruamel.yaml.YAML(typ="safe", pure=True)
+yaml_processor = ruamel.yaml.YAML(typ="rt", pure=True)
 warnings.simplefilter("ignore", ReusedAnchorWarning)
 
 
@@ -422,6 +422,88 @@ class HelmChartInput(BaseInput):
             dependencies=dependencies,
         )
 
+    def get_yaml_values_and_comments(self, data):
+        """
+        Recursively processes YAML file and creates a new data structure 
+        that mirrors the original one, but each value is replaced with a dictionary containing the value 
+        and its associated comment (if it exists and is one of our keywords).
+        
+        For example, in the values.yaml:
+        
+        image:
+            repository: overwriteme # expose-cgs
+            tag: stable
+            
+        the object created looks like: 
+        
+        "image": {
+            "value": {
+                "repository": {
+                    "value": "overwriteme",
+                    "comment": "expose-cgs"
+                },
+                "tag": {
+                    "value": "stable",
+                    "comment": null
+                },
+
+        The function handles CommentedMap (similar to a dictionary) and CommentedSeq (similar to a list) 
+        data types from the ruamel.yaml library, which preserve comments in the YAML file.
+
+        Args:
+            data (CommentedMap or CommentedSeq): The data structure loaded from the YAML file.
+
+        Returns:
+            dict or list: A new data structure that mirrors the values.yaml, but each value is replaced 
+            with a dictionary containing the value and its associated comment (if it exists). The type of 
+            the returned data structure matches the type of the input data (i.e., a dictionary for 
+            CommentedMap and a list for CommentedSeq).
+        """
+        # Check if the current data is a CommentedMap (similar to a dictionary)
+        if isinstance(data, CommentedMap):
+            print("here", data)
+            processed_yaml_data = {}
+            for key, value in data.items():
+                comment = None
+                # Check if the key has an associated comment
+                if key in data.ca.items:
+                    comment_value = data.ca.items[key]
+                    # Comments are stored as
+                    # [None, None, CommentToken('Test\n', line: 4, col: 14), None] so we look at the 3rd element
+                    if comment_value and comment_value[2]:
+                        if "expose-cgs" in comment_value[2].value:
+                            comment = "expose-cgs"
+                        elif "hardcode-nfdv" in comment_value[2].value:
+                            comment = "hardcode-nfdv"
+                        else:
+                            comment = None
+                # Add the value and its comment to the new dictionary
+                processed_yaml_data[key] = {'value': self.get_yaml_values_and_comments(value) if isinstance(value, (CommentedMap, CommentedSeq)) else value, 'comment': comment}
+            # Return the processed data
+            return processed_yaml_data
+        # Check if the current data is a CommentedSeq (similar to a list)
+        elif isinstance(data, CommentedSeq):
+            print("HEREHEHREHREHR", data)
+            processed_yaml_data = []
+            for index, item in enumerate(data):
+                comment = None
+                # Check if the index has an associated comment
+                if index in data.ca.items:
+                    comment_value = data.ca.items[index]
+
+                    if comment_value and comment_value[2]:
+                        if "expose-cgs" in comment_value[2].value:
+                            comment = "expose-cgs"
+                        elif "hardcode-nfdv" in comment_value[2].value:
+                            comment = "hardcode-nfdv"
+                        else:
+                            comment = None
+                # Add the item and its comment to the new list
+                processed_yaml_data.append({'value': self.get_yaml_values_and_comments(item) if isinstance(item, (CommentedMap, CommentedSeq)) else item, 'comment': comment})
+            return processed_yaml_data
+        else:
+            return data
+
     def _read_values_yaml_from_chart(self) -> Dict[str, Any]:
         """
         Reads the values.yaml file in the Helm chart directory.
@@ -435,6 +517,9 @@ class HelmChartInput(BaseInput):
             if file.name.endswith(("values.yaml", "values.yml")):
                 with file.open(encoding="UTF-8") as f:
                     content = yaml_processor.load(f)
+                # print(content)
+                test = self.get_yaml_values_and_comments(content)
+                print("OUTPUT", json.dumps(test, indent=4))
                 return content
 
         logger.error(
