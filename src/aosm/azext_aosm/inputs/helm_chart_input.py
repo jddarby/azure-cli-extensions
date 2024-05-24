@@ -459,9 +459,8 @@ class HelmChartInput(BaseInput):
             the returned data structure matches the type of the input data (i.e., a dictionary for 
             CommentedMap and a list for CommentedSeq).
         """
-        # Check if the current data is a CommentedMap (similar to a dictionary)
+
         if isinstance(data, CommentedMap):
-            print("here", data)
             processed_yaml_data = {}
             for key, value in data.items():
                 comment = None
@@ -478,12 +477,13 @@ class HelmChartInput(BaseInput):
                         else:
                             comment = None
                 # Add the value and its comment to the new dictionary
-                processed_yaml_data[key] = {'value': self.get_yaml_values_and_comments(value) if isinstance(value, (CommentedMap, CommentedSeq)) else value, 'comment': comment}
-            # Return the processed data
+                if isinstance(value, (CommentedMap, CommentedSeq)):
+                    processed_yaml_data[key] = {'value': self.get_yaml_values_and_comments(value), 'comment': comment}
+                else:
+                    processed_yaml_data[key] = {'value': value, 'comment': comment}
             return processed_yaml_data
-        # Check if the current data is a CommentedSeq (similar to a list)
+
         elif isinstance(data, CommentedSeq):
-            print("HEREHEHREHREHR", data)
             processed_yaml_data = []
             for index, item in enumerate(data):
                 comment = None
@@ -499,7 +499,10 @@ class HelmChartInput(BaseInput):
                         else:
                             comment = None
                 # Add the item and its comment to the new list
-                processed_yaml_data.append({'value': self.get_yaml_values_and_comments(item) if isinstance(item, (CommentedMap, CommentedSeq)) else item, 'comment': comment})
+                if isinstance(item, (CommentedMap, CommentedSeq)):
+                    processed_yaml_data.append({'value': self.get_yaml_values_and_comments(item), 'comment': comment})
+                else:
+                    processed_yaml_data.append({'value': item, 'comment': comment})
             return processed_yaml_data
         else:
             return data
@@ -520,7 +523,7 @@ class HelmChartInput(BaseInput):
                 # print(content)
                 test = self.get_yaml_values_and_comments(content)
                 print("OUTPUT", json.dumps(test, indent=4))
-                return content
+                return self.get_yaml_values_and_comments(content)
 
         logger.error(
             "values.yaml|yml file not found in Helm chart '%s'", self.chart_path
