@@ -5,7 +5,7 @@
 
 import json
 import re
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple, Optional
 
 from knack.log import get_logger
 
@@ -400,3 +400,76 @@ class HelmChartProcessor(BaseInputProcessor):
             return None  # Key removed
         # Otherwise, recursively call the function on the sub-dictionary
         return self._remove_key_from_dict(dictionary[keys[0]], ".".join(keys[1:]))
+
+    def _generate_schema(
+        self,
+        deploy_params_schema: Dict[str, Any],
+        source_schema: Dict[str, Any],
+        default_values: Dict[str, Any],
+        param_prefix: Optional[str] = None,
+    ) -> None:
+        """
+        Generate the JSON schema for deployParameters. The NFDProcessor overrides this method to generate CGS for NSDs.
+
+        This method recursively generates the deployParameters schema for the input artifact by updating
+        the schema parameter.
+
+        Note there is no return value. The schema is passed by reference and modified in place.
+
+        Parameters:
+            deploy_params_schema:
+                The schema to be modified. On first call of this method,
+                it should contain any base nodes for the schema.
+                This schema is passed by reference and modified in place.
+                This property is defined by the CLI in the base processor.
+            source_schema:
+                The source schema from which the deploy parameters schema is generated.
+                E.g., for a Helm chart this may be the schema generated from the values.yaml file.
+                For an ARM template this will be the schema generated from the template's parameters
+            default_values:
+                The default values used to determine whether a parameter should be hardcoded or provided by the user.
+                Defined by the input artifact classes from the config provided by the user.
+                E.g. for helm charts this can be the default values file or the values.yaml file in the chart.
+            param_prefix:
+                The prefix to be added to the parameter name.
+                This is used for namespacing nested properties in the schema.
+                On first call to this method this should be None.
+        """
+        if "properties" not in source_schema.keys():
+            return
+        # Abbreviated 'prop' because 'property' is built in.
+        
+        if self.expose_all_params:
+            # loop through
+            for prop, details in source_schema["properties"].items():
+                param_name = prop if not param_prefix else f"{param_prefix}_{prop}"
+                print(param_name)
+
+            # if hardcode nfdv, dont expose, else expose
+        # else:
+        else:
+            # loop through
+            for prop, details in source_schema["properties"].items():
+                param_name = prop if not param_prefix else f"{param_prefix}_{prop}"
+                print(param_name)
+                
+                # 1. Required parameters (in 'required' array and no default given).
+                if (
+                    prop not in default_values
+                    and "required" in source_schema
+                    and prop in source_schema["required"]
+                ):
+                    # Note: we only recurse into objects, not arrays. For now, this is sufficient.
+                    if "properties" in details:
+                        self._generate_schema(
+                            deploy_params_schema,
+                            details,
+                            default_values={},  # In this branch property_key is not in defaults, so pass empty dict.
+                            param_prefix=param_name,
+                        )
+                    else:
+                        deploy_params_schema["required"].append(param_name)
+                        deploy_params_schema["properties"][param_name] = details
+            # if no default but required, expose
+            # if expose-cgs, expose
+       
