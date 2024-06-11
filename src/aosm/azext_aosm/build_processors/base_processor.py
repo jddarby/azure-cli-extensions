@@ -201,11 +201,14 @@ class BaseInputProcessor(ABC):
                     )
                 else:
                     if prop in default_values:
-                        # AOSM wants null as a string
-                        # TODO: Flag with RP that this is a bug?
+                        # RP does not accept null values as defaults,
+                        # which will fail the NFDV publish
+                        # To workaround this we don't set a default, so must add to required params instead
+
                         if default_values[prop] is None:
-                            default_values[prop] = "null"
-                        details["default"] = default_values[prop]
+                            deploy_params_schema["required"].append(param_name)
+                        else:
+                            details["default"] = default_values[prop]
                     # If there is a default of '[resourceGroup().location]'
                     # which is not allowed to be passed into CGVs
                     if "default" in details and details["default"] == '[resourceGroup().location]':
